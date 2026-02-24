@@ -1,0 +1,51 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const allPosts = await getCollection('blog');
+const posts = allPosts.sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+
+function formatDate(date: Date): string {
+  return date.toLocaleDateString('es-AR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+---
+
+<BaseLayout
+  title="Blog sobre registro de marcas en Argentina | UnaMarca"
+  description="Guías y artículos sobre cómo registrar tu marca en Argentina: costos del INPI, clases de marcas, búsqueda de marcas y más."
+  type="website"
+>
+  <section class="blog-listing">
+    <div class="container">
+      <header class="page-header">
+        <h1>Blog</h1>
+        <p>Guías y recursos sobre registro de marcas en Argentina.</p>
+      </header>
+
+      <ul class="post-list" role="list">
+        {posts.map(post => (
+          <li>
+            <article>
+              <time datetime={post.data.pubDate.toISOString()}>
+                {formatDate(post.data.pubDate)}
+              </time>
+              <h2>
+                <a href={`/blog/${post.id}`}>{post.data.title}</a>
+              </h2>
+              <p>{post.data.description}</p>
+              <a href={`/blog/${post.id}`} class="read-more" aria-label={`Leer: ${post.data.title}`}>
+                Leer artículo →
+              </a>
+            </article>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+</BaseLayout>

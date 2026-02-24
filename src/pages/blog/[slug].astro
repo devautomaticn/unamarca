@@ -1,0 +1,92 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map(post => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+const SITE_URL = 'https://unamarca.com.ar';
+// Use Astro.url.href so the canonical matches the built URL exactly (incl. trailing slash)
+const canonicalURL = Astro.url.href;
+const pubDateISO = post.data.pubDate.toISOString();
+
+function formatDate(date: Date): string {
+  return date.toLocaleDateString('es-AR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: post.data.title,
+  description: post.data.description,
+  datePublished: pubDateISO,
+  dateModified: pubDateISO,
+  url: canonicalURL,
+  inLanguage: 'es-AR',
+  author: {
+    '@type': 'Organization',
+    name: 'UnaMarca',
+    url: SITE_URL,
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: 'UnaMarca',
+    url: SITE_URL,
+  },
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': canonicalURL,
+  },
+};
+---
+
+<BaseLayout
+  title={`${post.data.title} | UnaMarca`}
+  description={post.data.description}
+  canonicalURL={canonicalURL}
+  type="article"
+  pubDate={pubDateISO}
+  tags={post.data.tags}
+  structuredData={structuredData}
+>
+  <article class="blog-post">
+    <div class="container">
+      <header class="post-header">
+        <div class="post-meta">
+          <time datetime={pubDateISO}>
+            {formatDate(post.data.pubDate)}
+          </time>
+          {post.data.tags && post.data.tags.length > 0 && (
+            <ul class="tag-list" role="list">
+              {post.data.tags.map(tag => (
+                <li class="tag">{tag}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <h1>{post.data.title}</h1>
+        <p class="post-description">{post.data.description}</p>
+      </header>
+
+      <div class="prose">
+        <Content />
+      </div>
+
+      <footer class="post-footer">
+        <a href="/blog" class="back-link">← Volver al blog</a>
+      </footer>
+    </div>
+  </article>
+</BaseLayout>
