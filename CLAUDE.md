@@ -96,6 +96,55 @@ npm run preview   # Preview the built site
 
 ---
 
+## Hosting & Deployment
+
+**Platform:** Cloudflare Pages (free tier)
+**Git repo:** `https://github.com/devautomaticn/unamarca`
+**Pages dashboard:** Cloudflare → Workers & Pages → `unamarca`
+
+### How deploys work
+
+Every push to the `main` branch triggers an automatic deployment:
+
+1. Cloudflare detects the push
+2. Runs `npm run build` (output: `./dist/`)
+3. Deploys the static files globally — live in ~1–2 minutes
+
+**You never need to manually deploy.** Just push to `main`.
+
+### Deploy workflow
+
+```bash
+# Make your changes, then:
+git add .
+git commit -m "describe what you changed"
+git push
+```
+
+Watch the deployment at: Cloudflare dashboard → Workers & Pages → unamarca → Deployments
+
+### DNS & infrastructure
+
+| Record | Type | Points to |
+|--------|------|-----------|
+| `unamarca.com.ar` | CNAME | `unamarca.pages.dev` (Cloudflare Pages) |
+| `www.unamarca.com.ar` | CNAME | `unamarca.pages.dev` (Cloudflare Pages) |
+| `vigilante.unamarca.com.ar` | A | `46.224.159.63` (Hetzner VPS) |
+
+- **DNS managed by:** Cloudflare (nameservers: `evangeline.ns.cloudflare.com`, `harley.ns.cloudflare.com`)
+- **Domain registered at:** NIC Argentina (`nic.ar`)
+- **SSL:** Automatic via Cloudflare
+
+### Redirects
+
+Old WordPress URLs redirect to new `/blog/` paths via `public/_redirects`.
+If new blog posts need redirects, add them there in the format:
+```
+/old-slug /blog/new-slug 301
+```
+
+---
+
 ## ⚠️ SEO is the Top Priority
 
 This site depends on organic search traffic. Every change must preserve:

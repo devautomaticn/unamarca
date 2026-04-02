@@ -22,7 +22,16 @@ const structuredData = [
     url: SITE_URL,
     areaServed: { '@type': 'Country', name: 'Argentina' },
     serviceType: 'Trademark Registration',
-    // [FILL_IN] Add telephone, email, address, priceRange when ready
+    telephone: '+5491149712224',
+    email: 'mike@automaticnation.com',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: 'Segui 4635',
+      addressLocality: 'Ciudad Autónoma de Buenos Aires',
+      addressRegion: 'Buenos Aires',
+      addressCountry: 'AR',
+    },
+    priceRange: '$150.000 - $300.000',
   },
   {
     '@context': 'https://schema.org',
@@ -594,7 +603,6 @@ const structuredData = [
           gratuito en menos de 48 horas.
         </p>
 
-        <!-- [FILL_IN] Replace placeholder contact info with real data -->
         <ul class="contact-list" aria-label="Información de contacto">
           <li class="contact-item">
             <div class="contact-icon" aria-hidden="true">
