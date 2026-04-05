@@ -194,4 +194,4 @@ This site depends on organic search traffic. Every change must preserve:
 - [ ] Add a real `og:image` → `public/og-default.png` (1200×630px)
 - [ ] Replace `public/favicon.svg` with the actual brand favicon
 - [ ] Update footer links / add Privacy Policy / Terms if required
-- [ ] Set up redirects if original WordPress posts were at `/<slug>` (not `/blog/<slug>`)
+- [x] Set up redirects from WordPress `/<slug>` → `/blog/<slug>` (done via `public/_redirects`)
