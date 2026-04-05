@@ -29,7 +29,7 @@ Si tenés dudas sobre cuál elegir, podés leer [nuestra guía sobre cómo regis
 
 ## Paso 2 — Verificá que tu marca esté disponible
 
-Antes de presentar la solicitud, es fundamental hacer una búsqueda previa para confirmar que no existe una marca igual o similar ya registrada en el mismo rubro. Si la hay, el INPI puede rechazar tu solicitud y perderías el arancel pagado.
+Antes de presentar la solicitud, es fundamental hacer una búsqueda previa para confirmar que no existe una marca igual o similar ya registrada en el mismo rubro. Este paso es más importante que nunca: desde marzo de 2026, el INPI ya no verifica conflictos con marcas existentes durante el examen de fondo — esa responsabilidad recae sobre los titulares de marcas registradas, que deben presentar oposiciones. Esto significa que si presentás una marca similar a una existente y nadie se opone, podría aprobarse — pero también significa que podrías quedar expuesto si alguien registra algo similar a la tuya.
 
 Podés hacer la búsqueda gratis en el buscador oficial del INPI. Explicamos cómo hacerlo en detalle acá: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
 
@@ -80,24 +80,23 @@ Podés consultar los valores actualizados directamente en [Aranceles INPI](https
 
 ## Paso 7 — Qué pasa después de presentar la solicitud
 
-Una vez presentada la solicitud, el INPI sigue este proceso:
+Una vez presentada la solicitud, el INPI sigue este proceso (actualizado según Resolución INPI 583/25, vigente desde marzo 2026):
 
-1. **Examen formal** — verifican que la documentación esté completa (puede llevar entre 1 y 4 meses)
-2. **Examen de fondo** — evalúan si la marca cumple los requisitos legales y si hay conflictos con marcas existentes (varios meses)
-3. **Publicación en el Boletín de Marcas** — la marca se publica durante 30 días hábiles para que terceros puedan presentar oposiciones
-4. **Resolución** — si no hubo oposiciones o fueron resueltas a tu favor, el INPI concede el registro y emite el título
+1. **Examen formal y de fondo** — verifican que la documentación esté completa y que la marca cumpla los requisitos absolutos (distintividad, no genericidad, no contraria al orden público). El INPI ya **no examina** conflictos con marcas similares existentes — eso queda en manos de terceros opositores.
+2. **Publicación en el Boletín de Marcas** — la marca se publica durante **30 días corridos** para que titulares de marcas similares puedan presentar oposiciones.
+3. **Resolución** — si no hubo oposiciones, el registro se concede automáticamente. Si hubo oposiciones, se resuelven antes de la concesión.
 
 Podés seguir el estado en cualquier momento desde el portal del INPI ingresando con tu CUIT.
 
 ## ¿Cuánto tarda registrar una marca en Argentina?
 
-El proceso completo lleva entre **18 y 24 meses** aproximadamente, dependiendo de la carga de trabajo del INPI y si surgieron observaciones u oposiciones durante el trámite.
+Con el nuevo proceso implementado en 2026, el trámite puede resolverse en aproximadamente **2 meses** si no hay oposiciones: el INPI examina la solicitud, la publica durante 30 días corridos y, sin oposiciones, concede el registro automáticamente.
 
-Sin embargo, desde el momento en que presentás la solicitud ya tenés **prioridad registral**: la fecha de presentación protege tu marca ante solicitudes posteriores de terceros para la misma denominación y clase.
+Desde el momento en que presentás la solicitud ya tenés **prioridad registral**: la fecha de presentación protege tu marca ante solicitudes posteriores de terceros para la misma denominación y clase.
 
 ## Errores frecuentes que pueden costar caro
 
-- **No hacer la búsqueda previa** y descubrir el rechazo meses después
+- **No hacer la búsqueda previa** — desde 2026 el INPI no filtra marcas similares, así que si no la hacés vos, nadie lo hará por vos
 - **Elegir las clases incorrectas** y quedar sin protección en tu rubro real
 - **Registrar solo el nombre** cuando también usás un logo distintivo
 - **Usar términos genéricos** que el INPI no acepta (ej: "Panadería Artesanal" para una panadería)
