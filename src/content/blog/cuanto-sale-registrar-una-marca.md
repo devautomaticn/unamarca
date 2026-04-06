@@ -18,7 +18,7 @@ El costo total de registrar una marca tiene dos componentes:
 
 ## ¿Cuánto cobra el INPI hoy?
 
-El INPI actualizó su sistema de aranceles en 2026. Hasta ahora los montos eran fijos en pesos, lo que hacía que quedaran desactualizados rápidamente por la inflación. A partir de mayo de 2026 los aranceles pasan a expresarse en **UMAPIS** (Unidades de Medida Arancelaria de la Propiedad Industrial), un valor que se ajusta cada mes según el índice de inflación del INDEC.
+El INPI actualizó su sistema de aranceles en 2026. Hasta ahora los montos eran fijos en pesos, lo que hacía que quedaran desactualizados rápidamente por la inflación. A partir de abril de 2026 los aranceles pasan a expresarse en **UMAPIS** (Unidades de Medida Arancelaria de la Propiedad Industrial), un valor que se ajusta cada mes según el índice de inflación del INDEC.
 
 En la práctica esto significa que el costo siempre va a estar actualizado — no vas a encontrar una tabla de aranceles desactualizada de hace seis meses.
 
@@ -42,14 +42,14 @@ Contratar un profesional no es obligatorio, pero sí recomendable. Un abogado o 
 - Completar la solicitud sin errores que puedan demorar o rechazar el trámite
 - Responder observaciones o vistas del INPI si surgieran
 
-Los honorarios varían según el estudio o profesional, pero como referencia general oscilan entre **$150.000 y $250.000 ARS** para un registro estándar en una clase. Contestar oposiciones de terceros o vistas del INPI puede tener costos adicionales.
+Los honorarios varían según el estudio o profesional, pero como referencia general oscilan entre **$200.000 y $300.000 ARS** para un registro estándar en una clase. Contestar oposiciones de terceros o vistas del INPI puede tener costos adicionales.
 
 ## ¿Cuánto sale en total?
 
 Para un registro típico en una clase con hasta 20 posiciones:
 
 - **Arancel INPI:** ~$36.000 ARS (varía mensualmente según UMAPI)
-- **Honorarios profesionales:** $150.000–$250.000 ARS
+- **Honorarios profesionales:** $200.000–$300.000 ARS
 
 El arancel representa una fracción del costo total. La mayor parte del gasto suele ser el honorario profesional, que es lo que te garantiza que el trámite se hace bien desde el inicio.
 
