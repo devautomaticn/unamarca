@@ -61,7 +61,7 @@
 | Status | Post Title | Slug | Target Keyword | Volume | KD | Target Date |
 |---|---|---|---|---|---|---|
 | ✅ Published | Cómo registrar una marca en Argentina paso a paso | `como-registrar-una-marca-en-argentina-paso-a-paso` | registrar una marca en argentina | 2,900 | 10 | April 2026 |
-| 🔲 To write | Cuánto tarda el registro de una marca en Argentina | `cuanto-tarda-registro-marca-argentina` | cuanto tarda registro marca | — | Low | April 2026 |
+| ✅ Published | Cuánto tarda el registro de una marca en Argentina | `cuanto-tarda-registro-marca-argentina` | cuanto tarda registro marca | — | Low | April 2026 |
 | 🔲 To write | Cómo renovar una marca registrada en Argentina | `como-renovar-marca-registrada-argentina` | como renovar marca registrada | Low | Low | May 2026 |
 
 ### Priority 2 — Medium term
