@@ -153,9 +153,9 @@ Mark the post as ✅ Published in the Content Roadmap table.
 
 | Status | Post Title | Slug | Target Keyword | Volume | KD | Target Date |
 |---|---|---|---|---|---|---|
-| 🔲 To write | Nombre comercial vs marca registrada: ¿cuál necesito? | `nombre-comercial-vs-marca-registrada-argentina` | nombre comercial argentina | Low | Low | May 2026 |
-| 🔲 To write | Cómo renovar una marca registrada en Argentina | `como-renovar-marca-registrada-argentina` | como renovar marca registrada | Low | Low | May 2026 |
-| 🔲 To write | Registro de marca para e-commerce en Argentina | `registro-marca-ecommerce-argentina` | registro marca ecommerce argentina | Low | Low | June 2026 |
+| ✅ Published | Nombre comercial vs marca registrada: ¿cuál necesito? | `nombre-comercial-vs-marca-registrada-argentina` | nombre comercial argentina | Low | Low | April 2026 |
+| ✅ Published | Cómo renovar una marca registrada en Argentina | `como-renovar-marca-registrada-argentina` | como renovar marca registrada | Low | Low | April 2026 |
+| ✅ Published | Registro de marca para e-commerce en Argentina | `registro-marca-ecommerce-argentina` | registro marca ecommerce argentina | Low | Low | April 2026 |
 
 ---
 
