@@ -69,7 +69,7 @@
 | Status | Post Title | Slug | Target Keyword | Volume | KD | Target Date |
 |---|---|---|---|---|---|---|
 | 🔲 To write | Nombre comercial vs marca registrada: ¿cuál necesito? | `nombre-comercial-vs-marca-registrada-argentina` | nombre comercial argentina | Low | Low | May 2026 |
-| 🔲 To write | Qué pasa si alguien usa mi marca sin registrarla | `que-pasa-si-alguien-usa-mi-marca-sin-registrar` | — | — | Low | June 2026 |
+| ✅ Published | Qué pasa si alguien usa mi marca sin registrarla | `que-pasa-si-alguien-usa-mi-marca-sin-registrar` | — | — | Low | April 2026 |
 | 🔲 To write | Registro de marca para e-commerce en Argentina | `registro-marca-ecommerce-argentina` | — | — | Low | June 2026 |
 
 ---
