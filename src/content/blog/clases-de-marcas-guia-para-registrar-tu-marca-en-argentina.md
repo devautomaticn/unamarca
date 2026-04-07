@@ -28,7 +28,7 @@ Para identificar la clase correcta, primero definí con precisión qué vendés 
   * Si brindás servicios, revisá las 11 clases correspondientes.
   * Podés registrar tu marca en más de una clase si ofrecés diversas categorías de productos o servicios.
 
-Consultá siempre la lista oficial de la **Clasificación de Niza** para confirmar la clase adecuada y evitar inconvenientes futuros. También podés revisar nuestra guía sobre cómo registrar una marca en Argentina para más detalles. 
+Consultá siempre la lista oficial de la **Clasificación de Niza** para confirmar la clase adecuada y evitar inconvenientes futuros. También podés revisar nuestra guía sobre [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso) para más detalles. 
 
 ## Importancia de elegir correctamente la clase de marca
 
@@ -44,4 +44,4 @@ Empezar bien con la elección de las clases de marcas te evitará problemas lega
 
 * * *
 
-¿Querés conocer más sobre cómo proteger tu marca y qué hacer si la usan sin permiso? Leé nuestros otros artículos para estar siempre un paso adelante.
+¿Querés saber cuánto cuesta el trámite? Leé [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca) para tener el panorama completo.

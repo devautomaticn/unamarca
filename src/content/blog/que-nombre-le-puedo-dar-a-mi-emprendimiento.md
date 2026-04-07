@@ -30,7 +30,7 @@ Para proteger el nombre de tu emprendimiento, debes registrarlo en el Instituto 
   * **No causar confusión.** El INPI verifica que no existan marcas similares en la misma categoría.
   * **Ser lícito.** No debe ser engañoso ni atentar contra el orden público.
 
-Por eso, es fundamental hacer una búsqueda previa para evitar rechazos o inconvenientes legales. 
+Por eso, es fundamental hacer una búsqueda previa para evitar rechazos o inconvenientes legales. Podés aprender cómo hacerla acá: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente). 
 
 ### Paso a paso para registrar el nombre de tu emprendimiento en el INPI
 
@@ -41,7 +41,7 @@ Por eso, es fundamental hacer una búsqueda previa para evitar rechazos o inconv
   5. **Publicación en el Boletín Oficial.** Permite que terceros presenten objeciones en caso de conflicto.
   6. **Obtención del registro.** Si todo es correcto, recibirás el certificado que protege tu marca.
 
-Este proceso puede tardar varios meses, pero es esencial para garantizar el uso exclusivo del nombre de tu emprendimiento. Para [mayor detalle del paso a paso del trámite, podés leer este otro acrtículo](<https://unamarca.com.ar/como-registrar-marca-y-logo-en-argentina/>). 
+Con el nuevo proceso del INPI vigente desde 2026, el trámite puede resolverse en aproximadamente 2 meses si no hay oposiciones — mucho menos de lo que solía tardar. Podés leer más acá: [cuánto tarda registrar una marca en Argentina](/blog/cuanto-tarda-registro-marca-argentina). Para [mayor detalle del paso a paso del trámite, podés leer este otro acrtículo](<https://unamarca.com.ar/como-registrar-marca-y-logo-en-argentina/>). 
 
 ### Conclusión: Elegí y registrá bien el nombre de tu emprendimiento
 

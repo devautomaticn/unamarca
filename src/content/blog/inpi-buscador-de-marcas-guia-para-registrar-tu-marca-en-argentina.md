@@ -34,4 +34,4 @@ En resumen, utilizar el módulo gratuito del INPI es la forma más rápida, senc
 
 * * *
 
-Te invitamos a empezar ahora mismo tu búsqueda en el INPI buscador de marcas. Para conocer más detalles sobre cómo registrar tu marca en Argentina, podés visitar nuestra guía completa sobre registro de marcas en Argentina. También podés consultar fuentes oficiales, como la [página del INPI](<https://www.argentina.gob.ar/inpi>), para información actualizada. ¡Mucho éxito con tu marca!
+Te invitamos a empezar ahora mismo tu búsqueda en el INPI buscador de marcas. Una vez que confirmaste que tu marca está disponible, el siguiente paso es la presentación de la solicitud — te lo explicamos en detalle acá: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso). Si también querés saber cuánto cuesta el trámite, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca). También podés consultar fuentes oficiales, como la [página del INPI](<https://www.argentina.gob.ar/inpi>), para información actualizada.
