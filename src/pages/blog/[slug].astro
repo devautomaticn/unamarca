@@ -14,8 +14,8 @@ const { post } = Astro.props;
 const { Content } = await render(post);
 
 const SITE_URL = 'https://unamarca.com.ar';
-// Use Astro.url.href so the canonical matches the built URL exactly (incl. trailing slash)
-const canonicalURL = Astro.url.href;
+// Explicit trailing slash: Cloudflare Pages serves dist/blog/slug/index.html at /blog/slug/
+const canonicalURL = `${SITE_URL}/blog/${post.id}/`;
 const pubDateISO = post.data.pubDate.toISOString();
 
 function formatDate(date: Date): string {
