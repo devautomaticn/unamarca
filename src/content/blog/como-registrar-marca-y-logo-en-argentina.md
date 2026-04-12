@@ -1,54 +1,66 @@
 ---
 title: Cómo registrar marca y logo en Argentina
-description: Si estás pensando en registrar tu marca y logo en Argentina, es normal que tengas muchas preguntas. ¿Qué tipos de marcas existen? ¿Cómo proteger tu identidad visual? ¿Es complicado el proceso? No te preocupes, acá te explico todo de forma sencilla pa
+description: 'Qué tipos de marcas podés registrar en Argentina, cómo es el proceso ante el INPI y qué conviene registrar primero: el nombre, el logo o ambos.'
 pubDate: '2026-01-21'
 tags: []
 ---
 
-Si estás pensando en **registrar tu marca y logo** en Argentina, es normal que tengas muchas preguntas. ¿Qué tipos de marcas existen? ¿Cómo proteger tu identidad visual? ¿Es complicado el proceso? No te preocupes, acá te explico todo de forma sencilla para que aproveches al máximo esta información. 
+Si estás pensando en **registrar tu marca y logo en Argentina**, es normal que tengas dudas sobre cómo funciona el trámite. ¿Registrás el nombre y el logo juntos o por separado? ¿Qué tipos de marcas acepta el INPI? ¿Cuánto tarda y cuánto cuesta? Acá te explicamos todo de forma práctica.
 
-## Importancia de registrar tu marca y logo en Argentina
+## Importancia de registrar tu marca y logo
 
-Registrar una marca y logo es clave para proteger tu negocio. Al hacerlo, garantizas que nadie utilice nombres, imágenes o símbolos parecidos que puedan confundir a tus clientes. Además, el registro te ofrece respaldo legal para defender tu identidad, lo que también puede aumentar el valor de tu emprendimiento. 
+Registrar tu marca te da el **derecho exclusivo** de usarla en el rubro que registrás, por 10 años renovables. Sin registro, no tenés herramientas legales concretas si alguien más empieza a usar tu nombre o logo. Para entender qué derechos te da el registro y qué pasa si no lo hacés, leé: [qué pasa si alguien usa tu marca sin registrarla](/blog/que-pasa-si-alguien-usa-mi-marca-sin-registrar).
 
 ## Tipos de marcas que podés registrar en Argentina
 
-La legislación argentina reconoce varios tipos de marcas, no solo el nombre o el logo. Los más habituales son: 
+La legislación argentina (Ley 22.362) reconoce varios tipos de marcas:
 
-  * **Marcas Denominativas:** Solo palabras, letras o números (por ejemplo, un nombre como “Zapatos Cómodos”).
-  * **Marcas Figurativas:** Imágenes, dibujos o símbolos sin texto (por ejemplo, un ícono que identifique tu marca).
-  * **Marcas Mixtas:** Combinan palabras y figuras, como un logo que incluye el nombre y un diseño visual.
-  * **Marcas Tridimensionales:** Formas en 3D, como la figura de un producto o su envase. No se registran formas naturales del producto, como la botella típica de un refresco.
-  * **Marcas Sonoras:** Melodías o sonidos característicos que pueden representarse gráficamente.
-  * **Marcas de Movimiento:** Movimiento o desplazamiento distintivo de un objeto.
-  * **Marcas Olfativas:** Fragancias asociadas a la identidad de la marca, no inherentes al producto.
-  * **Otros tipos:** Posición de la marca en el producto, sensaciones táctiles, combinaciones de colores específicas o diseño del uniforme comercial.
+- **Denominativas:** solo texto, letras o números (el nombre de tu marca)
+- **Figurativas:** imágenes, íconos o logos sin texto
+- **Mixtas:** combinación de nombre y diseño visual
+- **Tridimensionales:** formas en 3D de productos o envases distintivos
+- **Sonoras:** melodías o sonidos característicos representables gráficamente
+- **Olfativas:** fragancias asociadas a la marca, no inherentes al producto
 
-
-
-## Proceso para registrar marca y logo en Argentina
-
-El trámite se realiza ante el Instituto Nacional de la Propiedad Industrial (INPI), y podés presentar la solicitud online o presencial. Los pasos principales son: 
-
-  1. Clasificación: Determinar bajo qué clase(s) NIZA corresponde registrar tu marca ([podés leer en detalle cómo clasificar tu marca acá](<https://unamarca.com.ar/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina/>)).
-  2. **Búsqueda previa:** Es recomendable comprobar si ya existe una marca igual o similar en las clases correspondientes ([podés leer en detalle cómo realizar este paso acá](<https://unamarca.com.ar/como-saber-si-una-marca-esta-registrada-facilmente/>)).
-  3. **Presentación de la solicitud:** Completar el formulario con los datos del titular, diseño y clase de productos o servicios y pago de los aranceles correspondientes ([podés leer sobre costos acá](<https://unamarca.com.ar/cuanto-sale-registrar-una-marca/>)).
-  4. **Examen formal:** El INPI verifica que la solicitud esté completa.
-  5. **Examen de fondo:** Se evalúa que la marca cumpla requisitos y sin conflictos con otras registradas.
-  6. **Publicación:** La marca se publica para permitir oposiciones.
-  7. **Resolución:** Si no hay conflictos, se aprueba el registro y se entrega el título de propiedad.
-
-
+La mayoría de los emprendedores registra una **marca mixta** (nombre + logo combinados) o registra por separado la denominativa y la figurativa para tener más flexibilidad.
 
 ## ¿Registrar el nombre y el logo juntos o por separado?
 
-No es obligatorio registrar el nombre y el logo juntos. Podés registrar solo la marca denominativa (nombre), la figurativa (logo) o una marca mixta (ambos combinados). Sin embargo, registrar ambos proporciona una protección más completa contra copias o usos indebidos. 
+No hay obligación de registrarlos juntos. Las opciones son:
 
-## Consejos para elegir tu marca o logo antes de registrar
+- **Solo el nombre (denominativa):** protege cualquier uso de esas palabras, independientemente del diseño
+- **Solo el logo (figurativa):** protege la imagen visual, no el nombre por sí solo
+- **Ambos por separado:** protección máxima; si uno caduca o cambia, el otro sigue vigente
+- **Marca mixta (juntos):** protege la combinación específica; si cambiás el logo, la protección no cubre el diseño nuevo
 
-  * Que sea **único y fácil de recordar**.
-  * Evitar términos genéricos o demasiado descriptivos (por ejemplo, “Panadería” no puede registrarse).
-  * No copiar ni parecerse a marcas ya existentes.
-  * Considerar registrar la marca en varias clases según tus productos o servicios.
+Para la mayoría de los negocios, registrar la **marca denominativa primero** es la prioridad, ya que el nombre es lo que los clientes recuerdan y lo más fácil de copiar.
 
-Registrar tu marca y logo es un paso esencial para hacer crecer y proteger tu negocio. Para comenzar, consultá el portal del [INPI Argentina](<https://portaltramites.inpi.gob.ar/>) y realizá la búsqueda previa para conocer los requisitos actualizados. Si querés más detalle sobre el proceso completo, leé nuestra guía [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso). Y si querés saber cuánto tiempo lleva el trámite hoy, te lo explicamos acá: [cuánto tarda registrar una marca en Argentina](/blog/cuanto-tarda-registro-marca-argentina). No dejes que alguien más use tu trabajo. [Contactanos por whatsapp](<https://wa.me/5491149712224?text=Hola%21%20Quisiera%20m%C3%A1s%20informaci%C3%B3n%20acerca%20del%20tr%C3%A1mite%20de%20registro%20de%20marca>) y protegé tu marca y tu identidad hoy mismo.
+## ¿En qué clases registrar?
+
+Las marcas se registran por categorías de productos o servicios (clases). Tenés que definir en qué clase o clases aplica tu negocio antes de presentar la solicitud. Para entender el sistema de clases en detalle, leé: [clases de marcas para registrar en Argentina](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina).
+
+## Proceso para registrar marca y logo en Argentina
+
+El trámite es **100% online** ante el INPI a través de [portaltramites.inpi.gob.ar](https://portaltramites.inpi.gob.ar). Con el proceso vigente desde la Resolución 583/25 (marzo de 2026), los pasos son:
+
+1. **Búsqueda previa:** verificá que tu marca esté disponible en las clases que te interesan. Leé: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente)
+2. **Definir las clases:** determiná en qué categorías de la Clasificación de Niza corresponde registrar
+3. **Presentar la solicitud online** con tu CUIT y Clave Fiscal nivel 2 o superior
+4. **Pagar el arancel:** se genera una boleta de pago al momento de la solicitud (100 UMAPIS por clase, aproximadamente $36.000 ARS al inicio del sistema en abril 2026, sujeto a actualización mensual)
+5. **Examen formal:** el INPI verifica que la solicitud esté completa y que la marca cumpla requisitos básicos
+6. **Publicación en el Boletín de Marcas:** tu solicitud se publica durante 30 días corridos para que terceros puedan presentar oposiciones
+7. **Concesión:** si no hay oposiciones, la marca se concede y recibís el título de marca
+
+Para el detalle completo de cada paso, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso).
+
+## ¿Cuánto tarda el trámite?
+
+Con el proceso vigente desde 2026, el registro puede resolverse en aproximadamente **2 meses** si no hay oposiciones. Es una mejora significativa respecto al proceso anterior, que podía demorar entre 18 y 24 meses. Para más detalle, leé: [cuánto tarda el registro de marca en Argentina](/blog/cuanto-tarda-registro-marca-argentina).
+
+## ¿Cuánto cuesta?
+
+El arancel del INPI es de 100 UMAPIS por clase. Si gestiona el trámite un profesional, se suman honorarios. Para el detalle actualizado de costos, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca).
+
+---
+
+[Contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491149712224&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0) y te decimos qué conviene registrar primero según tu situación, qué clases aplican a tu negocio y cómo encarar el trámite sin errores.
