@@ -5,7 +5,7 @@ pubDate: 2026-04-11
 tags: []
 ---
 
-Cuando alguien quiere proteger el nombre de su negocio, lo más común es decir "quiero patentar mi marca". Es la expresión que circula entre emprendedores — pero técnicamente no es lo correcto, y entender la diferencia importa. En Argentina, las marcas **no se patentan: se registran**. Y el proceso es distinto al de una patente. En esta guía te explicamos la diferencia, qué protege cada figura legal, y cómo **registrar tu marca ante el INPI** paso a paso.
+Cuando alguien quiere proteger el nombre de su negocio, lo más común es decir "quiero patentar mi marca". Es la expresión que circula entre emprendedores, pero técnicamente no es lo correcto, y entender la diferencia importa. En Argentina, las marcas **no se patentan: se registran**. Y el proceso es distinto al de una patente. En esta guía te explicamos la diferencia, qué protege cada figura legal, y cómo **registrar tu marca ante el INPI** paso a paso.
 
 ## ¿Se puede "patentar" una marca en Argentina?
 
@@ -22,7 +22,7 @@ Cuando un emprendedor dice "quiero patentar mi marca", en realidad quiere decir 
 |---|---|---|
 | ¿Qué protege? | Nombre, logo, slogan | Invento, proceso técnico |
 | Duración | 10 años, renovable indefinidamente | 20 años, no renovable |
-| ¿Quién tramita? | INPI — División Marcas | INPI — División Patentes |
+| ¿Quién tramita? | INPI (División Marcas) | INPI (División Patentes) |
 | Uso comercial | Para identificar productos o servicios | Para explotar una innovación técnica |
 | ¿Necesitás ser inventor? | No | Sí |
 
@@ -37,7 +37,7 @@ Al registrar tu marca ante el INPI, obtenés el **derecho exclusivo** de usarla 
 - Licenciar o vender tu marca
 - Usar el símbolo ® legalmente
 
-Sin registro, no tenés ninguno de estos derechos. Que hayas usado un nombre durante años no te da titularidad legal sobre él — en Argentina el derecho sobre una marca se adquiere por su registro.
+Sin registro, no tenés ninguno de estos derechos. Que hayas usado un nombre durante años no te da titularidad legal sobre él. En Argentina el derecho sobre una marca se adquiere por su registro.
 
 ## ¿Cómo registrar (= "patentar") tu marca en Argentina?
 
@@ -45,11 +45,11 @@ El trámite se hace 100% online ante el INPI y, con el proceso vigente desde 202
 
 Los pasos principales son:
 
-1. **Verificar disponibilidad** — antes de presentar, confirmá que tu marca no esté registrada por otra persona en tu rubro. Podés hacerlo en el buscador del INPI.
-2. **Definir en qué clases registrar** — las marcas se registran por categorías (clases) según el tipo de producto o servicio.
+1. **Verificar disponibilidad:** antes de presentar, confirmá que tu marca no esté registrada por otra persona en tu rubro. Podés hacerlo en el buscador del INPI.
+2. **Definir en qué clases registrar:** las marcas se registran por categorías (clases) según el tipo de producto o servicio.
 3. **Presentar la solicitud online** en [portaltramites.inpi.gob.ar](https://portaltramites.inpi.gob.ar) con tu CUIT y Clave Fiscal.
-4. **Pagar el arancel** — se genera una boleta de pago al momento de la solicitud.
-5. **Período de publicación y oposición** — el INPI publica tu solicitud durante 30 días corridos. Si nadie presenta una oposición, la concesión es automática.
+4. **Pagar el arancel:** se genera una boleta de pago al momento de la solicitud.
+5. **Período de publicación y oposición:** el INPI publica tu solicitud durante 30 días corridos. Si nadie presenta una oposición, la marca se concede.
 
 Para el proceso detallado paso a paso, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso).
 
@@ -65,15 +65,15 @@ Con el nuevo sistema vigente desde la Resolución 583/25 de marzo de 2026, el pr
 
 ## ¿En qué clases registrar?
 
-Las marcas se registran en clases según la Clasificación Internacional de Niza. Antes de presentar la solicitud, tenés que definir en cuál o cuáles clases aplica tu negocio — por ejemplo, indumentaria es Clase 25, alimentos es Clase 30, servicios profesionales es Clase 45.
+Las marcas se registran en clases según la Clasificación Internacional de Niza. Antes de presentar la solicitud, tenés que definir en cuál o cuáles clases aplica tu negocio. Por ejemplo, indumentaria es Clase 25, alimentos es Clase 30, servicios profesionales es Clase 45.
 
 Para entender qué clase corresponde a tu rubro, leé: [clases de marcas en Argentina: guía completa](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina).
 
 ## ¿Necesitás un abogado o agente para registrar?
 
-No es obligatorio — podés hacer el trámite vos mismo si tenés CUIT y Clave Fiscal. Sin embargo, los errores en la elección de clases o en la redacción de la solicitud pueden resultar en una denegación o en una protección incompleta.
+No es obligatorio. Podés hacer el trámite vos mismo si tenés CUIT y Clave Fiscal. Sin embargo, los errores en la elección de clases o en la redacción de la solicitud pueden resultar en una denegación o en una protección incompleta.
 
-Un agente de la propiedad industrial te ayuda con la búsqueda previa, la estrategia de clases y el seguimiento del expediente — reduciendo el riesgo de errores que luego son difíciles de corregir.
+Un agente de la propiedad industrial te ayuda con la búsqueda previa, la estrategia de clases y el seguimiento del expediente, reduciendo el riesgo de errores que luego son difíciles de corregir.
 
 ---
 

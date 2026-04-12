@@ -5,7 +5,7 @@ pubDate: 2026-04-11
 tags: []
 ---
 
-Cada miércoles, el INPI publica en su Boletín de Marcas todas las solicitudes de registro de la semana. Si alguien intenta registrar una marca igual o similar a la tuya, acá es donde aparece — y tenés **30 días corridos** para actuar antes de que sea demasiado tarde. En esta guía te explicamos qué es el Boletín, cómo leerlo, qué hacer si encontrás algo preocupante, y cómo automatizar la vigilancia para no tener que revisarlo manualmente cada semana.
+Cada miércoles, el INPI publica en su Boletín de Marcas todas las solicitudes de registro de la semana. Si alguien intenta registrar una marca igual o similar a la tuya, acá es donde aparece, y tenés **30 días corridos** para actuar antes de que sea demasiado tarde. En esta guía te explicamos qué es el Boletín, cómo leerlo, qué hacer si encontrás algo preocupante, y cómo automatizar la vigilancia para no tener que revisarlo manualmente cada semana.
 
 ## ¿Qué es el Boletín de Marcas del INPI?
 
@@ -13,7 +13,7 @@ El Boletín de Marcas es una publicación semanal oficial del INPI donde se list
 
 Desde la Resolución 583/25 (vigente a partir de marzo de 2026), el INPI consolidó el proceso: toda solicitud nueva tiene un período de publicación de **30 días corridos**, durante el cual cualquier titular de una marca registrada (o con uso previo documentado) puede presentar una oposición.
 
-Si nadie se opone dentro de ese plazo, la concesión de la marca es automática.
+Si nadie se opone dentro de ese plazo, la marca se concede.
 
 ## ¿Dónde se publica?
 
@@ -29,7 +29,7 @@ Cada entrada del Boletín incluye:
 
 ## ¿Por qué debería importarte el Boletín si ya tenés tu marca registrada?
 
-Tener una marca registrada no es una protección pasiva que funciona sola. Si alguien presenta una solicitud de registro de una marca confusamente similar a la tuya, la respuesta del INPI **no es automática** — sos vos quien tiene que actuar presentando una oposición dentro del período de 30 días.
+Tener una marca registrada no es una protección pasiva que funciona sola. Si alguien presenta una solicitud de registro de una marca confusamente similar a la tuya, la respuesta del INPI no es automática. Sos vos quien tiene que actuar presentando una oposición dentro del período de 30 días.
 
 Si no te enterás a tiempo y el plazo vence, la solicitud avanza y puede concederse. Una vez concedida, revertirlo es mucho más costoso y difícil.
 
@@ -49,13 +49,13 @@ Para entender mejor tus derechos como titular de una marca registrada, leé: [qu
 
 ## El problema de revisar el Boletín manualmente
 
-El Boletín sale cada miércoles e incluye docenas — a veces cientos — de solicitudes nuevas. Revisarlo a mano semana a semana buscando denominaciones similares a la tuya es tedioso, requiere tiempo y es fácil cometer errores, especialmente con variantes ortográficas o marcas que se parecen fonéticamente pero se escriben diferente.
+El Boletín sale cada miércoles e incluye docenas, a veces cientos, de solicitudes nuevas. Revisarlo a mano semana a semana buscando denominaciones similares a la tuya es tedioso, requiere tiempo y es fácil cometer errores, especialmente con variantes ortográficas o marcas que se parecen fonéticamente pero se escriben diferente.
 
 La mayoría de los titulares de marcas no lo hacen, y se enteran de un conflicto solo cuando ya es tarde.
 
-## Vigilancia automática con nuestra herramienta
+## Vigilancia automática con nuestro sistema
 
-Para resolver esto, desarrollamos **Vigilancia** — una herramienta disponible en [vigilante.unamarca.com.ar](https://vigilante.unamarca.com.ar) que monitorea el Boletín de Marcas por vos.
+Para resolver esto, desarrollamos [nuestro sistema Vigilante](https://vigilante.unamarca.com.ar/vigilancia), que monitorea el Boletín de Marcas por vos.
 
 El funcionamiento es simple:
 
@@ -64,7 +64,7 @@ El funcionamiento es simple:
 3. **Dejás tu email**
 4. Cada vez que se publique en el Boletín una solicitud con una denominación similar a la tuya en esas clases, **recibís un aviso automático por email**
 
-Así, en lugar de revisar el Boletín manualmente cada semana, recibís una alerta solo cuando hay algo relevante — con tiempo suficiente para consultar con un profesional y, si corresponde, presentar la oposición dentro del plazo.
+Así, en lugar de revisar el Boletín manualmente cada semana, recibís una alerta solo cuando hay algo relevante, con tiempo suficiente para consultar con un profesional y, si corresponde, presentar la oposición dentro del plazo.
 
 Es especialmente útil si tenés una marca con cierta tracción o en un rubro competitivo donde el riesgo de imitación es mayor.
 
@@ -74,10 +74,10 @@ La vigilancia de marcas tiene sentido para:
 
 - Titulares de marcas registradas que quieren mantener activa su protección
 - Emprendedores que ya solicitaron su registro y quieren monitorear si aparecen conflictos mientras el trámite está en curso
-- Negocios con presencia online donde la identidad de marca es un activo clave — e-commerce, servicios profesionales, productos propios
+- Negocios con presencia online donde la identidad de marca es un activo clave: e-commerce, servicios profesionales, productos propios
 
 Si estás en proceso de registrar tu marca y querés entender mejor el trámite, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso). Y si todavía no verificaste si tu marca está disponible antes de registrar, leé: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
 
 ---
 
-Si querés activar la vigilancia sobre tu marca, ingresá en [vigilante.unamarca.com.ar](https://vigilante.unamarca.com.ar) — es gratuito para empezar. Y si tenés dudas sobre qué clases vigilar o si una solicitud en el Boletín representa un riesgo real para tu marca, [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491149712224&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0) — te respondemos con un diagnóstico gratuito.
+Si querés activar la vigilancia sobre tu marca, ingresá en [nuestro sistema Vigilante](https://vigilante.unamarca.com.ar/vigilancia). Y si tenés dudas sobre qué clases vigilar o si una solicitud en el Boletín representa un riesgo real para tu marca, [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491149712224&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0).
