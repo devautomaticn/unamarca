@@ -124,7 +124,7 @@ Mark the post as ✅ Published in the Content Roadmap table.
 | registrar marca argentina | 2,900 | 14 | MEDIUM | Core commercial keyword |
 | inpi registrar marca | 1,600 | 22 | MEDIUM | High intent |
 | inpi consulta de marcas | 1,600 | 39 | LOW | Informational |
-| como patentar una marca | 720 | 17 | HIGH | People confuse patentar/registrar — capture with natural mentions |
+| como patentar una marca | 720 | 17 | HIGH | People confuse patentar/registrar — dedicated post published April 2026 |
 | consulta de marcas inpi | 210 | 29 | MEDIUM | Informational |
 | buscador de marcas registradas | 170 | 48 | MEDIUM | Informational |
 | cuanto sale registrar una marca en inpi | 110 | 2 | MEDIUM | Very low KD — existing post covers this |
@@ -156,6 +156,8 @@ Mark the post as ✅ Published in the Content Roadmap table.
 | ✅ Published | Nombre comercial vs marca registrada: ¿cuál necesito? | `nombre-comercial-vs-marca-registrada-argentina` | nombre comercial argentina | Low | Low | April 2026 |
 | ✅ Published | Cómo renovar una marca registrada en Argentina | `como-renovar-marca-registrada-argentina` | como renovar marca registrada | Low | Low | April 2026 |
 | ✅ Published | Registro de marca para e-commerce en Argentina | `registro-marca-ecommerce-argentina` | registro marca ecommerce argentina | Low | Low | April 2026 |
+| ✅ Published | Cómo patentar una marca en Argentina | `como-patentar-una-marca-en-argentina` | como patentar una marca | 720 | 17 | April 2026 |
+| ✅ Published | Boletín de Marcas del INPI: qué es y cómo vigilar tu marca | `boletin-de-marcas-inpi` | boletin de marcas inpi | 140 | 19 | April 2026 |
 
 ---
 
