@@ -158,6 +158,7 @@ Mark the post as ✅ Published in the Content Roadmap table.
 | ✅ Published | Registro de marca para e-commerce en Argentina | `registro-marca-ecommerce-argentina` | registro marca ecommerce argentina | Low | Low | April 2026 |
 | ✅ Published | Cómo patentar una marca en Argentina | `como-patentar-una-marca-en-argentina` | como patentar una marca | 720 | 17 | April 2026 |
 | ✅ Published | Boletín de Marcas del INPI: qué es y cómo vigilar tu marca | `boletin-de-marcas-inpi` | boletin de marcas inpi | 140 | 19 | April 2026 |
+| ✅ Published | Cómo registrar un nombre comercial en Argentina | `como-registrar-nombre-comercial-argentina` | como registrar un nombre comercial | 110 | Low | April 2026 |
 
 ---
 
