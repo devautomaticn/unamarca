@@ -1,0 +1,994 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const SITE_URL = 'https://unamarca.com.ar';
+
+const nizaClasses = [
+  { num: 1,  desc: 'Productos químicos industriales y científicos' },
+  { num: 2,  desc: 'Pinturas, barnices, lacas, preservativos' },
+  { num: 3,  desc: 'Cosméticos, perfumería, limpieza' },
+  { num: 4,  desc: 'Aceites y grasas industriales, combustibles' },
+  { num: 5,  desc: 'Productos farmacéuticos y veterinarios' },
+  { num: 6,  desc: 'Metales comunes y sus aleaciones' },
+  { num: 7,  desc: 'Máquinas y máquinas herramientas' },
+  { num: 8,  desc: 'Herramientas e instrumentos de mano' },
+  { num: 9,  desc: 'Aparatos científicos, ópticos, informáticos, electrónicos' },
+  { num: 10, desc: 'Aparatos médicos y quirúrgicos' },
+  { num: 11, desc: 'Aparatos de alumbrado, calefacción, refrigeración' },
+  { num: 12, desc: 'Vehículos y medios de transporte' },
+  { num: 13, desc: 'Armas de fuego, municiones, explosivos' },
+  { num: 14, desc: 'Joyería, relojería, metales preciosos' },
+  { num: 15, desc: 'Instrumentos musicales' },
+  { num: 16, desc: 'Papel, cartón, artículos de imprenta' },
+  { num: 17, desc: 'Caucho, goma, plásticos semielaborados' },
+  { num: 18, desc: 'Cuero, artículos de viaje, bolsos' },
+  { num: 19, desc: 'Materiales de construcción no metálicos' },
+  { num: 20, desc: 'Muebles, espejos, marcos, madera' },
+  { num: 21, desc: 'Utensilios del hogar, vidrio, porcelana' },
+  { num: 22, desc: 'Cuerdas, redes, tiendas, telas técnicas' },
+  { num: 23, desc: 'Hilos y fibras textiles industriales' },
+  { num: 24, desc: 'Tejidos y sustitutos; ropa de hogar' },
+  { num: 25, desc: 'Prendas de vestir, calzado, sombrerería' },
+  { num: 26, desc: 'Encajes, bordados, botones, adornos textiles' },
+  { num: 27, desc: 'Alfombras, revestimientos de suelos' },
+  { num: 28, desc: 'Juegos, juguetes, artículos deportivos' },
+  { num: 29, desc: 'Carne, pescado, aves, conservas, lácteos' },
+  { num: 30, desc: 'Café, té, panadería, repostería, condimentos' },
+  { num: 31, desc: 'Productos agrícolas, hortícolas, animales vivos' },
+  { num: 32, desc: 'Cervezas, aguas, bebidas sin alcohol' },
+  { num: 33, desc: 'Bebidas alcohólicas (excepto cervezas)' },
+  { num: 34, desc: 'Tabaco, cigarrillos, artículos para fumadores' },
+  { num: 35, desc: 'Publicidad, gestión comercial, oficina' },
+  { num: 36, desc: 'Seguros, finanzas, inmobiliaria' },
+  { num: 37, desc: 'Construcción, reparación, instalación' },
+  { num: 38, desc: 'Telecomunicaciones' },
+  { num: 39, desc: 'Transporte, logística, almacenamiento' },
+  { num: 40, desc: 'Tratamiento de materiales, reciclaje' },
+  { num: 41, desc: 'Educación, entretenimiento, deporte, cultura' },
+  { num: 42, desc: 'Servicios científicos, tecnológicos, informáticos' },
+  { num: 43, desc: 'Restauración, alojamiento temporal' },
+  { num: 44, desc: 'Servicios médicos, veterinarios, de belleza' },
+  { num: 45, desc: 'Servicios jurídicos, de seguridad, personales' },
+];
+
+const provinces = [
+  'Buenos Aires',
+  'Catamarca',
+  'Chaco',
+  'Chubut',
+  'Ciudad Autónoma de Buenos Aires',
+  'Córdoba',
+  'Corrientes',
+  'Entre Ríos',
+  'Formosa',
+  'Jujuy',
+  'La Pampa',
+  'La Rioja',
+  'Mendoza',
+  'Misiones',
+  'Neuquén',
+  'Río Negro',
+  'Salta',
+  'San Juan',
+  'San Luis',
+  'Santa Cruz',
+  'Santa Fe',
+  'Santiago del Estero',
+  'Tierra del Fuego',
+  'Tucumán',
+];
+---
+
+<BaseLayout
+  title="Formulario de Registro de Marca | UnaMarca"
+  description="Completá el formulario para iniciar el registro de tu marca ante el INPI Argentina."
+  canonicalURL={`${SITE_URL}/formularioregistro`}
+>
+
+  <section class="form-page">
+    <div class="container">
+
+      <header class="form-page-header">
+        <span class="section-label">Registro</span>
+        <h1>Formulario de Registro de Marca</h1>
+        <p>Completá los datos para que podamos iniciar el trámite ante el INPI.</p>
+      </header>
+
+      <!-- SUCCESS STATE -->
+      <div id="form-success" class="result-card result-success" hidden>
+        <div class="result-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" fill="#22C55E" opacity="0.15"/>
+            <path d="M7 12.5l3.5 3.5 6.5-7" stroke="#22C55E" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <strong>¡Formulario enviado correctamente!</strong>
+          <p>Recibimos tu información y nos pondremos en contacto a la brevedad.</p>
+        </div>
+      </div>
+
+      <!-- ERROR STATE -->
+      <div id="form-error" class="result-card result-error" hidden>
+        <div class="result-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" fill="#EF4444" opacity="0.15"/>
+            <path d="M12 8v4M12 16h.01" stroke="#EF4444" stroke-width="2.25" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <strong>Ocurrió un error al enviar.</strong>
+          <p>Por favor intentá de nuevo o contactanos por WhatsApp.</p>
+        </div>
+      </div>
+
+      <form id="registro-form" novalidate>
+
+        <!-- ═══════════════════════════════════════
+             SECCIÓN: MARCA
+        ════════════════════════════════════════ -->
+        <div class="form-section">
+          <div class="form-section-header">
+            <span class="form-section-num">01</span>
+            <h2>Marca</h2>
+          </div>
+          <div class="form-section-body">
+            <div class="field-row field-row--2">
+              <div class="field-group">
+                <label for="marca-nombre" class="field-label">
+                  Nombre de la Marca <span class="required" aria-hidden="true">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="marca-nombre"
+                  name="marca-nombre"
+                  class="field-input"
+                  placeholder="De Casa Florentino"
+                  required
+                  autocomplete="off"
+                />
+              </div>
+
+              <div class="field-group">
+                <label for="marca-tipo" class="field-label">
+                  Tipo de Marca <span class="required" aria-hidden="true">*</span>
+                </label>
+                <select id="marca-tipo" name="marca-tipo" class="field-select" required>
+                  <option value="Denominativa" selected>Denominativa</option>
+                  <option value="Mixta">Mixta</option>
+                  <option value="Figurativa">Figurativa</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════
+             SECCIÓN: TITULARES
+        ════════════════════════════════════════ -->
+        <div class="form-section">
+          <div class="form-section-header">
+            <span class="form-section-num">02</span>
+            <h2>Titulares</h2>
+          </div>
+
+          <div id="titulares-container" class="form-section-body"></div>
+
+          <div class="add-titular-row">
+            <button type="button" id="add-titular-btn" class="btn-add-titular">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              Agregar titular
+            </button>
+            <div id="porcentaje-total-indicator" class="pct-indicator" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════
+             SECCIÓN: CLASES
+        ════════════════════════════════════════ -->
+        <div class="form-section">
+          <div class="form-section-header">
+            <span class="form-section-num">03</span>
+            <div>
+              <h2>Clases Niza</h2>
+              <p class="form-section-note">Opcional — seleccioná las clases en las que querés registrar la marca</p>
+            </div>
+          </div>
+
+          <div class="form-section-body">
+            <div class="clases-grid">
+              {nizaClasses.map(c => (
+                <label class="clase-item">
+                  <input type="checkbox" name="clases" value={c.num} class="clase-checkbox" />
+                  <span class="clase-num">{String(c.num).padStart(2, '0')}</span>
+                  <span class="clase-desc">{c.desc}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBMIT -->
+        <div class="form-submit-row">
+          <button type="submit" id="submit-btn" class="btn btn-primary btn-submit">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span id="submit-label">Enviar formulario</span>
+          </button>
+          <p class="form-submit-note">Al enviar, nos comprometemos a contactarte dentro de las 48 horas hábiles.</p>
+        </div>
+
+      </form>
+
+    </div>
+  </section>
+
+</BaseLayout>
+
+<!-- ═══════════════════════════════════════════════════
+     CLIENT-SIDE LOGIC
+════════════════════════════════════════════════════ -->
+<script define:vars={{ provinces }}>
+  let titularCount = 0;
+
+  // ── Build a titular block HTML ──────────────────────
+  function buildTitularHTML(idx) {
+    const provinceOptions = provinces
+      .map(p => `<option value="${p}">${p}</option>`)
+      .join('');
+
+    return `
+      <div class="titular-block" id="titular-${idx}" data-idx="${idx}">
+        <div class="titular-block-header">
+          <span class="titular-block-title">Titular <span class="titular-num">${idx + 1}</span></span>
+          <button type="button" class="btn-remove-titular" data-target="${idx}" aria-label="Eliminar titular ${idx + 1}">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="field-row field-row--2">
+          <div class="field-group">
+            <label class="field-label">
+              Tipo de Persona <span class="required" aria-hidden="true">*</span>
+            </label>
+            <select name="tipo-persona-${idx}" class="field-select tipo-persona-select" data-idx="${idx}" required>
+              <option value="">Seleccionar…</option>
+              <option value="Humana">Humana</option>
+              <option value="Juridica">Jurídica</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label nombre-label-${idx}">
+              Nombre <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input type="text" name="nombre-${idx}" class="field-input" placeholder="Nombre completo" required autocomplete="off" />
+          </div>
+        </div>
+
+        <!-- Conditional: only Humana -->
+        <div class="field-row field-row--2 conditional-humana-${idx}" style="display:none">
+          <div class="field-group">
+            <label class="field-label">
+              Género <span class="required" aria-hidden="true">*</span>
+            </label>
+            <select name="genero-${idx}" class="field-select" data-idx="${idx}">
+              <option value="">Seleccionar…</option>
+              <option value="Masculino">Masculino</option>
+              <option value="Femenino">Femenino</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">
+              Estado Civil <span class="required" aria-hidden="true">*</span>
+            </label>
+            <select name="estado-civil-${idx}" class="field-select estado-civil-select" data-idx="${idx}">
+              <option value="">Seleccionar…</option>
+              <option value="Soltero/a">Soltero/a</option>
+              <option value="Casado/a">Casado/a</option>
+              <option value="Divorciado/a">Divorciado/a</option>
+              <option value="Viudo/a">Viudo/a</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Conditional: only Casado/a -->
+        <div class="field-row conditional-conyuge-${idx}" style="display:none">
+          <div class="field-group">
+            <label class="field-label">
+              Nombre del Cónyuge <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input type="text" name="nombre-conyuge-${idx}" class="field-input" placeholder="Nombre completo del cónyuge" autocomplete="off" />
+          </div>
+        </div>
+
+        <div class="field-row field-row--3">
+          <div class="field-group field-group--wide">
+            <label class="field-label">
+              CUIT / CUIL <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input type="text" name="cuit-${idx}" class="field-input" placeholder="20-12345678-9" required autocomplete="off" />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">
+              Porcentaje % <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input type="number" name="porcentaje-${idx}" class="field-input porcentaje-input" min="1" max="100" step="1" placeholder="100" required />
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label">
+              Correo Electrónico <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input type="email" name="email-${idx}" class="field-input" placeholder="correo@ejemplo.com" required autocomplete="email" />
+          </div>
+        </div>
+
+        <div class="domicilio-section">
+          <p class="domicilio-title">Domicilio Real</p>
+
+          <div class="field-row field-row--2">
+            <div class="field-group">
+              <label class="field-label">
+                País <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input type="text" name="pais-${idx}" class="field-input" value="Argentina" required autocomplete="off" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">
+                Provincia <span class="required" aria-hidden="true">*</span>
+              </label>
+              <select name="provincia-${idx}" class="field-select" required>
+                <option value="">Seleccionar…</option>
+                ${provinceOptions}
+              </select>
+            </div>
+          </div>
+
+          <div class="field-row field-row--2">
+            <div class="field-group">
+              <label class="field-label">
+                Localidad <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input type="text" name="localidad-${idx}" class="field-input" placeholder="Localidad" required autocomplete="off" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">
+                Código Postal <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input type="text" name="codigo-postal-${idx}" class="field-input" placeholder="C1406" required autocomplete="off" />
+            </div>
+          </div>
+
+          <div class="field-row field-row--2">
+            <div class="field-group">
+              <label class="field-label">
+                Calle <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input type="text" name="calle-${idx}" class="field-input" placeholder="Av. Corrientes" required autocomplete="off" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">
+                Número <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input type="text" name="numero-${idx}" class="field-input" placeholder="1234" required autocomplete="off" />
+            </div>
+          </div>
+
+          <div class="field-row field-row--2">
+            <div class="field-group">
+              <label class="field-label">Piso</label>
+              <input type="text" name="piso-${idx}" class="field-input" placeholder="3" autocomplete="off" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Depto</label>
+              <input type="text" name="depto-${idx}" class="field-input" placeholder="A" autocomplete="off" />
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── Add a titular block ─────────────────────────────
+  function addTitular() {
+    const container = document.getElementById('titulares-container');
+    const idx = titularCount++;
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = buildTitularHTML(idx);
+    const block = wrapper.firstElementChild;
+    container.appendChild(block);
+
+    attachTitularListeners(idx);
+    updateTitularNumbers();
+    updatePctIndicator();
+  }
+
+  // ── Remove a titular block ──────────────────────────
+  function removeTitular(idx) {
+    const block = document.getElementById(`titular-${idx}`);
+    if (block) block.remove();
+    updateTitularNumbers();
+    updatePctIndicator();
+  }
+
+  // ── Attach event listeners for a titular block ──────
+  function attachTitularListeners(idx) {
+    // Remove button
+    const removeBtn = document.querySelector(`.btn-remove-titular[data-target="${idx}"]`);
+    if (removeBtn) {
+      removeBtn.addEventListener('click', () => removeTitular(idx));
+    }
+
+    // Tipo persona → show/hide Humana fields
+    const tipoSelect = document.querySelector(`select[name="tipo-persona-${idx}"]`);
+    if (tipoSelect) {
+      tipoSelect.addEventListener('change', () => {
+        updateHumanaFields(idx);
+        updateNombreLabel(idx);
+      });
+    }
+
+    // Estado civil → show/hide cónyuge field
+    const estadoSelect = document.querySelector(`select[name="estado-civil-${idx}"]`);
+    if (estadoSelect) {
+      estadoSelect.addEventListener('change', () => updateConyugeField(idx));
+    }
+
+    // Porcentaje → update total indicator
+    const pctInput = document.querySelector(`input[name="porcentaje-${idx}"]`);
+    if (pctInput) {
+      pctInput.addEventListener('input', updatePctIndicator);
+    }
+  }
+
+  function updateHumanaFields(idx) {
+    const tipoSelect = document.querySelector(`select[name="tipo-persona-${idx}"]`);
+    const isHumana = tipoSelect && tipoSelect.value === 'Humana';
+    const humanaRows = document.querySelectorAll(`.conditional-humana-${idx}`);
+    humanaRows.forEach(el => {
+      el.style.display = isHumana ? '' : 'none';
+      el.querySelectorAll('select, input').forEach(f => {
+        if (isHumana) {
+          f.setAttribute('required', '');
+        } else {
+          f.removeAttribute('required');
+        }
+      });
+    });
+    // Also reset cónyuge visibility
+    if (!isHumana) {
+      const conyugeRow = document.querySelector(`.conditional-conyuge-${idx}`);
+      if (conyugeRow) conyugeRow.style.display = 'none';
+    }
+  }
+
+  function updateNombreLabel(idx) {
+    const tipoSelect = document.querySelector(`select[name="tipo-persona-${idx}"]`);
+    const label = document.querySelector(`.nombre-label-${idx}`);
+    if (!tipoSelect || !label) return;
+    const labelText = tipoSelect.value === 'Juridica' ? 'Razón Social' : 'Nombre';
+    label.childNodes[0].textContent = labelText + ' ';
+  }
+
+  function updateConyugeField(idx) {
+    const estadoSelect = document.querySelector(`select[name="estado-civil-${idx}"]`);
+    const conyugeRow = document.querySelector(`.conditional-conyuge-${idx}`);
+    const conyugeInput = document.querySelector(`input[name="nombre-conyuge-${idx}"]`);
+    if (!estadoSelect || !conyugeRow) return;
+    const show = estadoSelect.value === 'Casado/a';
+    conyugeRow.style.display = show ? '' : 'none';
+    if (conyugeInput) {
+      show ? conyugeInput.setAttribute('required', '') : conyugeInput.removeAttribute('required');
+    }
+  }
+
+  function updateTitularNumbers() {
+    const blocks = document.querySelectorAll('.titular-block');
+    blocks.forEach((block, i) => {
+      const numEl = block.querySelector('.titular-num');
+      if (numEl) numEl.textContent = String(i + 1);
+    });
+    // Show/hide remove buttons — always allow removal since we start with 1
+    const removeBtns = document.querySelectorAll('.btn-remove-titular');
+    removeBtns.forEach(btn => {
+      btn.style.visibility = blocks.length > 1 ? 'visible' : 'hidden';
+    });
+  }
+
+  function updatePctIndicator() {
+    const inputs = document.querySelectorAll('.porcentaje-input');
+    const indicator = document.getElementById('porcentaje-total-indicator');
+    if (!indicator) return;
+    let total = 0;
+    inputs.forEach(inp => {
+      const v = parseFloat(inp.value);
+      if (!isNaN(v)) total += v;
+    });
+    if (inputs.length === 0) {
+      indicator.textContent = '';
+      indicator.className = 'pct-indicator';
+      return;
+    }
+    const is100 = Math.abs(total - 100) < 0.01;
+    indicator.textContent = `Total: ${total}%${is100 ? ' ✓' : ' — debe sumar 100%'}`;
+    indicator.className = `pct-indicator ${is100 ? 'pct-ok' : 'pct-error'}`;
+  }
+
+  // ── Collect form data ───────────────────────────────
+  function collectFormData() {
+    const form = document.getElementById('registro-form');
+    const fd = new FormData(form);
+
+    const marca = {
+      nombre: fd.get('marca-nombre'),
+      tipo: fd.get('marca-tipo'),
+    };
+
+    const titularBlocks = document.querySelectorAll('.titular-block');
+    const titulares = Array.from(titularBlocks).map(block => {
+      const i = block.dataset.idx;
+      const tipoPersona = fd.get(`tipo-persona-${i}`);
+      const estadoCivil = fd.get(`estado-civil-${i}`);
+      const t = {
+        tipoPersona,
+        nombre: fd.get(`nombre-${i}`),
+        cuit: fd.get(`cuit-${i}`),
+        porcentaje: parseFloat(fd.get(`porcentaje-${i}`) || '0'),
+        email: fd.get(`email-${i}`),
+        domicilio: {
+          pais: fd.get(`pais-${i}`),
+          provincia: fd.get(`provincia-${i}`),
+          localidad: fd.get(`localidad-${i}`),
+          codigoPostal: fd.get(`codigo-postal-${i}`),
+          calle: fd.get(`calle-${i}`),
+          numero: fd.get(`numero-${i}`),
+          piso: fd.get(`piso-${i}`) || '',
+          depto: fd.get(`depto-${i}`) || '',
+        },
+      };
+      if (tipoPersona === 'Humana') {
+        t.genero = fd.get(`genero-${i}`);
+        t.estadoCivil = estadoCivil;
+        if (estadoCivil === 'Casado/a') {
+          t.nombreConyuge = fd.get(`nombre-conyuge-${i}`);
+        }
+      }
+      return t;
+    });
+
+    const clases = Array.from(
+      document.querySelectorAll('input[name="clases"]:checked')
+    ).map(cb => parseInt(cb.value));
+
+    return { marca, titulares, clases };
+  }
+
+  // ── Validate before submit ──────────────────────────
+  function validateForm() {
+    const form = document.getElementById('registro-form');
+    // HTML5 native validation
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return false;
+    }
+    // Porcentaje total
+    const inputs = document.querySelectorAll('.porcentaje-input');
+    let total = 0;
+    inputs.forEach(inp => { const v = parseFloat(inp.value); if (!isNaN(v)) total += v; });
+    if (Math.abs(total - 100) > 0.01) {
+      alert(`El porcentaje total de los titulares debe sumar 100%. Actualmente suma ${total}%.`);
+      return false;
+    }
+    return true;
+  }
+
+  // ── Submit handler ──────────────────────────────────
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    const btn = document.getElementById('submit-btn');
+    const label = document.getElementById('submit-label');
+    btn.disabled = true;
+    label.textContent = 'Enviando…';
+
+    const data = collectFormData();
+
+    try {
+      const res = await fetch('/api/submit-form', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      const json = await res.json();
+
+      if (json.success) {
+        document.getElementById('registro-form').style.display = 'none';
+        document.getElementById('form-success').removeAttribute('hidden');
+        document.getElementById('form-success').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        throw new Error(json.error || 'Error desconocido');
+      }
+    } catch {
+      document.getElementById('form-error').removeAttribute('hidden');
+      document.getElementById('form-error').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      btn.disabled = false;
+      label.textContent = 'Enviar formulario';
+    }
+  }
+
+  // ── Init ────────────────────────────────────────────
+  document.getElementById('add-titular-btn').addEventListener('click', addTitular);
+  document.getElementById('registro-form').addEventListener('submit', handleSubmit);
+
+  // Start with one titular
+  addTitular();
+</script>
+
+<style>
+  /* ─────────────── PAGE LAYOUT ─────────────── */
+  .form-page {
+    padding-block: 5rem;
+    background: var(--c-bg-alt);
+    min-height: 100vh;
+  }
+
+  .form-page .container {
+    max-width: 800px;
+  }
+
+  .form-page-header {
+    margin-bottom: 3rem;
+  }
+
+  .form-page-header h1 {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    margin-bottom: 0.5rem;
+  }
+
+  .form-page-header p {
+    color: var(--c-text-muted);
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  /* ─────────────── RESULT CARDS ─────────────── */
+  .result-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border-radius: var(--r-md);
+    margin-bottom: 2rem;
+    font-size: 0.9375rem;
+  }
+
+  .result-card strong { display: block; font-size: 1rem; margin-bottom: 0.25rem; }
+  .result-card p { margin: 0; color: inherit; opacity: 0.8; font-size: 0.9rem; }
+
+  .result-success {
+    background: var(--c-green-light);
+    color: #166534;
+    border: 1px solid #bbf7d0;
+  }
+
+  .result-error {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+  }
+
+  .result-icon { flex-shrink: 0; margin-top: 2px; }
+
+  /* ─────────────── FORM SECTIONS ─────────────── */
+  .form-section {
+    background: white;
+    border-radius: var(--r-xl);
+    border: 1px solid var(--c-border);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+
+  .form-section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--c-border-light);
+    background: var(--c-bg-alt);
+  }
+
+  .form-section-header h2 {
+    font-size: 1.125rem;
+    margin: 0;
+  }
+
+  .form-section-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--c-blue);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .form-section-note {
+    font-size: 0.875rem;
+    color: var(--c-text-muted);
+    font-weight: 400;
+    margin: 0;
+  }
+
+  .form-section-body {
+    padding: 2rem;
+  }
+
+  /* ─────────────── FIELD GROUPS ─────────────── */
+  .field-row {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .field-row:last-child { margin-bottom: 0; }
+
+  .field-row--2 { grid-template-columns: 1fr 1fr; }
+  .field-row--3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  @media (max-width: 640px) {
+    .field-row--2,
+    .field-row--3 { grid-template-columns: 1fr; }
+  }
+
+  .field-group { display: flex; flex-direction: column; gap: 0.375rem; }
+
+  .field-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--c-navy);
+    line-height: 1.3;
+  }
+
+  .required { color: var(--c-blue); }
+
+  .field-input,
+  .field-select {
+    width: 100%;
+    padding: 0.6875rem 0.875rem;
+    border: 1.5px solid var(--c-border);
+    border-radius: var(--r-md);
+    font-family: var(--font);
+    font-size: 0.9375rem;
+    color: var(--c-text);
+    background: white;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .field-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.875rem center;
+    padding-right: 2.5rem;
+    cursor: pointer;
+  }
+
+  .field-input:focus,
+  .field-select:focus {
+    border-color: var(--c-blue);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  }
+
+  .field-input::placeholder { color: #cbd5e1; }
+
+  .field-input:invalid:not(:placeholder-shown),
+  .field-select:invalid:not(:placeholder-shown) {
+    border-color: #f87171;
+  }
+
+  /* ─────────────── TITULAR BLOCK ─────────────── */
+  .titular-block {
+    border: 1.5px solid var(--c-border);
+    border-radius: var(--r-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .titular-block:last-child { margin-bottom: 0; }
+
+  .titular-block-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+
+  .titular-block-title {
+    font-weight: 700;
+    font-size: 0.9375rem;
+    color: var(--c-navy);
+  }
+
+  .btn-remove-titular {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid var(--c-border);
+    background: white;
+    color: var(--c-text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-remove-titular:hover {
+    border-color: #f87171;
+    color: #ef4444;
+    background: #fef2f2;
+  }
+
+  /* ─────────────── DOMICILIO ─────────────── */
+  .domicilio-section {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--c-border-light);
+  }
+
+  .domicilio-title {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-text-muted);
+    margin-bottom: 1rem;
+  }
+
+  /* ─────────────── ADD TITULAR ─────────────── */
+  .add-titular-row {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.25rem 2rem;
+    border-top: 1px solid var(--c-border-light);
+    flex-wrap: wrap;
+  }
+
+  .btn-add-titular {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    border-radius: 100px;
+    border: 1.5px solid var(--c-blue);
+    background: white;
+    color: var(--c-blue);
+    font-family: var(--font);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .btn-add-titular:hover {
+    background: var(--c-blue-light);
+  }
+
+  /* ─────────────── PERCENTAGE INDICATOR ─────────────── */
+  .pct-indicator {
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .pct-ok    { color: #15803d; }
+  .pct-error { color: #b91c1c; }
+
+  /* ─────────────── CLASES GRID ─────────────── */
+  .clases-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .clase-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+    padding: 0.625rem 0.75rem;
+    border-radius: var(--r-md);
+    border: 1.5px solid var(--c-border);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    user-select: none;
+  }
+
+  .clase-item:hover {
+    border-color: var(--c-blue);
+    background: var(--c-blue-light);
+  }
+
+  .clase-checkbox {
+    margin-top: 1px;
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    accent-color: var(--c-blue);
+    cursor: pointer;
+  }
+
+  .clase-checkbox:checked ~ .clase-num {
+    color: var(--c-blue);
+  }
+
+  .clase-item:has(.clase-checkbox:checked) {
+    border-color: var(--c-blue);
+    background: var(--c-blue-light);
+  }
+
+  .clase-num {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--c-text-muted);
+    white-space: nowrap;
+    margin-top: 1px;
+    flex-shrink: 0;
+  }
+
+  .clase-desc {
+    font-size: 0.8125rem;
+    color: var(--c-text);
+    line-height: 1.4;
+  }
+
+  /* ─────────────── SUBMIT ─────────────── */
+  .form-submit-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding-top: 0.5rem;
+  }
+
+  .btn-submit {
+    font-size: 1rem;
+    padding: 0.9rem 2.25rem;
+  }
+
+  .btn-submit:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  .form-submit-note {
+    font-size: 0.8125rem;
+    color: var(--c-text-muted);
+    margin: 0;
+  }
+</style>
