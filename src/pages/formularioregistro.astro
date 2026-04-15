@@ -67,847 +67,752 @@ const provinces = [
   canonicalURL={`${SITE_URL}/formularioregistro`}
 >
 
-  <div class="form-page">
-    <div class="form-container">
+<div class="fp-page">
+  <div class="fp-wrap">
 
-      <header class="form-header">
-        <div class="form-header-badge">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M8 1.5L2.5 4v4c0 3.2 2.4 5.8 5.5 6.5 3.1-.7 5.5-3.3 5.5-6.5V4L8 1.5z" fill="currentColor"/>
-          </svg>
-          INPI Argentina
-        </div>
-        <h1>Registro de Marca</h1>
-        <p>Completá los datos para iniciar el trámite. Nos pondremos en contacto a la brevedad.</p>
-      </header>
-
-      <!-- SUCCESS -->
-      <div id="form-success" class="toast toast--success" hidden>
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-          <circle cx="10" cy="10" r="9" fill="#22C55E" opacity="0.15"/>
-          <path d="M6 10.5l2.8 2.8 5.2-5.6" stroke="#16a34a" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <div>
-          <strong>¡Formulario enviado!</strong>
-          <span>Recibimos tu información y te contactamos a la brevedad.</span>
-        </div>
+    <header class="fp-header">
+      <div class="fp-badge">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L2.5 4v4c0 3.2 2.4 5.8 5.5 6.5 3.1-.7 5.5-3.3 5.5-6.5V4L8 1.5z" fill="currentColor"/></svg>
+        INPI Argentina
       </div>
+      <h1>Registro de Marca</h1>
+      <p>Completá los datos para iniciar el trámite. Nos pondremos en contacto a la brevedad.</p>
+    </header>
 
-      <!-- ERROR -->
-      <div id="form-error" class="toast toast--error" hidden>
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-          <circle cx="10" cy="10" r="9" fill="#EF4444" opacity="0.15"/>
-          <path d="M10 6.5v4M10 13h.01" stroke="#dc2626" stroke-width="1.75" stroke-linecap="round"/>
-        </svg>
-        <div>
-          <strong>No se pudo enviar el formulario.</strong>
-          <span>Intentá de nuevo o escribinos por WhatsApp.</span>
-        </div>
-      </div>
-
-      <form id="registro-form" novalidate>
-
-        <!-- ══════════════════════════════
-             MARCA
-        ══════════════════════════════ -->
-        <div class="card">
-          <div class="card-header">
-            <h2>Marca</h2>
-          </div>
-          <div class="card-body">
-            <div class="grid grid-2">
-              <div class="field">
-                <label for="marca-nombre">Nombre de la Marca <span class="req">*</span></label>
-                <input type="text" id="marca-nombre" name="marca-nombre"
-                  placeholder="De Casa Florentino" required autocomplete="off" />
-              </div>
-              <div class="field">
-                <label for="marca-tipo">Tipo de Marca <span class="req">*</span></label>
-                <div class="select-wrap">
-                  <select id="marca-tipo" name="marca-tipo" required>
-                    <option value="Denominativa" selected>Denominativa</option>
-                    <option value="Mixta">Mixta</option>
-                    <option value="Figurativa">Figurativa</option>
-                    <option value="Otro">Otro</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ══════════════════════════════
-             TITULARES
-        ══════════════════════════════ -->
-        <div class="card">
-          <div class="card-header">
-            <h2>Titulares</h2>
-          </div>
-
-          <div id="titulares-container"></div>
-
-          <div class="card-footer">
-            <button type="button" id="add-titular-btn" class="btn-ghost">
-              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
-                <path d="M7.5 2v11M2 7.5h11" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
-              </svg>
-              Agregar titular
-            </button>
-            <span id="pct-indicator" class="pct-indicator" aria-live="polite"></span>
-          </div>
-        </div>
-
-        <!-- ══════════════════════════════
-             CLASES
-        ══════════════════════════════ -->
-        <div class="card">
-          <div class="card-header">
-            <h2>Clases Niza</h2>
-            <p class="card-subtitle">Opcional — marcá las clases en las que querés registrar la marca</p>
-          </div>
-          <div class="card-body">
-            <div class="clases-grid">
-              {nizaClasses.map(c => (
-                <label class="clase-pill">
-                  <input type="checkbox" name="clases" value={c.num} />
-                  <span class="clase-pill-num">{String(c.num).padStart(2, '0')}</span>
-                  <span class="clase-pill-desc">{c.desc}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <!-- SUBMIT -->
-        <div class="submit-row">
-          <button type="submit" id="submit-btn" class="btn-submit">
-            <span id="submit-label">Enviar formulario</span>
-            <svg id="submit-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <svg id="submit-spinner" class="spinner" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" hidden>
-              <circle cx="8" cy="8" r="6" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
-              <path d="M8 2a6 6 0 0 1 6 6" stroke="white" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </button>
-        </div>
-
-      </form>
+    <div id="fp-success" class="fp-toast fp-toast--ok" style="display:none">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" fill="#22c55e" fill-opacity=".12"/><path d="M6 10.2l2.8 2.8 5.2-5.6" stroke="#16a34a" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div><strong>¡Formulario enviado!</strong><span>Recibimos tu información y te contactamos a la brevedad.</span></div>
     </div>
-  </div>
 
-</BaseLayout>
+    <div id="fp-error" class="fp-toast fp-toast--err" style="display:none">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" fill="#ef4444" fill-opacity=".12"/><path d="M10 6.5v4M10 13.5h.01" stroke="#dc2626" stroke-width="1.75" stroke-linecap="round"/></svg>
+      <div><strong>No se pudo enviar.</strong><span>Intentá de nuevo o escribinos por WhatsApp.</span></div>
+    </div>
 
-<script define:vars={{ provinces }}>
-  let titularCount = 0;
+    <form id="fp-form" novalidate>
 
-  const provinceOptions = provinces
-    .map(p => `<option value="${p}">${p}</option>`)
-    .join('');
-
-  // ── Build titular HTML ─────────────────────────────
-  function buildTitularHTML(idx) {
-    return `
-    <div class="titular" id="titular-${idx}" data-idx="${idx}">
-      <div class="titular-head">
-        <span class="titular-label">Titular <span class="titular-num">${idx + 1}</span></span>
-        <button type="button" class="btn-remove" data-target="${idx}" aria-label="Eliminar titular">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </div>
-
-      <div class="titular-body">
-        <div class="grid grid-2">
-          <div class="field">
-            <label>Tipo de Persona <span class="req">*</span></label>
-            <div class="select-wrap">
-              <select name="tipo-persona-${idx}" class="tipo-persona" data-idx="${idx}" required>
-                <option value="">Seleccionar…</option>
-                <option value="Humana">Humana</option>
-                <option value="Juridica">Jurídica</option>
-              </select>
-            </div>
+      <!-- MARCA -->
+      <div class="fp-card">
+        <div class="fp-section-label">Marca</div>
+        <div class="fp-grid fp-g2">
+          <div class="fp-field">
+            <label>Nombre de la Marca <em>*</em></label>
+            <input type="text" id="marca-nombre" name="marca-nombre" placeholder="De Casa Florentino" required autocomplete="off" />
           </div>
-          <div class="field">
-            <label class="nombre-label-${idx}">Nombre <span class="req">*</span></label>
-            <input type="text" name="nombre-${idx}" placeholder="Nombre completo" required autocomplete="off" />
-          </div>
-        </div>
-
-        <div class="grid grid-2 cond-humana-${idx}" style="display:none">
-          <div class="field">
-            <label>Género <span class="req">*</span></label>
-            <div class="select-wrap">
-              <select name="genero-${idx}">
-                <option value="">Seleccionar…</option>
-                <option value="Masculino">Masculino</option>
-                <option value="Femenino">Femenino</option>
+          <div class="fp-field">
+            <label>Tipo de Marca <em>*</em></label>
+            <div class="fp-sel">
+              <select id="marca-tipo" name="marca-tipo" required>
+                <option value="Denominativa" selected>Denominativa</option>
+                <option value="Mixta">Mixta</option>
+                <option value="Figurativa">Figurativa</option>
                 <option value="Otro">Otro</option>
               </select>
             </div>
           </div>
-          <div class="field">
-            <label>Estado Civil <span class="req">*</span></label>
-            <div class="select-wrap">
-              <select name="estado-civil-${idx}" class="estado-civil" data-idx="${idx}">
-                <option value="">Seleccionar…</option>
-                <option value="Soltero/a">Soltero/a</option>
-                <option value="Casado/a">Casado/a</option>
-                <option value="Divorciado/a">Divorciado/a</option>
-                <option value="Viudo/a">Viudo/a</option>
-              </select>
-            </div>
-          </div>
         </div>
+      </div>
 
-        <div class="cond-conyuge-${idx}" style="display:none">
-          <div class="field">
-            <label>Nombre del Cónyuge <span class="req">*</span></label>
-            <input type="text" name="nombre-conyuge-${idx}" placeholder="Nombre completo del cónyuge" autocomplete="off" />
-          </div>
+      <!-- TITULARES -->
+      <div class="fp-card">
+        <div class="fp-section-label">Titulares</div>
+        <div id="fp-titulares"></div>
+        <div class="fp-titulares-foot">
+          <button type="button" id="fp-add" class="fp-add-btn">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Agregar titular
+          </button>
+          <span id="fp-pct" class="fp-pct"></span>
         </div>
+      </div>
 
-        <div class="grid grid-3">
-          <div class="field field--span2">
-            <label>CUIT / CUIL <span class="req">*</span></label>
-            <input type="text" name="cuit-${idx}" placeholder="20-12345678-9" required autocomplete="off" />
-          </div>
-          <div class="field">
-            <label>Porcentaje % <span class="req">*</span></label>
-            <input type="number" name="porcentaje-${idx}" class="pct-input" min="1" max="100" step="1" placeholder="100" required />
-          </div>
+      <!-- CLASES -->
+      <div class="fp-card">
+        <div class="fp-section-label">
+          Clases Niza
+          <span class="fp-optional">opcional</span>
         </div>
-
-        <div class="field">
-          <label>Correo Electrónico <span class="req">*</span></label>
-          <input type="email" name="email-${idx}" placeholder="correo@ejemplo.com" required autocomplete="email" />
+        <div class="fp-clases">
+          {nizaClasses.map(c => (
+            <label class="fp-clase">
+              <input type="checkbox" name="clases" value={c.num} />
+              <span class="fp-clase-n">{String(c.num).padStart(2,'0')}</span>
+              <span class="fp-clase-d">{c.desc}</span>
+            </label>
+          ))}
         </div>
+      </div>
 
-        <div class="domicilio">
-          <p class="domicilio-heading">Domicilio Real</p>
+      <!-- SUBMIT -->
+      <div class="fp-submit-row">
+        <button type="submit" id="fp-submit">
+          <span id="fp-submit-label">Enviar formulario</span>
+          <svg id="fp-submit-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg id="fp-submit-spin" width="16" height="16" viewBox="0 0 16 16" fill="none" style="display:none"><circle cx="8" cy="8" r="6" stroke="rgba(255,255,255,.3)" stroke-width="2"/><path d="M8 2a6 6 0 0 1 6 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
 
-          <div class="grid grid-2">
-            <div class="field">
-              <label>País <span class="req">*</span></label>
-              <input type="text" name="pais-${idx}" value="Argentina" required autocomplete="off" />
-            </div>
-            <div class="field">
-              <label>Provincia <span class="req">*</span></label>
-              <div class="select-wrap">
-                <select name="provincia-${idx}" required>
-                  <option value="">Seleccionar…</option>
-                  ${provinceOptions}
-                </select>
-              </div>
-            </div>
-          </div>
+    </form>
+  </div>
+</div>
 
-          <div class="grid grid-2">
-            <div class="field">
-              <label>Localidad <span class="req">*</span></label>
-              <input type="text" name="localidad-${idx}" placeholder="Localidad" required autocomplete="off" />
-            </div>
-            <div class="field">
-              <label>Código Postal <span class="req">*</span></label>
-              <input type="text" name="codigo-postal-${idx}" placeholder="C1406" required autocomplete="off" />
-            </div>
-          </div>
+</BaseLayout>
 
-          <div class="grid grid-2">
-            <div class="field">
-              <label>Calle <span class="req">*</span></label>
-              <input type="text" name="calle-${idx}" placeholder="Av. Corrientes" required autocomplete="off" />
-            </div>
-            <div class="field">
-              <label>Número <span class="req">*</span></label>
-              <input type="text" name="numero-${idx}" placeholder="1234" required autocomplete="off" />
-            </div>
-          </div>
+<script define:vars={{ provinces }}>
+  let count = 0;
 
-          <div class="grid grid-2">
-            <div class="field">
-              <label>Piso</label>
-              <input type="text" name="piso-${idx}" placeholder="3" autocomplete="off" />
-            </div>
-            <div class="field">
-              <label>Depto</label>
-              <input type="text" name="depto-${idx}" placeholder="A" autocomplete="off" />
-            </div>
-          </div>
+  const pOpts = provinces.map(p => `<option value="${p}">${p}</option>`).join('');
+
+  function titular(idx) {
+    return `
+<div class="fp-tit" id="fpt-${idx}" data-idx="${idx}">
+  <div class="fp-tit-head">
+    <span class="fp-tit-num">Titular <b class="fpt-n">${idx+1}</b></span>
+    <button type="button" class="fp-tit-rm" data-t="${idx}">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+
+  <div class="fp-tit-body">
+    <div class="fp-grid fp-g2">
+      <div class="fp-field">
+        <label>Tipo de Persona <em>*</em></label>
+        <div class="fp-sel">
+          <select name="tipo-persona-${idx}" class="fpt-tipo" data-idx="${idx}" required>
+            <option value="">Seleccionar…</option>
+            <option value="Humana">Humana</option>
+            <option value="Juridica">Jurídica</option>
+          </select>
+        </div>
+      </div>
+      <div class="fp-field">
+        <label class="fpt-nlabel-${idx}">Nombre <em>*</em></label>
+        <input type="text" name="nombre-${idx}" placeholder="Nombre completo" required autocomplete="off" />
+      </div>
+    </div>
+
+    <div class="fp-grid fp-g2 fpt-humana-${idx}" style="display:none">
+      <div class="fp-field">
+        <label>Género <em>*</em></label>
+        <div class="fp-sel">
+          <select name="genero-${idx}">
+            <option value="">Seleccionar…</option>
+            <option>Masculino</option>
+            <option>Femenino</option>
+            <option>Otro</option>
+          </select>
+        </div>
+      </div>
+      <div class="fp-field">
+        <label>Estado Civil <em>*</em></label>
+        <div class="fp-sel">
+          <select name="estado-civil-${idx}" class="fpt-ec" data-idx="${idx}">
+            <option value="">Seleccionar…</option>
+            <option>Soltero/a</option>
+            <option>Casado/a</option>
+            <option>Divorciado/a</option>
+            <option>Viudo/a</option>
+          </select>
         </div>
       </div>
     </div>
-    `;
+
+    <div class="fpt-conyuge-${idx}" style="display:none">
+      <div class="fp-field">
+        <label>Nombre del Cónyuge <em>*</em></label>
+        <input type="text" name="nombre-conyuge-${idx}" placeholder="Nombre completo del cónyuge" autocomplete="off" />
+      </div>
+    </div>
+
+    <div class="fp-grid fp-g3">
+      <div class="fp-field fp-gcol2">
+        <label>CUIT / CUIL <em>*</em></label>
+        <input type="text" name="cuit-${idx}" placeholder="20-12345678-9" required autocomplete="off" />
+      </div>
+      <div class="fp-field">
+        <label>Porcentaje % <em>*</em></label>
+        <input type="number" name="porcentaje-${idx}" class="fp-pct-inp" min="1" max="100" placeholder="100" required />
+      </div>
+    </div>
+
+    <div class="fp-field">
+      <label>Correo Electrónico <em>*</em></label>
+      <input type="email" name="email-${idx}" placeholder="correo@ejemplo.com" required autocomplete="email" />
+    </div>
+
+    <div class="fp-domicilio">
+      <p class="fp-dom-title">Domicilio Real</p>
+
+      <div class="fp-grid fp-g2">
+        <div class="fp-field">
+          <label>País <em>*</em></label>
+          <input type="text" name="pais-${idx}" value="Argentina" required />
+        </div>
+        <div class="fp-field">
+          <label>Provincia <em>*</em></label>
+          <div class="fp-sel"><select name="provincia-${idx}" required><option value="">Seleccionar…</option>${pOpts}</select></div>
+        </div>
+      </div>
+      <div class="fp-grid fp-g2">
+        <div class="fp-field">
+          <label>Localidad <em>*</em></label>
+          <input type="text" name="localidad-${idx}" placeholder="Localidad" required autocomplete="off" />
+        </div>
+        <div class="fp-field">
+          <label>Código Postal <em>*</em></label>
+          <input type="text" name="codigo-postal-${idx}" placeholder="C1406" required autocomplete="off" />
+        </div>
+      </div>
+      <div class="fp-grid fp-g2">
+        <div class="fp-field">
+          <label>Calle <em>*</em></label>
+          <input type="text" name="calle-${idx}" placeholder="Av. Corrientes" required autocomplete="off" />
+        </div>
+        <div class="fp-field">
+          <label>Número <em>*</em></label>
+          <input type="text" name="numero-${idx}" placeholder="1234" required autocomplete="off" />
+        </div>
+      </div>
+      <div class="fp-grid fp-g2">
+        <div class="fp-field">
+          <label>Piso</label>
+          <input type="text" name="piso-${idx}" placeholder="3" autocomplete="off" />
+        </div>
+        <div class="fp-field">
+          <label>Depto</label>
+          <input type="text" name="depto-${idx}" placeholder="A" autocomplete="off" />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>`;
   }
 
-  // ── Add / remove ───────────────────────────────────
   function addTitular() {
-    const container = document.getElementById('titulares-container');
-    const idx = titularCount++;
-    const div = document.createElement('div');
-    div.innerHTML = buildTitularHTML(idx);
-    container.appendChild(div.firstElementChild);
-    attachListeners(idx);
-    syncUI();
+    const c = document.getElementById('fp-titulares');
+    const idx = count++;
+    const tmp = document.createElement('div');
+    tmp.innerHTML = titular(idx);
+    c.appendChild(tmp.firstElementChild);
+    wire(idx);
+    refresh();
   }
 
-  function removeTitular(idx) {
-    document.getElementById(`titular-${idx}`)?.remove();
-    syncUI();
-  }
-
-  function attachListeners(idx) {
-    document.querySelector(`.btn-remove[data-target="${idx}"]`)
-      ?.addEventListener('click', () => removeTitular(idx));
+  function wire(idx) {
+    document.querySelector(`.fp-tit-rm[data-t="${idx}"]`)
+      ?.addEventListener('click', () => { document.getElementById(`fpt-${idx}`)?.remove(); refresh(); });
 
     document.querySelector(`select[name="tipo-persona-${idx}"]`)
-      ?.addEventListener('change', () => { syncHumana(idx); syncLabel(idx); });
+      ?.addEventListener('change', () => { onTipo(idx); onLabel(idx); });
 
     document.querySelector(`select[name="estado-civil-${idx}"]`)
-      ?.addEventListener('change', () => syncConyuge(idx));
+      ?.addEventListener('change', () => onEc(idx));
 
     document.querySelector(`input[name="porcentaje-${idx}"]`)
       ?.addEventListener('input', syncPct);
   }
 
-  function syncHumana(idx) {
-    const tp = document.querySelector(`select[name="tipo-persona-${idx}"]`)?.value;
-    const isHumana = tp === 'Humana';
-    document.querySelectorAll(`.cond-humana-${idx}`).forEach(el => {
-      el.style.display = isHumana ? '' : 'none';
-      el.querySelectorAll('select,input').forEach(f =>
-        isHumana ? f.setAttribute('required','') : f.removeAttribute('required')
-      );
+  function onTipo(idx) {
+    const v = document.querySelector(`select[name="tipo-persona-${idx}"]`)?.value;
+    const isH = v === 'Humana';
+    document.querySelectorAll(`.fpt-humana-${idx}`).forEach(el => {
+      el.style.display = isH ? '' : 'none';
+      el.querySelectorAll('select,input').forEach(f => isH ? f.setAttribute('required','') : f.removeAttribute('required'));
     });
-    if (!isHumana) {
-      const row = document.querySelector(`.cond-conyuge-${idx}`);
-      if (row) row.style.display = 'none';
+    if (!isH) {
+      document.querySelector(`.fpt-conyuge-${idx}`).style.display = 'none';
       document.querySelector(`input[name="nombre-conyuge-${idx}"]`)?.removeAttribute('required');
     }
   }
 
-  function syncLabel(idx) {
-    const tp = document.querySelector(`select[name="tipo-persona-${idx}"]`)?.value;
-    const label = document.querySelector(`.nombre-label-${idx}`);
-    if (!label) return;
-    const text = tp === 'Juridica' ? 'Razón Social' : 'Nombre';
-    label.firstChild.textContent = text + ' ';
+  function onLabel(idx) {
+    const v = document.querySelector(`select[name="tipo-persona-${idx}"]`)?.value;
+    const el = document.querySelector(`.fpt-nlabel-${idx}`);
+    if (el) el.firstChild.textContent = (v === 'Juridica' ? 'Razón Social' : 'Nombre') + ' ';
   }
 
-  function syncConyuge(idx) {
-    const val = document.querySelector(`select[name="estado-civil-${idx}"]`)?.value;
-    const row = document.querySelector(`.cond-conyuge-${idx}`);
+  function onEc(idx) {
+    const v = document.querySelector(`select[name="estado-civil-${idx}"]`)?.value;
+    const row = document.querySelector(`.fpt-conyuge-${idx}`);
     const inp = document.querySelector(`input[name="nombre-conyuge-${idx}"]`);
     if (!row) return;
-    const show = val === 'Casado/a';
+    const show = v === 'Casado/a';
     row.style.display = show ? '' : 'none';
     show ? inp?.setAttribute('required','') : inp?.removeAttribute('required');
   }
 
   function syncPct() {
-    const inputs = document.querySelectorAll('.pct-input');
-    const ind = document.getElementById('pct-indicator');
-    if (!ind || !inputs.length) return;
-    let total = 0;
-    inputs.forEach(i => { const v = parseFloat(i.value); if (!isNaN(v)) total += v; });
-    const ok = Math.abs(total - 100) < 0.01;
-    ind.textContent = `${total}%${ok ? ' ✓' : ' — debe sumar 100%'}`;
-    ind.className = `pct-indicator ${ok ? 'pct-ok' : 'pct-warn'}`;
+    const el = document.getElementById('fp-pct');
+    if (!el) return;
+    let t = 0;
+    document.querySelectorAll('.fp-pct-inp').forEach(i => { const v = parseFloat(i.value); if (!isNaN(v)) t += v; });
+    if (!document.querySelectorAll('.fp-pct-inp').length) { el.textContent=''; return; }
+    const ok = Math.abs(t-100) < .01;
+    el.textContent = `${t}%${ok ? ' ✓' : ' — debe sumar 100%'}`;
+    el.className = `fp-pct ${ok ? 'fp-pct--ok' : 'fp-pct--warn'}`;
   }
 
-  function syncUI() {
-    const blocks = document.querySelectorAll('.titular');
-    blocks.forEach((b, i) => {
-      const n = b.querySelector('.titular-num');
-      if (n) n.textContent = String(i + 1);
-      const btn = b.querySelector('.btn-remove');
-      if (btn) btn.style.opacity = blocks.length > 1 ? '1' : '0';
+  function refresh() {
+    const all = document.querySelectorAll('.fp-tit');
+    all.forEach((b, i) => {
+      const n = b.querySelector('.fpt-n'); if (n) n.textContent = String(i+1);
+      const rm = b.querySelector('.fp-tit-rm');
+      if (rm) rm.style.visibility = all.length > 1 ? 'visible' : 'hidden';
     });
     syncPct();
   }
 
-  // ── Collect data ───────────────────────────────────
   function collect() {
-    const fd = new FormData(document.getElementById('registro-form'));
+    const fd = new FormData(document.getElementById('fp-form'));
     const marca = { nombre: fd.get('marca-nombre'), tipo: fd.get('marca-tipo') };
-
-    const titulares = Array.from(document.querySelectorAll('.titular')).map(block => {
-      const i = block.dataset.idx;
-      const tipoPersona = fd.get(`tipo-persona-${i}`);
-      const estadoCivil = fd.get(`estado-civil-${i}`);
+    const titulares = Array.from(document.querySelectorAll('.fp-tit')).map(b => {
+      const i = b.dataset.idx;
+      const tp = fd.get(`tipo-persona-${i}`);
+      const ec = fd.get(`estado-civil-${i}`);
       const t = {
-        tipoPersona,
-        nombre: fd.get(`nombre-${i}`),
-        cuit: fd.get(`cuit-${i}`),
-        porcentaje: parseFloat(fd.get(`porcentaje-${i}`) || '0'),
+        tipoPersona: tp, nombre: fd.get(`nombre-${i}`),
+        cuit: fd.get(`cuit-${i}`), porcentaje: parseFloat(fd.get(`porcentaje-${i}`) || '0'),
         email: fd.get(`email-${i}`),
         domicilio: {
-          pais: fd.get(`pais-${i}`),
-          provincia: fd.get(`provincia-${i}`),
-          localidad: fd.get(`localidad-${i}`),
-          codigoPostal: fd.get(`codigo-postal-${i}`),
-          calle: fd.get(`calle-${i}`),
-          numero: fd.get(`numero-${i}`),
-          piso: fd.get(`piso-${i}`) || '',
-          depto: fd.get(`depto-${i}`) || '',
+          pais: fd.get(`pais-${i}`), provincia: fd.get(`provincia-${i}`),
+          localidad: fd.get(`localidad-${i}`), codigoPostal: fd.get(`codigo-postal-${i}`),
+          calle: fd.get(`calle-${i}`), numero: fd.get(`numero-${i}`),
+          piso: fd.get(`piso-${i}`) || '', depto: fd.get(`depto-${i}`) || '',
         },
       };
-      if (tipoPersona === 'Humana') {
-        t.genero = fd.get(`genero-${i}`);
-        t.estadoCivil = estadoCivil;
-        if (estadoCivil === 'Casado/a') t.nombreConyuge = fd.get(`nombre-conyuge-${i}`);
+      if (tp === 'Humana') {
+        t.genero = fd.get(`genero-${i}`); t.estadoCivil = ec;
+        if (ec === 'Casado/a') t.nombreConyuge = fd.get(`nombre-conyuge-${i}`);
       }
       return t;
     });
-
-    const clases = Array.from(
-      document.querySelectorAll('input[name="clases"]:checked')
-    ).map(cb => parseInt(cb.value));
-
+    const clases = Array.from(document.querySelectorAll('input[name="clases"]:checked')).map(c => parseInt(c.value));
     return { marca, titulares, clases };
   }
 
-  // ── Validate ───────────────────────────────────────
-  function validate() {
-    const form = document.getElementById('registro-form');
-    if (!form.checkValidity()) { form.reportValidity(); return false; }
-    const inputs = document.querySelectorAll('.pct-input');
-    let total = 0;
-    inputs.forEach(i => { const v = parseFloat(i.value); if (!isNaN(v)) total += v; });
-    if (Math.abs(total - 100) > 0.01) {
-      alert(`El porcentaje total debe sumar 100%. Actualmente suma ${total}%.`);
-      return false;
-    }
-    return true;
-  }
-
-  // ── Submit ─────────────────────────────────────────
-  async function handleSubmit(e) {
+  async function submit(e) {
     e.preventDefault();
-    if (!validate()) return;
+    const form = document.getElementById('fp-form');
+    if (!form.checkValidity()) { form.reportValidity(); return; }
+    let t = 0;
+    document.querySelectorAll('.fp-pct-inp').forEach(i => { const v = parseFloat(i.value); if (!isNaN(v)) t += v; });
+    if (Math.abs(t-100) > .01) { alert(`El porcentaje debe sumar 100%. Suma ${t}%.`); return; }
 
-    const btn = document.getElementById('submit-btn');
-    const label = document.getElementById('submit-label');
-    const icon = document.getElementById('submit-icon');
-    const spinner = document.getElementById('submit-spinner');
-
-    btn.disabled = true;
-    label.textContent = 'Enviando';
-    icon.hidden = true;
-    spinner.hidden = false;
+    const btn = document.getElementById('fp-submit');
+    const lbl = document.getElementById('fp-submit-label');
+    const arr = document.getElementById('fp-submit-arrow');
+    const spin = document.getElementById('fp-submit-spin');
+    btn.disabled = true; lbl.textContent = 'Enviando'; arr.style.display = 'none'; spin.style.display = '';
 
     try {
-      const res = await fetch('/api/submit-form', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(collect()),
-      });
+      const res = await fetch('/api/submit-form', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(collect()) });
       const json = await res.json();
       if (!json.success) throw new Error();
-      document.getElementById('registro-form').style.display = 'none';
-      const success = document.getElementById('form-success');
-      success.hidden = false;
-      success.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      form.style.display = 'none';
+      const s = document.getElementById('fp-success'); s.style.display = 'flex';
+      s.scrollIntoView({ behavior:'smooth', block:'center' });
     } catch {
-      const err = document.getElementById('form-error');
-      err.hidden = false;
-      err.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      btn.disabled = false;
-      label.textContent = 'Enviar formulario';
-      icon.hidden = false;
-      spinner.hidden = true;
+      const er = document.getElementById('fp-error'); er.style.display = 'flex';
+      er.scrollIntoView({ behavior:'smooth', block:'nearest' });
+      btn.disabled = false; lbl.textContent = 'Enviar formulario'; arr.style.display = ''; spin.style.display = 'none';
     }
   }
 
-  document.getElementById('add-titular-btn').addEventListener('click', addTitular);
-  document.getElementById('registro-form').addEventListener('submit', handleSubmit);
-  addTitular(); // start with one
+  document.getElementById('fp-add').addEventListener('click', addTitular);
+  document.getElementById('fp-form').addEventListener('submit', submit);
+  addTitular();
 </script>
 
-<style>
-  /* ── Fix: hidden attribute must win ── */
-  [hidden] { display: none !important; }
+<!-- is:global so styles apply to JS-generated HTML too -->
+<style is:global>
 
-  /* ── Page shell ── */
-  .form-page {
-    min-height: 100vh;
-    background: #f1f5f9;
-    padding: 4rem 1.25rem 6rem;
-  }
+/* ─── Page ─── */
+.fp-page {
+  background: #f4f6f9;
+  min-height: 100vh;
+  padding: 3.5rem 1.25rem 6rem;
+}
 
-  .form-container {
-    max-width: 680px;
-    margin: 0 auto;
-  }
+.fp-wrap {
+  max-width: 700px;
+  margin: 0 auto;
+}
 
-  /* ── Header ── */
-  .form-header {
-    margin-bottom: 2.5rem;
-  }
+/* ─── Header ─── */
+.fp-header { margin-bottom: 2.5rem; }
 
-  .form-header-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    background: var(--c-blue-light);
-    color: var(--c-blue);
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 0.3rem 0.75rem;
-    border-radius: 100px;
-    margin-bottom: 1rem;
-  }
+.fp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.8rem;
+  border-radius: 100px;
+  margin-bottom: 1rem;
+}
 
-  .form-header h1 {
-    font-size: clamp(1.6rem, 4vw, 2.25rem);
-    font-weight: 800;
-    color: var(--c-navy);
-    letter-spacing: -0.03em;
-    margin-bottom: 0.5rem;
-  }
+.fp-header h1 {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 800;
+  color: #0b1d3a;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.5rem;
+  line-height: 1.1;
+}
 
-  .form-header p {
-    color: var(--c-text-muted);
-    font-size: 0.9375rem;
-    margin: 0;
-  }
+.fp-header p {
+  color: #64748b;
+  font-size: 0.9375rem;
+  margin: 0;
+}
 
-  /* ── Toast notifications ── */
-  .toast {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    padding: 1rem 1.25rem;
-    border-radius: 12px;
-    margin-bottom: 1.5rem;
-    font-size: 0.9rem;
-    line-height: 1.5;
-  }
+/* ─── Toasts ─── */
+.fp-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.fp-toast strong { display: block; font-weight: 600; font-size: 0.9375rem; }
+.fp-toast span   { opacity: 0.75; }
+.fp-toast svg    { flex-shrink: 0; margin-top: 2px; }
+.fp-toast--ok  { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.fp-toast--err { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
 
-  .toast svg { flex-shrink: 0; margin-top: 1px; }
-  .toast strong { display: block; font-weight: 600; }
-  .toast span { color: inherit; opacity: 0.75; font-size: 0.875rem; }
+/* ─── Cards ─── */
+.fp-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 6px 24px rgba(0,0,0,.05);
+  padding: 2rem;
+  margin-bottom: 1rem;
+}
 
-  .toast--success {
-    background: #f0fdf4;
-    color: #15803d;
-    border: 1px solid #bbf7d0;
-  }
+.fp-section-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
 
-  .toast--error {
-    background: #fef2f2;
-    color: #b91c1c;
-    border: 1px solid #fecaca;
-  }
+.fp-optional {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 100px;
+  padding: 0.15rem 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
 
-  /* ── Cards ── */
-  .card {
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.05);
-    margin-bottom: 1rem;
-    overflow: hidden;
-  }
+/* ─── Grid ─── */
+.fp-grid {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.fp-grid:last-child { margin-bottom: 0; }
+.fp-g2 { grid-template-columns: 1fr 1fr; }
+.fp-g3 { grid-template-columns: 1fr 1fr 1fr; }
 
-  .card-header {
-    padding: 1.5rem 1.75rem 0;
-  }
+@media (max-width: 580px) {
+  .fp-g2, .fp-g3 { grid-template-columns: 1fr; }
+  .fp-gcol2 { grid-column: auto; }
+}
+@media (min-width: 581px) {
+  .fp-gcol2 { grid-column: span 2; }
+}
 
-  .card-header h2 {
-    font-size: 0.9375rem;
-    font-weight: 700;
-    color: var(--c-navy);
-    letter-spacing: -0.01em;
-    margin: 0;
-  }
+/* ─── Fields ─── */
+.fp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
 
-  .card-subtitle {
-    font-size: 0.8125rem;
-    color: var(--c-text-muted);
-    margin: 0.2rem 0 0;
-    font-weight: 400;
-  }
+.fp-field label {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #475569;
+  line-height: 1;
+}
 
-  .card-body {
-    padding: 1.25rem 1.75rem 1.75rem;
-  }
+.fp-field label em {
+  font-style: normal;
+  color: #2563eb;
+  font-weight: 600;
+  margin-left: 1px;
+}
 
-  .card-footer {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem 1.75rem;
-    border-top: 1px solid #f1f5f9;
-    flex-wrap: wrap;
-  }
+.fp-field input,
+.fp-field select {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: #0f172a;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.6875rem 0.9375rem;
+  width: 100%;
+  outline: none;
+  transition: border-color .15s, background .15s, box-shadow .15s;
+  appearance: none;
+  -webkit-appearance: none;
+}
 
-  /* ── Grid layouts ── */
-  .grid { display: grid; gap: 0.875rem; margin-bottom: 0.875rem; }
-  .grid:last-child { margin-bottom: 0; }
-  .grid-2 { grid-template-columns: 1fr 1fr; }
-  .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+.fp-field input:hover,
+.fp-field select:hover {
+  border-color: #cbd5e1;
+}
 
-  @media (max-width: 580px) {
-    .grid-2, .grid-3 { grid-template-columns: 1fr; }
-    .field--span2 { grid-column: auto; }
-  }
+.fp-field input:focus,
+.fp-field select:focus {
+  background: #fff;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+}
 
-  @media (min-width: 581px) {
-    .field--span2 { grid-column: span 2; }
-  }
+.fp-field input::placeholder { color: #c0ccd8; }
 
-  /* ── Fields ── */
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.375rem;
-  }
+/* ─── Select wrapper ─── */
+.fp-sel { position: relative; }
 
-  .field label {
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: #475569;
-    line-height: 1;
-  }
+.fp-sel select {
+  cursor: pointer;
+  padding-right: 2.25rem;
+}
 
-  .req { color: var(--c-blue); font-weight: 600; }
+.fp-sel::after {
+  content: '';
+  position: absolute;
+  right: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 6px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
 
-  .field input,
-  .field select {
-    width: 100%;
-    padding: 0.6875rem 0.875rem;
-    background: #f8fafc;
-    border: 1.5px solid #e2e8f0;
-    border-radius: 10px;
-    font-family: var(--font);
-    font-size: 0.9375rem;
-    color: var(--c-text);
-    outline: none;
-    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
-    appearance: none;
-    -webkit-appearance: none;
-  }
+/* ─── Titular blocks ─── */
+.fp-tit {
+  border-top: 1px solid #f1f5f9;
+  margin-top: 0.5rem;
+}
 
-  .field input:focus,
-  .field select:focus {
-    background: white;
-    border-color: var(--c-blue);
-    box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
-  }
+.fp-tit:first-child {
+  border-top: none;
+  margin-top: 0;
+}
 
-  .field input::placeholder { color: #cbd5e1; }
+.fp-tit-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  padding-top: 1.25rem;
+}
 
-  /* Select wrapper + custom arrow */
-  .select-wrap { position: relative; }
+.fp-tit:first-child .fp-tit-head { padding-top: 0; }
 
-  .select-wrap select {
-    cursor: pointer;
-    padding-right: 2.25rem;
-  }
+.fp-tit-num {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+}
 
-  .select-wrap::after {
-    content: '';
-    position: absolute;
-    right: 0.875rem;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 10px;
-    height: 6px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    pointer-events: none;
-  }
+.fp-tit-rm {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid #e2e8f0;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: border-color .15s, color .15s, background .15s;
+  padding: 0;
+}
 
-  /* ── Titular blocks ── */
-  .titular {
-    border-top: 1px solid #f1f5f9;
-  }
+.fp-tit-rm:hover {
+  border-color: #fca5a5;
+  color: #ef4444;
+  background: #fff1f2;
+}
 
-  .titular:first-child { border-top: none; }
+.fp-tit-body { /* no extra padding needed, fp-card already has it */ }
 
-  .titular-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.25rem 1.75rem 0;
-  }
+/* ─── Domicilio ─── */
+.fp-domicilio {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px dashed #e2e8f0;
+}
 
-  .titular-label {
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #94a3b8;
-  }
+.fp-dom-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #94a3b8;
+  margin-bottom: 1rem;
+}
 
-  .btn-remove {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    border: 1.5px solid #e2e8f0;
-    background: white;
-    color: #94a3b8;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
+/* ─── Add titular footer ─── */
+.fp-titulares-foot {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 1.25rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
 
-  .btn-remove:hover {
-    border-color: #fca5a5;
-    color: #ef4444;
-    background: #fff1f2;
-  }
+.fp-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #2563eb;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity .15s;
+}
 
-  .titular-body {
-    padding: 1rem 1.75rem 1.5rem;
-  }
+.fp-add-btn:hover { opacity: 0.65; }
 
-  /* ── Domicilio ── */
-  .domicilio {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px dashed #e2e8f0;
-  }
+.fp-pct {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #94a3b8;
+  margin-left: auto;
+}
+.fp-pct--ok   { color: #16a34a; }
+.fp-pct--warn { color: #b45309; }
 
-  .domicilio-heading {
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #94a3b8;
-    margin-bottom: 0.875rem;
-  }
+/* ─── Clases ─── */
+.fp-clases {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.4rem;
+}
 
-  /* ── Add titular button ── */
-  .btn-ghost {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-family: var(--font);
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--c-blue);
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    transition: opacity 0.15s;
-  }
+.fp-clase {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.5625rem 0.75rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: border-color .12s, background .12s;
+  user-select: none;
+}
 
-  .btn-ghost:hover { opacity: 0.7; }
+.fp-clase:hover { border-color: #bfdbfe; background: #eff6ff; }
 
-  /* ── Percentage indicator ── */
-  .pct-indicator {
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: #94a3b8;
-    margin-left: auto;
-  }
+.fp-clase input[type="checkbox"] {
+  flex-shrink: 0;
+  margin-top: 2px;
+  width: 14px;
+  height: 14px;
+  accent-color: #2563eb;
+  cursor: pointer;
+  /* override any .fp-field input styles */
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 3px !important;
+}
 
-  .pct-ok   { color: #16a34a; }
-  .pct-warn { color: #b45309; }
+.fp-clase:has(input:checked) { border-color: #2563eb; background: #eff6ff; }
 
-  /* ── Clases grid ── */
-  .clases-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 0.5rem;
-  }
+.fp-clase-n {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #94a3b8;
+  flex-shrink: 0;
+  margin-top: 1px;
+  font-family: 'Inter', system-ui, sans-serif;
+}
 
-  .clase-pill {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    background: #f8fafc;
-    border: 1.5px solid #e2e8f0;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: border-color 0.12s, background 0.12s;
-    user-select: none;
-  }
+.fp-clase:has(input:checked) .fp-clase-n { color: #2563eb; }
 
-  .clase-pill:hover {
-    border-color: #bfdbfe;
-    background: #eff6ff;
-  }
+.fp-clase-d {
+  font-size: 0.8rem;
+  color: #475569;
+  line-height: 1.4;
+  font-family: 'Inter', system-ui, sans-serif;
+}
 
-  .clase-pill input[type="checkbox"] {
-    flex-shrink: 0;
-    margin-top: 2px;
-    width: 15px;
-    height: 15px;
-    accent-color: var(--c-blue);
-    cursor: pointer;
-  }
+/* ─── Submit ─── */
+.fp-submit-row {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+}
 
-  .clase-pill:has(input:checked) {
-    border-color: var(--c-blue);
-    background: #eff6ff;
-  }
+#fp-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 2rem;
+  background: #0b1d3a;
+  color: #fff;
+  border: none;
+  border-radius: 100px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .18s, transform .18s, box-shadow .18s;
+}
 
-  .clase-pill-num {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #94a3b8;
-    flex-shrink: 0;
-    margin-top: 1px;
-  }
+#fp-submit:hover:not(:disabled) {
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(37,99,235,.3);
+}
 
-  .clase-pill:has(input:checked) .clase-pill-num { color: var(--c-blue); }
+#fp-submit:disabled { opacity: .6; cursor: not-allowed; }
 
-  .clase-pill-desc {
-    font-size: 0.8rem;
-    color: #475569;
-    line-height: 1.4;
-  }
+#fp-submit-spin {
+  animation: fp-spin .65s linear infinite;
+}
 
-  /* ── Submit ── */
-  .submit-row {
-    margin-top: 1.5rem;
-    display: flex;
-    justify-content: flex-end;
-  }
+@keyframes fp-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
 
-  .btn-submit {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.875rem 2rem;
-    background: var(--c-navy);
-    color: white;
-    border: none;
-    border-radius: 100px;
-    font-family: var(--font);
-    font-size: 0.9375rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
-  }
-
-  .btn-submit:hover:not(:disabled) {
-    background: var(--c-blue);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(37,99,235,0.3);
-  }
-
-  .btn-submit:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  .spinner {
-    animation: spin 0.7s linear infinite;
-  }
-
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
-  }
 </style>
