@@ -52,30 +52,12 @@ const nizaClasses = [
 ];
 
 const provinces = [
-  'Buenos Aires',
-  'Catamarca',
-  'Chaco',
-  'Chubut',
-  'Ciudad Autónoma de Buenos Aires',
-  'Córdoba',
-  'Corrientes',
-  'Entre Ríos',
-  'Formosa',
-  'Jujuy',
-  'La Pampa',
-  'La Rioja',
-  'Mendoza',
-  'Misiones',
-  'Neuquén',
-  'Río Negro',
-  'Salta',
-  'San Juan',
-  'San Luis',
-  'Santa Cruz',
-  'Santa Fe',
-  'Santiago del Estero',
-  'Tierra del Fuego',
-  'Tucumán',
+  'Buenos Aires', 'Catamarca', 'Chaco', 'Chubut',
+  'Ciudad Autónoma de Buenos Aires', 'Córdoba', 'Corrientes',
+  'Entre Ríos', 'Formosa', 'Jujuy', 'La Pampa', 'La Rioja',
+  'Mendoza', 'Misiones', 'Neuquén', 'Río Negro', 'Salta',
+  'San Juan', 'San Luis', 'Santa Cruz', 'Santa Fe',
+  'Santiago del Estero', 'Tierra del Fuego', 'Tucumán',
 ];
 ---
 
@@ -85,126 +67,111 @@ const provinces = [
   canonicalURL={`${SITE_URL}/formularioregistro`}
 >
 
-  <section class="form-page">
-    <div class="container">
+  <div class="form-page">
+    <div class="form-container">
 
-      <header class="form-page-header">
-        <span class="section-label">Registro</span>
-        <h1>Formulario de Registro de Marca</h1>
-        <p>Completá los datos para que podamos iniciar el trámite ante el INPI.</p>
+      <header class="form-header">
+        <div class="form-header-badge">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M8 1.5L2.5 4v4c0 3.2 2.4 5.8 5.5 6.5 3.1-.7 5.5-3.3 5.5-6.5V4L8 1.5z" fill="currentColor"/>
+          </svg>
+          INPI Argentina
+        </div>
+        <h1>Registro de Marca</h1>
+        <p>Completá los datos para iniciar el trámite. Nos pondremos en contacto a la brevedad.</p>
       </header>
 
-      <!-- SUCCESS STATE -->
-      <div id="form-success" class="result-card result-success" hidden>
-        <div class="result-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <circle cx="12" cy="12" r="10" fill="#22C55E" opacity="0.15"/>
-            <path d="M7 12.5l3.5 3.5 6.5-7" stroke="#22C55E" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
+      <!-- SUCCESS -->
+      <div id="form-success" class="toast toast--success" hidden>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <circle cx="10" cy="10" r="9" fill="#22C55E" opacity="0.15"/>
+          <path d="M6 10.5l2.8 2.8 5.2-5.6" stroke="#16a34a" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
         <div>
-          <strong>¡Formulario enviado correctamente!</strong>
-          <p>Recibimos tu información y nos pondremos en contacto a la brevedad.</p>
+          <strong>¡Formulario enviado!</strong>
+          <span>Recibimos tu información y te contactamos a la brevedad.</span>
         </div>
       </div>
 
-      <!-- ERROR STATE -->
-      <div id="form-error" class="result-card result-error" hidden>
-        <div class="result-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <circle cx="12" cy="12" r="10" fill="#EF4444" opacity="0.15"/>
-            <path d="M12 8v4M12 16h.01" stroke="#EF4444" stroke-width="2.25" stroke-linecap="round"/>
-          </svg>
-        </div>
+      <!-- ERROR -->
+      <div id="form-error" class="toast toast--error" hidden>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <circle cx="10" cy="10" r="9" fill="#EF4444" opacity="0.15"/>
+          <path d="M10 6.5v4M10 13h.01" stroke="#dc2626" stroke-width="1.75" stroke-linecap="round"/>
+        </svg>
         <div>
-          <strong>Ocurrió un error al enviar.</strong>
-          <p>Por favor intentá de nuevo o contactanos por WhatsApp.</p>
+          <strong>No se pudo enviar el formulario.</strong>
+          <span>Intentá de nuevo o escribinos por WhatsApp.</span>
         </div>
       </div>
 
       <form id="registro-form" novalidate>
 
-        <!-- ═══════════════════════════════════════
-             SECCIÓN: MARCA
-        ════════════════════════════════════════ -->
-        <div class="form-section">
-          <div class="form-section-header">
-            <span class="form-section-num">01</span>
+        <!-- ══════════════════════════════
+             MARCA
+        ══════════════════════════════ -->
+        <div class="card">
+          <div class="card-header">
             <h2>Marca</h2>
           </div>
-          <div class="form-section-body">
-            <div class="field-row field-row--2">
-              <div class="field-group">
-                <label for="marca-nombre" class="field-label">
-                  Nombre de la Marca <span class="required" aria-hidden="true">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="marca-nombre"
-                  name="marca-nombre"
-                  class="field-input"
-                  placeholder="De Casa Florentino"
-                  required
-                  autocomplete="off"
-                />
+          <div class="card-body">
+            <div class="grid grid-2">
+              <div class="field">
+                <label for="marca-nombre">Nombre de la Marca <span class="req">*</span></label>
+                <input type="text" id="marca-nombre" name="marca-nombre"
+                  placeholder="De Casa Florentino" required autocomplete="off" />
               </div>
-
-              <div class="field-group">
-                <label for="marca-tipo" class="field-label">
-                  Tipo de Marca <span class="required" aria-hidden="true">*</span>
-                </label>
-                <select id="marca-tipo" name="marca-tipo" class="field-select" required>
-                  <option value="Denominativa" selected>Denominativa</option>
-                  <option value="Mixta">Mixta</option>
-                  <option value="Figurativa">Figurativa</option>
-                  <option value="Otro">Otro</option>
-                </select>
+              <div class="field">
+                <label for="marca-tipo">Tipo de Marca <span class="req">*</span></label>
+                <div class="select-wrap">
+                  <select id="marca-tipo" name="marca-tipo" required>
+                    <option value="Denominativa" selected>Denominativa</option>
+                    <option value="Mixta">Mixta</option>
+                    <option value="Figurativa">Figurativa</option>
+                    <option value="Otro">Otro</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- ═══════════════════════════════════════
-             SECCIÓN: TITULARES
-        ════════════════════════════════════════ -->
-        <div class="form-section">
-          <div class="form-section-header">
-            <span class="form-section-num">02</span>
+        <!-- ══════════════════════════════
+             TITULARES
+        ══════════════════════════════ -->
+        <div class="card">
+          <div class="card-header">
             <h2>Titulares</h2>
           </div>
 
-          <div id="titulares-container" class="form-section-body"></div>
+          <div id="titulares-container"></div>
 
-          <div class="add-titular-row">
-            <button type="button" id="add-titular-btn" class="btn-add-titular">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <div class="card-footer">
+            <button type="button" id="add-titular-btn" class="btn-ghost">
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+                <path d="M7.5 2v11M2 7.5h11" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
               </svg>
               Agregar titular
             </button>
-            <div id="porcentaje-total-indicator" class="pct-indicator" aria-live="polite"></div>
+            <span id="pct-indicator" class="pct-indicator" aria-live="polite"></span>
           </div>
         </div>
 
-        <!-- ═══════════════════════════════════════
-             SECCIÓN: CLASES
-        ════════════════════════════════════════ -->
-        <div class="form-section">
-          <div class="form-section-header">
-            <span class="form-section-num">03</span>
-            <div>
-              <h2>Clases Niza</h2>
-              <p class="form-section-note">Opcional — seleccioná las clases en las que querés registrar la marca</p>
-            </div>
+        <!-- ══════════════════════════════
+             CLASES
+        ══════════════════════════════ -->
+        <div class="card">
+          <div class="card-header">
+            <h2>Clases Niza</h2>
+            <p class="card-subtitle">Opcional — marcá las clases en las que querés registrar la marca</p>
           </div>
-
-          <div class="form-section-body">
+          <div class="card-body">
             <div class="clases-grid">
               {nizaClasses.map(c => (
-                <label class="clase-item">
-                  <input type="checkbox" name="clases" value={c.num} class="clase-checkbox" />
-                  <span class="clase-num">{String(c.num).padStart(2, '0')}</span>
-                  <span class="clase-desc">{c.desc}</span>
+                <label class="clase-pill">
+                  <input type="checkbox" name="clases" value={c.num} />
+                  <span class="clase-pill-num">{String(c.num).padStart(2, '0')}</span>
+                  <span class="clase-pill-desc">{c.desc}</span>
                 </label>
               ))}
             </div>
@@ -212,336 +179,261 @@ const provinces = [
         </div>
 
         <!-- SUBMIT -->
-        <div class="form-submit-row">
-          <button type="submit" id="submit-btn" class="btn btn-primary btn-submit">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+        <div class="submit-row">
+          <button type="submit" id="submit-btn" class="btn-submit">
             <span id="submit-label">Enviar formulario</span>
+            <svg id="submit-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <svg id="submit-spinner" class="spinner" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" hidden>
+              <circle cx="8" cy="8" r="6" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+              <path d="M8 2a6 6 0 0 1 6 6" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
           </button>
-          <p class="form-submit-note">Al enviar, nos comprometemos a contactarte dentro de las 48 horas hábiles.</p>
         </div>
 
       </form>
-
     </div>
-  </section>
+  </div>
 
 </BaseLayout>
 
-<!-- ═══════════════════════════════════════════════════
-     CLIENT-SIDE LOGIC
-════════════════════════════════════════════════════ -->
 <script define:vars={{ provinces }}>
   let titularCount = 0;
 
-  // ── Build a titular block HTML ──────────────────────
+  const provinceOptions = provinces
+    .map(p => `<option value="${p}">${p}</option>`)
+    .join('');
+
+  // ── Build titular HTML ─────────────────────────────
   function buildTitularHTML(idx) {
-    const provinceOptions = provinces
-      .map(p => `<option value="${p}">${p}</option>`)
-      .join('');
-
     return `
-      <div class="titular-block" id="titular-${idx}" data-idx="${idx}">
-        <div class="titular-block-header">
-          <span class="titular-block-title">Titular <span class="titular-num">${idx + 1}</span></span>
-          <button type="button" class="btn-remove-titular" data-target="${idx}" aria-label="Eliminar titular ${idx + 1}">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </button>
-        </div>
+    <div class="titular" id="titular-${idx}" data-idx="${idx}">
+      <div class="titular-head">
+        <span class="titular-label">Titular <span class="titular-num">${idx + 1}</span></span>
+        <button type="button" class="btn-remove" data-target="${idx}" aria-label="Eliminar titular">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
 
-        <div class="field-row field-row--2">
-          <div class="field-group">
-            <label class="field-label">
-              Tipo de Persona <span class="required" aria-hidden="true">*</span>
-            </label>
-            <select name="tipo-persona-${idx}" class="field-select tipo-persona-select" data-idx="${idx}" required>
-              <option value="">Seleccionar…</option>
-              <option value="Humana">Humana</option>
-              <option value="Juridica">Jurídica</option>
-            </select>
-          </div>
-
-          <div class="field-group">
-            <label class="field-label nombre-label-${idx}">
-              Nombre <span class="required" aria-hidden="true">*</span>
-            </label>
-            <input type="text" name="nombre-${idx}" class="field-input" placeholder="Nombre completo" required autocomplete="off" />
-          </div>
-        </div>
-
-        <!-- Conditional: only Humana -->
-        <div class="field-row field-row--2 conditional-humana-${idx}" style="display:none">
-          <div class="field-group">
-            <label class="field-label">
-              Género <span class="required" aria-hidden="true">*</span>
-            </label>
-            <select name="genero-${idx}" class="field-select" data-idx="${idx}">
-              <option value="">Seleccionar…</option>
-              <option value="Masculino">Masculino</option>
-              <option value="Femenino">Femenino</option>
-              <option value="Otro">Otro</option>
-            </select>
-          </div>
-
-          <div class="field-group">
-            <label class="field-label">
-              Estado Civil <span class="required" aria-hidden="true">*</span>
-            </label>
-            <select name="estado-civil-${idx}" class="field-select estado-civil-select" data-idx="${idx}">
-              <option value="">Seleccionar…</option>
-              <option value="Soltero/a">Soltero/a</option>
-              <option value="Casado/a">Casado/a</option>
-              <option value="Divorciado/a">Divorciado/a</option>
-              <option value="Viudo/a">Viudo/a</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Conditional: only Casado/a -->
-        <div class="field-row conditional-conyuge-${idx}" style="display:none">
-          <div class="field-group">
-            <label class="field-label">
-              Nombre del Cónyuge <span class="required" aria-hidden="true">*</span>
-            </label>
-            <input type="text" name="nombre-conyuge-${idx}" class="field-input" placeholder="Nombre completo del cónyuge" autocomplete="off" />
-          </div>
-        </div>
-
-        <div class="field-row field-row--3">
-          <div class="field-group field-group--wide">
-            <label class="field-label">
-              CUIT / CUIL <span class="required" aria-hidden="true">*</span>
-            </label>
-            <input type="text" name="cuit-${idx}" class="field-input" placeholder="20-12345678-9" required autocomplete="off" />
-          </div>
-
-          <div class="field-group">
-            <label class="field-label">
-              Porcentaje % <span class="required" aria-hidden="true">*</span>
-            </label>
-            <input type="number" name="porcentaje-${idx}" class="field-input porcentaje-input" min="1" max="100" step="1" placeholder="100" required />
-          </div>
-        </div>
-
-        <div class="field-row">
-          <div class="field-group">
-            <label class="field-label">
-              Correo Electrónico <span class="required" aria-hidden="true">*</span>
-            </label>
-            <input type="email" name="email-${idx}" class="field-input" placeholder="correo@ejemplo.com" required autocomplete="email" />
-          </div>
-        </div>
-
-        <div class="domicilio-section">
-          <p class="domicilio-title">Domicilio Real</p>
-
-          <div class="field-row field-row--2">
-            <div class="field-group">
-              <label class="field-label">
-                País <span class="required" aria-hidden="true">*</span>
-              </label>
-              <input type="text" name="pais-${idx}" class="field-input" value="Argentina" required autocomplete="off" />
-            </div>
-
-            <div class="field-group">
-              <label class="field-label">
-                Provincia <span class="required" aria-hidden="true">*</span>
-              </label>
-              <select name="provincia-${idx}" class="field-select" required>
+      <div class="titular-body">
+        <div class="grid grid-2">
+          <div class="field">
+            <label>Tipo de Persona <span class="req">*</span></label>
+            <div class="select-wrap">
+              <select name="tipo-persona-${idx}" class="tipo-persona" data-idx="${idx}" required>
                 <option value="">Seleccionar…</option>
-                ${provinceOptions}
+                <option value="Humana">Humana</option>
+                <option value="Juridica">Jurídica</option>
               </select>
             </div>
           </div>
+          <div class="field">
+            <label class="nombre-label-${idx}">Nombre <span class="req">*</span></label>
+            <input type="text" name="nombre-${idx}" placeholder="Nombre completo" required autocomplete="off" />
+          </div>
+        </div>
 
-          <div class="field-row field-row--2">
-            <div class="field-group">
-              <label class="field-label">
-                Localidad <span class="required" aria-hidden="true">*</span>
-              </label>
-              <input type="text" name="localidad-${idx}" class="field-input" placeholder="Localidad" required autocomplete="off" />
+        <div class="grid grid-2 cond-humana-${idx}" style="display:none">
+          <div class="field">
+            <label>Género <span class="req">*</span></label>
+            <div class="select-wrap">
+              <select name="genero-${idx}">
+                <option value="">Seleccionar…</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Femenino">Femenino</option>
+                <option value="Otro">Otro</option>
+              </select>
             </div>
+          </div>
+          <div class="field">
+            <label>Estado Civil <span class="req">*</span></label>
+            <div class="select-wrap">
+              <select name="estado-civil-${idx}" class="estado-civil" data-idx="${idx}">
+                <option value="">Seleccionar…</option>
+                <option value="Soltero/a">Soltero/a</option>
+                <option value="Casado/a">Casado/a</option>
+                <option value="Divorciado/a">Divorciado/a</option>
+                <option value="Viudo/a">Viudo/a</option>
+              </select>
+            </div>
+          </div>
+        </div>
 
-            <div class="field-group">
-              <label class="field-label">
-                Código Postal <span class="required" aria-hidden="true">*</span>
-              </label>
-              <input type="text" name="codigo-postal-${idx}" class="field-input" placeholder="C1406" required autocomplete="off" />
+        <div class="cond-conyuge-${idx}" style="display:none">
+          <div class="field">
+            <label>Nombre del Cónyuge <span class="req">*</span></label>
+            <input type="text" name="nombre-conyuge-${idx}" placeholder="Nombre completo del cónyuge" autocomplete="off" />
+          </div>
+        </div>
+
+        <div class="grid grid-3">
+          <div class="field field--span2">
+            <label>CUIT / CUIL <span class="req">*</span></label>
+            <input type="text" name="cuit-${idx}" placeholder="20-12345678-9" required autocomplete="off" />
+          </div>
+          <div class="field">
+            <label>Porcentaje % <span class="req">*</span></label>
+            <input type="number" name="porcentaje-${idx}" class="pct-input" min="1" max="100" step="1" placeholder="100" required />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Correo Electrónico <span class="req">*</span></label>
+          <input type="email" name="email-${idx}" placeholder="correo@ejemplo.com" required autocomplete="email" />
+        </div>
+
+        <div class="domicilio">
+          <p class="domicilio-heading">Domicilio Real</p>
+
+          <div class="grid grid-2">
+            <div class="field">
+              <label>País <span class="req">*</span></label>
+              <input type="text" name="pais-${idx}" value="Argentina" required autocomplete="off" />
+            </div>
+            <div class="field">
+              <label>Provincia <span class="req">*</span></label>
+              <div class="select-wrap">
+                <select name="provincia-${idx}" required>
+                  <option value="">Seleccionar…</option>
+                  ${provinceOptions}
+                </select>
+              </div>
             </div>
           </div>
 
-          <div class="field-row field-row--2">
-            <div class="field-group">
-              <label class="field-label">
-                Calle <span class="required" aria-hidden="true">*</span>
-              </label>
-              <input type="text" name="calle-${idx}" class="field-input" placeholder="Av. Corrientes" required autocomplete="off" />
+          <div class="grid grid-2">
+            <div class="field">
+              <label>Localidad <span class="req">*</span></label>
+              <input type="text" name="localidad-${idx}" placeholder="Localidad" required autocomplete="off" />
             </div>
-
-            <div class="field-group">
-              <label class="field-label">
-                Número <span class="required" aria-hidden="true">*</span>
-              </label>
-              <input type="text" name="numero-${idx}" class="field-input" placeholder="1234" required autocomplete="off" />
+            <div class="field">
+              <label>Código Postal <span class="req">*</span></label>
+              <input type="text" name="codigo-postal-${idx}" placeholder="C1406" required autocomplete="off" />
             </div>
           </div>
 
-          <div class="field-row field-row--2">
-            <div class="field-group">
-              <label class="field-label">Piso</label>
-              <input type="text" name="piso-${idx}" class="field-input" placeholder="3" autocomplete="off" />
+          <div class="grid grid-2">
+            <div class="field">
+              <label>Calle <span class="req">*</span></label>
+              <input type="text" name="calle-${idx}" placeholder="Av. Corrientes" required autocomplete="off" />
             </div>
+            <div class="field">
+              <label>Número <span class="req">*</span></label>
+              <input type="text" name="numero-${idx}" placeholder="1234" required autocomplete="off" />
+            </div>
+          </div>
 
-            <div class="field-group">
-              <label class="field-label">Depto</label>
-              <input type="text" name="depto-${idx}" class="field-input" placeholder="A" autocomplete="off" />
+          <div class="grid grid-2">
+            <div class="field">
+              <label>Piso</label>
+              <input type="text" name="piso-${idx}" placeholder="3" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label>Depto</label>
+              <input type="text" name="depto-${idx}" placeholder="A" autocomplete="off" />
             </div>
           </div>
         </div>
       </div>
+    </div>
     `;
   }
 
-  // ── Add a titular block ─────────────────────────────
+  // ── Add / remove ───────────────────────────────────
   function addTitular() {
     const container = document.getElementById('titulares-container');
     const idx = titularCount++;
-    const wrapper = document.createElement('div');
-    wrapper.innerHTML = buildTitularHTML(idx);
-    const block = wrapper.firstElementChild;
-    container.appendChild(block);
-
-    attachTitularListeners(idx);
-    updateTitularNumbers();
-    updatePctIndicator();
+    const div = document.createElement('div');
+    div.innerHTML = buildTitularHTML(idx);
+    container.appendChild(div.firstElementChild);
+    attachListeners(idx);
+    syncUI();
   }
 
-  // ── Remove a titular block ──────────────────────────
   function removeTitular(idx) {
-    const block = document.getElementById(`titular-${idx}`);
-    if (block) block.remove();
-    updateTitularNumbers();
-    updatePctIndicator();
+    document.getElementById(`titular-${idx}`)?.remove();
+    syncUI();
   }
 
-  // ── Attach event listeners for a titular block ──────
-  function attachTitularListeners(idx) {
-    // Remove button
-    const removeBtn = document.querySelector(`.btn-remove-titular[data-target="${idx}"]`);
-    if (removeBtn) {
-      removeBtn.addEventListener('click', () => removeTitular(idx));
-    }
+  function attachListeners(idx) {
+    document.querySelector(`.btn-remove[data-target="${idx}"]`)
+      ?.addEventListener('click', () => removeTitular(idx));
 
-    // Tipo persona → show/hide Humana fields
-    const tipoSelect = document.querySelector(`select[name="tipo-persona-${idx}"]`);
-    if (tipoSelect) {
-      tipoSelect.addEventListener('change', () => {
-        updateHumanaFields(idx);
-        updateNombreLabel(idx);
-      });
-    }
+    document.querySelector(`select[name="tipo-persona-${idx}"]`)
+      ?.addEventListener('change', () => { syncHumana(idx); syncLabel(idx); });
 
-    // Estado civil → show/hide cónyuge field
-    const estadoSelect = document.querySelector(`select[name="estado-civil-${idx}"]`);
-    if (estadoSelect) {
-      estadoSelect.addEventListener('change', () => updateConyugeField(idx));
-    }
+    document.querySelector(`select[name="estado-civil-${idx}"]`)
+      ?.addEventListener('change', () => syncConyuge(idx));
 
-    // Porcentaje → update total indicator
-    const pctInput = document.querySelector(`input[name="porcentaje-${idx}"]`);
-    if (pctInput) {
-      pctInput.addEventListener('input', updatePctIndicator);
-    }
+    document.querySelector(`input[name="porcentaje-${idx}"]`)
+      ?.addEventListener('input', syncPct);
   }
 
-  function updateHumanaFields(idx) {
-    const tipoSelect = document.querySelector(`select[name="tipo-persona-${idx}"]`);
-    const isHumana = tipoSelect && tipoSelect.value === 'Humana';
-    const humanaRows = document.querySelectorAll(`.conditional-humana-${idx}`);
-    humanaRows.forEach(el => {
+  function syncHumana(idx) {
+    const tp = document.querySelector(`select[name="tipo-persona-${idx}"]`)?.value;
+    const isHumana = tp === 'Humana';
+    document.querySelectorAll(`.cond-humana-${idx}`).forEach(el => {
       el.style.display = isHumana ? '' : 'none';
-      el.querySelectorAll('select, input').forEach(f => {
-        if (isHumana) {
-          f.setAttribute('required', '');
-        } else {
-          f.removeAttribute('required');
-        }
-      });
+      el.querySelectorAll('select,input').forEach(f =>
+        isHumana ? f.setAttribute('required','') : f.removeAttribute('required')
+      );
     });
-    // Also reset cónyuge visibility
     if (!isHumana) {
-      const conyugeRow = document.querySelector(`.conditional-conyuge-${idx}`);
-      if (conyugeRow) conyugeRow.style.display = 'none';
+      const row = document.querySelector(`.cond-conyuge-${idx}`);
+      if (row) row.style.display = 'none';
+      document.querySelector(`input[name="nombre-conyuge-${idx}"]`)?.removeAttribute('required');
     }
   }
 
-  function updateNombreLabel(idx) {
-    const tipoSelect = document.querySelector(`select[name="tipo-persona-${idx}"]`);
+  function syncLabel(idx) {
+    const tp = document.querySelector(`select[name="tipo-persona-${idx}"]`)?.value;
     const label = document.querySelector(`.nombre-label-${idx}`);
-    if (!tipoSelect || !label) return;
-    const labelText = tipoSelect.value === 'Juridica' ? 'Razón Social' : 'Nombre';
-    label.childNodes[0].textContent = labelText + ' ';
+    if (!label) return;
+    const text = tp === 'Juridica' ? 'Razón Social' : 'Nombre';
+    label.firstChild.textContent = text + ' ';
   }
 
-  function updateConyugeField(idx) {
-    const estadoSelect = document.querySelector(`select[name="estado-civil-${idx}"]`);
-    const conyugeRow = document.querySelector(`.conditional-conyuge-${idx}`);
-    const conyugeInput = document.querySelector(`input[name="nombre-conyuge-${idx}"]`);
-    if (!estadoSelect || !conyugeRow) return;
-    const show = estadoSelect.value === 'Casado/a';
-    conyugeRow.style.display = show ? '' : 'none';
-    if (conyugeInput) {
-      show ? conyugeInput.setAttribute('required', '') : conyugeInput.removeAttribute('required');
-    }
+  function syncConyuge(idx) {
+    const val = document.querySelector(`select[name="estado-civil-${idx}"]`)?.value;
+    const row = document.querySelector(`.cond-conyuge-${idx}`);
+    const inp = document.querySelector(`input[name="nombre-conyuge-${idx}"]`);
+    if (!row) return;
+    const show = val === 'Casado/a';
+    row.style.display = show ? '' : 'none';
+    show ? inp?.setAttribute('required','') : inp?.removeAttribute('required');
   }
 
-  function updateTitularNumbers() {
-    const blocks = document.querySelectorAll('.titular-block');
-    blocks.forEach((block, i) => {
-      const numEl = block.querySelector('.titular-num');
-      if (numEl) numEl.textContent = String(i + 1);
-    });
-    // Show/hide remove buttons — always allow removal since we start with 1
-    const removeBtns = document.querySelectorAll('.btn-remove-titular');
-    removeBtns.forEach(btn => {
-      btn.style.visibility = blocks.length > 1 ? 'visible' : 'hidden';
-    });
-  }
-
-  function updatePctIndicator() {
-    const inputs = document.querySelectorAll('.porcentaje-input');
-    const indicator = document.getElementById('porcentaje-total-indicator');
-    if (!indicator) return;
+  function syncPct() {
+    const inputs = document.querySelectorAll('.pct-input');
+    const ind = document.getElementById('pct-indicator');
+    if (!ind || !inputs.length) return;
     let total = 0;
-    inputs.forEach(inp => {
-      const v = parseFloat(inp.value);
-      if (!isNaN(v)) total += v;
-    });
-    if (inputs.length === 0) {
-      indicator.textContent = '';
-      indicator.className = 'pct-indicator';
-      return;
-    }
-    const is100 = Math.abs(total - 100) < 0.01;
-    indicator.textContent = `Total: ${total}%${is100 ? ' ✓' : ' — debe sumar 100%'}`;
-    indicator.className = `pct-indicator ${is100 ? 'pct-ok' : 'pct-error'}`;
+    inputs.forEach(i => { const v = parseFloat(i.value); if (!isNaN(v)) total += v; });
+    const ok = Math.abs(total - 100) < 0.01;
+    ind.textContent = `${total}%${ok ? ' ✓' : ' — debe sumar 100%'}`;
+    ind.className = `pct-indicator ${ok ? 'pct-ok' : 'pct-warn'}`;
   }
 
-  // ── Collect form data ───────────────────────────────
-  function collectFormData() {
-    const form = document.getElementById('registro-form');
-    const fd = new FormData(form);
+  function syncUI() {
+    const blocks = document.querySelectorAll('.titular');
+    blocks.forEach((b, i) => {
+      const n = b.querySelector('.titular-num');
+      if (n) n.textContent = String(i + 1);
+      const btn = b.querySelector('.btn-remove');
+      if (btn) btn.style.opacity = blocks.length > 1 ? '1' : '0';
+    });
+    syncPct();
+  }
 
-    const marca = {
-      nombre: fd.get('marca-nombre'),
-      tipo: fd.get('marca-tipo'),
-    };
+  // ── Collect data ───────────────────────────────────
+  function collect() {
+    const fd = new FormData(document.getElementById('registro-form'));
+    const marca = { nombre: fd.get('marca-nombre'), tipo: fd.get('marca-tipo') };
 
-    const titularBlocks = document.querySelectorAll('.titular-block');
-    const titulares = Array.from(titularBlocks).map(block => {
+    const titulares = Array.from(document.querySelectorAll('.titular')).map(block => {
       const i = block.dataset.idx;
       const tipoPersona = fd.get(`tipo-persona-${i}`);
       const estadoCivil = fd.get(`estado-civil-${i}`);
@@ -565,9 +457,7 @@ const provinces = [
       if (tipoPersona === 'Humana') {
         t.genero = fd.get(`genero-${i}`);
         t.estadoCivil = estadoCivil;
-        if (estadoCivil === 'Casado/a') {
-          t.nombreConyuge = fd.get(`nombre-conyuge-${i}`);
-        }
+        if (estadoCivil === 'Casado/a') t.nombreConyuge = fd.get(`nombre-conyuge-${i}`);
       }
       return t;
     });
@@ -579,416 +469,445 @@ const provinces = [
     return { marca, titulares, clases };
   }
 
-  // ── Validate before submit ──────────────────────────
-  function validateForm() {
+  // ── Validate ───────────────────────────────────────
+  function validate() {
     const form = document.getElementById('registro-form');
-    // HTML5 native validation
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return false;
-    }
-    // Porcentaje total
-    const inputs = document.querySelectorAll('.porcentaje-input');
+    if (!form.checkValidity()) { form.reportValidity(); return false; }
+    const inputs = document.querySelectorAll('.pct-input');
     let total = 0;
-    inputs.forEach(inp => { const v = parseFloat(inp.value); if (!isNaN(v)) total += v; });
+    inputs.forEach(i => { const v = parseFloat(i.value); if (!isNaN(v)) total += v; });
     if (Math.abs(total - 100) > 0.01) {
-      alert(`El porcentaje total de los titulares debe sumar 100%. Actualmente suma ${total}%.`);
+      alert(`El porcentaje total debe sumar 100%. Actualmente suma ${total}%.`);
       return false;
     }
     return true;
   }
 
-  // ── Submit handler ──────────────────────────────────
+  // ── Submit ─────────────────────────────────────────
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validate()) return;
 
     const btn = document.getElementById('submit-btn');
     const label = document.getElementById('submit-label');
-    btn.disabled = true;
-    label.textContent = 'Enviando…';
+    const icon = document.getElementById('submit-icon');
+    const spinner = document.getElementById('submit-spinner');
 
-    const data = collectFormData();
+    btn.disabled = true;
+    label.textContent = 'Enviando';
+    icon.hidden = true;
+    spinner.hidden = false;
 
     try {
       const res = await fetch('/api/submit-form', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(collect()),
       });
-
       const json = await res.json();
-
-      if (json.success) {
-        document.getElementById('registro-form').style.display = 'none';
-        document.getElementById('form-success').removeAttribute('hidden');
-        document.getElementById('form-success').scrollIntoView({ behavior: 'smooth', block: 'center' });
-      } else {
-        throw new Error(json.error || 'Error desconocido');
-      }
+      if (!json.success) throw new Error();
+      document.getElementById('registro-form').style.display = 'none';
+      const success = document.getElementById('form-success');
+      success.hidden = false;
+      success.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } catch {
-      document.getElementById('form-error').removeAttribute('hidden');
-      document.getElementById('form-error').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const err = document.getElementById('form-error');
+      err.hidden = false;
+      err.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       btn.disabled = false;
       label.textContent = 'Enviar formulario';
+      icon.hidden = false;
+      spinner.hidden = true;
     }
   }
 
-  // ── Init ────────────────────────────────────────────
   document.getElementById('add-titular-btn').addEventListener('click', addTitular);
   document.getElementById('registro-form').addEventListener('submit', handleSubmit);
-
-  // Start with one titular
-  addTitular();
+  addTitular(); // start with one
 </script>
 
 <style>
-  /* ─────────────── PAGE LAYOUT ─────────────── */
+  /* ── Fix: hidden attribute must win ── */
+  [hidden] { display: none !important; }
+
+  /* ── Page shell ── */
   .form-page {
-    padding-block: 5rem;
-    background: var(--c-bg-alt);
     min-height: 100vh;
+    background: #f1f5f9;
+    padding: 4rem 1.25rem 6rem;
   }
 
-  .form-page .container {
-    max-width: 800px;
+  .form-container {
+    max-width: 680px;
+    margin: 0 auto;
   }
 
-  .form-page-header {
-    margin-bottom: 3rem;
+  /* ── Header ── */
+  .form-header {
+    margin-bottom: 2.5rem;
   }
 
-  .form-page-header h1 {
-    font-size: clamp(1.75rem, 4vw, 2.5rem);
-    margin-bottom: 0.5rem;
-  }
-
-  .form-page-header p {
-    color: var(--c-text-muted);
-    font-size: 1rem;
-    margin: 0;
-  }
-
-  /* ─────────────── RESULT CARDS ─────────────── */
-  .result-card {
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-    padding: 1.25rem 1.5rem;
-    border-radius: var(--r-md);
-    margin-bottom: 2rem;
-    font-size: 0.9375rem;
-  }
-
-  .result-card strong { display: block; font-size: 1rem; margin-bottom: 0.25rem; }
-  .result-card p { margin: 0; color: inherit; opacity: 0.8; font-size: 0.9rem; }
-
-  .result-success {
-    background: var(--c-green-light);
-    color: #166534;
-    border: 1px solid #bbf7d0;
-  }
-
-  .result-error {
-    background: #fef2f2;
-    color: #991b1b;
-    border: 1px solid #fecaca;
-  }
-
-  .result-icon { flex-shrink: 0; margin-top: 2px; }
-
-  /* ─────────────── FORM SECTIONS ─────────────── */
-  .form-section {
-    background: white;
-    border-radius: var(--r-xl);
-    border: 1px solid var(--c-border);
-    margin-bottom: 1.5rem;
-    overflow: hidden;
-  }
-
-  .form-section-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1.5rem 2rem;
-    border-bottom: 1px solid var(--c-border-light);
-    background: var(--c-bg-alt);
-  }
-
-  .form-section-header h2 {
-    font-size: 1.125rem;
-    margin: 0;
-  }
-
-  .form-section-num {
+  .form-header-badge {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    background: var(--c-blue);
-    color: white;
-    border-radius: 50%;
-    font-size: 0.75rem;
+    gap: 0.375rem;
+    background: var(--c-blue-light);
+    color: var(--c-blue);
+    font-size: 0.72rem;
     font-weight: 700;
-    flex-shrink: 0;
-  }
-
-  .form-section-note {
-    font-size: 0.875rem;
-    color: var(--c-text-muted);
-    font-weight: 400;
-    margin: 0;
-  }
-
-  .form-section-body {
-    padding: 2rem;
-  }
-
-  /* ─────────────── FIELD GROUPS ─────────────── */
-  .field-row {
-    display: grid;
-    gap: 1rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.75rem;
+    border-radius: 100px;
     margin-bottom: 1rem;
   }
 
-  .field-row:last-child { margin-bottom: 0; }
-
-  .field-row--2 { grid-template-columns: 1fr 1fr; }
-  .field-row--3 { grid-template-columns: 1fr 1fr 1fr; }
-
-  @media (max-width: 640px) {
-    .field-row--2,
-    .field-row--3 { grid-template-columns: 1fr; }
-  }
-
-  .field-group { display: flex; flex-direction: column; gap: 0.375rem; }
-
-  .field-label {
-    font-size: 0.875rem;
-    font-weight: 600;
+  .form-header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.25rem);
+    font-weight: 800;
     color: var(--c-navy);
-    line-height: 1.3;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.5rem;
   }
 
-  .required { color: var(--c-blue); }
+  .form-header p {
+    color: var(--c-text-muted);
+    font-size: 0.9375rem;
+    margin: 0;
+  }
 
-  .field-input,
-  .field-select {
+  /* ── Toast notifications ── */
+  .toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .toast svg { flex-shrink: 0; margin-top: 1px; }
+  .toast strong { display: block; font-weight: 600; }
+  .toast span { color: inherit; opacity: 0.75; font-size: 0.875rem; }
+
+  .toast--success {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+  }
+
+  .toast--error {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.05);
+    margin-bottom: 1rem;
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 1.5rem 1.75rem 0;
+  }
+
+  .card-header h2 {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--c-navy);
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+
+  .card-subtitle {
+    font-size: 0.8125rem;
+    color: var(--c-text-muted);
+    margin: 0.2rem 0 0;
+    font-weight: 400;
+  }
+
+  .card-body {
+    padding: 1.25rem 1.75rem 1.75rem;
+  }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.75rem;
+    border-top: 1px solid #f1f5f9;
+    flex-wrap: wrap;
+  }
+
+  /* ── Grid layouts ── */
+  .grid { display: grid; gap: 0.875rem; margin-bottom: 0.875rem; }
+  .grid:last-child { margin-bottom: 0; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  @media (max-width: 580px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .field--span2 { grid-column: auto; }
+  }
+
+  @media (min-width: 581px) {
+    .field--span2 { grid-column: span 2; }
+  }
+
+  /* ── Fields ── */
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .field label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #475569;
+    line-height: 1;
+  }
+
+  .req { color: var(--c-blue); font-weight: 600; }
+
+  .field input,
+  .field select {
     width: 100%;
     padding: 0.6875rem 0.875rem;
-    border: 1.5px solid var(--c-border);
-    border-radius: var(--r-md);
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
     font-family: var(--font);
     font-size: 0.9375rem;
     color: var(--c-text);
-    background: white;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
     outline: none;
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
     appearance: none;
     -webkit-appearance: none;
   }
 
-  .field-select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.875rem center;
-    padding-right: 2.5rem;
-    cursor: pointer;
-  }
-
-  .field-input:focus,
-  .field-select:focus {
+  .field input:focus,
+  .field select:focus {
+    background: white;
     border-color: var(--c-blue);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
   }
 
-  .field-input::placeholder { color: #cbd5e1; }
+  .field input::placeholder { color: #cbd5e1; }
 
-  .field-input:invalid:not(:placeholder-shown),
-  .field-select:invalid:not(:placeholder-shown) {
-    border-color: #f87171;
+  /* Select wrapper + custom arrow */
+  .select-wrap { position: relative; }
+
+  .select-wrap select {
+    cursor: pointer;
+    padding-right: 2.25rem;
   }
 
-  /* ─────────────── TITULAR BLOCK ─────────────── */
-  .titular-block {
-    border: 1.5px solid var(--c-border);
-    border-radius: var(--r-lg);
-    padding: 1.5rem;
-    margin-bottom: 1.25rem;
+  .select-wrap::after {
+    content: '';
+    position: absolute;
+    right: 0.875rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 6px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    pointer-events: none;
   }
 
-  .titular-block:last-child { margin-bottom: 0; }
+  /* ── Titular blocks ── */
+  .titular {
+    border-top: 1px solid #f1f5f9;
+  }
 
-  .titular-block-header {
+  .titular:first-child { border-top: none; }
+
+  .titular-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 1.25rem;
+    padding: 1.25rem 1.75rem 0;
   }
 
-  .titular-block-title {
+  .titular-label {
+    font-size: 0.8rem;
     font-weight: 700;
-    font-size: 0.9375rem;
-    color: var(--c-navy);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
   }
 
-  .btn-remove-titular {
-    display: inline-flex;
+  .btn-remove {
+    display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
-    border: 1.5px solid var(--c-border);
+    border: 1.5px solid #e2e8f0;
     background: white;
-    color: var(--c-text-muted);
+    color: #94a3b8;
     cursor: pointer;
     transition: all 0.15s;
   }
 
-  .btn-remove-titular:hover {
-    border-color: #f87171;
+  .btn-remove:hover {
+    border-color: #fca5a5;
     color: #ef4444;
-    background: #fef2f2;
+    background: #fff1f2;
   }
 
-  /* ─────────────── DOMICILIO ─────────────── */
-  .domicilio-section {
-    margin-top: 1.25rem;
-    padding-top: 1.25rem;
-    border-top: 1px solid var(--c-border-light);
+  .titular-body {
+    padding: 1rem 1.75rem 1.5rem;
   }
 
-  .domicilio-title {
-    font-size: 0.8125rem;
+  /* ── Domicilio ── */
+  .domicilio {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px dashed #e2e8f0;
+  }
+
+  .domicilio-heading {
+    font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--c-text-muted);
-    margin-bottom: 1rem;
+    letter-spacing: 0.1em;
+    color: #94a3b8;
+    margin-bottom: 0.875rem;
   }
 
-  /* ─────────────── ADD TITULAR ─────────────── */
-  .add-titular-row {
-    display: flex;
-    align-items: center;
-    gap: 1.25rem;
-    padding: 1.25rem 2rem;
-    border-top: 1px solid var(--c-border-light);
-    flex-wrap: wrap;
-  }
-
-  .btn-add-titular {
+  /* ── Add titular button ── */
+  .btn-ghost {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1.25rem;
-    border-radius: 100px;
-    border: 1.5px solid var(--c-blue);
-    background: white;
-    color: var(--c-blue);
+    gap: 0.4rem;
     font-family: var(--font);
     font-size: 0.875rem;
     font-weight: 600;
+    color: var(--c-blue);
+    background: transparent;
+    border: none;
     cursor: pointer;
-    transition: all 0.15s ease;
+    padding: 0;
+    transition: opacity 0.15s;
   }
 
-  .btn-add-titular:hover {
-    background: var(--c-blue-light);
-  }
+  .btn-ghost:hover { opacity: 0.7; }
 
-  /* ─────────────── PERCENTAGE INDICATOR ─────────────── */
+  /* ── Percentage indicator ── */
   .pct-indicator {
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #94a3b8;
+    margin-left: auto;
   }
 
-  .pct-ok    { color: #15803d; }
-  .pct-error { color: #b91c1c; }
+  .pct-ok   { color: #16a34a; }
+  .pct-warn { color: #b45309; }
 
-  /* ─────────────── CLASES GRID ─────────────── */
+  /* ── Clases grid ── */
   .clases-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 0.5rem;
   }
 
-  .clase-item {
+  .clase-pill {
     display: flex;
     align-items: flex-start;
-    gap: 0.625rem;
-    padding: 0.625rem 0.75rem;
-    border-radius: var(--r-md);
-    border: 1.5px solid var(--c-border);
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
     cursor: pointer;
-    transition: border-color 0.15s, background 0.15s;
+    transition: border-color 0.12s, background 0.12s;
     user-select: none;
   }
 
-  .clase-item:hover {
-    border-color: var(--c-blue);
-    background: var(--c-blue-light);
+  .clase-pill:hover {
+    border-color: #bfdbfe;
+    background: #eff6ff;
   }
 
-  .clase-checkbox {
-    margin-top: 1px;
+  .clase-pill input[type="checkbox"] {
     flex-shrink: 0;
-    width: 16px;
-    height: 16px;
+    margin-top: 2px;
+    width: 15px;
+    height: 15px;
     accent-color: var(--c-blue);
     cursor: pointer;
   }
 
-  .clase-checkbox:checked ~ .clase-num {
-    color: var(--c-blue);
-  }
-
-  .clase-item:has(.clase-checkbox:checked) {
+  .clase-pill:has(input:checked) {
     border-color: var(--c-blue);
-    background: var(--c-blue-light);
+    background: #eff6ff;
   }
 
-  .clase-num {
+  .clase-pill-num {
     font-size: 0.75rem;
     font-weight: 700;
-    color: var(--c-text-muted);
-    white-space: nowrap;
-    margin-top: 1px;
+    color: #94a3b8;
     flex-shrink: 0;
+    margin-top: 1px;
   }
 
-  .clase-desc {
-    font-size: 0.8125rem;
-    color: var(--c-text);
+  .clase-pill:has(input:checked) .clase-pill-num { color: var(--c-blue); }
+
+  .clase-pill-desc {
+    font-size: 0.8rem;
+    color: #475569;
     line-height: 1.4;
   }
 
-  /* ─────────────── SUBMIT ─────────────── */
-  .form-submit-row {
+  /* ── Submit ── */
+  .submit-row {
+    margin-top: 1.5rem;
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-    padding-top: 0.5rem;
+    justify-content: flex-end;
   }
 
   .btn-submit {
-    font-size: 1rem;
-    padding: 0.9rem 2.25rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 2rem;
+    background: var(--c-navy);
+    color: white;
+    border: none;
+    border-radius: 100px;
+    font-family: var(--font);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+  }
+
+  .btn-submit:hover:not(:disabled) {
+    background: var(--c-blue);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(37,99,235,0.3);
   }
 
   .btn-submit:disabled {
-    opacity: 0.65;
+    opacity: 0.6;
     cursor: not-allowed;
-    transform: none !important;
-    box-shadow: none !important;
   }
 
-  .form-submit-note {
-    font-size: 0.8125rem;
-    color: var(--c-text-muted);
-    margin: 0;
+  .spinner {
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
   }
 </style>
