@@ -74,6 +74,14 @@ El arancel del INPI para una clase es de 100 UMAPIS (aproximadamente $36.000 ARS
 
 Para más detalle sobre costos, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca). Y para entender los tiempos del proceso, leé: [cuánto tarda registrar una marca en Argentina](/blog/cuanto-tarda-registro-marca-argentina).
 
+## Una vez registrada: monitorear es parte de la protección
+
+Registrar la marca es el primer paso. El segundo es vigilar que nadie intente apropiarse de ella después.
+
+Cada semana el INPI publica nuevas solicitudes en el Boletín de Marcas. Si alguien presenta una solicitud similar a la tuya, tenés **30 días corridos** para presentar una oposición. Si no te enterás a tiempo, el plazo vence y la solicitud puede avanzar.
+
+El monitoreo manual del boletín es tedioso. Hay herramientas que lo automatizan — te notifican si aparece algo que coincide con tu marca para que puedas actuar dentro del plazo. Para entender cómo funciona ese proceso, leé: [Boletín de Marcas del INPI: qué es y cómo vigilar tu marca](/blog/boletin-de-marcas-inpi).
+
 ---
 
 Si alguien ya está usando tu marca o querés protegerla antes de que suceda, [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491149712224&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0) — te respondemos con un diagnóstico gratuito y te decimos cuál es el mejor camino según tu situación.

@@ -28,8 +28,8 @@ Con la marca registrada podés:
 
 | Aspecto | Nombre comercial | Marca registrada |
 |---|---|---|
-| Protección legal | No | Sí — exclusividad por 10 años |
-| Requiere trámite | No | Sí — ante el INPI |
+| Protección legal | No | Sí, exclusividad por 10 años |
+| Requiere trámite | No | Sí, ante el INPI |
 | Costo | Ninguno | Arancel INPI + honorarios |
 | Defendible ante terceros | Muy difícil | Sí, con herramientas concretas |
 | Válido en todo el rubro | No | Sí, en las clases registradas |
@@ -57,7 +57,7 @@ Algunos indicadores de que es momento de registrar:
 - Querés vender en marketplaces como MercadoLibre o Tienda Nube con tu propia identidad
 - Estás pensando en franquiciar o escalar el negocio
 
-Cuanto más esperás, más riesgo corrés. Si alguien registra tu nombre antes que vos, perdés la posibilidad de usarlo legalmente en ese rubro — incluso si lo usaste durante años.
+Cuanto más esperás, más riesgo corrés. Si alguien registra tu nombre antes que vos, perdés la posibilidad de usarlo legalmente en ese rubro, incluso si lo usaste durante años.
 
 ## ¿El nombre comercial protege igual que una marca registrada?
 
@@ -70,6 +70,8 @@ Algunos emprendedores creen que registrar el dominio web (.com.ar) o el usuario 
 El trámite se hace 100% online ante el INPI. Con el nuevo proceso vigente desde 2026, puede resolverse en aproximadamente 2 meses si no hay oposiciones. Antes de presentar, es fundamental verificar que tu marca esté disponible.
 
 Para el proceso completo, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso). Para saber cuánto cuesta, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca). Y para entender los tiempos, leé: [cuánto tarda registrar una marca en Argentina](/blog/cuanto-tarda-registro-marca-argentina).
+
+Si ya estás en una situación de conflicto — alguien usa tu nombre o lo registró antes que vos — leé: [qué pasa si alguien usa mi marca sin registrarla](/blog/que-pasa-si-alguien-usa-mi-marca-sin-registrar).
 
 ---
 
