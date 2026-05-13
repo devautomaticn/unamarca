@@ -1,6 +1,6 @@
 ---
 title: 'Clases de marcas: guía para registrar tu marca en Argentina'
-description: 'Qué son las clases de marcas en Argentina, cómo elegir la correcta para tu negocio y por qué registrar en más de una clase puede ser necesario. Guía práctica con tabla de referencia.'
+description: 'Qué son las clases de marcas en Argentina, cómo elegir la correcta y cuándo registrar en más de una. Tabla de referencia con los rubros más frecuentes.'
 pubDate: '2026-01-02'
 tags: []
 ---

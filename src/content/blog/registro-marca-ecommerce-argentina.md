@@ -1,11 +1,11 @@
 ---
 title: "Registro de marca para e-commerce en Argentina: qué necesitás saber"
-description: "Si vendés online en Argentina — Tienda Nube, MercadoLibre o tu propio sitio — registrar tu marca es clave para proteger tu negocio. Te explicamos cómo y por qué."
+description: "Si vendés en Tienda Nube, MercadoLibre o tu propio sitio, registrar tu marca ante el INPI es clave para proteger tu negocio online. Te explicamos cómo y por qué."
 pubDate: 2026-04-07
 tags: []
 ---
 
-Tenés una tienda online, vendés en MercadoLibre o Tienda Nube, o estás por lanzar tu e-commerce. El negocio funciona, tus clientes te reconocen por tu nombre — pero ¿ese nombre está protegido legalmente? Si no registraste tu marca ante el INPI, la respuesta es no. En esta guía te explicamos por qué el **registro de marca es especialmente importante para el e-commerce en Argentina** y cómo hacerlo.
+Tenés una tienda online, vendés en MercadoLibre o Tienda Nube, o estás por lanzar tu e-commerce. El negocio funciona, tus clientes te reconocen por tu nombre, pero ¿ese nombre está protegido legalmente? Si no registraste tu marca ante el INPI, la respuesta es no. En esta guía te explicamos por qué el **registro de marca es especialmente importante para el e-commerce en Argentina** y cómo hacerlo.
 
 ## ¿Por qué es más urgente registrar si vendés online?
 
