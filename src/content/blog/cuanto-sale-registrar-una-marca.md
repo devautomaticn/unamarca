@@ -13,14 +13,14 @@ Si querés proteger el nombre de tu negocio, tu logo o una frase que te identifi
 
 El costo total de registrar una marca tiene dos componentes:
 
-1. **Los aranceles del INPI** — el pago obligatorio al organismo público que gestiona el registro
-2. **Los honorarios profesionales** — si contratás un abogado o gestor especializado para que maneje el trámite por vos
+1. **Los aranceles del INPI:** el pago obligatorio al organismo público que gestiona el registro
+2. **Los honorarios profesionales:** si contratás un abogado o gestor especializado para que maneje el trámite por vos
 
 ## ¿Cuánto cobra el INPI hoy?
 
 El INPI actualizó su sistema de aranceles en 2026. Hasta ahora los montos eran fijos en pesos, lo que hacía que quedaran desactualizados rápidamente por la inflación. A partir de abril de 2026 los aranceles pasan a expresarse en **UMAPIS** (Unidades de Medida Arancelaria de la Propiedad Industrial), un valor que se ajusta cada mes según el índice de inflación del INDEC.
 
-En la práctica esto significa que el costo siempre va a estar actualizado — no vas a encontrar una tabla de aranceles desactualizada de hace seis meses.
+En la práctica esto significa que el costo siempre va a estar actualizado: no vas a encontrar una tabla de aranceles desactualizada de hace seis meses.
 
 **El costo base del trámite:**
 
@@ -52,6 +52,14 @@ Para un registro típico en una clase con hasta 20 posiciones:
 - **Honorarios profesionales:** $200.000–$300.000 ARS
 
 El arancel representa una fracción del costo total. La mayor parte del gasto suele ser el honorario profesional, que es lo que te garantiza que el trámite se hace bien desde el inicio.
+
+## ¿Se recupera el arancel si la solicitud fracasa?
+
+No. El arancel del INPI no es reembolsable. Si tu solicitud recibe una oposición y no podés resolverla, o si el INPI la rechaza por problemas formales, el dinero del arancel no se devuelve.
+
+Los honorarios profesionales dependen del acuerdo que tengas con el agente o estudio: algunos cobran todo por adelantado, otros solo cobran una parte si el trámite no avanza. Es un punto que conviene aclarar antes de contratar.
+
+Por eso la búsqueda previa no es un paso opcional: evitar una oposición desde el inicio es la forma más directa de proteger la inversión. Si la marca no está disponible o tiene un conflicto probable, mejor saberlo antes de pagar el arancel.
 
 ## ¿Vale la pena el gasto?
 
