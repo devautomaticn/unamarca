@@ -5,13 +5,13 @@ pubDate: 2026-04-06
 tags: []
 ---
 
-Si alguna vez preguntaste cuánto tarda registrar una marca en Argentina y te dijeron "entre uno y dos años", esa información ya no aplica. Desde marzo de 2026, el INPI cambió el proceso — y los tiempos se redujeron drásticamente. En esta nota te explicamos **cuánto tarda realmente el trámite hoy** y qué cambió.
+Si alguna vez preguntaste cuánto tarda registrar una marca en Argentina y te dijeron "entre uno y dos años", esa información ya no aplica. Desde marzo de 2026, el INPI cambió el proceso, y los tiempos se redujeron drásticamente. En esta nota te explicamos **cuánto tarda realmente el trámite hoy** y qué cambió.
 
 ## El cambio más importante: Resolución INPI 583/25
 
 En marzo de 2026 entró en vigencia la Resolución 583/25 del INPI, que reformó el procedimiento de registro de marcas en Argentina. El cambio central: el INPI eliminó el examen de conflictos con marcas similares existentes de su proceso interno.
 
-Antes, el INPI revisaba si tu marca podía confundirse con otras ya registradas — lo que generaba observaciones, idas y vueltas, y meses de demora. Ahora ese control quedó en manos de los titulares de marcas existentes, que deben presentar oposiciones si consideran que una nueva solicitud afecta sus derechos.
+Antes, el INPI revisaba si tu marca podía confundirse con otras ya registradas, lo que generaba observaciones, idas y vueltas, y meses de demora. Ahora ese control quedó en manos de los titulares de marcas existentes, que deben presentar oposiciones si consideran que una nueva solicitud afecta sus derechos.
 
 El resultado: un proceso más ágil y predecible.
 
@@ -21,9 +21,9 @@ Si tu solicitud no recibe oposiciones, el proceso completo toma aproximadamente 
 
 | Etapa | Duración estimada |
 |---|---|
-| Examen formal y de fondo | Variable (semanas a pocos meses) |
+| Examen formal y de fondo | 2 a 6 semanas aproximadamente |
 | Publicación en el Boletín de Marcas | 30 días corridos |
-| Concesión | Automática al vencer el plazo sin oposiciones |
+| Concesión | La marca se concede al vencer el plazo sin oposiciones |
 
 Esto es un cambio radical respecto al proceso anterior, que podía extenderse entre 18 y 24 meses.
 
@@ -52,11 +52,21 @@ No significativamente. El proceso es el mismo para marcas denominativas (solo no
 | Plazo sin oposiciones | 18 a 24 meses | ~2 meses |
 | Examen de marcas similares | Lo hacía el INPI | Lo hacen los titulares mediante oposiciones |
 | Período de publicación | 30 días hábiles | 30 días corridos |
-| Concesión | Luego de resolución manual | Automática si no hay oposiciones |
+| Concesión | Luego de resolución manual | La marca se concede si no hay oposiciones |
+
+## ¿Qué pasa si el INPI hace observaciones?
+
+Durante el examen formal y de fondo, el INPI puede emitir una observación si detecta un problema: documentación incompleta, una denominación genérica o descriptiva, o un logo en un formato que no cumple los requisitos técnicos.
+
+En ese caso, recibís una notificación y tenés un plazo para responder o corregir. Si la respuesta es suficiente, el trámite continúa. Si no, puede derivar en el rechazo de la solicitud.
+
+Las observaciones son el motivo más frecuente por el que un trámite que "debería tardar 2 meses" termina demorándose 4 o 6. No alargan el período de publicación ni los plazos de oposición, pero sí el tiempo antes de llegar a esa etapa.
+
+La forma de evitarlas: elegir bien el tipo y la clase de marca desde el inicio, y verificar que el logo cumpla los requisitos de formato antes de presentar.
 
 ## ¿Qué implica esto si querés registrar tu marca ahora?
 
-El nuevo proceso es más rápido y predecible — pero requiere más preparación de tu parte. El INPI ya no te avisa si tu marca es similar a una existente: eso queda fuera de su examen. Si presentás sin hacer una búsqueda previa adecuada y hay una marca similar, el riesgo de oposición — y de perder el arancel pagado — es tuyo.
+El nuevo proceso es más rápido y predecible, pero requiere más preparación de tu parte. El INPI ya no te avisa si tu marca es similar a una existente: eso queda fuera de su examen. Si presentás sin hacer una búsqueda previa adecuada y hay una marca similar, el riesgo de oposición (y de perder el arancel pagado) es tuyo.
 
 La buena noticia: si hacés bien la búsqueda previa y presentás una marca distintiva, el camino al registro es más corto que nunca.
 
@@ -66,4 +76,4 @@ Para entender el proceso completo de registro, leé nuestra guía: [cómo regist
 
 Registrar una marca en Argentina nunca fue tan rápido. Si llegaste hasta acá pensando que era un trámite largo y engorroso, el panorama cambió: con el proceso correcto y una búsqueda previa bien hecha, podés tener tu marca registrada en aproximadamente 2 meses.
 
-Si querés que te acompañemos en el proceso — búsqueda previa, presentación y seguimiento — [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491149712224&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0). Te respondemos con un diagnóstico gratuito.
+Si querés que te acompañemos en el proceso — búsqueda previa, presentación y seguimiento: [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491149712224&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0). Te respondemos con un diagnóstico gratuito.
