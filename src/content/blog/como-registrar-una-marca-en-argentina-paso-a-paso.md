@@ -82,9 +82,9 @@ Podés consultar los valores actualizados directamente en [Aranceles INPI](https
 
 Una vez presentada la solicitud, el INPI sigue este proceso (actualizado según Resolución INPI 583/25, vigente desde marzo 2026):
 
-1. **Examen formal y de fondo** — verifican que la documentación esté completa y que la marca cumpla los requisitos absolutos (distintividad, no genericidad, no contraria al orden público). El INPI ya **no examina** conflictos con marcas similares existentes — eso queda en manos de terceros opositores.
-2. **Publicación en el Boletín de Marcas** — la marca se publica durante **30 días corridos** para que titulares de marcas similares puedan presentar oposiciones.
-3. **Resolución** — si no hubo oposiciones, el registro se concede automáticamente. Si hubo oposiciones, se resuelven antes de la concesión.
+1. **Examen formal y de fondo:** verifican que la documentación esté completa y que la marca cumpla los requisitos absolutos (distintividad, no genericidad, no contraria al orden público). El INPI ya **no examina** conflictos con marcas similares existentes: eso queda en manos de terceros opositores.
+2. **Publicación en el Boletín de Marcas:** la marca se publica durante **30 días corridos** para que titulares de marcas similares puedan presentar oposiciones.
+3. **Resolución:** si no hubo oposiciones, la marca se concede. Si hubo oposiciones, se resuelven antes de que la marca se conceda.
 
 Podés seguir el estado en cualquier momento desde el portal del INPI ingresando con tu CUIT.
 

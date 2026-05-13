@@ -75,6 +75,26 @@ No es obligatorio. Podés hacer el trámite vos mismo si tenés CUIT y Clave Fis
 
 Un agente de la propiedad industrial te ayuda con la búsqueda previa, la estrategia de clases y el seguimiento del expediente, reduciendo el riesgo de errores que luego son difíciles de corregir.
 
+## ¿Qué nombres no podés registrar como marca?
+
+No todos los nombres son registrables. El INPI rechaza solicitudes que incluyan:
+
+- **Términos genéricos o descriptivos:** palabras que describen directamente el producto o servicio no pueden ser marcas exclusivas. "Café Artesanal" para una cafetería, "Zapatería" para una zapatería o "Transporte Rápido" para una empresa de transporte son ejemplos de nombres que el INPI no acepta porque cualquier competidor tiene el derecho de usarlos para describir su actividad.
+- **Nombres geográficos:** indicaciones de origen como "Mendoza", "Patagonia" o "Buenos Aires" no son registrables de forma exclusiva para la mayoría de los rubros.
+- **Nombres que pueden confundir al consumidor:** nombres iguales o similares a marcas ya registradas en el mismo rubro, o que inducen a error sobre la naturaleza del producto.
+- **Símbolos oficiales:** banderas, escudos, insignias de organismos públicos o internacionales.
+- **Nombres contrarios al orden público o las buenas costumbres.**
+
+Si tu nombre es muy descriptivo, la solución suele ser agregar un elemento diferenciador: un término inventado, un logo particular o una combinación que le dé distintividad al conjunto.
+
+## ¿Podés usar el símbolo ™ antes de registrar?
+
+Sí. El símbolo **™** (trademark) es una declaración unilateral de que considerás ese nombre tu marca comercial, pero no tiene respaldo legal en Argentina: no te otorga derechos exclusivos ni impedimentos contra terceros.
+
+El símbolo **®** (registered trademark), en cambio, solo puede usarse una vez que el registro fue concedido por el INPI. Usarlo antes de tener el registro concedido es incorrecto y puede tener consecuencias legales.
+
+En la práctica, muchos emprendedores usan ™ mientras esperan la resolución de su solicitud, pero entendiendo que eso no los protege de que otra persona presente una solicitud similar en paralelo.
+
 ---
 
 Si querés proteger tu marca y no sabés por dónde empezar, [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491149712224&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0). Te respondemos con un diagnóstico gratuito: si tu marca está disponible, en qué clases conviene registrarla, y cuál es el mejor camino para tu situación.
