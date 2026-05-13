@@ -1,6 +1,6 @@
 ---
-title: ¿Cuánto sale registrar una marca en Argentina? Costos y detalles 2026
-description: '¿Cuánto sale registrar una marca en Argentina en 2026? Aranceles del INPI con el nuevo sistema UMAPI y honorarios profesionales explicados sin tecnicismos.'
+title: "¿Cuánto cuesta registrar una marca en Argentina? INPI 2026"
+description: 'El arancel del INPI se actualiza mensualmente. Conocé cuánto sale registrar una marca hoy, qué incluye el precio total y cómo evitar sorpresas.'
 pubDate: '2026-05-01'
 tags: []
 ---

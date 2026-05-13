@@ -1,6 +1,6 @@
 ---
-title: Cómo saber si una marca está registrada fácilmente
-description: 'Cómo verificar si una marca está registrada en Argentina usando el buscador gratuito del INPI. Guía paso a paso para hacer la búsqueda correctamente antes de registrar.'
+title: Cómo saber si una marca está registrada en Argentina (gratis)
+description: 'Usá el buscador gratuito del INPI para verificar si tu marca está disponible. Entendé qué significa cada resultado y qué hacer según lo que encontrés.'
 pubDate: '2026-01-20'
 tags: []
 ---
