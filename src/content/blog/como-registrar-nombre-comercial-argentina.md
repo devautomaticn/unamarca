@@ -67,6 +67,16 @@ Después del pago, el proceso sigue estos pasos:
 
 Desde la presentación de la solicitud ya tenés **prioridad registral**: la fecha de presentación protege tu nombre frente a solicitudes posteriores de terceros para la misma denominación y clase.
 
+## Nombre de fantasía, nombre comercial y razón social: ¿qué diferencia hay?
+
+Tres términos que se usan casi como sinónimos pero significan cosas distintas en Argentina:
+
+- **Razón social:** el nombre legal de tu empresa ante el Estado — el que figura en AFIP, en los contratos, en las facturas. Puede ser "García & Asociados S.R.L." aunque externamente te llames de otra forma. No tiene relación con el registro de marcas.
+- **Nombre de fantasía / nombre comercial:** el nombre con el que tu negocio se muestra al público. Tu local, tu redes sociales, tu sitio web. No tiene registro propio que otorgue exclusividad.
+- **Marca registrada:** el único instrumento legal que te da exclusividad sobre un nombre en tu rubro. Es lo que registrás ante el INPI.
+
+La confusión más común: creer que porque tu razón social está registrada en AFIP o en el Registro Público de Comercio, el nombre está protegido. No lo está. Solo la marca registrada ante el INPI otorga esa protección.
+
 ## Preguntas frecuentes
 
 **¿Registrar el dominio .com.ar me protege?**

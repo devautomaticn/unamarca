@@ -5,7 +5,7 @@ pubDate: 2026-04-07
 tags: []
 ---
 
-Una marca registrada en Argentina dura **10 años**. Pasado ese plazo, si no la renovás, perdés todos los derechos sobre ella — y cualquier persona puede registrarla. En esta guía te explicamos cómo renovar tu marca ante el INPI, cuándo hacerlo y qué opciones tenés si el plazo ya venció.
+Una marca registrada en Argentina dura **10 años**. Pasado ese plazo, si no la renovás, perdés todos los derechos sobre ella. Cualquier persona puede registrarla. En esta guía te explicamos cómo renovar tu marca ante el INPI, cuándo hacerlo y qué opciones tenés si el plazo ya venció.
 
 ## ¿Cuándo vence una marca registrada?
 
@@ -20,7 +20,7 @@ Podés iniciar el trámite de renovación durante los **6 meses anteriores al ve
 | Momento | Podés renovar | Recargo |
 |---|---|---|
 | Hasta 6 meses antes del vencimiento | Sí | No |
-| Hasta 6 meses después del vencimiento | Sí | Sí — arancel mayor |
+| Hasta 6 meses después del vencimiento | Sí | Sí, con recargo adicional |
 | Más de 6 meses después del vencimiento | No | La marca cae definitivamente |
 
 ## Cómo renovar una marca registrada en Argentina: paso a paso
@@ -32,7 +32,7 @@ El trámite es 100% online en [portaltramites.inpi.gob.ar](https://portaltramite
 1. Ingresá al portal del INPI con tu CUIT y Clave Fiscal
 2. Buscá tu marca por número de expediente o denominación
 3. Seleccioná la opción de renovación
-4. Completá los datos — podés renovar en las mismas clases o modificar las posiciones
+4. Completá los datos. Podés renovar en las mismas clases o modificar las posiciones
 5. Abonás el arancel — se genera una boleta de pago por home banking, Pago Mis Cuentas, Rapipago o Red Link
 6. Listo — el INPI registra la renovación y la marca queda vigente por 10 años más
 
@@ -66,6 +66,16 @@ Lo que **no podés** hacer al renovar es cambiar la denominación o el logo de l
 ## ¿Cada cuánto hay que renovar?
 
 Cada 10 años indefinidamente, siempre que lo hagas dentro de los plazos. No hay un límite de renovaciones — una marca puede mantenerse registrada por décadas si se renueva correctamente.
+
+## La declaración jurada de uso a los 5 años
+
+Antes de llegar a la renovación, hay una obligación intermedia que muchos titulares no conocen: a los **5 años de concedida la marca**, el INPI exige presentar una **declaración jurada de uso** (DDJJ) acreditando que la marca está siendo utilizada en el comercio.
+
+Si no presentás esa DDJJ, la marca queda expuesta a ser cancelada por no uso. No es un trámite de renovación propiamente dicho — la marca sigue vigente durante los 10 años — pero es una obligación intermedia que hay que cumplir.
+
+El plazo para presentarla es dentro del quinto año contado desde la fecha de concesión. Si no lo hacés, cualquier tercero interesado puede iniciar una acción de cancelación por falta de uso.
+
+En la práctica, lo más sencillo es anotar dos fechas al momento de recibir el título: la del quinto año (DDJJ) y la del décimo año (renovación).
 
 ## Consejo práctico: agendá el vencimiento ahora
 
