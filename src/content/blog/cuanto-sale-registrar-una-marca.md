@@ -5,7 +5,7 @@ pubDate: '2026-05-01'
 tags: []
 ---
 
-> **Actualizado mayo 2026:** El INPI cambió la forma en que calcula sus aranceles. Ya no son montos fijos en pesos sino que se actualizan mensualmente según la inflación. Te explicamos cómo funciona y cuánto sale el trámite hoy.
+> **Actualizado junio 2026:** El INPI cambió la forma en que calcula sus aranceles. Ya no son montos fijos en pesos sino que se actualizan mensualmente según la inflación. Te explicamos cómo funciona y cuánto sale el trámite hoy.
 
 Si querés proteger el nombre de tu negocio, tu logo o una frase que te identifica, una de las primeras preguntas es: **¿cuánto sale registrar una marca en Argentina?** La buena noticia es que no es un proceso imposible ni excesivamente caro. Eso sí, tiene costos que conviene conocer de antemano para no llevarse sorpresas.
 
@@ -24,12 +24,12 @@ En la práctica esto significa que el costo siempre va a estar actualizado: no v
 
 **El costo base del trámite:**
 
-| Concepto | UMAPIS | Pesos aprox. (mayo 2026) |
+| Concepto | UMAPIS | Pesos aprox. (junio 2026) |
 |---|---|---|
-| Solicitud de registro — hasta 20 posiciones | 100 UMAPIS | $37.224 |
-| Cada posición adicional (más de 20) | 4 UMAPIS | $1.489 |
+| Solicitud de registro — hasta 20 posiciones | 100 UMAPIS | $38.192 |
+| Cada posición adicional (más de 20) | 4 UMAPIS | $1.528 |
 
-*1 UMAPI = $372,24 (mayo 2026). El valor en pesos varía mensualmente. Consultá el valor actualizado en [Aranceles INPI](https://portaltramites.inpi.gob.ar/InfoPortal/Aranceles) antes de presentar.*
+*1 UMAPI = $381,92 (junio 2026). El valor en pesos varía mensualmente. Consultá el valor actualizado en [Aranceles INPI](https://portaltramites.inpi.gob.ar/InfoPortal/Aranceles) antes de presentar.*
 
 El arancel se cobra **por clase**. Si querés registrar tu marca en dos rubros distintos — por ejemplo, ropa y accesorios — pagás dos veces el arancel base. Para entender qué es una clase y cuál te corresponde, leé: [clases de marcas para registrar en Argentina](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina).
 
@@ -48,7 +48,7 @@ Los honorarios varían según el estudio o profesional, pero como referencia gen
 
 Para un registro típico en una clase con hasta 20 posiciones:
 
-- **Arancel INPI:** ~$37.224 ARS (varía mensualmente según UMAPI)
+- **Arancel INPI:** ~$38.192 ARS (varía mensualmente según UMAPI)
 - **Honorarios profesionales:** $200.000–$300.000 ARS
 
 El arancel representa una fracción del costo total. La mayor parte del gasto suele ser el honorario profesional, que es lo que te garantiza que el trámite se hace bien desde el inicio.

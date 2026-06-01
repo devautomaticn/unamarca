@@ -46,7 +46,7 @@ El trámite es **100% online** ante el INPI a través de [portaltramites.inpi.go
 1. **Búsqueda previa:** verificá que tu marca esté disponible en las clases que te interesan. Leé: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente)
 2. **Definir las clases:** determiná en qué categorías de la Clasificación de Niza corresponde registrar
 3. **Presentar la solicitud online** con tu CUIT y Clave Fiscal nivel 2 o superior
-4. **Pagar el arancel:** se genera una boleta de pago al momento de la solicitud (100 UMAPIS por clase, aproximadamente $36.000 ARS al inicio del sistema en abril 2026, sujeto a actualización mensual)
+4. **Pagar el arancel:** se genera una boleta de pago al momento de la solicitud (100 UMAPIS por clase, aproximadamente $38.192 ARS en junio 2026, sujeto a actualización mensual)
 5. **Examen formal:** el INPI verifica que la solicitud esté completa y que la marca cumpla requisitos básicos
 6. **Publicación en el Boletín de Marcas:** tu solicitud se publica durante 30 días corridos para que terceros puedan presentar oposiciones
 7. **Concesión:** si no hay oposiciones, la marca se concede y recibís el título de marca
