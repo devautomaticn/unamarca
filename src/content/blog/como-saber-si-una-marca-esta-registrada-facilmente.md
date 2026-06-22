@@ -19,6 +19,8 @@ La herramienta oficial es el buscador de marcas del INPI, disponible en [portalt
 
 Ingresás el nombre que querés verificar, filtrás por "vigentes" (para ver marcas activas), y revisás los resultados. También conviene buscar marcas **en trámite**, porque una solicitud presentada antes que la tuya ya ocupa ese espacio aunque aún no tenga resolución.
 
+**Verificá tu marca ahora:** además del portal oficial, podés usar nuestra [herramienta gratuita para verificar la disponibilidad de tu marca](/verificar-marca). Ingresás el nombre y las clases de tu actividad, y te muestra en segundos los antecedentes en el archivo del INPI y si el camino está libre.
+
 Para la guía detallada de cómo usar el buscador paso a paso, incluyendo cómo interpretar cada campo y los errores más frecuentes, leé: [buscador de marcas INPI: cómo verificar si tu nombre está disponible](/blog/inpi-buscador-de-marcas-guia-para-registrar-tu-marca-en-argentina).
 
 ## ¿Qué significan los resultados?

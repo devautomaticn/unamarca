@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spec — Página Verificar Marca (Relevamiento) | UnaMarca</title>
+<style>
+  :root {
+    --navy: #0B1D3A;
+    --blue: #2563EB;
+    --green: #22C55E;
+    --ink: #1a2233;
+    --muted: #5b6678;
+    --line: #e4e8ee;
+    --bg: #f7f9fc;
+    --card: #ffffff;
+    --code-bg: #f1f4f9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 24px 96px; }
+  header.doc {
+    border-left: 4px solid var(--blue);
+    padding: 4px 0 4px 20px;
+    margin-bottom: 40px;
+  }
+  header.doc .kicker {
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--blue);
+    margin: 0 0 6px;
+  }
+  header.doc h1 { font-size: 28px; line-height: 1.2; margin: 0 0 8px; color: var(--navy); }
+  header.doc .meta { font-size: 13px; color: var(--muted); }
+  h2 {
+    font-size: 19px;
+    color: var(--navy);
+    margin: 48px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  h2 .num {
+    display: inline-block;
+    width: 26px; height: 26px;
+    line-height: 26px;
+    text-align: center;
+    background: var(--navy);
+    color: #fff;
+    border-radius: 7px;
+    font-size: 13px;
+    margin-right: 10px;
+    vertical-align: 2px;
+  }
+  h3 { font-size: 15px; margin: 24px 0 8px; color: var(--ink); }
+  p, li { font-size: 15px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+  th { background: var(--bg); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  td code, p code, li code { background: var(--code-bg); padding: 2px 6px; border-radius: 5px; font-size: 13px; font-family: "SF Mono", ui-monospace, Menlo, monospace; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+  .tag-free { background: #e7f8ee; color: #167c43; }
+  .tag-owned { background: #fdeecf; color: #95620a; }
+  pre {
+    background: var(--navy);
+    color: #d7e2f2;
+    padding: 18px 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.55;
+    font-family: "SF Mono", ui-monospace, Menlo, monospace;
+  }
+  pre .c { color: #7b8db0; }
+  .field { margin: 14px 0; }
+  .field .label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-bottom: 4px; }
+  .field .value { font-size: 15px; background: var(--code-bg); border-radius: 8px; padding: 10px 14px; font-family: "SF Mono", ui-monospace, Menlo, monospace; word-break: break-word; }
+  .lanes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 16px 0; }
+  .lane { background: var(--card); border: 1px solid var(--line); border-top: 3px solid var(--blue); border-radius: 10px; padding: 16px; }
+  .lane:nth-child(2) { border-top-color: var(--green); }
+  .lane:nth-child(3) { border-top-color: #6366F1; }
+  .lane h4 { margin: 0 0 6px; font-size: 14px; color: var(--navy); }
+  .lane .role { font-size: 12px; color: var(--muted); margin: 0 0 10px; }
+  .lane .kw { font-size: 12px; font-family: "SF Mono", ui-monospace, Menlo, monospace; color: var(--ink); background: var(--code-bg); padding: 6px 8px; border-radius: 6px; }
+  .callout { border-left: 4px solid var(--green); background: #f0fbf4; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 14px; }
+  .callout.warn { border-left-color: #f59e0b; background: #fffaf0; }
+  .fill { color: #b91c1c; font-weight: 700; }
+  ol li, ul li { margin: 5px 0; }
+  .flow { font-size: 14px; }
+  .flow strong { color: var(--navy); }
+  footer.doc { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+  @media (max-width: 640px) { .lanes { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="doc">
+  <p class="kicker">Especificación · UnaMarca</p>
+  <h1>Página «Verificar Marca» — Herramienta de Relevamiento</h1>
+  <p class="meta">
+    Slug objetivo: <code>/verificar-marca</code> &nbsp;·&nbsp;
+    Tipo: página de herramienta (tool page) &nbsp;·&nbsp;
+    Datos SEO: DataForSEO, Argentina (2032), es &nbsp;·&nbsp;
+    Estado: ✅ implementado y testeado (página + proxy + lógica CTA, validado contra el endpoint en vivo)
+  </p>
+</header>
+
+<!-- 1 -->
+<h2><span class="num">1</span>Objetivo</h2>
+<div class="card">
+  <p>Incorporar al dominio principal (<code>unamarca.com.ar</code>) una herramienta para que el
+  usuario final verifique si su marca está disponible para registrar en Argentina. Ante un
+  resultado de búsqueda exitoso, se muestra un botón <strong>«Solicitar Registro de Marca»</strong>
+  que redirige a WhatsApp con un mensaje pre-cargado.</p>
+  <p><strong>Por qué dominio principal y no el subdominio:</strong> la herramienta ya existe en
+  <code>vigilante.unamarca.com.ar/relevamiento</code>, pero Google trata el subdominio como sitio
+  aparte (casi sin autoridad ni tráfico orgánico). Llevarla al dominio principal consolida la
+  autoridad SEO y conecta la herramienta con el embudo de conversión del blog.</p>
+</div>
+
+<!-- 2 -->
+<h2><span class="num">2</span>Estrategia anti-canibalización — tres carriles</h2>
+<p>Tres páginas, tres intenciones de búsqueda distintas. Cada una gana su propia query; ninguna compite con otra.</p>
+<div class="lanes">
+  <div class="lane">
+    <h4>Enseñar cómo</h4>
+    <p class="role">Post informativo (existente)</p>
+    <div class="kw">cómo saber si una marca está registrada</div>
+  </div>
+  <div class="lane">
+    <h4>Explicar la herramienta oficial</h4>
+    <p class="role">Post buscador INPI (existente)</p>
+    <div class="kw">inpi consulta de marcas / buscador de marcas</div>
+  </div>
+  <div class="lane">
+    <h4>Hacerlo ahora</h4>
+    <p class="role">Página de herramienta (nueva)</p>
+    <div class="kw">verificar marca registrada / disponibilidad</div>
+  </div>
+</div>
+<div class="callout warn">
+  <strong>Regla de oro:</strong> la nueva página NO debe usar las palabras «buscador» ni
+  «consulta de marcas INPI» en su <code>&lt;title&gt;</code> / H1 — esos términos ya los posee el
+  post del buscador. Su carril propio es <strong>«verificar / disponibilidad»</strong>, sin dueño interno.
+</div>
+
+<!-- 3 -->
+<h2><span class="num">3</span>Metadatos de la página</h2>
+<div class="field">
+  <div class="label">URL / Slug</div>
+  <div class="value">https://unamarca.com.ar/verificar-marca</div>
+</div>
+<div class="field">
+  <div class="label">&lt;title&gt;</div>
+  <div class="value">Verificar Marca — Consultá Disponibilidad Gratis | UnaMarca</div>
+</div>
+<div class="field">
+  <div class="label">H1</div>
+  <div class="value">Verificá gratis si tu marca está disponible</div>
+</div>
+<div class="field">
+  <div class="label">Meta description (150–160 car.)</div>
+  <div class="value">Verificá gratis si tu marca está disponible para registrar en Argentina. Herramienta online en segundos. Si está libre, iniciá el registro al instante.</div>
+</div>
+<div class="field">
+  <div class="label">Canonical</div>
+  <div class="value">https://unamarca.com.ar/verificar-marca</div>
+</div>
+
+<!-- 4 -->
+<h2><span class="num">4</span>Keywords objetivo</h2>
+<p>Carril «verificar / disponibilidad»: volumen bajo pero <strong>sin dueño interno</strong> y de
+alta intención (usuario listo para actuar → encaja con el CTA de WhatsApp).</p>
+<table>
+  <thead><tr><th>Keyword</th><th>Vol/mes</th><th>KD</th><th>Estado</th></tr></thead>
+  <tbody>
+    <tr><td>inpi consulta de marcas</td><td>1.300–1.600</td><td>13–38</td><td><span class="tag tag-owned">ya es del post buscador</span></td></tr>
+    <tr><td>consultar marcas registradas</td><td>70</td><td>27</td><td><span class="tag tag-free">libre</span></td></tr>
+    <tr><td>consultar marca registrada</td><td>20</td><td>27</td><td><span class="tag tag-free">libre</span></td></tr>
+    <tr><td>busqueda de marca</td><td>40</td><td>—</td><td><span class="tag tag-free">libre</span></td></tr>
+    <tr><td>verificar marca registrada inpi</td><td>10</td><td>—</td><td><span class="tag tag-free">libre</span></td></tr>
+    <tr><td>verificar registro de marca</td><td>10</td><td>—</td><td><span class="tag tag-free">libre</span></td></tr>
+    <tr><td>verificar existencia de marca</td><td>10</td><td>—</td><td><span class="tag tag-free">libre</span></td></tr>
+  </tbody>
+</table>
+<h3>Frases que deben aparecer en la página (todas probadas en el SERP)</h3>
+<p><code>disponibilidad</code> · <code>gratis / gratuita</code> · <code>herramienta</code> · <code>verificar marca registrada</code></p>
+
+<!-- 5 -->
+<h2><span class="num">5</span>Evidencia del SERP</h2>
+<div class="card">
+  <p>SERP de <code>verificar marca registrada</code>, <code>consultar marcas registradas</code> y
+  <code>marca disponible</code> (DataForSEO, AR): <strong>el 100% de los resultados son herramientas
+  o bases de datos</strong>, no artículos. Google premia formato de herramienta en este carril.</p>
+  <ul>
+    <li>Dominan: <code>portaltramites.inpi.gob.ar</code>, <code>argentina.gob.ar</code>, <code>wipo.int</code>, <code>oepm.es</code>.</li>
+    <li><strong>Competidor batible:</strong> <code>marcasregistro.com.ar</code> rankea <strong>#3 en los tres términos</strong> con una tool page titulada <em>«Buscador de Marcas INPI — Consultá Disponibilidad Gratis»</em>. De ahí sale el patrón ganador: <strong>disponibilidad + gratis + herramienta</strong>.</li>
+    <li><strong>Des-canibalización:</strong> el post «Cómo saber…» hoy rankea débil (#8) en estas queries de herramienta — un artículo no puede ganarle a una tool aquí. La página dedicada hace que la query correcta la gane la página correcta.</li>
+    <li><strong>Cuidado con</strong> <code>marca disponible</code>: dispara AI Overview + People Also Ask (Google absorbe clics). Priorizar <code>verificar / consultar marca registrada</code>, que muestran solo orgánicos.</li>
+  </ul>
+</div>
+
+<!-- 6 -->
+<h2><span class="num">6</span>Estructura de la página</h2>
+<p>Página delgada en prosa: el protagonista es la herramienta. La explicación larga vive en los posts del blog (no duplicar aquí, eso recrearía la canibalización).</p>
+<ol>
+  <li><strong>H1 + sub-línea</strong> con la propuesta de valor (gratis, en segundos).</li>
+  <li><strong>La herramienta</strong> (campo de búsqueda + resultado). Above the fold.</li>
+  <li><strong>Bloque de resultado</strong> con el CTA de WhatsApp (ver §7).</li>
+  <li><strong>Párrafo corto</strong> (2–3 líneas) con las frases clave naturales.</li>
+  <li><strong>FAQ breve</strong> (3–4 preguntas) — opcional, apto para rich results.</li>
+  <li><strong>Enlace a las guías</strong>: «¿Querés entender qué significa cada resultado? Leé la guía completa.»</li>
+</ol>
+
+<!-- 7 -->
+<h2><span class="num">7</span>Contrato de la API + comportamiento de la herramienta</h2>
+<p>La página NO porta el motor: el engine (<code>search_marcas.py</code>) y la tabla
+<code>radar_solicitudes</code> viven en el VPS y son la única fuente de verdad. La isla Astro
+consume el endpoint vía proxy same-origin (ver §11) y renderiza los resultados nativamente.</p>
+
+<div class="card">
+  <h3>Endpoint</h3>
+  <p><code>POST /api/relevamiento/search</code> — origen real
+  <code>https://vigilante.unamarca.com.ar/api/relevamiento/search</code>, consumido como
+  <code>https://unamarca.com.ar/api/relevamiento/search</code> (proxy, §11).</p>
+  <p>Sin auth, pero <strong>requiere header <code>X-Requested-With: XMLHttpRequest</code></strong>
+  o devuelve <code>403</code> antes de procesar. El proxy lo inyecta server-side.</p>
+
+  <h3>Request (JSON)</h3>
+  <pre>{
+  <span class="c">"marca":</span>         "bilbao",                <span class="c">// REQUERIDO. string, trim, 1–100 chars. (campo = "marca")</span>
+  <span class="c">"clases":</span>        ["35","9"],              <span class="c">// REQUERIDO. array de clases como STRINGS "1".."45". Vacío → 400</span>
+  <span class="c">"modes":</span>         ["palabras","fonetica","contenida"], <span class="c">// REQUERIDO. subset de los 3</span>
+  <span class="c">"min_score":</span>     50,                      <span class="c">// REQUERIDO. int 30–100 (bool/float/fuera de rango → 400)</span>
+  <span class="c">"solo_vigentes":</span> false                    <span class="c">// OPCIONAL. bool, default false</span>
+}</pre>
+  <p style="font-size:13px;color:var(--muted)"><code>contenida</code> = substring (tu término dentro de
+  una marca más larga, ej. BILBAO ⊂ BILBAO AMOBLAMIENTOS) y NO está limitada por <code>min_score</code>.
+  No hay modo «todas las clases»: la búsqueda es por clase; para cubrir todo hay que enviar las 45
+  (costo lineal por clase — ver §3, limitar del lado cliente).</p>
+
+  <h3>Response 200 (JSON) — exactamente 9 campos por resultado</h3>
+  <pre>{
+  "results": [{
+    "acta":               "3456789",              <span class="c">// nro INPI (string|number|null) → /inpi/acta/&lt;acta&gt;</span>
+    "clase":              "35",                   <span class="c">// string — agrupar las tarjetas por esto</span>
+    "denominacion":       "BILBAO AMOBLAMIENTOS", <span class="c">// nombre de la marca en conflicto</span>
+    "estado_label":       "Concedida",            <span class="c">// label humano (enum abajo)</span>
+    "fecha_presentacion": "2018-06-12",           <span class="c">// ISO o null</span>
+    "fecha_vencimiento":  "2028-06-12",           <span class="c">// ISO o null</span>
+    "vigente":            true,                   <span class="c">// bool: vencimiento >= hoy</span>
+    "score":              92.0,                   <span class="c">// float 0–100 (bajo a propósito en "contenida")</span>
+    "match_type":         "fuzzy"                 <span class="c">// exact|fuzzy|token_sort|containment|phonetic|contenida</span>
+  }]
+}</pre>
+  <p style="font-size:13px;color:var(--muted)"><code>titular</code>, <code>tipo</code> y
+  <code>nro_resolucion</code> existen internamente pero se eliminan de la respuesta — NO disponibles
+  para el markup. Server ya deduplica por <code>acta</code> (mejor score), ordena vigentes-primero y
+  luego score desc; cap de 100 por clase.</p>
+
+  <h3>Enum <code>estado_label</code> (matchear por substring, no igualdad)</h3>
+  <p style="font-size:13px"><code>Concedida</code> · <code>Abandonada</code> · <code>Denegada</code> ·
+  <code>Nulidad Administrativa</code> · <code>Caduca Administrativa</code> · <code>Desistida</code> ·
+  <code>En trámite / sin resolución informada</code> · (raro) código crudo 1–2 letras.</p>
+
+  <h3>Errores</h3>
+  <table>
+    <thead><tr><th>Condición</th><th>Code</th><th>Body</th></tr></thead>
+    <tbody>
+      <tr><td>Falta header <code>X-Requested-With</code></td><td>403</td><td>HTML (sin JSON)</td></tr>
+      <tr><td>Validación (marca/clases/modes/min_score)</td><td>400</td><td><code>{"error":"&lt;mensaje es&gt;"}</code> — mostrar <code>.error</code> directo</td></tr>
+      <tr><td>Rate limit</td><td>429</td><td>flask-limiter default (sin JSON)</td></tr>
+      <tr><td>No manejado</td><td>500</td><td>HTML Flask default</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout">
+  <strong>Configuración del formulario (decidido).</strong>
+  <ul style="margin:8px 0 0">
+    <li><strong>Clases:</strong> el usuario elige clase(s) específicas <em>o</em> «Todas» (reusar el
+    selector de la v2 con su checkbox «Todas»). «Todas» = enviar las 45.</li>
+    <li><strong>Modes:</strong> ocultos. Se envía siempre <code>["palabras","fonetica"]</code>.
+    <strong>Sin <code>contenida</code>.</strong></li>
+    <li><strong>Slider de % similitud:</strong> visible (default 50%). Controla qué resultados se
+    <em>muestran</em>.</li>
+    <li><strong>Sólo vigentes:</strong> a criterio — puede ocultarse con default <code>false</code>.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3>Lógica de conversión — doble evaluación (display vs CTA)</h3>
+  <p>Dos umbrales distintos sobre la misma búsqueda:</p>
+  <ul>
+    <li><strong>Display:</strong> se muestran los resultados con <code>score ≥ valor del slider</code>
+    (lo que el usuario ve, agrupado por clase).</li>
+    <li><strong>CTA:</strong> el texto y la acción del botón dependen SIEMPRE de la evaluación a
+    <strong>umbral 60</strong> («búsqueda oculta»), independiente del slider.</li>
+  </ul>
+  <div class="callout">
+    <strong>Optimización — una sola llamada (importa por el rate-limit).</strong> No hace falta
+    pegarle dos veces al API. Pedir <code>min_score = min(slider, 60)</code>, mostrar
+    <code>results.filter(r =&gt; r.score ≥ slider)</code> y evaluar el CTA sobre los
+    <code>results</code> con <code>score ≥ 60</code>. Conducta idéntica a «dos búsquedas», mitad de llamadas.
+  </div>
+  <h3>Regla del botón</h3>
+  <pre><span class="c">// Set de evaluación del CTA: score>=60, VIGENTE, y EXCLUYENDO phonetic</span>
+const ctaSet = results.filter(r =&gt;
+  r.score &gt;= 60 && r.vigente && r.match_type !== "phonetic");
+const maxScore = Math.max(0, ...ctaSet.map(r =&gt; r.score));
+
+if (maxScore &gt;= 80) {
+  <span class="c">// parecido fuerte, vigente y NO fonético → rutear a humano</span>
+  boton = "Contactarnos por WhatsApp";
+} else {
+  <span class="c">// nada fuerte (incluye 0 resultados) → empujar conversión directa</span>
+  boton = "Solicitar Registro Inmediatamente";
+}</pre>
+  <p style="font-size:13px;color:var(--muted)">Borde: <code>score == 80</code> cuenta como conflicto
+  (<code>&gt;= 80</code> → Contactarnos).</p>
+  <div class="callout">
+    <strong>Evaluación del CTA (decidido):</strong> solo cuentan resultados <strong>vigentes</strong> y se
+    <strong>excluye <code>phonetic</code></strong> (puntúa fijo 85, inflaba el conflicto). Así «Solicitar
+    Registro Inmediatamente» aparece salvo que exista un parecido fuerte <em>real</em>
+    (fuzzy/token_sort/exact ≥ 80) sobre una marca con registro vigente. Importante: el
+    <strong>display (slider) sigue mostrando los fonéticos</strong> — esta exclusión afecta solo qué
+    botón se muestra, no qué resultados ve el usuario.
+  </div>
+
+  <h3>WhatsApp — link y mensajes (referencian Denominación + Clase(s))</h3>
+  <pre><span class="c">// Número destino:</span> wa.me/5491149712224
+https://wa.me/5491149712224?text=<span class="c">{mensaje url-encoded}</span>
+
+<span class="c">// {MARCA} = término buscado · {CLASES} = clases elegidas (o "todas las clases")</span>
+<span class="c">// {TOP_DENOM} = denominacion del result de mayor score</span>
+
+<span class="c">// Caso "Contactarnos" (maxScore &gt;= 80):</span>
+"Hola! Busqué la marca «{MARCA}» en la(s) clase(s) {CLASES} y aparecieron marcas
+ similares (ej. «{TOP_DENOM}»). Quiero asesorarme para registrarla."
+
+<span class="c">// Caso "Solicitar Registro Inmediatamente" (maxScore &lt; 80):</span>
+"Hola! Busqué la marca «{MARCA}» en la(s) clase(s) {CLASES} y parece estar
+ disponible. Quiero registrarla ya."</pre>
+
+  <h3>Payload real capturado (live, junio 2026)</h3>
+  <pre><span class="c">// POST {"marca":"bilbao","clases":["3","5","9"],"modes":["palabras","fonetica"],"min_score":60}</span>
+{"results":[
+  {"acta":"3777024","clase":"9","denominacion":"BILBO","estado_label":"Concedida",
+   "fecha_presentacion":"2019-02-06","fecha_vencimiento":"2029-02-06",
+   "vigente":true,"score":90.9,"match_type":"fuzzy"},
+  {"acta":"4318611","clase":"3","denominacion":"BIOLUBE","estado_label":"Concedida",
+   "vigente":true,"score":85.0,"match_type":"phonetic"},
+  {"acta":"4328674","clase":"5","denominacion":"BALBOA","estado_label":"Concedida",
+   "vigente":true,"score":85.0,"match_type":"phonetic"}
+  <span class="c">/* ...más resultados... */</span>
+]}
+<span class="c">// nombre inexistente → {"results":[]}  (→ Solicitar Inmediatamente)</span>
+<span class="c">// timing medido: ~0.9s wall / 3 clases (incl. red). "Todas" (45) escala → spinner.</span></pre>
+
+  <h3>Links a INPI (acta)</h3>
+  <p><code>/inpi/acta/&lt;acta&gt;</code> NO es un 302: INPI solo acepta POST, así que la ruta
+  devuelve un mini-HTML con un form auto-submit. Linkear cada resultado a
+  <code>https://vigilante.unamarca.com.ar/inpi/acta/&lt;acta&gt;</code> con <code>target="_blank"</code>
+  y dejar que el bounce haga el POST. No se puede deep-linkear INPI con GET. (Alternativa: replicar
+  el mismo form auto-POST en nuestro propio origen — es autocontenido, sin secretos.)</p>
+  <div class="callout">
+    Pre-cargar el término buscado hace que el lead llegue calificado y tibio. El click en el botón
+    <strong>es</strong> el evento de conversión (ver §9).
+  </div>
+</div>
+
+<!-- 8 -->
+<h2><span class="num">8</span>Plan de enlazado interno</h2>
+<p>Así fluye el volumen hacia la herramienta: se cosecha de los dos posts que ya rankean, no se gana directo en el SERP.</p>
+<table>
+  <thead><tr><th>Desde</th><th>Hacia</th><th>Anchor / CTA</th></tr></thead>
+  <tbody>
+    <tr><td>Post «inpi-buscador-de-marcas…» (1.600/mes)</td><td><code>/verificar-marca</code></td><td>«Probá nuestra herramienta para verificar tu marca →»</td></tr>
+    <tr><td>Post «como-saber-si-una-marca-esta-registrada»</td><td><code>/verificar-marca</code></td><td>«Verificá tu marca en segundos con nuestra herramienta →»</td></tr>
+    <tr><td><code>/verificar-marca</code></td><td>Post «como-saber…»</td><td>«¿Querés entender cada resultado? Leé la guía completa.»</td></tr>
+    <tr><td>Landing <code>/</code></td><td><code>/verificar-marca</code></td><td>Enlace en nav / sección de servicios.</td></tr>
+  </tbody>
+</table>
+<p style="font-size:14px;color:var(--muted)">Anchor text con la keyword propia de cada página (no la de la otra) para no señalarle a Google que son intercambiables.</p>
+
+<!-- 9 -->
+<h2><span class="num">9</span>Analítica y conversión</h2>
+<ul>
+  <li>Disparar conversión <strong>GA4 + Google Ads</strong> en el click de «Solicitar Registro de Marca».</li>
+  <li>Evento recomendado: <code>generate_lead</code> (GA4), con parámetro del término buscado.</li>
+  <li>Esto permite medir el embudo y, más adelante, correr Ads directo a <code>/verificar-marca</code>.</li>
+  <li>Opcional: evento separado en «búsqueda ejecutada» para medir uso vs. conversión.</li>
+</ul>
+
+<!-- 10 -->
+<h2><span class="num">10</span>Notas técnicas (Astro)</h2>
+<ul>
+  <li>Crear <code>src/pages/verificar-marca.astro</code> usando <code>&lt;BaseLayout&gt;</code> con <code>title</code>, <code>description</code> y <code>canonicalURL</code> propios.</li>
+  <li>Respetar el sistema de diseño (navy/blue, botones pill, fuente Inter).</li>
+  <li>La herramienta es una <strong>island</strong> de cliente (form + fetch + render); el resto del sitio sigue SSG sin JS. Consistente con el JS mínimo que ya usa <code>index.astro</code>.</li>
+  <li>Definir qué pasa con <code>vigilante.unamarca.com.ar/relevamiento</code>: mantener como producto Vigilante aparte, o <code>rel=canonical</code> hacia <code>/verificar-marca</code> para evitar contenido duplicado.</li>
+  <li>JSON-LD opcional: <code>WebApplication</code> o <code>FAQPage</code> si se incluye FAQ.</li>
+  <li>Agregar la página al enlazado interno y verificar que entre al sitemap.</li>
+</ul>
+
+<!-- 11 -->
+<h2><span class="num">11</span>Arquitectura de integración (API remota + proxy)</h2>
+<div class="card">
+  <p>El motor y la data se quedan en el VPS. La página estática los consume vía HTTP. Decisión
+  central: <strong>cómo cruzar de origen</strong>, ya verificado con DNS en vivo.</p>
+
+  <h3>Topología confirmada (dig + headers, junio 2026)</h3>
+  <ul>
+    <li><code>unamarca.com.ar</code> → nameservers Cloudflare, IPs Cloudflare, <code>server: cloudflare</code> + <code>cf-ray</code>. <strong>Está detrás de Cloudflare (Pages).</strong></li>
+    <li><code>vigilante.unamarca.com.ar</code> → <code>46.224.159.63</code> (Hetzner), <code>server: nginx</code>, sin <code>cf-ray</code>. DNS-only, directo al VPS. <code>X-Frame-Options: DENY</code> → iframe bloqueado (la API es el único camino).</li>
+  </ul>
+
+  <h3>El problema del cruce de origen</h3>
+  <p>Fetch directo <code>unamarca.com.ar → vigilante.unamarca.com.ar</code> falla: no hay headers
+  CORS, y <code>X-Requested-With</code> es un header no-simple que dispara un preflight
+  <code>OPTIONS</code> que la ruta no maneja → falla. No es opcional resolverlo.</p>
+
+  <h3 style="color:var(--green)">Solución recomendada — proxy same-origin vía Cloudflare Pages Function</h3>
+  <p>El proxy vive del lado de <strong>unamarca (Cloudflare Pages)</strong>, NO en el nginx de
+  vigilante. Una Pages Function reescribe <code>unamarca.com.ar/api/relevamiento/*</code> → VPS,
+  inyecta el header server-side, y el browser hace una llamada same-origin (sin CORS, sin preflight).</p>
+  <pre><span class="c">// functions/api/relevamiento/search.js (Cloudflare Pages Function)</span>
+export async function onRequestPost({ request }) {
+  const body = await request.text();
+  const upstream = await fetch(
+    "https://vigilante.unamarca.com.ar/api/relevamiento/search",
+    { method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Requested-With": "XMLHttpRequest"  <span class="c">// inyectado acá</span>
+      },
+      body });
+  return new Response(upstream.body, {
+    status: upstream.status,
+    headers: { "Content-Type": "application/json" }
+  });
+}</pre>
+  <p style="font-size:13px;color:var(--muted)">Mismo patrón para <code>/inpi/acta/&lt;acta&gt;</code>
+  si se decide no linkear directo a vigilante.</p>
+
+  <h3>Rate limiting — moverlo a Cloudflare</h3>
+  <div class="callout warn">
+    El flask-limiter del VPS (<code>20/hora</code> por IP) <strong>no sirve detrás del proxy</strong>:
+    sin <code>ProxyFix</code>, <code>get_remote_address</code> ve una sola IP de egress de Cloudflare
+    → límite global, no por usuario. Además es <code>memory://</code> por worker (×2 con
+    <code>-w 2</code>, se borra al reiniciar). <strong>Solución:</strong> una regla de Rate Limiting
+    de Cloudflare sobre <code>/api/relevamiento/*</code>. Eso protege la tabla SQLite y evita tocar
+    el plumbing de IP real en el VPS. El peor caso a limitar: muchas clases + modo <code>contenida</code>.
+  </div>
+
+  <h3>Alternativa (si no se usa Cloudflare Pages Function)</h3>
+  <p>Agregar <code>flask-cors</code> (no instalado hoy) scoped a <code>/api/relevamiento/*</code> para
+  el origen de unamarca, manejar el preflight <code>OPTIONS</code> y echo de
+  <code>X-Requested-With</code> en <code>Access-Control-Allow-Headers</code>. Más piezas móviles —
+  preferir el proxy.</p>
+</div>
+
+<!-- pendientes -->
+<h2><span class="num">!</span>Implementado · pendientes antes de lanzar</h2>
+<p style="font-size:14px;color:var(--muted)">Archivos: <code>src/pages/verificar-marca.astro</code> ·
+<code>functions/api/relevamiento/search.ts</code> (proxy) · link en nav de <code>BaseLayout.astro</code>.
+Decidido y construido: WhatsApp 5491149712224 · clases específicas/Todas · modes ocultos
+(palabras+fonetica, sin contenida) · slider visible · «Sólo vigentes» opcional para el usuario ·
+FAQ + FAQPage JSON-LD · acta vía vigilante <code>/inpi/acta/</code> · Vigilante sigue como producto
+aparte · lógica CTA doble-umbral (display=slider, CTA=60, vigentes y sin phonetic, una sola llamada) ·
+dedupe de filas por clase+denominación. Testeado: build, proxy e2e (wrangler), lógica contra el
+endpoint en vivo, render en navegador (conflicto y disponible).</p>
+<ul>
+  <li><span class="fill">[CONFIG]</span> Crear la regla de Rate Limiting de Cloudflare sobre
+  <code>/api/relevamiento/*</code> antes de promocionar la página (el límite del VPS queda global detrás del proxy).</li>
+  <li><span class="fill">[CONFIG]</span> Confirmar/registrar la conversión GA4/Ads para el evento
+  <code>generate_lead</code> / <code>whatsapp_click</code> del CTA (ver <code>reference_google_ads.md</code>).</li>
+  <li><span class="fill">[CONTENIDO]</span> Agregar CTAs in-content hacia <code>/verificar-marca</code> en
+  los dos posts que rankean (§8) — respetando las reglas de estilo (sin em dashes).</li>
+  <li><span class="fill">[OPCIONAL]</span> Agregar redirect/append en <code>public/_redirects</code> si se
+  quiere captar variantes de URL.</li>
+</ul>
+
+<footer class="doc">
+  Fuente de datos: DataForSEO — Argentina (location 2032), idioma es. ·
+  Spec derivada del análisis de keywords + SERP de junio 2026. ·
+  Ver también <code>docs/seo-plan.md</code>.
+</footer>
+
+</div>
+</body>
+</html>

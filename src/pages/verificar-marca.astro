@@ -1,0 +1,654 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const SITE_URL = 'https://unamarca.com.ar';
+const canonicalURL = `${SITE_URL}/verificar-marca`;
+
+// Niza class names (reused from functions/api/submit-form.ts).
+const NIZA: { n: number; name: string }[] = [
+  { n: 1, name: 'Productos químicos industriales y científicos' },
+  { n: 2, name: 'Pinturas, barnices, lacas, preservativos' },
+  { n: 3, name: 'Cosméticos, perfumería, limpieza' },
+  { n: 4, name: 'Aceites y grasas industriales, combustibles' },
+  { n: 5, name: 'Productos farmacéuticos y veterinarios' },
+  { n: 6, name: 'Metales comunes y sus aleaciones' },
+  { n: 7, name: 'Máquinas y máquinas herramientas' },
+  { n: 8, name: 'Herramientas e instrumentos de mano' },
+  { n: 9, name: 'Aparatos científicos, ópticos, informáticos, electrónicos' },
+  { n: 10, name: 'Aparatos médicos y quirúrgicos' },
+  { n: 11, name: 'Aparatos de alumbrado, calefacción, refrigeración' },
+  { n: 12, name: 'Vehículos y medios de transporte' },
+  { n: 13, name: 'Armas de fuego, municiones, explosivos' },
+  { n: 14, name: 'Joyería, relojería, metales preciosos' },
+  { n: 15, name: 'Instrumentos musicales' },
+  { n: 16, name: 'Papel, cartón, artículos de imprenta' },
+  { n: 17, name: 'Caucho, goma, plásticos semielaborados' },
+  { n: 18, name: 'Cuero, artículos de viaje, bolsos' },
+  { n: 19, name: 'Materiales de construcción no metálicos' },
+  { n: 20, name: 'Muebles, espejos, marcos, madera' },
+  { n: 21, name: 'Utensilios del hogar, vidrio, porcelana' },
+  { n: 22, name: 'Cuerdas, redes, tiendas, telas técnicas' },
+  { n: 23, name: 'Hilos y fibras textiles industriales' },
+  { n: 24, name: 'Tejidos y sustitutos; ropa de hogar' },
+  { n: 25, name: 'Prendas de vestir, calzado, sombrerería' },
+  { n: 26, name: 'Encajes, bordados, botones, adornos textiles' },
+  { n: 27, name: 'Alfombras, revestimientos de suelos' },
+  { n: 28, name: 'Juegos, juguetes, artículos deportivos' },
+  { n: 29, name: 'Carne, pescado, aves, conservas, lácteos' },
+  { n: 30, name: 'Café, té, panadería, repostería, condimentos' },
+  { n: 31, name: 'Productos agrícolas, hortícolas, animales vivos' },
+  { n: 32, name: 'Cervezas, aguas, bebidas sin alcohol' },
+  { n: 33, name: 'Bebidas alcohólicas (excepto cervezas)' },
+  { n: 34, name: 'Tabaco, cigarrillos, artículos para fumadores' },
+  { n: 35, name: 'Publicidad, gestión comercial, oficina' },
+  { n: 36, name: 'Seguros, finanzas, inmobiliaria' },
+  { n: 37, name: 'Construcción, reparación, instalación' },
+  { n: 38, name: 'Telecomunicaciones' },
+  { n: 39, name: 'Transporte, logística, almacenamiento' },
+  { n: 40, name: 'Tratamiento de materiales, reciclaje' },
+  { n: 41, name: 'Educación, entretenimiento, deporte, cultura' },
+  { n: 42, name: 'Servicios científicos, tecnológicos, informáticos' },
+  { n: 43, name: 'Restauración, alojamiento temporal' },
+  { n: 44, name: 'Servicios médicos, veterinarios, de belleza' },
+  { n: 45, name: 'Servicios jurídicos, de seguridad, personales' },
+];
+
+const faqs = [
+  {
+    q: '¿Cómo sé si mi marca está disponible para registrar?',
+    a: 'Ingresá el nombre que querés registrar y las clases de tu actividad. La herramienta busca antecedentes en el archivo de solicitudes del INPI y te muestra si existen marcas iguales o parecidas que podrían bloquear tu registro. Si no aparecen coincidencias fuertes, el camino está libre.',
+  },
+  {
+    q: '¿La verificación es gratis?',
+    a: 'Sí, verificar la disponibilidad de tu marca es totalmente gratis y no requiere registro previo. Podés hacer todas las búsquedas que necesites.',
+  },
+  {
+    q: '¿Buscar acá reserva o registra mi marca?',
+    a: 'No. Esta herramienta solo verifica antecedentes; no reserva ni registra nada. El registro se solicita formalmente ante el INPI. Si tu marca aparece disponible, podés iniciar el trámite con nosotros por WhatsApp.',
+  },
+  {
+    q: '¿Qué pasa si encuentro una marca parecida a la mía?',
+    a: 'Una marca parecida no siempre impide el registro: depende de la clase, del grado de similitud y de si está vigente. Si aparece una coincidencia fuerte, lo mejor es asesorarte antes de presentar la solicitud para no perder el arancel en una marca que podría recibir oposición.',
+  },
+  {
+    q: '¿Qué son las clases de Niza y cuál me corresponde?',
+    a: 'El INPI clasifica las marcas en 45 clases según los productos o servicios. Tenés que registrar tu marca en la clase de tu actividad (por ejemplo, indumentaria es la clase 25 y servicios gastronómicos la 43). Si no estás seguro, podés seleccionar todas las clases o consultarnos.',
+  },
+  {
+    q: '¿De dónde salen los resultados?',
+    a: 'Los resultados provienen de nuestro archivo de solicitudes del INPI, que mantenemos actualizado. Para el detalle oficial de cada antecedente podés abrir el acta directamente en el portal del INPI desde cada resultado.',
+  },
+];
+
+const structuredData = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'Verificar Marca — UnaMarca',
+    description: 'Herramienta gratuita para verificar si una marca está disponible para registrar en Argentina, consultando antecedentes en el archivo de solicitudes del INPI.',
+    url: canonicalURL,
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'ARS' },
+    provider: { '@type': 'Organization', name: 'UnaMarca', url: SITE_URL },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Inicio', item: SITE_URL },
+      { '@type': 'ListItem', position: 2, name: 'Verificar Marca', item: canonicalURL },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="Verificar Marca — Consultá Disponibilidad Gratis | UnaMarca"
+  description="Verificá gratis si tu marca está disponible para registrar en Argentina. Herramienta online en segundos. Si está libre, iniciá el registro al instante."
+  canonicalURL={canonicalURL}
+  type="website"
+  structuredData={structuredData}
+>
+  <!-- =====================================================
+       TOOL
+  ====================================================== -->
+  <section class="vm-section">
+    <div class="container">
+      <header class="vm-hero">
+        <span class="section-label">Herramienta gratuita</span>
+        <h1>Verificá gratis si tu <span class="gradient-text">marca está disponible</span></h1>
+        <p class="vm-hero-sub">
+          Buscá antecedentes en el archivo de solicitudes del INPI en segundos.
+          Ingresá el nombre de tu marca, elegí las clases de tu actividad y te decimos si el camino está libre.
+        </p>
+      </header>
+
+      <div class="vm-card">
+        <form id="vm-form" class="vm-form" novalidate>
+          <!-- Nombre de marca -->
+          <div class="vm-field">
+            <label for="vm-marca">Nombre de marca <span class="vm-req">*</span></label>
+            <input
+              id="vm-marca"
+              type="text"
+              maxlength="100"
+              autocomplete="off"
+              placeholder="Ingresá el nombre de tu marca…"
+              required
+            />
+          </div>
+
+          <!-- Clases Niza -->
+          <div class="vm-field">
+            <label>
+              Clases <span class="vm-req">*</span>
+              <span class="vm-hint-inline">— elegí tu rubro o seleccioná todas</span>
+            </label>
+            <div class="vm-classbox">
+              <div class="vm-classbox-top">
+                <input id="vm-class-search" type="text" autocomplete="off" placeholder="Buscar clase…" />
+                <label class="vm-all"><input type="checkbox" id="vm-all" /> Todas</label>
+              </div>
+              <div class="vm-class-count"><span id="vm-count">0</span> clases seleccionadas</div>
+              <div class="vm-class-list" id="vm-class-list">
+                {NIZA.map((c) => (
+                  <label class="vm-class-item" data-text={`${c.n} ${c.name.toLowerCase()}`}>
+                    <input type="checkbox" name="clase" value={String(c.n)} />
+                    <span class="vm-class-n">{c.n}</span>
+                    <span class="vm-class-name">{c.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <!-- Slider de similitud -->
+          <div class="vm-field">
+            <label for="vm-score">
+              Sensibilidad de la búsqueda
+              <span class="vm-score-val">Similitud: <span id="vm-score-out">50</span>%</span>
+            </label>
+            <input id="vm-score" type="range" min="30" max="100" value="50" step="5" />
+            <p class="vm-hint">Más bajo incluye parecidos lejanos · más alto solo coincidencias fuertes.</p>
+          </div>
+
+          <!-- Solo vigentes -->
+          <label class="vm-check">
+            <input type="checkbox" id="vm-vigentes" />
+            Mostrar solo marcas con registro vigente
+          </label>
+
+          <button type="submit" class="btn btn-primary vm-submit" id="vm-submit">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" />
+              <path d="M16 16l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+            <span class="vm-submit-label">Buscar</span>
+          </button>
+
+          <p id="vm-error" class="vm-form-error" hidden></p>
+        </form>
+      </div>
+
+      <!-- Resultados (renderizados por JS) -->
+      <div id="vm-results" class="vm-results" hidden></div>
+    </div>
+  </section>
+
+  <!-- =====================================================
+       SEO COPY
+  ====================================================== -->
+  <section class="vm-copy-section">
+    <div class="container">
+      <div class="vm-copy">
+        <h2>Verificar una marca registrada en Argentina, antes de registrarla</h2>
+        <p>
+          Antes de invertir en tu marca conviene <strong>verificar si ya está registrada</strong> o si
+          hay solicitudes parecidas en trámite. Presentar una marca en conflicto puede costarte el
+          arancel del INPI y una posible oposición. Esta herramienta consulta la disponibilidad de tu
+          marca al instante, gratis y sin registrarte.
+        </p>
+        <p>
+          Si el resultado muestra que tu marca está disponible, el siguiente paso es presentar la
+          solicitud ante el INPI cuanto antes — en Argentina la prioridad es de quien registra primero.
+          ¿Querés entender qué significa cada resultado?
+          Leé la guía <a href="/blog/como-saber-si-una-marca-esta-registrada-facilmente">cómo saber si una marca está registrada</a>
+          o conocé en detalle el <a href="/blog/inpi-buscador-de-marcas-guia-para-registrar-tu-marca-en-argentina">buscador de marcas del INPI</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================
+       FAQ
+  ====================================================== -->
+  <section class="faq-section" aria-labelledby="faq-heading">
+    <div class="container">
+      <header class="section-header">
+        <span class="section-label">FAQ</span>
+        <h2 id="faq-heading">Preguntas frecuentes</h2>
+        <p class="section-subtitle">Sobre cómo verificar la disponibilidad de tu marca.</p>
+      </header>
+
+      <ul class="faq-list" role="list">
+        {faqs.map((f) => (
+          <li>
+            <details class="faq-item">
+              <summary>{f.q}</summary>
+              <div class="faq-body"><p>{f.a}</p></div>
+            </details>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+</BaseLayout>
+
+<style is:global>
+  /* ===== Verificar Marca tool (vm-) ===== */
+  .vm-section { padding: 2rem 0 1.5rem; background: var(--c-bg-alt); }
+  .vm-hero { max-width: 600px; margin: 0 auto 1.15rem; text-align: center; }
+  .vm-hero h1 { font-size: clamp(1.55rem, 3vw, 2rem); line-height: 1.12; margin: 0.45rem 0 0.55rem; letter-spacing: -0.02em; }
+  .vm-hero-sub { color: var(--c-text-muted); font-size: 0.94rem; line-height: 1.5; }
+
+  .vm-card {
+    max-width: 660px; margin: 0 auto;
+    background: var(--c-bg); border: 1px solid var(--c-border);
+    border-radius: var(--r-lg); padding: 1.4rem 1.5rem;
+    box-shadow: 0 16px 40px -28px rgba(11,29,58,0.22);
+  }
+  .vm-form { display: flex; flex-direction: column; gap: 1rem; }
+  .vm-field { display: flex; flex-direction: column; gap: 0.4rem; }
+  .vm-field > label { font-weight: 600; font-size: 0.9rem; color: var(--c-navy); }
+  .vm-req { color: var(--c-blue); }
+  .vm-hint-inline { font-weight: 400; color: var(--c-text-muted); font-size: 0.85rem; }
+  .vm-hint { font-size: 0.82rem; color: var(--c-text-muted); margin: 0; }
+
+  .vm-field input[type="text"] {
+    width: 100%; padding: 0.6rem 0.85rem; font-size: 0.95rem; font-family: var(--font);
+    border: 1.5px solid var(--c-border); border-radius: var(--r-md); background: var(--c-bg);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .vm-field input[type="text"]:focus {
+    outline: none; border-color: var(--c-blue); box-shadow: 0 0 0 3px var(--c-blue-light);
+  }
+
+  /* Class selector */
+  .vm-classbox { border: 1.5px solid var(--c-border); border-radius: var(--r-md); overflow: hidden; }
+  .vm-classbox-top { display: flex; gap: 0.5rem; padding: 0.6rem; border-bottom: 1px solid var(--c-border-light); align-items: center; }
+  .vm-classbox-top input[type="text"] { flex: 1; border: 1.5px solid var(--c-border); border-radius: var(--r-sm); padding: 0.55rem 0.75rem; font-size: 0.92rem; font-family: var(--font); }
+  .vm-classbox-top input[type="text"]:focus { outline: none; border-color: var(--c-blue); box-shadow: 0 0 0 3px var(--c-blue-light); }
+  .vm-all { display: flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; font-weight: 600; color: var(--c-navy); white-space: nowrap; cursor: pointer; padding: 0 0.5rem; }
+  .vm-class-count { padding: 0.4rem 0.85rem; font-size: 0.8rem; color: var(--c-blue); font-weight: 600; background: var(--c-blue-light); }
+  .vm-class-list { max-height: 182px; overflow-y: auto; }
+  .vm-class-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.42rem 0.85rem; cursor: pointer; font-size: 0.88rem; border-top: 1px solid var(--c-border-light); }
+  .vm-class-item:hover { background: var(--c-bg-alt); }
+  .vm-class-item.vm-hidden { display: none; }
+  .vm-class-n { display: inline-flex; align-items: center; justify-content: center; min-width: 1.5rem; height: 1.5rem; padding: 0 0.35rem; background: var(--c-blue-light); color: var(--c-blue); border-radius: var(--r-sm); font-size: 0.78rem; font-weight: 700; }
+  .vm-class-name { color: var(--c-text); }
+  .vm-class-item input[type="checkbox"], .vm-check input[type="checkbox"], .vm-all input[type="checkbox"] { width: 1.05rem; height: 1.05rem; accent-color: var(--c-blue); cursor: pointer; }
+
+  /* Slider */
+  .vm-score-val { float: right; color: var(--c-blue); font-weight: 700; font-size: 0.9rem; }
+  input[type="range"]#vm-score { width: 100%; accent-color: var(--c-blue); cursor: pointer; }
+
+  .vm-check { display: flex; align-items: center; gap: 0.55rem; font-size: 0.92rem; color: var(--c-text); cursor: pointer; }
+
+  .vm-submit { width: 100%; justify-content: center; font-size: 1rem; padding: 0.78rem; }
+  .vm-submit[disabled] { opacity: 0.6; cursor: progress; }
+
+  .vm-form-error { color: #b91c1c; font-size: 0.9rem; font-weight: 500; margin: 0; }
+
+  /* Results */
+  .vm-results { max-width: 760px; margin: 1.5rem auto 0; scroll-margin-top: 80px; }
+
+  .vm-verdict { border-radius: var(--r-lg); padding: 1.4rem; text-align: center; margin-bottom: 1.35rem; }
+  .vm-verdict--ok { background: var(--c-green-light); border: 1px solid #bbf7d0; }
+  .vm-verdict--warn { background: #FEF3C7; border: 1px solid #fde68a; }
+  .vm-verdict-icon { width: 46px; height: 46px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 0.7rem; }
+  .vm-verdict--ok .vm-verdict-icon { background: var(--c-green); color: #fff; }
+  .vm-verdict--warn .vm-verdict-icon { background: var(--c-amber); color: #fff; }
+  .vm-verdict h2 { font-size: 1.3rem; margin: 0 0 0.4rem; color: var(--c-navy); }
+  .vm-verdict p { color: var(--c-text-muted); margin: 0 auto 1rem; max-width: 460px; font-size: 0.95rem; }
+
+  .vm-summary { font-size: 0.88rem; color: var(--c-text-muted); margin-bottom: 0.85rem; font-weight: 500; }
+
+  /* Collapsible groups */
+  .vm-group { border: 1px solid var(--c-border); border-radius: var(--r-md); margin-bottom: 0.6rem; overflow: hidden; background: var(--c-bg); }
+  .vm-group-head {
+    padding: 0.65rem 1rem; font-weight: 700; color: var(--c-navy); font-size: 0.9rem;
+    background: var(--c-bg-alt); display: flex; justify-content: space-between; align-items: center;
+    gap: 0.75rem; cursor: pointer; list-style: none; user-select: none;
+  }
+  .vm-group-head::-webkit-details-marker { display: none; }
+  .vm-group-title { display: flex; align-items: center; gap: 0.55rem; }
+  .vm-group-title::before {
+    content: ''; width: 6px; height: 6px; flex-shrink: 0;
+    border-right: 2px solid var(--c-text-muted); border-bottom: 2px solid var(--c-text-muted);
+    transform: rotate(-45deg); transition: transform 0.15s;
+  }
+  details.vm-group[open] .vm-group-title::before { transform: rotate(45deg); }
+  .vm-group-badge { font-size: 0.74rem; font-weight: 600; color: var(--c-blue); background: var(--c-blue-light); border-radius: 100px; padding: 0.18rem 0.6rem; white-space: nowrap; }
+  .vm-group-badge--empty { color: var(--c-text-muted); background: var(--c-border-light); }
+  .vm-empty { padding: 0.8rem 1rem; color: var(--c-text-muted); font-size: 0.86rem; border-top: 1px solid var(--c-border-light); }
+  .vm-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  .vm-table th { text-align: left; padding: 0.6rem 1.15rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--c-text-muted); border-top: 1px solid var(--c-border-light); }
+  .vm-table td { padding: 0.65rem 1.15rem; border-top: 1px solid var(--c-border-light); vertical-align: middle; }
+  .vm-table tr:hover td { background: var(--c-bg-alt); }
+  .vm-acta { color: var(--c-blue); font-weight: 600; text-decoration: none; }
+  .vm-acta:hover { text-decoration: underline; }
+  .vm-denom { font-weight: 600; color: var(--c-navy); }
+  .vm-estado { font-weight: 600; font-size: 0.82rem; }
+  .vm-estado--ok { color: #15803D; }
+  .vm-estado--warn { color: var(--c-amber); }
+  .vm-estado--off { color: var(--c-text-muted); }
+  .vm-sim { font-weight: 700; color: var(--c-blue); background: var(--c-blue-light); border-radius: var(--r-sm); padding: 0.15rem 0.5rem; font-size: 0.82rem; white-space: nowrap; }
+  .vm-table-wrap { overflow-x: auto; }
+
+  .vm-copy-section { padding: 3rem 0; }
+  .vm-copy { max-width: var(--prose-width); margin: 0 auto; }
+  .vm-copy h2 { font-size: 1.6rem; color: var(--c-navy); margin-bottom: 1rem; letter-spacing: -0.01em; }
+  .vm-copy p { color: var(--c-text); margin-bottom: 1rem; }
+  .vm-copy a { color: var(--c-blue); font-weight: 500; }
+
+  @media (max-width: 560px) {
+    .vm-card { padding: 1.5rem 1.15rem; }
+    .vm-table th:nth-child(4), .vm-table td:nth-child(4) { display: none; } /* hide Ingreso on mobile */
+  }
+</style>
+
+<script>
+  const WA_NUMBER = '5491149712224';
+  const ACTA_BASE = 'https://vigilante.unamarca.com.ar/inpi/acta/';
+
+  const form = document.getElementById('vm-form') as HTMLFormElement;
+  const marcaInput = document.getElementById('vm-marca') as HTMLInputElement;
+  const classList = document.getElementById('vm-class-list') as HTMLElement;
+  const classSearch = document.getElementById('vm-class-search') as HTMLInputElement;
+  const allCheckbox = document.getElementById('vm-all') as HTMLInputElement;
+  const countOut = document.getElementById('vm-count') as HTMLElement;
+  const scoreInput = document.getElementById('vm-score') as HTMLInputElement;
+  const scoreOut = document.getElementById('vm-score-out') as HTMLElement;
+  const vigentesInput = document.getElementById('vm-vigentes') as HTMLInputElement;
+  const submitBtn = document.getElementById('vm-submit') as HTMLButtonElement;
+  const submitLabel = document.querySelector('.vm-submit-label') as HTMLElement;
+  const errorEl = document.getElementById('vm-error') as HTMLElement;
+  const resultsEl = document.getElementById('vm-results') as HTMLElement;
+
+  const classChecks = () =>
+    Array.from(classList.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'));
+
+  // Build {number: name} map from the rendered list.
+  const NIZA_NAMES: Record<string, string> = {};
+  classList.querySelectorAll<HTMLElement>('.vm-class-item').forEach((item) => {
+    const cb = item.querySelector<HTMLInputElement>('input')!;
+    const name = item.querySelector<HTMLElement>('.vm-class-name')!.textContent || '';
+    NIZA_NAMES[cb.value] = name;
+  });
+
+  function selectedClasses(): string[] {
+    return classChecks().filter((c) => c.checked).map((c) => c.value);
+  }
+
+  function updateCount() {
+    const sel = selectedClasses();
+    countOut.textContent = String(sel.length);
+    allCheckbox.checked = sel.length === classChecks().length;
+  }
+
+  // Class search filter
+  classSearch.addEventListener('input', () => {
+    const q = classSearch.value.trim().toLowerCase();
+    classList.querySelectorAll<HTMLElement>('.vm-class-item').forEach((item) => {
+      const text = item.getAttribute('data-text') || '';
+      item.classList.toggle('vm-hidden', q !== '' && !text.includes(q));
+    });
+  });
+
+  // "Todas" toggle
+  allCheckbox.addEventListener('change', () => {
+    classChecks().forEach((c) => (c.checked = allCheckbox.checked));
+    updateCount();
+  });
+  classList.addEventListener('change', updateCount);
+
+  // Slider output
+  scoreInput.addEventListener('input', () => {
+    scoreOut.textContent = scoreInput.value;
+  });
+
+  // Helpers
+  function escapeHtml(s: string): string {
+    return s.replace(/[&<>"']/g, (c) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string)
+    );
+  }
+  function fmtDate(iso: string | null): string {
+    if (!iso) return '—';
+    const [y, m, d] = iso.split('-');
+    return d && m && y ? `${d}/${m}/${y}` : iso;
+  }
+  function estadoClass(label: string): string {
+    if (label.includes('Concedida')) return 'vm-estado--ok';
+    if (label.includes('trámite') || label.includes('tramite') || label.includes('resoluci'))
+      return 'vm-estado--warn';
+    return 'vm-estado--off';
+  }
+  function estadoLabel(label: string): string {
+    // Collapse the long pending label to a clean "En trámite".
+    if (label.includes('trámite') || label.includes('tramite') || label.includes('resoluci'))
+      return 'En trámite';
+    return label;
+  }
+  function classesPhrase(sel: string[]): string {
+    if (sel.length >= 45) return 'todas las clases';
+    const nums = sel.map(Number).sort((a, b) => a - b).map(String);
+    if (nums.length === 1) return `la clase ${nums[0]}`;
+    return `las clases ${nums.slice(0, -1).join(', ')} y ${nums[nums.length - 1]}`;
+  }
+  function waLink(text: string): string {
+    return `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`;
+  }
+  function track(event: string, params: Record<string, unknown> = {}) {
+    if (typeof (window as any).gtag === 'function') (window as any).gtag('event', event, params);
+  }
+
+  type Result = {
+    acta: string | number | null;
+    clase: string;
+    denominacion: string;
+    estado_label: string;
+    fecha_presentacion: string | null;
+    fecha_vencimiento: string | null;
+    vigente: boolean;
+    score: number;
+    match_type: string;
+  };
+
+  function render(results: Result[], sel: string[], slider: number) {
+    // Display set: score >= slider value
+    const display = results.filter((r) => r.score >= slider);
+
+    // Dedupe display rows by class + denominación so the same brand name (which can
+    // appear under many actas) shows once — keep the strongest, prefer vigente.
+    const displaySorted = display
+      .slice()
+      .sort((a, b) => (b.vigente ? 1 : 0) - (a.vigente ? 1 : 0) || b.score - a.score);
+    const seen = new Set<string>();
+    const displayRows: Result[] = [];
+    for (const r of displaySorted) {
+      const key = r.clase + '|' + r.denominacion.trim().toUpperCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      displayRows.push(r);
+    }
+
+    // CTA evaluation set: score >= 60, vigente, EXCLUDING phonetic matches
+    const ctaSet = results.filter(
+      (r) => r.score >= 60 && r.vigente && r.match_type !== 'phonetic'
+    );
+    const maxScore = ctaSet.reduce((m, r) => Math.max(m, r.score), 0);
+    const conflict = maxScore >= 80;
+    const top = ctaSet.slice().sort((a, b) => b.score - a.score)[0];
+
+    const marca = marcaInput.value.trim();
+    const phrase = classesPhrase(sel);
+
+    // --- Verdict / CTA ---
+    let verdict: string;
+    if (conflict) {
+      const msg = `Hola! Busqué la marca «${marca}» en ${phrase} y aparecieron marcas similares (ej. «${top.denominacion}»). Quiero asesorarme para registrarla.`;
+      verdict = `
+        <div class="vm-verdict vm-verdict--warn">
+          <div class="vm-verdict-icon" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 8v5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="16.5" r="1.3" fill="currentColor"/><path d="M12 3l9 16H3l9-16z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+          </div>
+          <h2>Encontramos una marca muy parecida</h2>
+          <p>Hay al menos una marca vigente con alta similitud a «${escapeHtml(marca)}». Antes de presentar la solicitud conviene asesorarte para no arriesgar el arancel a una oposición.</p>
+          <a class="btn btn-primary" href="${waLink(msg)}" target="_blank" rel="noopener noreferrer" id="vm-cta">Contactarnos por WhatsApp</a>
+        </div>`;
+    } else {
+      const msg = `Hola! Busqué la marca «${marca}» en ${phrase} y parece estar disponible. Quiero registrarla ya.`;
+      const sub = displayRows.length
+        ? 'Encontramos algunos parecidos, pero ninguno lo suficientemente fuerte como para bloquear tu registro.'
+        : 'No encontramos antecedentes que bloqueen tu marca. Conviene registrarla cuanto antes — en Argentina la prioridad es de quien registra primero.';
+      verdict = `
+        <div class="vm-verdict vm-verdict--ok">
+          <div class="vm-verdict-icon" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h2>Tu marca parece estar disponible</h2>
+          <p>${sub}</p>
+          <a class="btn btn-primary" href="${waLink(msg)}" target="_blank" rel="noopener noreferrer" id="vm-cta">Solicitar Registro Inmediatamente</a>
+        </div>`;
+    }
+
+    // --- Grouped results: one collapsible group per selected class.
+    // Classes with hits open by default; empty classes collapsed.
+    const byClass = new Map<string, Result[]>();
+    displayRows.forEach((r) => {
+      if (!byClass.has(r.clase)) byClass.set(r.clase, []);
+      byClass.get(r.clase)!.push(r);
+    });
+
+    const selSorted = sel.slice().map(Number).sort((a, b) => a - b).map(String);
+    let groups = '';
+    for (const clase of selSorted) {
+      const items = (byClass.get(clase) || []).sort((a, b) => b.score - a.score);
+      const count = items.length;
+      let body: string;
+      if (count) {
+        const rows = items
+          .map((r) => {
+            const acta = r.acta != null ? String(r.acta) : '';
+            const actaCell = acta
+              ? `<a class="vm-acta" href="${ACTA_BASE}${encodeURIComponent(acta)}" target="_blank" rel="noopener noreferrer">${escapeHtml(acta)}</a>`
+              : '—';
+            return `<tr>
+              <td>${actaCell}</td>
+              <td class="vm-denom">${escapeHtml(r.denominacion)}</td>
+              <td><span class="vm-estado ${estadoClass(r.estado_label)}">${escapeHtml(estadoLabel(r.estado_label))}</span></td>
+              <td>${fmtDate(r.fecha_presentacion)}</td>
+              <td>${fmtDate(r.fecha_vencimiento)}</td>
+              <td><span class="vm-sim">${Math.round(r.score)}%</span></td>
+            </tr>`;
+          })
+          .join('');
+        body = `<div class="vm-table-wrap"><table class="vm-table">
+            <thead><tr><th>Acta</th><th>Denominación</th><th>Estado</th><th>Ingreso</th><th>Vencimiento</th><th>Similitud</th></tr></thead>
+            <tbody>${rows}</tbody></table></div>`;
+      } else {
+        body = `<div class="vm-empty">Sin antecedentes para esta clase.</div>`;
+      }
+      const badgeClass = count ? 'vm-group-badge' : 'vm-group-badge vm-group-badge--empty';
+      groups += `
+        <details class="vm-group"${count ? ' open' : ''}>
+          <summary class="vm-group-head">
+            <span class="vm-group-title">Clase ${clase} — ${escapeHtml(NIZA_NAMES[clase] || '')}</span>
+            <span class="${badgeClass}">${count} resultado${count === 1 ? '' : 's'}</span>
+          </summary>
+          ${body}
+        </details>`;
+    }
+
+    const summary = `<div class="vm-summary">Buscamos en ${sel.length} clase${sel.length === 1 ? '' : 's'} · ${displayRows.length} antecedente${displayRows.length === 1 ? '' : 's'} mostrado${displayRows.length === 1 ? '' : 's'}</div>`;
+
+    resultsEl.innerHTML = verdict + summary + groups;
+    resultsEl.hidden = false;
+
+    const cta = document.getElementById('vm-cta');
+    cta?.addEventListener('click', () => {
+      track('whatsapp_click', { source: 'verificar-marca', cta_type: conflict ? 'contactar' : 'solicitar' });
+      track('generate_lead', { source: 'verificar-marca' });
+    });
+
+    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function showError(msg: string) {
+    errorEl.textContent = msg;
+    errorEl.hidden = false;
+    // Don't leave stale results from a previous search visible behind an error.
+    resultsEl.hidden = true;
+    resultsEl.innerHTML = '';
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorEl.hidden = true;
+
+    const marca = marcaInput.value.trim();
+    const sel = selectedClasses();
+    if (!marca) return showError('Ingresá el nombre de la marca.');
+    if (!sel.length) return showError('Seleccioná al menos una clase (o tocá «Todas»).');
+
+    const slider = parseInt(scoreInput.value, 10);
+    // One call: fetch at the lower of slider and 60 so the CTA evaluation (>=60)
+    // always has the data it needs, regardless of the display threshold.
+    const minScore = Math.min(slider, 60);
+
+    submitBtn.disabled = true;
+    submitLabel.textContent = 'Buscando…';
+    // Clear any previous results while the new search runs.
+    resultsEl.hidden = true;
+    resultsEl.innerHTML = '';
+
+    try {
+      const res = await fetch('/api/relevamiento/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          marca,
+          clases: sel,
+          modes: ['palabras', 'fonetica'],
+          min_score: minScore,
+          solo_vigentes: vigentesInput.checked,
+        }),
+      });
+      const data = await res.json().catch(() => ({ error: 'Respuesta inválida del servidor.' }));
+      if (!res.ok) {
+        showError(data.error || 'No pudimos completar la búsqueda. Intentá de nuevo.');
+        return;
+      }
+      track('relevamiento_search', { marca, clases: sel.length });
+      render(data.results || [], sel, slider);
+    } catch {
+      showError('Error de conexión. Revisá tu internet e intentá de nuevo.');
+    } finally {
+      submitBtn.disabled = false;
+      submitLabel.textContent = 'Buscar';
+    }
+  });
+
+  updateCount();
+</script>

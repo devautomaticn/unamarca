@@ -13,6 +13,8 @@ El INPI (Instituto Nacional de la Propiedad Industrial) ofrece un buscador onlin
 
 Usarlo te permite comprobar si alguien ya registró una marca idéntica o similar a la tuya en el mismo rubro, para evitar conflictos legales y asegurarte de que tu solicitud tenga chances reales de aprobarse.
 
+Si querés un atajo, probá nuestra [herramienta gratuita para verificar tu marca](/verificar-marca): busca antecedentes en el archivo de solicitudes del INPI por nombre y clase, y te muestra al instante si hay coincidencias o si el nombre está disponible. Para hacerlo con el buscador oficial paso a paso, seguí esta guía.
+
 ## Cómo usar el buscador de marcas del INPI: paso a paso
 
 ### 1. Ingresá al portal del INPI
