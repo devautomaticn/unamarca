@@ -63,7 +63,7 @@ Para el paso a paso completo del trámite, leé: [cómo registrar una marca en A
 
 ## ¿Cuánto cuesta?
 
-El arancel del INPI para registrar en una clase es de 100 UMAPIS (aproximadamente $38.192 ARS en junio 2026, actualizable mensualmente según inflación). Los honorarios profesionales para gestionar el trámite oscilan entre $200.000 y $300.000 ARS.
+El arancel del INPI para registrar en una clase es de 100 UMAPIS (aproximadamente $38.994 ARS en julio 2026, actualizable mensualmente según inflación). Los honorarios profesionales para gestionar el trámite oscilan entre $200.000 y $300.000 ARS.
 
 Para un e-commerce que vende productos físicos, registrar en 2 clases — la de tu producto + Clase 35 — es lo más recomendable. Para más detalle sobre costos, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca).
 
