@@ -169,18 +169,31 @@ All fields feed both the INPI solicitud and the carta poder — accuracy
 matters, validate hard. Intro copy: "Ya casi está. Estos datos son necesarios
 para la carta poder y la presentación de tu solicitud ante el INPI."
 
+This is the full dataset needed for the eventual INPI filing (email/WhatsApp
+were already captured at Paso 2 and are not repeated here):
+
 | Field | Type | Rules |
 |---|---|---|
-| Nombre y apellido | text | required. Helper: "Tal como figura en tu DNI (será la aclaración de tu firma)" |
-| DNI | numeric | required, 7–8 digits |
-| CUIT / CUIL | text (auto-format `XX-XXXXXXXX-X`) | required. Validate: (a) check digit (mod-11 algorithm), (b) middle digits must equal the DNI entered. Inline error if mismatch |
+| Nombre | text | required. Helper: "Tal como figura en tu documento" |
+| Apellido | text | required |
+| Tipo de documento | select | `DNI` (default) / `Pasaporte` / `Libreta Cívica` / `Libreta de Enrolamiento` |
+| Número de documento | text | required. If tipo = DNI: 7–8 digits, numeric-only input |
+| CUIT / CUIL | text (auto-format `XX-XXXXXXXX-X`) | required. Validate: (a) check digit (mod-11), (b) if tipo = DNI, middle digits must equal the document number. Inline error if mismatch |
+| Género | select | `Masculino` / `Femenino` / `Otro`, required |
+| Estado civil | select | `Soltero/a` / `Casado/a` / `Viudo/a` / `Divorciado/a`, required |
+| Nombre del cónyuge | text | only visible + required when estado civil = `Casado/a` |
+| Domicilio — País | text | default `Argentina`, editable |
 | Domicilio — Calle | text | required |
 | Domicilio — Número | text | required |
 | Domicilio — Piso / Depto | text | optional |
 | Domicilio — Localidad | text | required |
 | Domicilio — Código Postal | text | required |
 | Domicilio — Provincia | select (24 jurisdicciones) | required |
-| País | fixed | `Argentina` (display only) |
+
+The carta poder renders `{{tipoDocumento}} {{numeroDocumento}}` (e.g. "DNI
+22730331", "Pasaporte AB123456"). Género / estado civil / cónyuge don't appear
+in the carta poder — they're captured for the INPI presentation and stored in
+the order's completion data.
 
 ### Paso 6 — Carta poder: revisión y firma
 

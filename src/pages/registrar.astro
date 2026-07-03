@@ -145,24 +145,77 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
           presentación de tu solicitud ante el INPI.
         </p>
 
-        <div class="ck-field">
-          <label for="ck-nombre">Nombre y apellido <em>*</em></label>
-          <input type="text" id="ck-nombre" placeholder="Tal como figura en tu DNI" autocomplete="name" />
-          <p class="ck-help">Será la aclaración de tu firma en la carta poder.</p>
-          <p class="ck-err" data-err="nombre"></p>
+        <div class="ck-grid ck-g2">
+          <div class="ck-field">
+            <label for="ck-nombre">Nombre <em>*</em></label>
+            <input type="text" id="ck-nombre" placeholder="Nombre" autocomplete="given-name" />
+            <p class="ck-help">Tal como figura en tu documento.</p>
+            <p class="ck-err" data-err="nombre"></p>
+          </div>
+          <div class="ck-field">
+            <label for="ck-apellido">Apellido <em>*</em></label>
+            <input type="text" id="ck-apellido" placeholder="Apellido" autocomplete="family-name" />
+            <p class="ck-err" data-err="apellido"></p>
+          </div>
         </div>
 
         <div class="ck-grid ck-g2">
           <div class="ck-field">
-            <label for="ck-dni">DNI <em>*</em></label>
-            <input type="text" id="ck-dni" placeholder="22730331" inputmode="numeric" autocomplete="off" maxlength="8" />
-            <p class="ck-err" data-err="dni"></p>
+            <label for="ck-tipodoc">Tipo de documento <em>*</em></label>
+            <div class="ck-sel">
+              <select id="ck-tipodoc">
+                <option value="DNI" selected>DNI</option>
+                <option value="Pasaporte">Pasaporte</option>
+                <option value="Libreta Cívica">Libreta Cívica</option>
+                <option value="Libreta de Enrolamiento">Libreta de Enrolamiento</option>
+              </select>
+            </div>
           </div>
           <div class="ck-field">
-            <label for="ck-cuit">CUIT / CUIL <em>*</em></label>
-            <input type="text" id="ck-cuit" placeholder="27-22730331-5" inputmode="numeric" autocomplete="off" maxlength="13" />
-            <p class="ck-err" data-err="cuit"></p>
+            <label for="ck-docnum">Número de documento <em>*</em></label>
+            <input type="text" id="ck-docnum" placeholder="28765432" autocomplete="off" maxlength="20" />
+            <p class="ck-err" data-err="docnum"></p>
           </div>
+        </div>
+
+        <div class="ck-field">
+          <label for="ck-cuit">CUIT / CUIL <em>*</em></label>
+          <input type="text" id="ck-cuit" placeholder="27-22730331-5" inputmode="numeric" autocomplete="off" maxlength="13" />
+          <p class="ck-err" data-err="cuit"></p>
+        </div>
+
+        <div class="ck-grid ck-g2">
+          <div class="ck-field">
+            <label for="ck-genero">Género <em>*</em></label>
+            <div class="ck-sel">
+              <select id="ck-genero">
+                <option value="">Seleccionar…</option>
+                <option>Masculino</option>
+                <option>Femenino</option>
+                <option>Otro</option>
+              </select>
+            </div>
+            <p class="ck-err" data-err="genero"></p>
+          </div>
+          <div class="ck-field">
+            <label for="ck-estadocivil">Estado civil <em>*</em></label>
+            <div class="ck-sel">
+              <select id="ck-estadocivil">
+                <option value="">Seleccionar…</option>
+                <option>Soltero/a</option>
+                <option>Casado/a</option>
+                <option>Viudo/a</option>
+                <option>Divorciado/a</option>
+              </select>
+            </div>
+            <p class="ck-err" data-err="estadocivil"></p>
+          </div>
+        </div>
+
+        <div class="ck-field" id="ck-conyuge-row" hidden>
+          <label for="ck-conyuge">Nombre del cónyuge <em>*</em></label>
+          <input type="text" id="ck-conyuge" placeholder="Nombre completo del cónyuge" autocomplete="off" />
+          <p class="ck-err" data-err="conyuge"></p>
         </div>
 
         <div class="ck-domicilio">
@@ -213,8 +266,8 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
               <p class="ck-err" data-err="provincia"></p>
             </div>
             <div class="ck-field">
-              <label for="ck-pais">País</label>
-              <input type="text" id="ck-pais" value="Argentina" disabled />
+              <label for="ck-pais">País <em>*</em></label>
+              <input type="text" id="ck-pais" value="Argentina" autocomplete="country-name" />
             </div>
           </div>
         </div>
@@ -412,8 +465,10 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
   let orderRef: string | null = null; // pedido creado al iniciar el pago MP
 
   const FIELD_IDS = [
-    'ck-marca', 'ck-nombre', 'ck-dni', 'ck-cuit', 'ck-calle', 'ck-numero',
-    'ck-piso', 'ck-depto', 'ck-localidad', 'ck-codpostal', 'ck-provincia',
+    'ck-marca', 'ck-nombre', 'ck-apellido', 'ck-tipodoc', 'ck-docnum',
+    'ck-cuit', 'ck-genero', 'ck-estadocivil', 'ck-conyuge',
+    'ck-pais', 'ck-calle', 'ck-numero', 'ck-piso', 'ck-depto',
+    'ck-localidad', 'ck-codpostal', 'ck-provincia',
     'ck-email', 'ck-whatsapp',
   ];
 
@@ -429,6 +484,7 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
       if (!raw) return;
       const draft = JSON.parse(raw);
       FIELD_IDS.forEach(id => { if (draft.values?.[id]) input(id).value = draft.values[id]; });
+      syncConyuge();
       if (draft.clase) selectClase(draft.clase, false);
       if (typeof draft.garantia === 'boolean') {
         garantia = draft.garantia;
@@ -501,24 +557,36 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
   }
 
   function validateTitular(): boolean {
-    const keys = ['nombre', 'dni', 'cuit', 'calle', 'numero', 'localidad', 'codpostal', 'provincia'];
+    const keys = ['nombre', 'apellido', 'docnum', 'cuit', 'genero', 'estadocivil', 'conyuge', 'calle', 'numero', 'localidad', 'codpostal', 'provincia'];
     clearErrs(keys);
     let ok = true;
     const req = (id: string, key: string, msg: string) => {
       if (!FIELDS_OPTIONAL && !input(id).value.trim()) { setErr(key, msg); ok = false; }
     };
-    req('ck-nombre', 'nombre', 'Ingresá tu nombre y apellido.');
+    req('ck-nombre', 'nombre', 'Ingresá tu nombre.');
+    req('ck-apellido', 'apellido', 'Ingresá tu apellido.');
+    req('ck-genero', 'genero', 'Seleccioná el género.');
+    req('ck-estadocivil', 'estadocivil', 'Seleccioná el estado civil.');
+    if (input('ck-estadocivil').value === 'Casado/a') {
+      req('ck-conyuge', 'conyuge', 'Ingresá el nombre del cónyuge.');
+    }
 
-    const dni = input('ck-dni').value.replace(/\D/g, '');
-    if (dni || !FIELDS_OPTIONAL) {
-      if (dni.length < 7 || dni.length > 8) { setErr('dni', 'Ingresá un DNI válido (7 u 8 dígitos).'); ok = false; }
+    const tipoDoc = input('ck-tipodoc').value;
+    const doc = input('ck-docnum').value.trim();
+    if (tipoDoc === 'DNI') {
+      const digits = doc.replace(/\D/g, '');
+      if (doc || !FIELDS_OPTIONAL) {
+        if (digits.length < 7 || digits.length > 8) { setErr('docnum', 'Ingresá un DNI válido (7 u 8 dígitos).'); ok = false; }
+      }
+    } else {
+      req('ck-docnum', 'docnum', 'Ingresá el número de documento.');
     }
 
     const cuit = input('ck-cuit').value;
     if (cuit || !FIELDS_OPTIONAL) {
       if (!isValidCuit(cuit)) {
         setErr('cuit', 'El CUIT/CUIL no es válido. Revisalo.'); ok = false;
-      } else if (dni && !cuitMatchesDni(cuit, dni)) {
+      } else if (tipoDoc === 'DNI' && doc && !cuitMatchesDni(cuit, doc)) {
         setErr('cuit', 'El CUIT/CUIL no coincide con el DNI ingresado.'); ok = false;
       }
     }
@@ -531,6 +599,12 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
 
     return ok;
   }
+
+  // Cónyuge: visible solo si el estado civil es Casado/a
+  function syncConyuge() {
+    $('ck-conyuge-row').hidden = input('ck-estadocivil').value !== 'Casado/a';
+  }
+  input('ck-estadocivil').addEventListener('change', syncConyuge);
 
   // ── Dropdown de clases ──────────────────────────────────
   const ddBtn = $('ck-clase-btn');
@@ -686,8 +760,9 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
   function cpData(): CartaPoderData {
     const now = new Date();
     return {
-      nombreApellido: input('ck-nombre').value.trim(),
-      dni: input('ck-dni').value.replace(/\D/g, ''),
+      nombreApellido: `${input('ck-nombre').value.trim()} ${input('ck-apellido').value.trim()}`.trim(),
+      docTipo: input('ck-tipodoc').value || 'DNI',
+      docNumero: input('ck-docnum').value.trim(),
       cuit: input('ck-cuit').value.trim(),
       calle: input('ck-calle').value.trim(),
       numero: input('ck-numero').value.trim(),
@@ -795,10 +870,18 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
       titular: {
         tipoPersona: 'Humana',
         nombre: input('ck-nombre').value.trim(),
-        dni: input('ck-dni').value.replace(/\D/g, ''),
+        apellido: input('ck-apellido').value.trim(),
+        genero: input('ck-genero').value,
+        estadoCivil: input('ck-estadocivil').value,
+        nombreConyuge: input('ck-estadocivil').value === 'Casado/a'
+          ? input('ck-conyuge').value.trim() : '',
+        documento: {
+          tipo: input('ck-tipodoc').value || 'DNI',
+          numero: input('ck-docnum').value.trim(),
+        },
         cuit: input('ck-cuit').value.trim(),
         domicilio: {
-          pais: 'Argentina',
+          pais: input('ck-pais').value.trim() || 'Argentina',
           calle: input('ck-calle').value.trim(),
           numero: input('ck-numero').value.trim(),
           piso: input('ck-piso').value.trim(),
@@ -864,9 +947,11 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
     const el = e.target as HTMLInputElement;
     el.value = formatCuitInput(el.value);
   });
-  input('ck-dni').addEventListener('input', (e) => {
+  input('ck-docnum').addEventListener('input', (e) => {
     const el = e.target as HTMLInputElement;
-    el.value = el.value.replace(/\D/g, '').slice(0, 8);
+    if (input('ck-tipodoc').value === 'DNI') {
+      el.value = el.value.replace(/\D/g, '').slice(0, 8);
+    }
   });
   FIELD_IDS.forEach(id => input(id).addEventListener('input', () => {
     setErr(id.replace('ck-', ''), ''); // al corregir, el error desaparece
@@ -960,6 +1045,7 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
 @media (max-width: 580px) { .ck-g2 { grid-template-columns: 1fr; } }
 
 .ck-field { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
+.ck-field[hidden] { display: none; }
 .ck-grid .ck-field { margin-bottom: 0; }
 .ck-field label {
   font-family: 'Inter', system-ui, sans-serif;

@@ -7,7 +7,9 @@ import { APODERADO } from './constants';
 
 export interface CartaPoderData {
   nombreApellido: string;
-  dni: string;
+  /** Tipo de documento: DNI | Pasaporte | Libreta Cívica | Libreta de Enrolamiento */
+  docTipo: string;
+  docNumero: string;
   cuit: string;
   calle: string;
   numero: string;
@@ -51,11 +53,12 @@ export interface CartaPoderTexto {
   bullets: string[];
   cierre: string;
   firmaAclaracion: string;
-  firmaDni: string;
+  firmaDoc: string;
 }
 
 export function cartaPoderTexto(d: CartaPoderData): CartaPoderTexto {
   const marca = d.marca.trim().toUpperCase();
+  const doc = `${d.docTipo || 'DNI'} ${d.docNumero}`;
   return {
     encabezado: [
       'Sres.',
@@ -63,7 +66,7 @@ export function cartaPoderTexto(d: CartaPoderData): CartaPoderTexto {
     ],
     intro:
       `A los ${d.fecha.dia} días del mes de ${MESES[d.fecha.mes]} de ${d.fecha.anio}, ` +
-      `yo, ${d.nombreApellido}, DNI ${d.dni}, CUIT/CUIL ${d.cuit}, ` +
+      `yo, ${d.nombreApellido}, ${doc}, CUIT/CUIL ${d.cuit}, ` +
       `con domicilio en ${domicilioLinea(d)}, por la presente autorizo expresamente al ` +
       `${APODERADO.tratamiento} ${APODERADO.nombre}, DNI ${APODERADO.dni}, CUIT ${APODERADO.cuit}, ` +
       `con domicilio en ${APODERADO.domicilio}, para que en mi nombre y representación:`,
@@ -75,7 +78,7 @@ export function cartaPoderTexto(d: CartaPoderData): CartaPoderTexto {
     ],
     cierre: 'La presente autorización se otorga a los efectos de que la marca sea registrada a mi nombre.',
     firmaAclaracion: d.nombreApellido,
-    firmaDni: `DNI ${d.dni}`,
+    firmaDoc: doc,
   };
 }
 
@@ -94,7 +97,7 @@ export function cartaPoderHTML(d: CartaPoderData, firmaDataUrl?: string): string
     <div class="ck-cp-firma">
       ${firmaDataUrl ? `<img src="${firmaDataUrl}" alt="Firma" class="ck-cp-firma-img">` : '<div class="ck-cp-firma-space"></div>'}
       <div class="ck-cp-firma-linea"></div>
-      <p class="ck-cp-firma-acl">${esc(t.firmaAclaracion)}<br>${esc(t.firmaDni)}</p>
+      <p class="ck-cp-firma-acl">${esc(t.firmaAclaracion)}<br>${esc(t.firmaDoc)}</p>
     </div>
   `;
 }
