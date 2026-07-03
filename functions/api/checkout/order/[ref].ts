@@ -3,7 +3,6 @@
 //        PDF de la carta poder y envía los emails (cliente + admin) vía Resend.
 // El ref es aleatorio y no adivinable: funciona como llave de lectura.
 import { type CheckoutEnv, ensureSchema, json } from '../../../_lib/checkout';
-import { buildCartaPoderPdf, hoyEnBuenosAires } from '../../../_lib/pdf';
 import { sendOrderEmails } from '../../../_lib/notify';
 
 interface OrderRow {
@@ -62,7 +61,9 @@ export const onRequestPatch: PagesFunction<NotifyEnv> = async ({ env, params, re
     'UPDATE orders SET completion = ?, completed_at = ?, updated_at = ? WHERE ref = ?'
   ).bind(raw, new Date().toISOString(), new Date().toISOString(), ref).run();
 
-  // ── Carta poder PDF + emails ────────────────────────────
+  // ── Emails con la carta poder adjunta ───────────────────
+  // El PDF llega generado desde el navegador (completion.cartaPdfBase64) —
+  // generarlo acá excede el límite de CPU del plan free (error 1102).
   // El pedido queda guardado aunque esto falle: los emails se pueden reenviar.
   let emailSent = false;
   try {
@@ -72,23 +73,6 @@ export const onRequestPatch: PagesFunction<NotifyEnv> = async ({ env, params, re
     const stored = JSON.parse(row.payload);
     const t = completion?.titular ?? {};
     const dom = t?.domicilio ?? {};
-
-    const pdf = await buildCartaPoderPdf({
-      nombreApellido: `${t.nombre || ''} ${t.apellido || ''}`.trim(),
-      docTipo: t.documento?.tipo || 'DNI',
-      docNumero: t.documento?.numero || '',
-      cuit: t.cuit || '',
-      calle: dom.calle || '',
-      numero: dom.numero || '',
-      piso: dom.piso || undefined,
-      depto: dom.depto || undefined,
-      codigoPostal: dom.codigoPostal || '',
-      localidad: dom.localidad || '',
-      provincia: dom.provincia || '',
-      marca: stored.marca?.nombre || '',
-      clases: stored.clase ? [stored.clase] : [],
-      fecha: hoyEnBuenosAires(),
-    }, completion?.firma);
 
     await sendOrderEmails(env.RESEND_API_KEY, {
       ref,
@@ -110,7 +94,7 @@ export const onRequestPatch: PagesFunction<NotifyEnv> = async ({ env, params, re
         ['Email', stored.contacto?.email || ''],
         ['WhatsApp', stored.contacto?.whatsapp || ''],
       ],
-    }, pdf);
+    }, completion?.cartaPdfBase64 || null);
     emailSent = true;
   } catch (e) {
     console.error('Error generando PDF / enviando emails:', e);

@@ -1,7 +1,9 @@
 // Genera el PDF de la carta poder (A4) desde el MISMO template que el preview
-// del wizard (src/lib/checkout/cartaPoder.ts), con la firma embebida.
+// del wizard (cartaPoder.ts), con la firma embebida.
+// Corre EN EL NAVEGADOR (import dinámico en el paso 6): las Pages Functions
+// del plan free no tienen CPU suficiente para pdf-lib (error 1102).
 import { PDFDocument, StandardFonts, type PDFFont, type PDFPage } from 'pdf-lib';
-import { cartaPoderTexto, type CartaPoderData } from '../../src/lib/checkout/cartaPoder';
+import { cartaPoderTexto, type CartaPoderData } from './cartaPoder';
 
 const A4: [number, number] = [595.28, 841.89];
 const MARGIN = 72;

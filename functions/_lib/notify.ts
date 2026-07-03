@@ -4,15 +4,6 @@
 const FROM = 'UnaMarca <formulario@vigilante.unamarca.com.ar>';
 const ADMIN_EMAIL = 'mike@automaticnation.com';
 
-function base64FromBytes(bytes: Uint8Array): string {
-  let binary = '';
-  const chunk = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
-  }
-  return btoa(binary);
-}
-
 function esc(s: string): string {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
@@ -83,12 +74,12 @@ async function sendResend(apiKey: string, payload: unknown): Promise<void> {
 export async function sendOrderEmails(
   apiKey: string,
   d: OrderEmailData,
-  pdf: Uint8Array,
+  pdfBase64: string | null,
 ): Promise<void> {
-  const attachment = {
-    filename: `carta-poder-${d.ref}.pdf`,
-    content: base64FromBytes(pdf),
-  };
+  // Sin PDF (falla en el navegador) los emails salen igual, sin adjunto
+  const attachments = pdfBase64
+    ? [{ filename: `carta-poder-${d.ref}.pdf`, content: pdfBase64 }]
+    : undefined;
 
   // Admin siempre; cliente solo si dejó email
   const sends: Promise<void>[] = [
@@ -98,7 +89,7 @@ export async function sendOrderEmails(
       reply_to: d.clientEmail || undefined,
       subject: `Solicitud completada: ${d.marca.toUpperCase() || '(sin marca)'} (${d.ref})`,
       html: adminHTML(d),
-      attachments: [attachment],
+      attachments,
     }),
   ];
   if (d.clientEmail) {
@@ -107,7 +98,7 @@ export async function sendOrderEmails(
       to: [d.clientEmail],
       subject: `Recibimos tu solicitud de registro de marca — ${d.ref}`,
       html: clientHTML(d),
-      attachments: [attachment],
+      attachments,
     }));
   }
   await Promise.all(sends);

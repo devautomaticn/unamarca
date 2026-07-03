@@ -933,16 +933,30 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
       firma: canvas.toDataURL('image/png'),
     };
 
-    // Con pedido MP: adjuntar titular + firma al pedido en D1.
-    // Sin pedido (ruta "Saltar pago"): envío simulado, solo para testear la UX.
-    // TODO(fase emails): PDF de la carta poder + emails (spec §7).
+    // Con pedido: generar el PDF de la carta poder EN EL NAVEGADOR (el plan
+    // free de Pages Functions no tiene CPU para pdf-lib) y adjuntarlo al
+    // pedido en D1 — el backend lo manda por email (cliente + admin).
     let ref: string;
     if (orderRef) {
+      let cartaPdfBase64: string | null = null;
+      try {
+        const { buildCartaPoderPdf } = await import('../lib/checkout/cartaPoderPdf');
+        const pdfBytes = await buildCartaPoderPdf(cpData(), payload.firma);
+        let binary = '';
+        const chunk = 0x8000;
+        for (let i = 0; i < pdfBytes.length; i += chunk) {
+          binary += String.fromCharCode(...pdfBytes.subarray(i, i + chunk));
+        }
+        cartaPdfBase64 = btoa(binary);
+      } catch (e) {
+        console.error('[um-checkout] error generando PDF (se envía sin adjunto):', e);
+      }
+
       try {
         const res = await fetch(`/api/checkout/order/${encodeURIComponent(orderRef)}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({ ...payload, cartaPdfBase64 }),
         });
         if (!res.ok) throw new Error(String(res.status));
       } catch (e) {
