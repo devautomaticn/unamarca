@@ -10,6 +10,7 @@ interface Props {
   pubDate?: string;
   tags?: string[];
   structuredData?: object | object[];
+  noindex?: boolean;
 }
 
 const {
@@ -21,6 +22,7 @@ const {
   pubDate,
   tags = [],
   structuredData,
+  noindex = false,
 } = Astro.props;
 
 const SITE_URL = 'https://unamarca.com.ar';
@@ -49,6 +51,7 @@ function isActive(href: string) {
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalURL} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />

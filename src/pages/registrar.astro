@@ -1,0 +1,1145 @@
+---
+// Self-checkout de registro de marca — v1 (spec: docs/spec_self_checkout.md)
+// Pago: placeholder (sin Mercado Pago). Envío: simulado en esta fase de UX —
+// TODO wiring: POST /api/checkout/submit (PDF + emails).
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { NIZA_CLASSES } from '../lib/checkout/nizaClasses';
+import { PRICING, PROVINCIAS, waUrl, formatARS } from '../lib/checkout/constants';
+
+const SITE_URL = 'https://unamarca.com.ar';
+
+const waEmpresa = waUrl('Hola! Quiero registrar una marca a nombre de una empresa (persona jurídica).');
+const waClase = waUrl('Hola! Estoy registrando mi marca en unamarca.com.ar y no sé qué clase elegir.');
+const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
+---
+
+<BaseLayout
+  title="Registrá tu Marca Online | UnaMarca"
+  description="Solicitá el registro de tu marca ante el INPI en minutos: elegí la clase, completá tus datos y firmá online. Simple, rápido y sin vueltas."
+  canonicalURL={`${SITE_URL}/registrar`}
+  noindex
+>
+
+<div class="ck-page">
+  <div class="ck-wrap">
+
+    <header class="ck-header">
+      <div class="ck-badge">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L2.5 4v4c0 3.2 2.4 5.8 5.5 6.5 3.1-.7 5.5-3.3 5.5-6.5V4L8 1.5z" fill="currentColor"/></svg>
+        Registro online · INPI Argentina
+      </div>
+      <h1>Registrá tu marca</h1>
+      <p>Completá tu solicitud en unos minutos. Nosotros la presentamos ante el INPI.</p>
+    </header>
+
+    <div class="ck-progress" id="ck-progress">
+      <div class="ck-progress-top">
+        <span id="ck-step-label">Paso 1 de 5</span>
+        <span id="ck-step-title">Tu marca</span>
+      </div>
+      <div class="ck-bar"><div class="ck-bar-fill" id="ck-bar-fill" style="width: 20%"></div></div>
+    </div>
+
+    <!-- ══════════ PASO 1 · TU MARCA ══════════ -->
+    <section class="ck-step" data-step="1">
+      <div class="ck-card">
+        <div class="ck-section-label">Tu marca</div>
+
+        <div class="ck-field">
+          <label for="ck-marca">Nombre de la marca <em>*</em></label>
+          <input type="text" id="ck-marca" placeholder="Ej: PASSIONARIA" autocomplete="off" maxlength="120" />
+          <p class="ck-err" data-err="marca"></p>
+        </div>
+
+        <div class="ck-grid ck-g2">
+          <div class="ck-field">
+            <label for="ck-tipo-persona">Tipo de persona</label>
+            <div class="ck-sel ck-sel--locked">
+              <select id="ck-tipo-persona" disabled><option>Humana</option></select>
+            </div>
+            <p class="ck-help">¿Es para una empresa? <a href={waEmpresa} target="_blank" rel="noopener noreferrer">Escribinos por WhatsApp</a></p>
+          </div>
+          <div class="ck-field">
+            <label for="ck-tipo-marca">Tipo de marca</label>
+            <div class="ck-sel ck-sel--locked">
+              <select id="ck-tipo-marca" disabled><option>Denominativa</option></select>
+            </div>
+            <p class="ck-help">Registramos el nombre de tu marca (sin logo).</p>
+          </div>
+        </div>
+
+        <div class="ck-field">
+          <label>Clase de productos o servicios <em>*</em></label>
+          <div class="ck-dd" id="ck-clase-dd">
+            <button type="button" class="ck-dd-btn" id="ck-clase-btn" aria-haspopup="listbox" aria-expanded="false">
+              <span id="ck-clase-label" class="ck-dd-placeholder">Seleccioná la clase…</span>
+              <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="ck-dd-panel" id="ck-clase-panel" hidden>
+              <input type="text" id="ck-clase-search" placeholder="Buscar… (ej: ropa, café, software)" autocomplete="off" />
+              <ul class="ck-dd-list" id="ck-clase-list" role="listbox">
+                {NIZA_CLASSES.map(c => (
+                  <li>
+                    <button type="button" class="ck-dd-opt" data-num={c.num} role="option">
+                      <span class="ck-dd-num">Clase {c.num}</span>
+                      <span class="ck-dd-name">{c.nombre}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <p class="ck-help">
+            La clase define qué productos o servicios protege tu marca.
+            ¿No sabés cuál elegir? <a href={waClase} target="_blank" rel="noopener noreferrer">Consultanos por WhatsApp</a>
+            &nbsp;·&nbsp; <a href={waMulti} target="_blank" rel="noopener noreferrer">¿Necesitás más de una clase?</a>
+          </p>
+          <p class="ck-err" data-err="clase"></p>
+        </div>
+      </div>
+
+      <div class="ck-nav">
+        <span></span>
+        <button type="button" class="ck-btn" data-next="1">
+          Continuar
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- ══════════ PASO 2 · CONTACTO ══════════ -->
+    <section class="ck-step" data-step="2" hidden>
+      <div class="ck-card">
+        <div class="ck-section-label">Tus datos de contacto</div>
+        <div class="ck-grid ck-g2">
+          <div class="ck-field">
+            <label for="ck-email">Email <em>*</em></label>
+            <input type="email" id="ck-email" placeholder="correo@ejemplo.com" autocomplete="email" />
+            <p class="ck-help">Acá te enviaremos todas las novedades del trámite.</p>
+            <p class="ck-err" data-err="email"></p>
+          </div>
+          <div class="ck-field">
+            <label for="ck-whatsapp">WhatsApp <em>*</em></label>
+            <input type="tel" id="ck-whatsapp" placeholder="11 5555 5555" autocomplete="tel" />
+            <p class="ck-err" data-err="whatsapp"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="ck-nav">
+        <button type="button" class="ck-back" data-back="1">← Volver</button>
+        <button type="button" class="ck-btn" data-next="2">
+          Continuar
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- ══════════ PASO 5 · DATOS DEL TITULAR (post-pago) ══════════ -->
+    <section class="ck-step" data-step="5" hidden>
+      <div class="ck-card">
+        <div class="ck-section-label">Datos del titular</div>
+        <p class="ck-help" style="margin-bottom: 1rem">
+          Ya casi está. Estos datos son necesarios para la carta poder y la
+          presentación de tu solicitud ante el INPI.
+        </p>
+
+        <div class="ck-field">
+          <label for="ck-nombre">Nombre y apellido <em>*</em></label>
+          <input type="text" id="ck-nombre" placeholder="Tal como figura en tu DNI" autocomplete="name" />
+          <p class="ck-help">Será la aclaración de tu firma en la carta poder.</p>
+          <p class="ck-err" data-err="nombre"></p>
+        </div>
+
+        <div class="ck-grid ck-g2">
+          <div class="ck-field">
+            <label for="ck-dni">DNI <em>*</em></label>
+            <input type="text" id="ck-dni" placeholder="22730331" inputmode="numeric" autocomplete="off" maxlength="8" />
+            <p class="ck-err" data-err="dni"></p>
+          </div>
+          <div class="ck-field">
+            <label for="ck-cuit">CUIT / CUIL <em>*</em></label>
+            <input type="text" id="ck-cuit" placeholder="27-22730331-5" inputmode="numeric" autocomplete="off" maxlength="13" />
+            <p class="ck-err" data-err="cuit"></p>
+          </div>
+        </div>
+
+        <div class="ck-domicilio">
+          <p class="ck-dom-title">Domicilio real</p>
+          <div class="ck-grid ck-g2">
+            <div class="ck-field">
+              <label for="ck-calle">Calle <em>*</em></label>
+              <input type="text" id="ck-calle" placeholder="Av. Corrientes" autocomplete="address-line1" />
+              <p class="ck-err" data-err="calle"></p>
+            </div>
+            <div class="ck-field">
+              <label for="ck-numero">Número <em>*</em></label>
+              <input type="text" id="ck-numero" placeholder="1234" autocomplete="off" />
+              <p class="ck-err" data-err="numero"></p>
+            </div>
+          </div>
+          <div class="ck-grid ck-g2">
+            <div class="ck-field">
+              <label for="ck-piso">Piso</label>
+              <input type="text" id="ck-piso" placeholder="3" autocomplete="off" />
+            </div>
+            <div class="ck-field">
+              <label for="ck-depto">Depto</label>
+              <input type="text" id="ck-depto" placeholder="A" autocomplete="off" />
+            </div>
+          </div>
+          <div class="ck-grid ck-g2">
+            <div class="ck-field">
+              <label for="ck-localidad">Localidad <em>*</em></label>
+              <input type="text" id="ck-localidad" placeholder="La Plata" autocomplete="address-level2" />
+              <p class="ck-err" data-err="localidad"></p>
+            </div>
+            <div class="ck-field">
+              <label for="ck-codpostal">Código postal <em>*</em></label>
+              <input type="text" id="ck-codpostal" placeholder="1900" autocomplete="postal-code" />
+              <p class="ck-err" data-err="codpostal"></p>
+            </div>
+          </div>
+          <div class="ck-grid ck-g2">
+            <div class="ck-field">
+              <label for="ck-provincia">Provincia <em>*</em></label>
+              <div class="ck-sel">
+                <select id="ck-provincia">
+                  <option value="">Seleccionar…</option>
+                  {PROVINCIAS.map(p => <option value={p}>{p}</option>)}
+                </select>
+              </div>
+              <p class="ck-err" data-err="provincia"></p>
+            </div>
+            <div class="ck-field">
+              <label for="ck-pais">País</label>
+              <input type="text" id="ck-pais" value="Argentina" disabled />
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="ck-nav">
+        <button type="button" class="ck-back" data-back="4">← Volver</button>
+        <button type="button" class="ck-btn" data-next="5">
+          Continuar
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- ══════════ PASO 3 · PLAN ══════════ -->
+    <section class="ck-step" data-step="3" hidden>
+      <div class="ck-card">
+        <div class="ck-section-label">Tu pedido</div>
+
+        <div class="ck-order">
+          <div class="ck-order-head">
+            <span class="ck-order-name">Registro de marca</span>
+            <span class="ck-order-price">{formatARS(PRICING.honorarios)}</span>
+          </div>
+          <p class="ck-plan-sub">Honorarios · + arancel INPI</p>
+          <ul class="ck-plan-feats">
+            <li>Presentación de la solicitud ante el INPI</li>
+            <li>Novedades del trámite por email</li>
+            <li>Vigilancia de marca <s>{formatARS(PRICING.vigilanciaLista)}</s> <b>Gratis</b></li>
+            <li id="ck-feat-garantia" class="ck-feat-off">Sin garantía de devolución: si el INPI deniega el registro, los honorarios no se devuelven</li>
+          </ul>
+        </div>
+
+        <label class="ck-upsell">
+          <input type="checkbox" id="ck-garantia" />
+          <div class="ck-upsell-body">
+            <div class="ck-upsell-head">
+              <span class="ck-upsell-name">Sumá la Garantía de Devolución</span>
+              <span class="ck-upsell-price">+{formatARS(PRICING.garantia)}</span>
+            </div>
+            <p class="ck-upsell-desc">
+              Si el INPI deniega tu registro, te devolvemos los
+              {formatARS(PRICING.honorarios)} de honorarios.
+            </p>
+          </div>
+        </label>
+      </div>
+
+      <div class="ck-card ck-summary">
+        <div class="ck-sum-row">
+          <span>Honorarios — Registro de marca</span>
+          <span>{formatARS(PRICING.honorarios)}</span>
+        </div>
+        <div class="ck-sum-row" id="ck-sum-garantia-row" hidden>
+          <span>Garantía de Devolución</span>
+          <span>{formatARS(PRICING.garantia)}</span>
+        </div>
+        <div class="ck-sum-row">
+          <span>Arancel INPI (1 clase) <small>se paga al INPI · valor {PRICING.arancelVigencia}</small></span>
+          <span>{formatARS(PRICING.arancelInpi)}</span>
+        </div>
+        <div class="ck-sum-row ck-sum-total">
+          <span>Total</span>
+          <span id="ck-sum-total">{formatARS(PRICING.honorarios + PRICING.arancelInpi)}</span>
+        </div>
+      </div>
+
+      <p class="ck-disclaimer">
+        El registro de una marca está sujeto a la resolución del INPI. Durante el trámite
+        pueden surgir oposiciones de terceros u observaciones; te notificaremos y podrás
+        decidir cómo continuar.
+      </p>
+
+      <div class="ck-nav">
+        <button type="button" class="ck-back" data-back="2">← Volver</button>
+        <button type="button" class="ck-btn" data-next="3">
+          Continuar
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- ══════════ PASO 4 · PAGO (placeholder v1) ══════════ -->
+    <section class="ck-step" data-step="4" hidden>
+      <div class="ck-card">
+        <div class="ck-section-label">Pago</div>
+
+        <div class="ck-pay-summary">
+          <div class="ck-pay-marca" id="ck-pay-marca">MARCA</div>
+          <div class="ck-pay-detail"><span id="ck-pay-plan">Registro Simple</span> · Clase <span id="ck-pay-clase">–</span></div>
+          <div class="ck-pay-total">Total: <b id="ck-pay-total">–</b></div>
+        </div>
+
+        <!-- Placeholder: se reemplaza por Mercado Pago Checkout Pro en v2 -->
+        <button type="button" class="ck-mp-btn" disabled>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="12" rx="11" ry="8" stroke="currentColor" stroke-width="1.6"/><path d="M5 12c2-.8 3.4-2.4 4.6-2.4 1.3 0 1.8 1.2 2.9 1.2 1 0 1.7-.9 3-.9 1.5 0 2.4 1.3 3.5 2.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          Pagar con Mercado Pago
+          <span class="ck-soon">Próximamente</span>
+        </button>
+
+        <p class="ck-help ck-pay-note">
+          El pago online estará disponible muy pronto. Continuá con tu solicitud y
+          coordinamos el pago por WhatsApp.
+        </p>
+      </div>
+
+      <div class="ck-nav">
+        <button type="button" class="ck-back" data-back="3">← Volver</button>
+        <button type="button" class="ck-btn" data-next="4">
+          Continuar
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- ══════════ PASO 6 · REVISIÓN Y FIRMA ══════════ -->
+    <section class="ck-step" data-step="6" hidden>
+      <div class="ck-card">
+        <div class="ck-section-label">Revisá tu carta poder</div>
+        <p class="ck-help" style="margin-bottom: 1rem">
+          Este documento nos autoriza a presentar y gestionar tu solicitud ante el INPI.
+          Revisá que todos los datos sean correctos.
+        </p>
+        <div class="ck-cp" id="ck-cp-preview"></div>
+        <button type="button" class="ck-link-btn" id="ck-edit-datos">✎ Editar mis datos</button>
+      </div>
+
+      <div class="ck-card">
+        <div class="ck-section-label">Tu firma</div>
+        <p class="ck-help" style="margin-bottom: 0.75rem">
+          Firmá en el recuadro con el dedo (celular) o con el mouse, como lo harías en papel.
+        </p>
+        <div class="ck-sig-box">
+          <canvas id="ck-sig"></canvas>
+          <span class="ck-sig-hint" id="ck-sig-hint">Firmá acá</span>
+        </div>
+        <div class="ck-sig-foot">
+          <button type="button" class="ck-link-btn" id="ck-sig-clear">Borrar y firmar de nuevo</button>
+        </div>
+
+        <!-- TODO: crear /terminos y /privacidad y linkearlos acá antes del launch -->
+        <label class="ck-terms">
+          <input type="checkbox" id="ck-terms" />
+          <span>Acepto los términos del servicio y la política de privacidad, y autorizo el uso de mi firma en la carta poder.</span>
+        </label>
+      </div>
+
+      <div class="ck-nav">
+        <button type="button" class="ck-back" data-back="5">← Volver</button>
+        <button type="button" class="ck-btn" id="ck-submit" disabled>
+          <span id="ck-submit-label">Confirmar y enviar solicitud</span>
+          <svg id="ck-submit-spin" width="16" height="16" viewBox="0 0 16 16" fill="none" style="display:none"><circle cx="8" cy="8" r="6" stroke="rgba(255,255,255,.3)" stroke-width="2"/><path d="M8 2a6 6 0 0 1 6 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- ══════════ CONFIRMACIÓN ══════════ -->
+    <section class="ck-step" data-step="done" hidden>
+      <div class="ck-card ck-done">
+        <svg width="52" height="52" viewBox="0 0 52 52" fill="none"><circle cx="26" cy="26" r="25" fill="#22c55e" fill-opacity=".12"/><path d="M16 26.5l7 7 13-14" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <h2>¡Listo! Recibimos tu solicitud.</h2>
+        <p class="ck-done-ref">N° de referencia: <b id="ck-ref"></b></p>
+        <p>Te enviamos una copia de tu carta poder firmada a <b id="ck-done-email"></b>.</p>
+        <p>
+          Presentaremos tu solicitud ante el INPI dentro de las próximas
+          <b>48 horas hábiles</b> y te enviaremos todas las notificaciones del
+          trámite por email.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+</BaseLayout>
+
+<script>
+  import { NIZA_CLASSES } from '../lib/checkout/nizaClasses';
+  import { PRICING, formatARS } from '../lib/checkout/constants';
+  import { formatCuitInput, isValidCuit, cuitMatchesDni } from '../lib/checkout/cuit';
+  import { cartaPoderHTML, type CartaPoderData } from '../lib/checkout/cartaPoder';
+
+  const DRAFT_KEY = 'um-checkout-draft';
+  const $ = (id: string) => document.getElementById(id) as HTMLElement;
+  const input = (id: string) => document.getElementById(id) as HTMLInputElement;
+
+  // Modo test: ningún campo es obligatorio (los formatos se validan solo si
+  // hay valor). TODO: volver a false antes del launch.
+  const FIELDS_OPTIONAL = true;
+
+  // ── Estado ──────────────────────────────────────────────
+  let clase: number | null = null;
+  let garantia = false;
+
+  const FIELD_IDS = [
+    'ck-marca', 'ck-nombre', 'ck-dni', 'ck-cuit', 'ck-calle', 'ck-numero',
+    'ck-piso', 'ck-depto', 'ck-localidad', 'ck-codpostal', 'ck-provincia',
+    'ck-email', 'ck-whatsapp',
+  ];
+
+  function saveDraft() {
+    const values: Record<string, string> = {};
+    FIELD_IDS.forEach(id => { values[id] = input(id).value; });
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({ values, clase, garantia }));
+  }
+
+  function restoreDraft() {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+      FIELD_IDS.forEach(id => { if (draft.values?.[id]) input(id).value = draft.values[id]; });
+      if (draft.clase) selectClase(draft.clase, false);
+      if (typeof draft.garantia === 'boolean') {
+        garantia = draft.garantia;
+        input('ck-garantia').checked = garantia;
+        updateSummary();
+      }
+    } catch { /* draft corrupto: ignorar */ }
+  }
+
+  // ── Navegación entre pasos ──────────────────────────────
+  const TOTAL_STEPS = 6;
+  const STEP_TITLES: Record<string, string> = {
+    '1': 'Tu marca', '2': 'Contacto', '3': 'Tu pedido',
+    '4': 'Pago', '5': 'Datos del titular', '6': 'Revisión y firma',
+  };
+
+  function goTo(step: string) {
+    document.querySelectorAll<HTMLElement>('.ck-step').forEach(s => {
+      s.hidden = s.dataset.step !== step;
+    });
+    if (step === 'done') {
+      $('ck-progress').hidden = true;
+    } else {
+      const n = parseInt(step, 10);
+      $('ck-step-label').textContent = `Paso ${n} de ${TOTAL_STEPS}`;
+      $('ck-step-title').textContent = STEP_TITLES[step];
+      $('ck-bar-fill').style.width = `${(n / TOTAL_STEPS) * 100}%`;
+    }
+    if (step === '4') updatePaySummary();
+    if (step === '6') { renderPreview(); sizeCanvas(); }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── Errores inline ──────────────────────────────────────
+  function setErr(key: string, msg: string) {
+    const el = document.querySelector<HTMLElement>(`[data-err="${key}"]`);
+    if (el) { el.textContent = msg; el.style.display = msg ? 'block' : 'none'; }
+  }
+  function clearErrs(keys: string[]) { keys.forEach(k => setErr(k, '')); }
+
+  // ── Validación por paso ─────────────────────────────────
+  // Con FIELDS_OPTIONAL, los campos vacíos pasan; el formato se valida
+  // solo cuando el usuario cargó algo.
+  function validateStep1(): boolean {
+    clearErrs(['marca', 'clase']);
+    if (FIELDS_OPTIONAL) return true;
+    let ok = true;
+    if (input('ck-marca').value.trim().length < 2) {
+      setErr('marca', 'Ingresá el nombre de tu marca.'); ok = false;
+    }
+    if (!clase) { setErr('clase', 'Seleccioná la clase de tu marca.'); ok = false; }
+    return ok;
+  }
+
+  function validateContacto(): boolean {
+    clearErrs(['email', 'whatsapp']);
+    let ok = true;
+
+    const email = input('ck-email').value.trim();
+    if (email || !FIELDS_OPTIONAL) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setErr('email', 'Ingresá un email válido.'); ok = false; }
+    }
+
+    const wa = input('ck-whatsapp').value.replace(/\D/g, '');
+    if (wa || !FIELDS_OPTIONAL) {
+      if (wa.length < 10) { setErr('whatsapp', 'Ingresá un número de WhatsApp válido (con código de área).'); ok = false; }
+    }
+
+    return ok;
+  }
+
+  function validateTitular(): boolean {
+    const keys = ['nombre', 'dni', 'cuit', 'calle', 'numero', 'localidad', 'codpostal', 'provincia'];
+    clearErrs(keys);
+    let ok = true;
+    const req = (id: string, key: string, msg: string) => {
+      if (!FIELDS_OPTIONAL && !input(id).value.trim()) { setErr(key, msg); ok = false; }
+    };
+    req('ck-nombre', 'nombre', 'Ingresá tu nombre y apellido.');
+
+    const dni = input('ck-dni').value.replace(/\D/g, '');
+    if (dni || !FIELDS_OPTIONAL) {
+      if (dni.length < 7 || dni.length > 8) { setErr('dni', 'Ingresá un DNI válido (7 u 8 dígitos).'); ok = false; }
+    }
+
+    const cuit = input('ck-cuit').value;
+    if (cuit || !FIELDS_OPTIONAL) {
+      if (!isValidCuit(cuit)) {
+        setErr('cuit', 'El CUIT/CUIL no es válido. Revisalo.'); ok = false;
+      } else if (dni && !cuitMatchesDni(cuit, dni)) {
+        setErr('cuit', 'El CUIT/CUIL no coincide con el DNI ingresado.'); ok = false;
+      }
+    }
+
+    req('ck-calle', 'calle', 'Ingresá la calle.');
+    req('ck-numero', 'numero', 'Ingresá el número.');
+    req('ck-localidad', 'localidad', 'Ingresá la localidad.');
+    req('ck-codpostal', 'codpostal', 'Ingresá el código postal.');
+    req('ck-provincia', 'provincia', 'Seleccioná la provincia.');
+
+    return ok;
+  }
+
+  // ── Dropdown de clases ──────────────────────────────────
+  const ddBtn = $('ck-clase-btn');
+  const ddPanel = $('ck-clase-panel');
+  const ddSearch = input('ck-clase-search');
+
+  function normalize(s: string): string {
+    return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  }
+
+  function toggleDd(open?: boolean) {
+    const show = open ?? ddPanel.hidden;
+    ddPanel.hidden = !show;
+    ddBtn.setAttribute('aria-expanded', String(show));
+    if (show) { ddSearch.value = ''; filterClases(''); ddSearch.focus(); }
+  }
+
+  function filterClases(q: string) {
+    const nq = normalize(q);
+    document.querySelectorAll<HTMLElement>('.ck-dd-opt').forEach(opt => {
+      const text = normalize(opt.textContent || '');
+      (opt.parentElement as HTMLElement).hidden = nq !== '' && !text.includes(nq);
+    });
+  }
+
+  function selectClase(num: number, save = true) {
+    clase = num;
+    const c = NIZA_CLASSES.find(x => x.num === num);
+    const label = $('ck-clase-label');
+    label.textContent = c ? `Clase ${c.num} — ${c.nombre}` : `Clase ${num}`;
+    label.classList.remove('ck-dd-placeholder');
+    document.querySelectorAll<HTMLElement>('.ck-dd-opt').forEach(opt => {
+      opt.classList.toggle('selected', parseInt(opt.dataset.num || '', 10) === num);
+    });
+    setErr('clase', '');
+    if (save) saveDraft();
+  }
+
+  ddBtn.addEventListener('click', () => toggleDd());
+  ddSearch.addEventListener('input', () => filterClases(ddSearch.value));
+  document.querySelectorAll<HTMLElement>('.ck-dd-opt').forEach(opt => {
+    opt.addEventListener('click', () => { selectClase(parseInt(opt.dataset.num || '', 10)); toggleDd(false); });
+  });
+  document.addEventListener('click', (e) => {
+    if (!$('ck-clase-dd').contains(e.target as Node)) toggleDd(false);
+  });
+
+  // ── Garantía (upsell) y resumen ─────────────────────────
+  const FEAT_GARANTIA = {
+    off: 'Sin garantía de devolución: si el INPI deniega el registro, los honorarios no se devuelven',
+    on: 'Garantía de Devolución incluida: si el INPI deniega el registro, te devolvemos los honorarios',
+  };
+
+  function total(): number {
+    return PRICING.honorarios + (garantia ? PRICING.garantia : 0) + PRICING.arancelInpi;
+  }
+
+  function updateSummary() {
+    const feat = $('ck-feat-garantia');
+    feat.textContent = garantia ? FEAT_GARANTIA.on : FEAT_GARANTIA.off;
+    feat.classList.toggle('ck-feat-off', !garantia);
+    feat.classList.toggle('ck-feat-on', garantia);
+    $('ck-sum-garantia-row').hidden = !garantia;
+    $('ck-sum-total').textContent = formatARS(total());
+  }
+
+  input('ck-garantia').addEventListener('change', () => {
+    garantia = input('ck-garantia').checked;
+    updateSummary();
+    saveDraft();
+  });
+
+  function updatePaySummary() {
+    $('ck-pay-marca').textContent = input('ck-marca').value.trim().toUpperCase() || 'TU MARCA';
+    $('ck-pay-plan').textContent = 'Registro de marca' + (garantia ? ' + Garantía de Devolución' : '');
+    $('ck-pay-clase').textContent = clase ? String(clase) : '–';
+    $('ck-pay-total').textContent = formatARS(total());
+  }
+
+  // ── Carta poder: preview ────────────────────────────────
+  function cpData(): CartaPoderData {
+    const now = new Date();
+    return {
+      nombreApellido: input('ck-nombre').value.trim(),
+      dni: input('ck-dni').value.replace(/\D/g, ''),
+      cuit: input('ck-cuit').value.trim(),
+      calle: input('ck-calle').value.trim(),
+      numero: input('ck-numero').value.trim(),
+      piso: input('ck-piso').value.trim() || undefined,
+      depto: input('ck-depto').value.trim() || undefined,
+      codigoPostal: input('ck-codpostal').value.trim(),
+      localidad: input('ck-localidad').value.trim(),
+      provincia: input('ck-provincia').value,
+      marca: input('ck-marca').value,
+      clases: clase ? [clase] : [],
+      fecha: { dia: now.getDate(), mes: now.getMonth(), anio: now.getFullYear() },
+    };
+  }
+
+  function renderPreview() {
+    $('ck-cp-preview').innerHTML = cartaPoderHTML(cpData());
+  }
+
+  $('ck-edit-datos').addEventListener('click', () => goTo('5'));
+
+  // ── Firma (canvas) ──────────────────────────────────────
+  const canvas = document.getElementById('ck-sig') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
+  const SIG_H = 180;
+  let strokes: { x: number; y: number }[][] = [];
+  let drawing = false;
+
+  function sizeCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.parentElement!.getBoundingClientRect().width;
+    if (w === 0) return; // paso oculto
+    canvas.width = w * dpr;
+    canvas.height = SIG_H * dpr;
+    canvas.style.width = `${w}px`;
+    canvas.style.height = `${SIG_H}px`;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    redraw();
+  }
+
+  function redraw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    strokes.forEach(stroke => {
+      ctx.beginPath();
+      stroke.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
+      ctx.stroke();
+    });
+  }
+
+  function sigPos(e: PointerEvent) {
+    const r = canvas.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+
+  canvas.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    canvas.setPointerCapture(e.pointerId);
+    drawing = true;
+    strokes.push([sigPos(e)]);
+    $('ck-sig-hint').hidden = true;
+  });
+  canvas.addEventListener('pointermove', (e) => {
+    if (!drawing) return;
+    const stroke = strokes[strokes.length - 1];
+    stroke.push(sigPos(e));
+    const [a, b] = [stroke[stroke.length - 2], stroke[stroke.length - 1]];
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+  });
+  const endStroke = () => { drawing = false; updateSubmitState(); };
+  canvas.addEventListener('pointerup', endStroke);
+  canvas.addEventListener('pointercancel', endStroke);
+  window.addEventListener('resize', sizeCanvas);
+
+  $('ck-sig-clear').addEventListener('click', () => {
+    strokes = [];
+    redraw();
+    $('ck-sig-hint').hidden = false;
+    updateSubmitState();
+  });
+
+  // ── Envío ───────────────────────────────────────────────
+  const submitBtn = document.getElementById('ck-submit') as HTMLButtonElement;
+  const termsCheck = input('ck-terms');
+
+  function updateSubmitState() {
+    submitBtn.disabled = strokes.length === 0 || !termsCheck.checked;
+  }
+  termsCheck.addEventListener('change', updateSubmitState);
+
+  submitBtn.addEventListener('click', async () => {
+    submitBtn.disabled = true;
+    $('ck-submit-label').textContent = 'Enviando…';
+    $('ck-submit-spin').style.display = '';
+
+    const payload = {
+      marca: { nombre: input('ck-marca').value.trim(), tipo: 'Denominativa' },
+      clase,
+      titular: {
+        tipoPersona: 'Humana',
+        nombre: input('ck-nombre').value.trim(),
+        dni: input('ck-dni').value.replace(/\D/g, ''),
+        cuit: input('ck-cuit').value.trim(),
+        domicilio: {
+          pais: 'Argentina',
+          calle: input('ck-calle').value.trim(),
+          numero: input('ck-numero').value.trim(),
+          piso: input('ck-piso').value.trim(),
+          depto: input('ck-depto').value.trim(),
+          localidad: input('ck-localidad').value.trim(),
+          codigoPostal: input('ck-codpostal').value.trim(),
+          provincia: input('ck-provincia').value,
+        },
+      },
+      contacto: {
+        email: input('ck-email').value.trim(),
+        whatsapp: input('ck-whatsapp').value.trim(),
+      },
+      garantia,
+      pricing: {
+        honorarios: PRICING.honorarios,
+        garantia: garantia ? PRICING.garantia : 0,
+        arancelInpi: PRICING.arancelInpi,
+        total: total(),
+      },
+      payment: { status: 'skipped', provider: null },
+      firma: canvas.toDataURL('image/png'),
+    };
+
+    // TODO(wiring): POST a /api/checkout/submit → PDF de la carta poder + emails
+    // (spec docs/spec_self_checkout.md §7). Por ahora, envío simulado para testear la UX.
+    console.info('[um-checkout] payload listo para /api/checkout/submit:', payload);
+    await new Promise(r => setTimeout(r, 900));
+
+    const now = new Date();
+    const ymd = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+    const ref = `UM-${ymd}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
+    $('ck-ref').textContent = ref;
+    $('ck-done-email').textContent = payload.contacto.email;
+
+    localStorage.removeItem(DRAFT_KEY);
+    goTo('done');
+  });
+
+  // ── Inputs: formato y draft ─────────────────────────────
+  input('ck-cuit').addEventListener('input', (e) => {
+    const el = e.target as HTMLInputElement;
+    el.value = formatCuitInput(el.value);
+  });
+  input('ck-dni').addEventListener('input', (e) => {
+    const el = e.target as HTMLInputElement;
+    el.value = el.value.replace(/\D/g, '').slice(0, 8);
+  });
+  FIELD_IDS.forEach(id => input(id).addEventListener('input', () => {
+    setErr(id.replace('ck-', ''), ''); // al corregir, el error desaparece
+    saveDraft();
+  }));
+
+  // ── Botones Continuar / Volver ──────────────────────────
+  const VALIDATORS: Record<string, () => boolean> = {
+    '1': validateStep1, '2': validateContacto, '5': validateTitular,
+  };
+
+  document.querySelectorAll<HTMLElement>('[data-next]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const from = btn.dataset.next!;
+      const validator = VALIDATORS[from];
+      if (validator && !validator()) return;
+      goTo(String(parseInt(from, 10) + 1));
+    });
+  });
+  document.querySelectorAll<HTMLElement>('[data-back]').forEach(btn => {
+    btn.addEventListener('click', () => goTo(btn.dataset.back!));
+  });
+
+  restoreDraft();
+</script>
+
+<!-- is:global: los estilos aplican también al HTML generado por JS (preview) -->
+<style is:global>
+
+/* ─── Page ─── */
+.ck-page {
+  background: #f4f6f9;
+  min-height: 100vh;
+  padding: 3.5rem 1.25rem 6rem;
+}
+.ck-wrap { max-width: 700px; margin: 0 auto; }
+
+/* ─── Header ─── */
+.ck-header { margin-bottom: 1.75rem; }
+.ck-badge {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: #eff6ff; color: #2563eb;
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 0.3rem 0.8rem; border-radius: 100px; margin-bottom: 1rem;
+}
+.ck-header h1 {
+  font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 800; color: #0b1d3a;
+  letter-spacing: -0.03em; margin-bottom: 0.5rem; line-height: 1.1;
+}
+.ck-header p { color: #64748b; font-size: 0.9375rem; margin: 0; }
+
+/* ─── Progress ─── */
+.ck-progress { margin-bottom: 1.5rem; }
+.ck-progress-top {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 0.5rem;
+}
+#ck-step-label {
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: #94a3b8;
+}
+#ck-step-title { font-size: 0.8125rem; font-weight: 600; color: #2563eb; }
+.ck-bar {
+  height: 5px; background: #e2e8f0; border-radius: 100px; overflow: hidden;
+}
+.ck-bar-fill {
+  height: 100%; border-radius: 100px;
+  background: linear-gradient(90deg, #2563eb, #6366f1);
+  transition: width 0.35s ease;
+}
+
+/* ─── Cards / fields (mismo lenguaje que formularioregistro) ─── */
+.ck-card {
+  background: #fff; border-radius: 18px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 6px 24px rgba(0,0,0,.05);
+  padding: 2rem; margin-bottom: 1rem;
+}
+.ck-section-label {
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: #94a3b8; margin-bottom: 1.25rem;
+}
+.ck-grid { display: grid; gap: 1rem; margin-bottom: 1rem; }
+.ck-grid:last-child { margin-bottom: 0; }
+.ck-g2 { grid-template-columns: 1fr 1fr; }
+@media (max-width: 580px) { .ck-g2 { grid-template-columns: 1fr; } }
+
+.ck-field { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
+.ck-grid .ck-field { margin-bottom: 0; }
+.ck-field label {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.8125rem; font-weight: 500; color: #475569; line-height: 1.2;
+}
+.ck-field label em { font-style: normal; color: #2563eb; font-weight: 600; margin-left: 1px; }
+.ck-field input, .ck-field select {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.9375rem; color: #0f172a;
+  background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px;
+  padding: 0.6875rem 0.9375rem; width: 100%; outline: none;
+  transition: border-color .15s, background .15s, box-shadow .15s;
+  appearance: none; -webkit-appearance: none;
+}
+.ck-field input:hover, .ck-field select:hover { border-color: #cbd5e1; }
+.ck-field input:focus, .ck-field select:focus {
+  background: #fff; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+}
+.ck-field input::placeholder { color: #c0ccd8; }
+.ck-field input:disabled, .ck-field select:disabled {
+  color: #64748b; background: #f1f5f9; cursor: not-allowed;
+}
+
+.ck-sel { position: relative; }
+.ck-sel select { cursor: pointer; padding-right: 2.25rem; }
+.ck-sel::after {
+  content: ''; position: absolute; right: 0.9rem; top: 50%; transform: translateY(-50%);
+  width: 10px; height: 6px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; pointer-events: none;
+}
+.ck-sel--locked::after { display: none; }
+.ck-sel--locked::before {
+  content: ''; position: absolute; right: 0.9rem; top: 50%; transform: translateY(-50%);
+  width: 11px; height: 12px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='12' viewBox='0 0 11 12' fill='none'%3E%3Crect x='1' y='5' width='9' height='6' rx='1.5' stroke='%2394a3b8' stroke-width='1.3'/%3E%3Cpath d='M3 5V3.5a2.5 2.5 0 015 0V5' stroke='%2394a3b8' stroke-width='1.3'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; pointer-events: none;
+}
+
+.ck-help { font-size: 0.75rem; color: #94a3b8; line-height: 1.5; margin: 0; }
+.ck-help a { color: #2563eb; font-weight: 600; text-decoration: none; }
+.ck-help a:hover { text-decoration: underline; }
+
+.ck-err {
+  display: none; font-size: 0.75rem; font-weight: 500; color: #dc2626; margin: 0;
+}
+
+.ck-domicilio { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px dashed #e2e8f0; }
+.ck-dom-title {
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: #94a3b8; margin-bottom: 1rem;
+}
+
+/* ─── Dropdown de clases ─── */
+.ck-dd { position: relative; }
+.ck-dd-btn {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+  width: 100%; text-align: left; cursor: pointer;
+  font-family: 'Inter', system-ui, sans-serif; font-size: 0.9375rem; color: #0f172a;
+  background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px;
+  padding: 0.6875rem 0.9375rem;
+  transition: border-color .15s, background .15s, box-shadow .15s;
+}
+.ck-dd-btn:hover { border-color: #cbd5e1; }
+.ck-dd-btn[aria-expanded="true"] {
+  background: #fff; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+}
+.ck-dd-btn svg { flex-shrink: 0; }
+#ck-clase-label {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
+}
+.ck-dd-placeholder { color: #c0ccd8; }
+.ck-dd-panel {
+  position: absolute; z-index: 30; top: calc(100% + 6px); left: 0; right: 0;
+  background: #fff; border: 1.5px solid #e2e8f0; border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(15,23,42,.14); overflow: hidden;
+}
+.ck-dd-panel input {
+  width: 100%; border: none; border-bottom: 1px solid #f1f5f9; outline: none;
+  font-family: 'Inter', system-ui, sans-serif; font-size: 0.875rem;
+  padding: 0.75rem 1rem; color: #0f172a;
+}
+.ck-dd-panel input::placeholder { color: #c0ccd8; }
+.ck-dd-list {
+  list-style: none; margin: 0; padding: 0.35rem;
+  max-height: 300px; overflow-y: auto;
+}
+.ck-dd-opt {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  background: none; border: none; border-radius: 8px;
+  padding: 0.5625rem 0.7rem;
+  font-family: 'Inter', system-ui, sans-serif;
+  transition: background .12s;
+}
+.ck-dd-opt:hover { background: #eff6ff; }
+.ck-dd-opt.selected { background: #eff6ff; box-shadow: inset 0 0 0 1.5px #2563eb; }
+.ck-dd-num {
+  display: block; font-size: 0.7rem; font-weight: 700; color: #2563eb;
+  text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.15rem;
+}
+.ck-dd-name { display: block; font-size: 0.78rem; color: #475569; line-height: 1.45; }
+
+/* ─── Pedido + upsell de garantía ─── */
+.ck-order {
+  border: 1.5px solid #e2e8f0; border-radius: 14px; background: #f8fafc;
+  padding: 1.25rem 1.375rem;
+}
+.ck-order-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+.ck-order-name { font-size: 1rem; font-weight: 700; color: #0b1d3a; letter-spacing: -0.01em; }
+.ck-order-price { font-size: 1.375rem; font-weight: 800; color: #0b1d3a; letter-spacing: -0.02em; }
+.ck-plan-sub { font-size: 0.75rem; color: #94a3b8; margin: 0.15rem 0 0.75rem; }
+
+.ck-upsell {
+  display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer;
+  border: 1.5px dashed #cbd5e1; border-radius: 14px; background: #fff;
+  padding: 1.125rem 1.25rem; margin-top: 0.875rem;
+  transition: border-color .15s, background .15s, box-shadow .15s;
+}
+.ck-upsell:hover { border-color: #86efac; }
+.ck-upsell:has(input:checked) {
+  border-color: #16a34a; border-style: solid; background: #f0fdf4;
+  box-shadow: 0 0 0 3px rgba(22,163,74,.12);
+}
+.ck-upsell input {
+  flex-shrink: 0; margin-top: 3px; width: 17px; height: 17px;
+  accent-color: #16a34a; cursor: pointer;
+}
+.ck-upsell-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+.ck-upsell-name { font-size: 0.9375rem; font-weight: 700; color: #0b1d3a; }
+.ck-upsell-price { font-size: 1rem; font-weight: 800; color: #16a34a; white-space: nowrap; }
+.ck-upsell-desc { font-size: 0.8125rem; color: #475569; line-height: 1.5; margin: 0.3rem 0 0; }
+.ck-upsell-body { flex: 1; min-width: 0; }
+.ck-plan-feats { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
+.ck-plan-feats li {
+  position: relative; padding-left: 1.35rem;
+  font-size: 0.8125rem; color: #475569; line-height: 1.45;
+}
+.ck-plan-feats li::before {
+  content: ''; position: absolute; left: 0; top: 0.28em;
+  width: 13px; height: 13px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 13 13' fill='none'%3E%3Ccircle cx='6.5' cy='6.5' r='6.5' fill='%2322c55e' fill-opacity='.15'/%3E%3Cpath d='M4 6.6l1.8 1.8 3.2-3.6' stroke='%2316a34a' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+}
+.ck-plan-feats s { color: #94a3b8; margin-right: 0.25rem; }
+.ck-plan-feats b { color: #16a34a; font-weight: 700; }
+.ck-plan-feats li.ck-feat-off { color: #b91c1c; }
+.ck-plan-feats li.ck-feat-off::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 13 13' fill='none'%3E%3Ccircle cx='6.5' cy='6.5' r='6.5' fill='%23ef4444' fill-opacity='.15'/%3E%3Cpath d='M4.4 4.4l4.2 4.2M8.6 4.4L4.4 8.6' stroke='%23dc2626' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+.ck-plan-feats li.ck-feat-on { color: #166534; font-weight: 600; }
+
+/* ─── Resumen ─── */
+.ck-summary { padding: 1.375rem 1.75rem; }
+.ck-sum-row {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;
+  font-size: 0.875rem; color: #475569; padding: 0.45rem 0;
+}
+.ck-sum-row[hidden] { display: none; }
+.ck-sum-row small { display: block; font-size: 0.7rem; color: #94a3b8; }
+.ck-sum-row > span:last-child { font-weight: 600; color: #0f172a; white-space: nowrap; }
+.ck-sum-total {
+  border-top: 1px solid #f1f5f9; margin-top: 0.4rem; padding-top: 0.85rem;
+  font-weight: 700; color: #0b1d3a; font-size: 0.9375rem;
+}
+.ck-sum-total > span:last-child { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.02em; }
+
+.ck-disclaimer {
+  font-size: 0.75rem; color: #94a3b8; line-height: 1.6;
+  margin: 0 0.25rem 1rem; padding: 0;
+}
+
+/* ─── Pago (placeholder) ─── */
+.ck-pay-summary {
+  background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 12px;
+  padding: 1.25rem 1.375rem; margin-bottom: 1.25rem;
+}
+.ck-pay-marca { font-size: 1.25rem; font-weight: 800; color: #0b1d3a; letter-spacing: -0.02em; }
+.ck-pay-detail { font-size: 0.8125rem; color: #64748b; margin-top: 0.2rem; }
+.ck-pay-total { font-size: 0.9375rem; color: #0b1d3a; margin-top: 0.6rem; }
+.ck-mp-btn {
+  display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+  width: 100%; padding: 0.9375rem 1.5rem;
+  background: #009ee3; color: #fff; border: none; border-radius: 100px;
+  font-family: 'Inter', system-ui, sans-serif; font-size: 0.9375rem; font-weight: 600;
+  opacity: 0.55; cursor: not-allowed;
+}
+.ck-soon {
+  font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  background: rgba(255,255,255,.25); border-radius: 100px; padding: 0.2rem 0.6rem;
+}
+.ck-pay-note { margin-top: 0.875rem; text-align: center; }
+
+/* ─── Carta poder (preview) ─── */
+.ck-cp {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+  padding: 1.75rem; font-size: 0.8125rem; color: #1e293b; line-height: 1.7;
+  box-shadow: inset 0 1px 4px rgba(15,23,42,.03);
+}
+.ck-cp-dest { margin: 0 0 1rem; font-weight: 600; }
+.ck-cp-p { margin: 0 0 1rem; text-align: justify; }
+.ck-cp-ul { margin: 0 0 1rem; padding-left: 1.4rem; }
+.ck-cp-ul li { margin-bottom: 0.4rem; text-align: justify; }
+.ck-cp-firma { margin-top: 2.25rem; width: 230px; }
+.ck-cp-firma-space { height: 64px; }
+.ck-cp-firma-img { height: 64px; display: block; object-fit: contain; object-position: left bottom; }
+.ck-cp-firma-linea { border-top: 1px solid #0f172a; }
+.ck-cp-firma-acl { font-size: 0.75rem; margin: 0.35rem 0 0; line-height: 1.5; }
+
+.ck-link-btn {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  background: none; border: none; padding: 0; cursor: pointer;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.8125rem; font-weight: 600; color: #2563eb;
+  margin-top: 0.875rem; transition: opacity .15s;
+}
+.ck-link-btn:hover { opacity: 0.65; }
+
+/* ─── Firma ─── */
+.ck-sig-box {
+  position: relative; border: 1.5px dashed #cbd5e1; border-radius: 12px;
+  background: #f8fafc; overflow: hidden;
+}
+.ck-sig-box canvas { display: block; touch-action: none; cursor: crosshair; }
+.ck-sig-hint {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: #c0ccd8; font-size: 0.9375rem; font-weight: 500; pointer-events: none;
+}
+.ck-sig-hint[hidden] { display: none; }
+.ck-sig-foot { display: flex; justify-content: flex-end; }
+.ck-sig-foot .ck-link-btn { margin-top: 0.5rem; }
+
+.ck-terms {
+  display: flex; align-items: flex-start; gap: 0.6rem; cursor: pointer;
+  margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid #f1f5f9;
+}
+.ck-terms input {
+  flex-shrink: 0; margin-top: 2px; width: 15px; height: 15px;
+  accent-color: #2563eb; cursor: pointer;
+}
+.ck-terms span { font-size: 0.78rem; color: #64748b; line-height: 1.55; }
+
+/* ─── Navegación ─── */
+.ck-nav {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 1.25rem; gap: 1rem;
+}
+.ck-btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.875rem 2rem; background: #0b1d3a; color: #fff;
+  border: none; border-radius: 100px;
+  font-family: 'Inter', system-ui, sans-serif; font-size: 0.9375rem; font-weight: 600;
+  cursor: pointer; transition: background .18s, transform .18s, box-shadow .18s;
+}
+.ck-btn:hover:not(:disabled) {
+  background: #2563eb; transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(37,99,235,.3);
+}
+.ck-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.ck-back {
+  background: none; border: none; padding: 0.5rem 0; cursor: pointer;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.875rem; font-weight: 600; color: #64748b;
+  transition: color .15s;
+}
+.ck-back:hover { color: #0b1d3a; }
+#ck-submit-spin { animation: ck-spin .65s linear infinite; }
+@keyframes ck-spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+
+/* ─── Confirmación ─── */
+.ck-done { text-align: center; padding: 3rem 2rem; }
+.ck-done svg { margin-bottom: 1.25rem; }
+.ck-done h2 {
+  font-size: 1.5rem; font-weight: 800; color: #0b1d3a;
+  letter-spacing: -0.02em; margin-bottom: 0.75rem;
+}
+.ck-done p { font-size: 0.9rem; color: #64748b; line-height: 1.65; margin: 0 auto 0.75rem; max-width: 30rem; }
+.ck-done p b { color: #0b1d3a; }
+.ck-done-ref {
+  display: inline-block; background: #eff6ff; color: #1e40af !important;
+  border-radius: 100px; padding: 0.35rem 1rem; font-size: 0.8125rem !important;
+}
+.ck-done-ref b { color: #1e40af !important; }
+
+</style>
