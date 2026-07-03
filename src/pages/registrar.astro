@@ -456,9 +456,8 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
   const $ = (id: string) => document.getElementById(id) as HTMLElement;
   const input = (id: string) => document.getElementById(id) as HTMLInputElement;
 
-  // Modo test: ningún campo es obligatorio (los formatos se validan solo si
-  // hay valor). TODO: volver a false antes del launch.
-  const FIELDS_OPTIONAL = true;
+  // true = modo test (ningún campo obligatorio, formatos solo si hay valor)
+  const FIELDS_OPTIONAL = false;
 
   // ── Estado ──────────────────────────────────────────────
   let clase: number | null = null;
