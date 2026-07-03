@@ -299,12 +299,12 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
             <li>Presentación de la solicitud ante el INPI</li>
             <li>Novedades del trámite por email</li>
             <li>Vigilancia de marca <s>{formatARS(PRICING.vigilanciaLista)}</s> <b>Gratis</b></li>
-            <li id="ck-feat-garantia" class="ck-feat-off">Sin garantía de devolución: si el INPI deniega el registro, los honorarios no se devuelven</li>
+            <li id="ck-feat-garantia" class="ck-feat-on">Garantía de Devolución incluida: si el INPI deniega el registro, te devolvemos los honorarios</li>
           </ul>
         </div>
 
         <label class="ck-upsell">
-          <input type="checkbox" id="ck-garantia" />
+          <input type="checkbox" id="ck-garantia" checked />
           <div class="ck-upsell-body">
             <div class="ck-upsell-head">
               <span class="ck-upsell-name">Sumá la Garantía de Devolución</span>
@@ -323,7 +323,7 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
           <span>Honorarios — Registro de marca</span>
           <span>{formatARS(PRICING.honorarios)}</span>
         </div>
-        <div class="ck-sum-row" id="ck-sum-garantia-row" hidden>
+        <div class="ck-sum-row" id="ck-sum-garantia-row">
           <span>Garantía de Devolución</span>
           <span>{formatARS(PRICING.garantia)}</span>
         </div>
@@ -333,7 +333,7 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
         </div>
         <div class="ck-sum-row ck-sum-total">
           <span>Total</span>
-          <span id="ck-sum-total">{formatARS(PRICING.honorarios + PRICING.arancelInpi)}</span>
+          <span id="ck-sum-total">{formatARS(PRICING.honorarios + PRICING.garantia + PRICING.arancelInpi)}</span>
         </div>
       </div>
 
@@ -361,6 +361,15 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
           <div class="ck-pay-marca" id="ck-pay-marca">MARCA</div>
           <div class="ck-pay-detail"><span id="ck-pay-plan">Registro Simple</span> · Clase <span id="ck-pay-clase">–</span></div>
           <div class="ck-pay-total">Total: <b id="ck-pay-total">–</b></div>
+        </div>
+
+        <div class="ck-stay">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="9" stroke="#b45309" stroke-width="1.5"/><path d="M10 5.5V10l3 2" stroke="#b45309" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div>
+            <b>Después de pagar, quedate cerca:</b> volvés a esta página para
+            completar los datos del titular y <b>firmar la carta poder online</b>.
+            Te toma 2 minutos y tu solicitud queda lista para presentar.
+          </div>
         </div>
 
         <button type="button" class="ck-mp-btn" id="ck-mp-btn">
@@ -461,7 +470,7 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
 
   // ── Estado ──────────────────────────────────────────────
   let clase: number | null = null;
-  let garantia = false;
+  let garantia = true;
   let orderRef: string | null = null; // pedido creado al iniciar el pago MP
 
   const FIELD_IDS = [
@@ -1268,6 +1277,16 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
   font-size: 0.75rem; color: #94a3b8; line-height: 1.6;
   margin: 0 0.25rem 1rem; padding: 0;
 }
+
+/* ─── Pago ─── */
+.ck-stay {
+  display: flex; align-items: flex-start; gap: 0.7rem;
+  background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 12px;
+  padding: 1rem 1.25rem; margin-bottom: 1.25rem;
+  font-size: 0.875rem; color: #92400e; line-height: 1.6;
+}
+.ck-stay svg { flex-shrink: 0; margin-top: 2px; }
+.ck-stay b { font-weight: 700; }
 
 /* ─── Pago (placeholder) ─── */
 .ck-pay-summary {

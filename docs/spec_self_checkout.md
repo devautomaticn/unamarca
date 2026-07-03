@@ -165,6 +165,11 @@ charged on vigilante.unamarca.com.ar (credible anchor, not a fake one).
 
 ### Paso 4 — Pago (placeholder in v1)
 
+Prominent amber callout above the payment button: "Después de pagar, quedate
+cerca: volvés a esta página para completar los datos del titular y firmar la
+carta poder online. Te toma 2 minutos y tu solicitud queda lista para
+presentar." — sets the expectation that the flow continues after payment.
+
 See §6.
 
 ### Paso 5 — Datos del titular (post-pago)
