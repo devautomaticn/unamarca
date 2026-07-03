@@ -431,7 +431,7 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
         <svg width="52" height="52" viewBox="0 0 52 52" fill="none"><circle cx="26" cy="26" r="25" fill="#22c55e" fill-opacity=".12"/><path d="M16 26.5l7 7 13-14" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <h2>¡Listo! Recibimos tu solicitud.</h2>
         <p class="ck-done-ref">N° de referencia: <b id="ck-ref"></b></p>
-        <p>Te enviamos una copia de tu carta poder firmada a <b id="ck-done-email"></b>.</p>
+        <p id="ck-done-mail">Te enviamos una copia de tu carta poder firmada a <b id="ck-done-email"></b>.</p>
         <p>
           Presentaremos tu solicitud ante el INPI dentro de las próximas
           <b>48 horas hábiles</b> y te enviaremos todas las notificaciones del
@@ -936,7 +936,11 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
     }
 
     $('ck-ref').textContent = ref;
-    $('ck-done-email').textContent = payload.contacto.email;
+    if (orderRef) {
+      $('ck-done-email').textContent = payload.contacto.email || 'tu email';
+    } else {
+      $('ck-done-mail').textContent = 'Modo demo (sin pago): no se envían emails.';
+    }
 
     localStorage.removeItem(DRAFT_KEY);
     goTo('done');
