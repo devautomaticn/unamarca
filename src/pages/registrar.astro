@@ -299,12 +299,12 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
             <li>Presentación de la solicitud ante el INPI</li>
             <li>Novedades del trámite por email</li>
             <li>Vigilancia de marca <s>{formatARS(PRICING.vigilanciaLista)}</s> <b>Gratis</b></li>
-            <li id="ck-feat-garantia" class="ck-feat-on">Garantía de Devolución incluida: si el INPI deniega el registro, te devolvemos los honorarios</li>
+            <li id="ck-feat-garantia" class="ck-feat-off">Sin garantía de devolución: si el INPI deniega el registro, los honorarios no se devuelven</li>
           </ul>
         </div>
 
         <label class="ck-upsell">
-          <input type="checkbox" id="ck-garantia" checked />
+          <input type="checkbox" id="ck-garantia" />
           <div class="ck-upsell-body">
             <div class="ck-upsell-head">
               <span class="ck-upsell-name">Sumá la Garantía de Devolución</span>
@@ -323,7 +323,7 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
           <span>Honorarios — Registro de marca</span>
           <span>{formatARS(PRICING.honorarios)}</span>
         </div>
-        <div class="ck-sum-row" id="ck-sum-garantia-row">
+        <div class="ck-sum-row" id="ck-sum-garantia-row" hidden>
           <span>Garantía de Devolución</span>
           <span>{formatARS(PRICING.garantia)}</span>
         </div>
@@ -333,7 +333,7 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
         </div>
         <div class="ck-sum-row ck-sum-total">
           <span>Total</span>
-          <span id="ck-sum-total">{formatARS(PRICING.honorarios + PRICING.garantia + PRICING.arancelInpi)}</span>
+          <span id="ck-sum-total">{formatARS(PRICING.honorarios + PRICING.arancelInpi)}</span>
         </div>
       </div>
 
@@ -470,7 +470,7 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
 
   // ── Estado ──────────────────────────────────────────────
   let clase: number | null = null;
-  let garantia = true;
+  let garantia = false;
   let orderRef: string | null = null; // pedido creado al iniciar el pago MP
 
   const FIELD_IDS = [
