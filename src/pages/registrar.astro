@@ -377,7 +377,7 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
       <div class="ck-nav">
         <button type="button" class="ck-back" data-back="3">← Volver</button>
         <!-- Solo demo/test: permite probar el flujo sin pagar. Quitar al launch. -->
-        <button type="button" class="ck-btn ck-btn--ghost" data-next="4">
+        <button type="button" class="ck-btn ck-btn--ghost" id="ck-skip-pay">
           Saltar pago (demo)
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
@@ -686,27 +686,38 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
 
   // ── Mercado Pago ────────────────────────────────────────
   const mpBtn = document.getElementById('ck-mp-btn') as HTMLButtonElement;
+  const skipBtn = document.getElementById('ck-skip-pay') as HTMLButtonElement;
+
+  function orderBody() {
+    return JSON.stringify({
+      marca: { nombre: input('ck-marca').value.trim(), tipo: 'Denominativa' },
+      clase,
+      contacto: {
+        email: input('ck-email').value.trim(),
+        whatsapp: input('ck-whatsapp').value.trim(),
+      },
+      garantia,
+    });
+  }
+
+  async function createOrder(): Promise<{ ref: string; init_point: string }> {
+    const res = await fetch('/api/checkout/order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: orderBody(),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ref) throw new Error(data.error || 'error creando pedido');
+    return data;
+  }
 
   mpBtn.addEventListener('click', async () => {
     setErr('pago', '');
     mpBtn.disabled = true;
     $('ck-mp-label').textContent = 'Redirigiendo a Mercado Pago…';
     try {
-      const res = await fetch('/api/checkout/order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          marca: { nombre: input('ck-marca').value.trim(), tipo: 'Denominativa' },
-          clase,
-          contacto: {
-            email: input('ck-email').value.trim(),
-            whatsapp: input('ck-whatsapp').value.trim(),
-          },
-          garantia,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.init_point) throw new Error(data.error || 'sin init_point');
+      const data = await createOrder();
+      orderRef = data.ref;
       saveDraft(); // por si vuelve en el mismo navegador
       window.location.href = data.init_point;
     } catch (e) {
@@ -715,6 +726,22 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
       mpBtn.disabled = false;
       $('ck-mp-label').textContent = 'Pagar con Mercado Pago';
     }
+  });
+
+  // Saltar pago (demo): crea el pedido igual (queda pending_payment) para que
+  // el resto del pipeline —PDF + emails— funcione también sin pagar.
+  skipBtn.addEventListener('click', async () => {
+    skipBtn.disabled = true;
+    if (!orderRef) {
+      try {
+        const data = await createOrder();
+        orderRef = data.ref;
+      } catch (e) {
+        console.warn('[um-checkout] demo sin pedido (¿API no disponible?):', e);
+      }
+    }
+    skipBtn.disabled = false;
+    goTo('5');
   });
 
   function showPayBanner(status: string) {
