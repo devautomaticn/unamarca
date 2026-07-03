@@ -98,15 +98,12 @@ validates before advancing.
 
 | Field | Type | Rules |
 |---|---|---|
-| Nombre de la marca | text | required, trimmed; shown back everywhere in quotes + uppercase exactly as it will be filed |
+| Nombre de la marca | text | required, trimmed; placeholder "UnaMarca"; shown back everywhere in quotes + uppercase exactly as it will be filed |
 | Tipo de persona | select, **disabled** | fixed: `Humana`. Helper: "Por ahora el registro online está disponible para personas humanas." + WhatsApp escape hatch for empresas |
 | Tipo de marca | select, **disabled** | fixed: `Denominativa`. Helper: "Registramos el nombre de tu marca (sin logo)." |
-| Clase | single select | required. Options: `Clase {n} — {official Nice name}` (45 options). Official names only — no informal rewrites, to avoid scope disputes later. Helper link: "¿No sabés cuál elegir? Escribinos por WhatsApp" |
 
-> Note: `formularioregistro.astro` and `submit-form.ts` currently carry an
-> abbreviated class list. For this wizard use the **official** Nice headings
-> (es-AR wording as published by INPI). Keep the list in one shared module
-> (see §7) so it isn't duplicated a third time.
+(La clase se elige en el Paso 3 — ver abajo. Decisión: a esa altura el usuario
+ya está invertido en el flujo y toma la decisión de clase en el momento.)
 
 ### Paso 2 — Contacto (pre-pago)
 
@@ -119,8 +116,15 @@ Only the two fields needed to reach the user if they abandon after paying:
 
 ### Paso 3 — Tu pedido (checkout)
 
-One base order card + one upsell checkbox card (order bump), instead of
-competing plan tiers:
+**Clase selector at the top** (moved here from Paso 1): single-select
+searchable dropdown, options shown as `Clase {n} — {nombre corto}` (short
+recognizable names, e.g. "Clase 3 — Cosméticos, perfumería, limpieza"). The
+full official Nice heading lives in the shared module (`textoOficial`) and is
+searchable too — it's what matters for the eventual filing, not for the UI.
+WhatsApp escape hatches for "no sé cuál elegir" and multi-class.
+
+Below it, one base order card + one upsell checkbox card (order bump), instead
+of competing plan tiers:
 
 **Card "Registro de marca" — $40.000 (honorarios, + arancel INPI):**
 - ✔ Presentación de la solicitud ante el INPI

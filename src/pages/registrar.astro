@@ -47,7 +47,7 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
 
         <div class="ck-field">
           <label for="ck-marca">Nombre de la marca <em>*</em></label>
-          <input type="text" id="ck-marca" placeholder="Ej: PASSIONARIA" autocomplete="off" maxlength="120" />
+          <input type="text" id="ck-marca" placeholder="UnaMarca" autocomplete="off" maxlength="120" />
           <p class="ck-err" data-err="marca"></p>
         </div>
 
@@ -68,34 +68,6 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
           </div>
         </div>
 
-        <div class="ck-field">
-          <label>Clase de productos o servicios <em>*</em></label>
-          <div class="ck-dd" id="ck-clase-dd">
-            <button type="button" class="ck-dd-btn" id="ck-clase-btn" aria-haspopup="listbox" aria-expanded="false">
-              <span id="ck-clase-label" class="ck-dd-placeholder">Seleccioná la clase…</span>
-              <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
-            <div class="ck-dd-panel" id="ck-clase-panel" hidden>
-              <input type="text" id="ck-clase-search" placeholder="Buscar… (ej: ropa, café, software)" autocomplete="off" />
-              <ul class="ck-dd-list" id="ck-clase-list" role="listbox">
-                {NIZA_CLASSES.map(c => (
-                  <li>
-                    <button type="button" class="ck-dd-opt" data-num={c.num} role="option">
-                      <span class="ck-dd-num">Clase {c.num}</span>
-                      <span class="ck-dd-name">{c.nombre}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          <p class="ck-help">
-            La clase define qué productos o servicios protege tu marca.
-            ¿No sabés cuál elegir? <a href={waClase} target="_blank" rel="noopener noreferrer">Consultanos por WhatsApp</a>
-            &nbsp;·&nbsp; <a href={waMulti} target="_blank" rel="noopener noreferrer">¿Necesitás más de una clase?</a>
-          </p>
-          <p class="ck-err" data-err="clase"></p>
-        </div>
       </div>
 
       <div class="ck-nav">
@@ -287,6 +259,35 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
     <section class="ck-step" data-step="3" hidden>
       <div class="ck-card">
         <div class="ck-section-label">Tu pedido</div>
+
+        <div class="ck-field">
+          <label>Clase de productos o servicios <em>*</em></label>
+          <div class="ck-dd" id="ck-clase-dd">
+            <button type="button" class="ck-dd-btn" id="ck-clase-btn" aria-haspopup="listbox" aria-expanded="false">
+              <span id="ck-clase-label" class="ck-dd-placeholder">Seleccioná la clase…</span>
+              <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="ck-dd-panel" id="ck-clase-panel" hidden>
+              <input type="text" id="ck-clase-search" placeholder="Buscar… (ej: ropa, café, software)" autocomplete="off" />
+              <ul class="ck-dd-list" id="ck-clase-list" role="listbox">
+                {NIZA_CLASSES.map(c => (
+                  <li>
+                    <button type="button" class="ck-dd-opt" data-num={c.num} data-extra={c.textoOficial} role="option">
+                      <span class="ck-dd-num">Clase {c.num}</span>
+                      <span class="ck-dd-name">{c.nombre}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <p class="ck-help">
+            La clase define qué productos o servicios protege tu marca.
+            ¿No sabés cuál elegir? <a href={waClase} target="_blank" rel="noopener noreferrer">Consultanos por WhatsApp</a>
+            &nbsp;·&nbsp; <a href={waMulti} target="_blank" rel="noopener noreferrer">¿Necesitás más de una clase?</a>
+          </p>
+          <p class="ck-err" data-err="clase"></p>
+        </div>
 
         <div class="ck-order">
           <div class="ck-order-head">
@@ -529,14 +530,20 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
   // Con FIELDS_OPTIONAL, los campos vacíos pasan; el formato se valida
   // solo cuando el usuario cargó algo.
   function validateStep1(): boolean {
-    clearErrs(['marca', 'clase']);
+    clearErrs(['marca']);
     if (FIELDS_OPTIONAL) return true;
-    let ok = true;
     if (input('ck-marca').value.trim().length < 2) {
-      setErr('marca', 'Ingresá el nombre de tu marca.'); ok = false;
+      setErr('marca', 'Ingresá el nombre de tu marca.');
+      return false;
     }
-    if (!clase) { setErr('clase', 'Seleccioná la clase de tu marca.'); ok = false; }
-    return ok;
+    return true;
+  }
+
+  function validatePedido(): boolean {
+    clearErrs(['clase']);
+    if (FIELDS_OPTIONAL) return true;
+    if (!clase) { setErr('clase', 'Seleccioná la clase de tu marca.'); return false; }
+    return true;
   }
 
   function validateContacto(): boolean {
@@ -625,7 +632,8 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
   function filterClases(q: string) {
     const nq = normalize(q);
     document.querySelectorAll<HTMLElement>('.ck-dd-opt').forEach(opt => {
-      const text = normalize(opt.textContent || '');
+      // Busca en el nombre corto Y en el encabezado oficial completo
+      const text = normalize(`${opt.textContent || ''} ${opt.dataset.extra || ''}`);
       (opt.parentElement as HTMLElement).hidden = nq !== '' && !text.includes(nq);
     });
   }
@@ -1005,7 +1013,7 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
 
   // ── Botones Continuar / Volver ──────────────────────────
   const VALIDATORS: Record<string, () => boolean> = {
-    '1': validateStep1, '2': validateContacto, '5': validateTitular,
+    '1': validateStep1, '2': validateContacto, '3': validatePedido, '5': validateTitular,
   };
 
   document.querySelectorAll<HTMLElement>('[data-next]').forEach(btn => {
