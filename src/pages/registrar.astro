@@ -137,6 +137,7 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
 
     <!-- ══════════ PASO 5 · DATOS DEL TITULAR (post-pago) ══════════ -->
     <section class="ck-step" data-step="5" hidden>
+      <div id="ck-pay-banner" class="ck-banner" hidden></div>
       <div class="ck-card">
         <div class="ck-section-label">Datos del titular</div>
         <p class="ck-help" style="margin-bottom: 1rem">
@@ -308,23 +309,23 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
           <div class="ck-pay-total">Total: <b id="ck-pay-total">–</b></div>
         </div>
 
-        <!-- Placeholder: se reemplaza por Mercado Pago Checkout Pro en v2 -->
-        <button type="button" class="ck-mp-btn" disabled>
+        <button type="button" class="ck-mp-btn" id="ck-mp-btn">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="12" rx="11" ry="8" stroke="currentColor" stroke-width="1.6"/><path d="M5 12c2-.8 3.4-2.4 4.6-2.4 1.3 0 1.8 1.2 2.9 1.2 1 0 1.7-.9 3-.9 1.5 0 2.4 1.3 3.5 2.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-          Pagar con Mercado Pago
-          <span class="ck-soon">Próximamente</span>
+          <span id="ck-mp-label">Pagar con Mercado Pago</span>
         </button>
+        <p class="ck-err" data-err="pago" style="text-align:center; margin-top:0.6rem"></p>
 
         <p class="ck-help ck-pay-note">
-          El pago online estará disponible muy pronto. Continuá con tu solicitud y
-          coordinamos el pago por WhatsApp.
+          Vas a pagar en el sitio seguro de Mercado Pago y volvés acá para
+          terminar tu solicitud.
         </p>
       </div>
 
       <div class="ck-nav">
         <button type="button" class="ck-back" data-back="3">← Volver</button>
-        <button type="button" class="ck-btn" data-next="4">
-          Continuar
+        <!-- Solo demo/test: permite probar el flujo sin pagar. Quitar al launch. -->
+        <button type="button" class="ck-btn ck-btn--ghost" data-next="4">
+          Saltar pago (demo)
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
@@ -408,6 +409,7 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
   // ── Estado ──────────────────────────────────────────────
   let clase: number | null = null;
   let garantia = false;
+  let orderRef: string | null = null; // pedido creado al iniciar el pago MP
 
   const FIELD_IDS = [
     'ck-marca', 'ck-nombre', 'ck-dni', 'ck-cuit', 'ck-calle', 'ck-numero',
@@ -608,6 +610,78 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
     $('ck-pay-total').textContent = formatARS(total());
   }
 
+  // ── Mercado Pago ────────────────────────────────────────
+  const mpBtn = document.getElementById('ck-mp-btn') as HTMLButtonElement;
+
+  mpBtn.addEventListener('click', async () => {
+    setErr('pago', '');
+    mpBtn.disabled = true;
+    $('ck-mp-label').textContent = 'Redirigiendo a Mercado Pago…';
+    try {
+      const res = await fetch('/api/checkout/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          marca: { nombre: input('ck-marca').value.trim(), tipo: 'Denominativa' },
+          clase,
+          contacto: {
+            email: input('ck-email').value.trim(),
+            whatsapp: input('ck-whatsapp').value.trim(),
+          },
+          garantia,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.init_point) throw new Error(data.error || 'sin init_point');
+      saveDraft(); // por si vuelve en el mismo navegador
+      window.location.href = data.init_point;
+    } catch (e) {
+      console.error('[um-checkout] error iniciando pago:', e);
+      setErr('pago', 'No pudimos iniciar el pago. Probá de nuevo en unos segundos.');
+      mpBtn.disabled = false;
+      $('ck-mp-label').textContent = 'Pagar con Mercado Pago';
+    }
+  });
+
+  function showPayBanner(status: string) {
+    const banner = $('ck-pay-banner');
+    const kind =
+      status === 'paid' ? 'ok' :
+      status === 'rejected' ? 'err' : 'warn';
+    const msg =
+      status === 'paid'
+        ? '<b>✓ Pago aprobado.</b> Recibimos tu pago. Completá los datos para terminar tu solicitud.'
+        : status === 'rejected'
+          ? '<b>El pago fue rechazado.</b> Podés <button type="button" class="ck-banner-link" id="ck-retry-pay">reintentar el pago</button> o continuar y lo coordinamos después.'
+          : '<b>Tu pago está pendiente de confirmación.</b> Podés completar tus datos mientras tanto; te avisamos por email cuando se acredite.';
+    banner.className = `ck-banner ck-banner--${kind}`;
+    banner.innerHTML = msg;
+    banner.hidden = false;
+    document.getElementById('ck-retry-pay')?.addEventListener('click', () => goTo('4'));
+  }
+
+  async function resumeOrder(ref: string) {
+    try {
+      const res = await fetch(`/api/checkout/order/${encodeURIComponent(ref)}`);
+      if (!res.ok) return false;
+      const o = await res.json();
+      orderRef = o.ref;
+      const p = o.payload || {};
+      if (p.marca?.nombre) input('ck-marca').value = p.marca.nombre;
+      if (p.clase) selectClase(p.clase, false);
+      if (p.contacto?.email) input('ck-email').value = p.contacto.email;
+      if (p.contacto?.whatsapp) input('ck-whatsapp').value = p.contacto.whatsapp;
+      garantia = !!p.garantia;
+      input('ck-garantia').checked = garantia;
+      updateSummary();
+      showPayBanner(o.status);
+      goTo('5');
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   // ── Carta poder: preview ────────────────────────────────
   function cpData(): CartaPoderData {
     const now = new Date();
@@ -749,14 +823,35 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
       firma: canvas.toDataURL('image/png'),
     };
 
-    // TODO(wiring): POST a /api/checkout/submit → PDF de la carta poder + emails
-    // (spec docs/spec_self_checkout.md §7). Por ahora, envío simulado para testear la UX.
-    console.info('[um-checkout] payload listo para /api/checkout/submit:', payload);
-    await new Promise(r => setTimeout(r, 900));
+    // Con pedido MP: adjuntar titular + firma al pedido en D1.
+    // Sin pedido (ruta "Saltar pago"): envío simulado, solo para testear la UX.
+    // TODO(fase emails): PDF de la carta poder + emails (spec §7).
+    let ref: string;
+    if (orderRef) {
+      try {
+        const res = await fetch(`/api/checkout/order/${encodeURIComponent(orderRef)}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error(String(res.status));
+      } catch (e) {
+        console.error('[um-checkout] error guardando la solicitud:', e);
+        alert('No pudimos guardar tu solicitud. Probá de nuevo.');
+        submitBtn.disabled = false;
+        $('ck-submit-label').textContent = 'Confirmar y enviar solicitud';
+        $('ck-submit-spin').style.display = 'none';
+        return;
+      }
+      ref = orderRef;
+    } else {
+      console.info('[um-checkout] payload (demo, sin pedido MP):', payload);
+      await new Promise(r => setTimeout(r, 900));
+      const now = new Date();
+      const ymd = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+      ref = `UM-${ymd}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
+    }
 
-    const now = new Date();
-    const ymd = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
-    const ref = `UM-${ymd}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
     $('ck-ref').textContent = ref;
     $('ck-done-email').textContent = payload.contacto.email;
 
@@ -795,7 +890,13 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
     btn.addEventListener('click', () => goTo(btn.dataset.back!));
   });
 
-  restoreDraft();
+  // ── Bootstrap: volver de Mercado Pago (?order=REF) o draft local ─────
+  const urlOrderRef = new URLSearchParams(window.location.search).get('order');
+  if (urlOrderRef) {
+    resumeOrder(urlOrderRef).then(ok => { if (!ok) restoreDraft(); });
+  } else {
+    restoreDraft();
+  }
 </script>
 
 <!-- is:global: los estilos aplican también al HTML generado por JS (preview) -->
@@ -1043,13 +1144,37 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
   width: 100%; padding: 0.9375rem 1.5rem;
   background: #009ee3; color: #fff; border: none; border-radius: 100px;
   font-family: 'Inter', system-ui, sans-serif; font-size: 0.9375rem; font-weight: 600;
-  opacity: 0.55; cursor: not-allowed;
+  cursor: pointer; transition: background .18s, transform .18s, box-shadow .18s;
 }
-.ck-soon {
-  font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
-  background: rgba(255,255,255,.25); border-radius: 100px; padding: 0.2rem 0.6rem;
+.ck-mp-btn:hover:not(:disabled) {
+  background: #0086c3; transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(0,158,227,.35);
 }
+.ck-mp-btn:disabled { opacity: 0.6; cursor: wait; }
 .ck-pay-note { margin-top: 0.875rem; text-align: center; }
+
+.ck-btn--ghost {
+  background: transparent; color: #64748b;
+  box-shadow: inset 0 0 0 1.5px #e2e8f0;
+}
+.ck-btn--ghost:hover:not(:disabled) {
+  background: #f8fafc; color: #0b1d3a; box-shadow: inset 0 0 0 1.5px #cbd5e1;
+}
+
+/* ─── Banner de estado de pago (paso 5) ─── */
+.ck-banner {
+  border-radius: 12px; padding: 0.9375rem 1.25rem; margin-bottom: 1rem;
+  font-size: 0.875rem; line-height: 1.55;
+}
+.ck-banner[hidden] { display: none; }
+.ck-banner b { font-weight: 700; }
+.ck-banner--ok   { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.ck-banner--warn { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+.ck-banner--err  { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.ck-banner-link {
+  background: none; border: none; padding: 0; cursor: pointer;
+  font: inherit; font-weight: 700; color: inherit; text-decoration: underline;
+}
 
 /* ─── Carta poder (preview) ─── */
 .ck-cp {

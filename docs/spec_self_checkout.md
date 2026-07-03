@@ -345,3 +345,67 @@ personal data under Ley 25.326. Requirements:
 | 5 | Privacy policy + términos pages | Blocks launch |
 | 6 | Official INPI/es-AR wording for the 45 Nice class headings | Blocks build of Paso 1 |
 | 7 | Mercado Pago account + Checkout Pro credentials | v2 |
+
+---
+
+## 11. Mercado Pago — integration notes (v2)
+
+Researched 2026-07. Product: **Checkout Pro** (MP-hosted checkout — handles
+cards, dinero en cuenta, cuotas; maximum trust, minimum PCI surface).
+
+### Flow
+
+1. Wizard paso 4: user clicks "Pagar con Mercado Pago" → our Pages Function
+   `POST /api/checkout/preference` creates the order (status `pending_payment`)
+   and calls MP `POST https://api.mercadopago.com/checkout/preferences`
+   (Bearer `MP_ACCESS_TOKEN`) with:
+   - `items`: [{ title: 'Registro de marca "X" — Clase N', unit_price, quantity: 1 }]
+     (+ item Garantía if selected)
+   - `external_reference`: our `orderRef` (UM-…)
+   - `metadata`: orderRef + wizard payload snapshot
+   - `back_urls` + `auto_return: 'approved'`: return to
+     `/registrar?order=<orderRef>&status=…` → wizard resumes at paso 5
+   - `notification_url`: `https://unamarca.com.ar/api/checkout/webhook`
+   - `payment_methods`: installments config (cuotas); optionally exclude
+     `ticket` (Rapipago/PagoFácil) to avoid days-long `pending` states
+2. Response contains `init_point` → redirect the browser there.
+3. User pays on MP → redirected back via back_urls (UX only, NOT proof of
+   payment).
+4. **Webhook = source of truth**: MP POSTs `{data: {id}}` to our webhook.
+   Handler must: validate `x-signature` (HMAC-SHA256 over
+   `id:<dataId>;request-id:<xRequestId>;ts:<ts>;` with the app's webhook
+   secret), fetch `GET /v1/payments/{id}`, check `status === 'approved'`,
+   match `external_reference` → mark order paid → send emails. Always return
+   HTTP 200 (non-200 triggers retries); handler must be idempotent
+   (duplicate notifications are normal).
+
+### What we need
+
+| # | Item | Notes |
+|---|---|---|
+| 1 | Cuenta vendedor MP verificada (CUIT) | reuse existing MP account if any |
+| 2 | App in the MP developers panel | gives test + production credentials |
+| 3 | Production credentials activation | requires completing business data (homologación) |
+| 4 | Secrets in Pages env | `MP_ACCESS_TOKEN`, `MP_WEBHOOK_SECRET` |
+| 5 | **Order storage (KV or D1)** | payment confirmation is async → v1's stateless model no longer works. Order record: orderRef, payload, payment status, timestamps |
+| 6 | Function `POST /api/checkout/preference` | creates order + preference, returns init_point |
+| 7 | Function `POST /api/checkout/webhook` | x-signature validation, payment fetch, idempotent state transition, trigger emails |
+| 8 | Wizard wiring | paso 4 real button; resume-from-URL (`?order=`) so the back_urls return lands on paso 5 with state restored (localStorage covers same-browser; order token covers the rest) |
+| 9 | Test accounts (comprador/vendedor de prueba) | full sandbox E2E before go-live |
+
+### Implementation choices
+
+- **REST via fetch, not the Node SDK** — Pages Functions run on Workers;
+  plain `fetch` to MP's REST API avoids Node-compat friction entirely.
+  (SDK works with `nodejs_compat` flag, but adds nothing we need.)
+- Send an `X-Idempotency-Key` header on preference creation.
+- Handle `pending` payments (if ticket methods stay enabled): let the user
+  continue to paso 5/6, but only file before INPI once `approved`.
+
+### Fees (verify in the MP panel before pricing is final)
+
+Costo por cobro is a % of the total that varies by acreditation timing
+(instant = highest, ~mid single digits + IVA; longer plazos cheaper) plus an
+extra % if cuotas sin interés are enabled, plus provincial tax withholdings.
+Exact current rates: MP panel → "Costos por cobrar" — factor them into the
+$7.000 garantía margin math.
