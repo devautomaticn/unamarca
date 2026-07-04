@@ -395,8 +395,8 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
 
       <div class="ck-nav">
         <button type="button" class="ck-back" data-back="3">← Volver</button>
-        <!-- Solo demo/test: permite probar el flujo sin pagar. Quitar al launch. -->
-        <button type="button" class="ck-btn ck-btn--ghost" id="ck-skip-pay">
+        <!-- Solo demo/test: visible únicamente en previews (*.pages.dev) y localhost -->
+        <button type="button" class="ck-btn ck-btn--ghost" id="ck-skip-pay" hidden>
           Saltar pago (demo)
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
@@ -428,10 +428,9 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
           <button type="button" class="ck-link-btn" id="ck-sig-clear">Borrar y firmar de nuevo</button>
         </div>
 
-        <!-- TODO: crear /terminos y /privacidad y linkearlos acá antes del launch -->
         <label class="ck-terms">
           <input type="checkbox" id="ck-terms" />
-          <span>Acepto los términos del servicio y la política de privacidad, y autorizo el uso de mi firma en la carta poder.</span>
+          <span>Acepto los <a href="/terminos" target="_blank">términos del servicio</a> y la <a href="/privacidad" target="_blank">política de privacidad</a>, y autorizo el uso de mi firma en la carta poder.</span>
         </label>
       </div>
 
@@ -753,8 +752,13 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
     }
   });
 
-  // Saltar pago (demo): crea el pedido igual (queda pending_payment) para que
-  // el resto del pipeline —PDF + emails— funcione también sin pagar.
+  // Saltar pago (demo): solo visible en previews y localhost — nunca en el
+  // dominio real. Crea el pedido igual (queda pending_payment) para que el
+  // pipeline completo —PDF + emails— funcione también sin pagar.
+  const isDemoEnv = window.location.hostname === 'localhost'
+    || (window.location.hostname.endsWith('.pages.dev') && window.location.hostname !== 'unamarca.pages.dev');
+  if (isDemoEnv) skipBtn.hidden = false;
+
   skipBtn.addEventListener('click', async () => {
     skipBtn.disabled = true;
     if (!orderRef) {
@@ -1000,6 +1004,22 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
       const ymd = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
       ref = `UM-${ymd}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
     }
+
+    // Conversión: GA4 (importable a Google Ads) + Meta Pixel
+    try {
+      const w = window as any;
+      if (typeof w.gtag === 'function') {
+        w.gtag('event', 'purchase', {
+          transaction_id: ref,
+          value: payload.pricing.total,
+          currency: 'ARS',
+          items: [{ item_name: 'Registro de marca', item_variant: garantia ? 'con_garantia' : 'sin_garantia' }],
+        });
+      }
+      if (typeof w.fbq === 'function') {
+        w.fbq('track', 'Purchase', { value: payload.pricing.total, currency: 'ARS' });
+      }
+    } catch { /* analytics nunca bloquea la confirmación */ }
 
     $('ck-ref').textContent = ref;
     if (orderRef) {
@@ -1399,6 +1419,8 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
   accent-color: #2563eb; cursor: pointer;
 }
 .ck-terms span { font-size: 0.78rem; color: #64748b; line-height: 1.55; }
+.ck-terms a { color: #2563eb; font-weight: 600; text-decoration: none; }
+.ck-terms a:hover { text-decoration: underline; }
 
 /* ─── Navegación ─── */
 .ck-nav {

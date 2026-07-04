@@ -1,0 +1,106 @@
+---
+// ⚠️ BORRADOR para revisión legal de Mike antes del launch definitivo.
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const SITE_URL = 'https://unamarca.com.ar';
+---
+
+<BaseLayout
+  title="Política de Privacidad | UnaMarca"
+  description="Cómo UnaMarca recolecta, usa y protege tus datos personales en el marco de la Ley 25.326 de Protección de Datos Personales."
+  canonicalURL={`${SITE_URL}/privacidad`}
+>
+
+<div class="legal-page">
+  <div class="legal-wrap">
+    <h1>Política de Privacidad</h1>
+    <p class="legal-updated">Última actualización: julio 2026</p>
+
+    <h2>1. Responsable del tratamiento</h2>
+    <p>
+      Michael Alan Simmons, CUIT 20-38536168-9, con domicilio en Juan Francisco
+      Seguí 4635, Ciudad Autónoma de Buenos Aires, Argentina ("UnaMarca"), es el
+      responsable del tratamiento de los datos personales recolectados a través
+      de unamarca.com.ar.
+    </p>
+
+    <h2>2. Datos que recolectamos</h2>
+    <p>
+      Para gestionar el registro de tu marca recolectamos: datos de identificación
+      (nombre y apellido, tipo y número de documento, CUIT/CUIL, género, estado
+      civil y, de corresponder, nombre del cónyuge), domicilio real, datos de
+      contacto (email y WhatsApp), la denominación de la marca y la clase
+      solicitada, y tu firma digitalizada para la carta poder que nos autoriza a
+      representarte ante el INPI.
+    </p>
+
+    <h2>3. Finalidad</h2>
+    <p>
+      Usamos estos datos exclusivamente para: (a) preparar y presentar tu
+      solicitud de registro de marca ante el INPI; (b) generar la carta poder;
+      (c) enviarte novedades del trámite y comunicaciones del servicio; y
+      (d) cumplir obligaciones legales. No vendemos ni cedemos tus datos a
+      terceros con fines comerciales.
+    </p>
+
+    <h2>4. Pagos</h2>
+    <p>
+      Los pagos se procesan a través de Mercado Pago. UnaMarca no recibe ni
+      almacena los datos de tu tarjeta; Mercado Pago los trata conforme a su
+      propia política de privacidad.
+    </p>
+
+    <h2>5. Almacenamiento y seguridad</h2>
+    <p>
+      Los datos se almacenan en infraestructura de Cloudflare y las
+      comunicaciones por email se envían a través de Resend. Todo el tráfico del
+      sitio viaja cifrado (HTTPS). El acceso a los datos está limitado a lo
+      necesario para prestar el servicio.
+    </p>
+
+    <h2>6. Presentación ante el INPI</h2>
+    <p>
+      Los datos del titular incluidos en la solicitud de registro se presentan
+      ante el INPI y pasan a integrar el expediente público del trámite,
+      conforme a la normativa marcaria vigente.
+    </p>
+
+    <h2>7. Tus derechos</h2>
+    <p>
+      Conforme a la Ley 25.326, podés ejercer los derechos de acceso,
+      rectificación, actualización y supresión de tus datos escribiéndonos por
+      <a href="https://wa.me/5491149712224" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+      o respondiendo cualquier email que te hayamos enviado. El titular de los
+      datos personales tiene la facultad de ejercer el derecho de acceso a los
+      mismos en forma gratuita a intervalos no inferiores a seis meses, salvo
+      que se acredite un interés legítimo al efecto (art. 14, inc. 3, Ley 25.326).
+      La Agencia de Acceso a la Información Pública, órgano de control de la Ley
+      25.326, tiene la atribución de atender las denuncias y reclamos que se
+      interpongan con relación al incumplimiento de las normas sobre protección
+      de datos personales.
+    </p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.legal-page { background: #f4f6f9; min-height: 100vh; padding: 3.5rem 1.25rem 6rem; }
+.legal-wrap {
+  max-width: 700px; margin: 0 auto; background: #fff; border-radius: 18px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 6px 24px rgba(0,0,0,.05);
+  padding: 3rem clamp(1.5rem, 5vw, 3rem);
+}
+.legal-wrap h1 {
+  font-size: clamp(1.6rem, 4vw, 2.1rem); font-weight: 800; color: #0b1d3a;
+  letter-spacing: -0.03em; margin-bottom: 0.4rem;
+}
+.legal-updated { color: #94a3b8; font-size: 0.8125rem; margin-bottom: 2rem; }
+.legal-wrap h2 {
+  font-size: 1.05rem; font-weight: 700; color: #0b1d3a;
+  margin: 1.75rem 0 0.6rem; letter-spacing: -0.01em;
+}
+.legal-wrap p { font-size: 0.9rem; color: #475569; line-height: 1.75; margin-bottom: 0.75rem; }
+.legal-wrap a { color: #2563eb; font-weight: 600; text-decoration: none; }
+.legal-wrap a:hover { text-decoration: underline; }
+</style>

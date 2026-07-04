@@ -1,0 +1,114 @@
+---
+// ⚠️ BORRADOR para revisión legal de Mike antes del launch definitivo.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { PRICING, formatARS } from '../lib/checkout/constants';
+
+const SITE_URL = 'https://unamarca.com.ar';
+---
+
+<BaseLayout
+  title="Términos del Servicio | UnaMarca"
+  description="Términos y condiciones del servicio de registro de marcas de UnaMarca: alcance, honorarios, garantía de devolución y plazos."
+  canonicalURL={`${SITE_URL}/terminos`}
+>
+
+<div class="legal-page">
+  <div class="legal-wrap">
+    <h1>Términos del Servicio</h1>
+    <p class="legal-updated">Última actualización: julio 2026</p>
+
+    <h2>1. El servicio</h2>
+    <p>
+      UnaMarca ofrece un servicio de gestión de solicitudes de registro de marcas
+      ante el Instituto Nacional de la Propiedad Industrial (INPI) de la República
+      Argentina. El servicio comprende la preparación y presentación de la solicitud,
+      el seguimiento del trámite y el envío de novedades por email a lo largo de
+      todo el proceso, con la representación instrumentada mediante la carta poder
+      firmada por el titular.
+    </p>
+
+    <h2>2. Alcance y resultado del trámite</h2>
+    <p>
+      El registro de una marca está sujeto a la resolución del INPI, autoridad
+      exclusiva en la materia. Durante el trámite pueden surgir vistas,
+      observaciones u oposiciones de terceros. UnaMarca notificará al titular
+      cada novedad relevante y este podrá decidir cómo continuar. UnaMarca no
+      garantiza la concesión del registro ni los plazos de resolución del INPI.
+      Como referencia, si no hay vistas u oposiciones, la marca suele resultar
+      inscripta en un plazo de 60 a 90 días desde ingresada la solicitud; este
+      plazo es orientativo y no constituye un compromiso.
+    </p>
+
+    <h2>3. Precios</h2>
+    <p>
+      El precio del servicio se compone de: (a) los <b>honorarios</b> de UnaMarca,
+      informados antes del pago; y (b) el <b>arancel del INPI</b>, que se abona al
+      organismo y cuyo valor se actualiza mensualmente según la unidad UMAPI.
+      El arancel del INPI no es reembolsable en ningún caso, conforme a la
+      normativa del propio organismo.
+    </p>
+
+    <h2>4. Garantía de Devolución (opcional)</h2>
+    <p>
+      El titular puede contratar la <b>Garantía de Devolución</b> por
+      {formatARS(PRICING.garantia)}. Si el INPI deniega el registro de la marca,
+      UnaMarca devuelve el 100% de los honorarios abonados
+      ({formatARS(PRICING.honorarios)}). La garantía no cubre: (a) el arancel del
+      INPI ni el costo de la propia garantía; (b) el desistimiento o abandono del
+      trámite por decisión del titular; (c) los supuestos en que el titular no
+      responda a requerimientos necesarios para continuar el trámite. La gestión
+      de oposiciones de terceros, de existir, se cotiza por separado en el momento
+      en que se presenten, tanto para pedidos con garantía como sin ella.
+    </p>
+
+    <h2>5. Presentación y plazos de UnaMarca</h2>
+    <p>
+      Recibidos el pago, los datos completos del titular y la carta poder firmada,
+      UnaMarca presenta la solicitud ante el INPI dentro de las 48 horas hábiles
+      siguientes.
+    </p>
+
+    <h2>6. Vigilancia de marca</h2>
+    <p>
+      Los pedidos incluyen sin cargo el servicio de vigilancia de marca de
+      UnaMarca, que monitorea la publicación de nuevas solicitudes similares y
+      notifica al titular.
+    </p>
+
+    <h2>7. Datos personales</h2>
+    <p>
+      El tratamiento de los datos personales del titular se rige por nuestra
+      <a href="/privacidad">Política de Privacidad</a>.
+    </p>
+
+    <h2>8. Contacto</h2>
+    <p>
+      Por consultas sobre estos términos podés escribirnos por
+      <a href="https://wa.me/5491149712224" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+      o responder cualquier email que te hayamos enviado.
+    </p>
+  </div>
+</div>
+
+</BaseLayout>
+
+<style>
+.legal-page { background: #f4f6f9; min-height: 100vh; padding: 3.5rem 1.25rem 6rem; }
+.legal-wrap {
+  max-width: 700px; margin: 0 auto; background: #fff; border-radius: 18px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 6px 24px rgba(0,0,0,.05);
+  padding: 3rem clamp(1.5rem, 5vw, 3rem);
+}
+.legal-wrap h1 {
+  font-size: clamp(1.6rem, 4vw, 2.1rem); font-weight: 800; color: #0b1d3a;
+  letter-spacing: -0.03em; margin-bottom: 0.4rem;
+}
+.legal-updated { color: #94a3b8; font-size: 0.8125rem; margin-bottom: 2rem; }
+.legal-wrap h2 {
+  font-size: 1.05rem; font-weight: 700; color: #0b1d3a;
+  margin: 1.75rem 0 0.6rem; letter-spacing: -0.01em;
+}
+.legal-wrap p { font-size: 0.9rem; color: #475569; line-height: 1.75; margin-bottom: 0.75rem; }
+.legal-wrap a { color: #2563eb; font-weight: 600; text-decoration: none; }
+.legal-wrap a:hover { text-decoration: underline; }
+</style>
