@@ -1,7 +1,6 @@
 ---
 // ⚠️ BORRADOR para revisión legal de Mike antes del launch definitivo.
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { PRICING, formatARS } from '../lib/checkout/constants';
 
 const SITE_URL = 'https://unamarca.com.ar';
 ---
@@ -50,10 +49,9 @@ const SITE_URL = 'https://unamarca.com.ar';
 
     <h2>4. Garantía de Devolución (opcional)</h2>
     <p>
-      El titular puede contratar la <b>Garantía de Devolución</b> por
-      {formatARS(PRICING.garantia)}. Si el INPI deniega el registro de la marca,
-      UnaMarca devuelve el 100% de los honorarios abonados
-      ({formatARS(PRICING.honorarios)}). La garantía no cubre: (a) el arancel del
+      El titular puede contratar la <b>Garantía de Devolución</b> por el precio
+      informado antes del pago. Si el INPI deniega el registro de la marca,
+      UnaMarca devuelve el 100% de los honorarios abonados. La garantía no cubre: (a) el arancel del
       INPI ni el costo de la propia garantía; (b) el desistimiento o abandono del
       trámite por decisión del titular; (c) los supuestos en que el titular no
       responda a requerimientos necesarios para continuar el trámite. La gestión
