@@ -1077,6 +1077,10 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
 <style is:global>
 
 /* ─── Page ─── */
+/* El atributo hidden SIEMPRE gana, aunque una clase defina display propio
+   (ya nos mordió dos veces: ck-sig-hint y ck-skip-pay) */
+.ck-page [hidden] { display: none !important; }
+
 .ck-page {
   background: #f4f6f9;
   min-height: 100vh;
