@@ -11,12 +11,53 @@ const SITE_URL = 'https://unamarca.com.ar';
 const waEmpresa = waUrl('Hola! Quiero registrar una marca a nombre de una empresa (persona jurídica).');
 const waClase = waUrl('Hola! Estoy registrando mi marca en unamarca.com.ar y no sé qué clase elegir.');
 const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
+
+// FAQ: respuestas cortas que derivan al post canónico de cada tema para no
+// competir con el blog por sus keywords (los posts siguen siendo la página
+// profunda de "cuánto sale", "cuánto tarda", "clases", etc.).
+const faqs = [
+  {
+    q: '¿Cómo hago para registrar mi marca?',
+    a: `Completá el formulario de esta página: el nombre de tu marca, la clase, tus datos y tu firma online. Nosotros presentamos la solicitud ante el INPI dentro de las 48 horas hábiles y te avisamos por email en cada etapa. Si querés conocer el proceso completo, mirá la <a href="/blog/como-registrar-una-marca-en-argentina-paso-a-paso">guía paso a paso</a>.`,
+  },
+  {
+    q: '¿Cuánto cuesta registrar una marca en Argentina?',
+    a: `El precio es fijo: ${formatARS(PRICING.honorarios)} de honorarios más el arancel del INPI de ${formatARS(PRICING.arancelInpi)} por clase (valor ${PRICING.arancelVigencia}), todo en un solo pago y sin costos ocultos. Tenés el detalle completo en <a href="/blog/cuanto-sale-registrar-una-marca">cuánto sale registrar una marca</a>.`,
+  },
+  {
+    q: '¿Cuánto tarda el registro de una marca?',
+    a: `Si nadie presenta oposiciones, el trámite tarda alrededor de 2 meses desde la presentación y la marca se concede. Si hay oposiciones, el plazo se extiende. Te contamos los plazos en detalle en <a href="/blog/cuanto-tarda-registro-marca-argentina">cuánto tarda el registro de una marca</a>.`,
+  },
+  {
+    q: '¿Cómo sé si mi marca está disponible?',
+    a: `Antes de iniciar el registro conviene verificar que no exista una marca igual o muy parecida en tu clase. Podés usar nuestro <a href="/verificar-marca">verificador de marcas gratuito</a> o leer <a href="/blog/como-saber-si-una-marca-esta-registrada-facilmente">cómo saber si una marca está registrada</a>.`,
+  },
+  {
+    q: '¿Qué clase tengo que elegir?',
+    a: `Las marcas se registran por clase según el Clasificador de Niza: cada una agrupa productos o servicios distintos. En el formulario podés buscar tu rubro y elegir la clase indicada. Si tenés dudas, mirá la <a href="/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina">guía de clases de marcas</a> o escribinos por WhatsApp.`,
+  },
+  {
+    q: '¿Tengo que hacer algún trámite ante el INPI?',
+    a: `No. La carta poder que firmás online nos autoriza a presentar y gestionar la solicitud por vos. Nosotros nos ocupamos de todo el trámite ante el INPI y vos recibís las novedades por email, sin turnos ni formularios en papel.`,
+  },
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(({ q, a }) => ({
+    '@type': 'Question',
+    name: q,
+    acceptedAnswer: { '@type': 'Answer', text: a.replace(/<[^>]+>/g, '') },
+  })),
+};
 ---
 
 <BaseLayout
-  title="Registrá tu Marca Online | UnaMarca"
-  description="Solicitá el registro de tu marca ante el INPI en minutos: elegí la clase, completá tus datos y firmá online. Simple, rápido y sin vueltas."
+  title="Registrar mi marca online en Argentina | UnaMarca"
+  description="Registrá tu marca en el INPI sin moverte de tu casa: completá la solicitud online en minutos, firmá desde el celular y nosotros presentamos el trámite."
   canonicalURL={`${SITE_URL}/registrar`}
+  structuredData={faqSchema}
 >
 
 <div class="ck-page">
@@ -27,7 +68,7 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L2.5 4v4c0 3.2 2.4 5.8 5.5 6.5 3.1-.7 5.5-3.3 5.5-6.5V4L8 1.5z" fill="currentColor"/></svg>
         Registro online
       </div>
-      <h1>Registrá tu marca</h1>
+      <h1>Registrá tu marca online</h1>
       <p>Completá tu solicitud en unos minutos. Nosotros la presentamos ante el INPI.</p>
     </header>
 
@@ -455,6 +496,17 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
           trámite por email.
         </p>
       </div>
+    </section>
+
+    <!-- ══════════ FAQ (siempre visible, no es un .ck-step) ══════════ -->
+    <section class="ck-faq" aria-labelledby="ck-faq-title">
+      <h2 id="ck-faq-title">Preguntas frecuentes</h2>
+      {faqs.map(({ q, a }) => (
+        <details class="ck-faq-item">
+          <summary>{q}</summary>
+          <p set:html={a} />
+        </details>
+      ))}
     </section>
 
   </div>
@@ -1473,5 +1525,32 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
   border-radius: 100px; padding: 0.35rem 1rem; font-size: 0.8125rem !important;
 }
 .ck-done-ref b { color: #1e40af !important; }
+
+/* ─── FAQ ─── */
+.ck-faq { margin-top: 3.5rem; }
+.ck-faq h2 {
+  font-size: 1.375rem; font-weight: 800; color: #0b1d3a;
+  letter-spacing: -0.02em; margin-bottom: 1.25rem;
+}
+.ck-faq-item {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 14px;
+  padding: 0 1.25rem; margin-bottom: 0.75rem;
+}
+.ck-faq-item summary {
+  cursor: pointer; list-style: none;
+  display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  padding: 1rem 0; font-size: 0.9375rem; font-weight: 600; color: #0b1d3a;
+}
+.ck-faq-item summary::-webkit-details-marker { display: none; }
+.ck-faq-item summary::after {
+  content: '+'; font-size: 1.25rem; font-weight: 400; color: #2563eb;
+  flex-shrink: 0; transition: transform .18s;
+}
+.ck-faq-item[open] summary::after { transform: rotate(45deg); }
+.ck-faq-item p {
+  margin: 0; padding-bottom: 1.125rem;
+  font-size: 0.875rem; color: #475569; line-height: 1.65;
+}
+.ck-faq-item a { color: #2563eb; font-weight: 600; }
 
 </style>

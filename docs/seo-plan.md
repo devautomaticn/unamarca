@@ -131,6 +131,18 @@ Mark the post as ✅ Published in the Content Roadmap table.
 
 *Data source: DataForSEO, April 2026. Location: Argentina (2032). Language: Spanish.*
 
+### Page-level keyword assignments (July 2026)
+
+To avoid cannibalization, each commercial page owns one keyword cluster:
+
+| Page | Target cluster | Volume | KD | Notes |
+|---|---|---|---|---|
+| `/` (home) | registro de marcas argentina / registrar marca argentina | 3,600 / 2,900 | 22 / 14 | Commercial |
+| `/registrar` | registrar mi marca (en argentina) / registrar marca online | 140 + 110 / 10 | 1 | Transactional. FAQ answers stay short and link to the canonical blog post of each topic (costos, plazos, clases, disponibilidad) so posts keep owning their informational keywords |
+| `/verificar-marca` | como saber si una marca esta registrada (tool intent) | — | — | Complements the blog post, links both ways |
+
+*July 2026 SERP check ("registrar mi marca"): gov sites hold 1–3, then Instagram, idenbiz, iProfesional, registratumarca. UnaMarca absent from top 10 — the page previously had almost no indexable text. FAQPage JSON-LD + FAQ section added July 2026 targeting the People Also Ask questions.*
+
 ---
 
 ## Published Blog Posts
