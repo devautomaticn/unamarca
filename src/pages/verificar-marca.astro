@@ -518,7 +518,7 @@ const structuredData = [
           <a class="btn btn-primary" href="${waLink(msg)}" target="_blank" rel="noopener noreferrer" id="vm-cta">Contactarnos por WhatsApp</a>
         </div>`;
     } else {
-      const msg = `Hola! Busqué la marca «${marca}» en ${phrase} y parece estar disponible. Quiero registrarla ya.`;
+      const regUrl = `/registrar?marca=${encodeURIComponent(marca)}${sel.length === 1 ? `&clase=${Number(sel[0])}` : ''}`;
       const sub = displayRows.length
         ? 'Encontramos algunos parecidos, pero ninguno lo suficientemente fuerte como para bloquear tu registro.'
         : 'No encontramos antecedentes que bloqueen tu marca. Conviene registrarla cuanto antes — en Argentina la prioridad es de quien registra primero.';
@@ -529,7 +529,7 @@ const structuredData = [
           </div>
           <h2>Tu marca parece estar disponible</h2>
           <p>${sub}</p>
-          <a class="btn btn-primary" href="${waLink(msg)}" target="_blank" rel="noopener noreferrer" id="vm-cta">Solicitar Registro Inmediatamente</a>
+          <a class="btn btn-primary" href="${regUrl}" id="vm-cta">Registrarla ahora online</a>
         </div>`;
     }
 
@@ -588,7 +588,10 @@ const structuredData = [
 
     const cta = document.getElementById('vm-cta');
     cta?.addEventListener('click', () => {
-      track('whatsapp_click', { source: 'verificar-marca', cta_type: conflict ? 'contactar' : 'solicitar' });
+      track(conflict ? 'whatsapp_click' : 'registrar_click', {
+        source: 'verificar-marca',
+        cta_type: conflict ? 'contactar' : 'solicitar',
+      });
       track('generate_lead', { source: 'verificar-marca' });
     });
 

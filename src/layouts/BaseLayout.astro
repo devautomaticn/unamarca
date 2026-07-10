@@ -140,7 +140,7 @@ function isActive(href: string) {
               {link.label}
             </a>
           ))}
-          <a href="https://wa.me/5491149712224?text=Hola%2C%20tom%C3%A9%20su%20contacto%20de%20la%20web%20y%20quer%C3%ADa%20consultar%20por%20el%20servicio%20de%20registro%20de%20marcas!" class="nav-cta" target="_blank" rel="noopener noreferrer">Consultar ahora</a>
+          <a href="/registrar" class="nav-cta" onclick="gtag('event', 'registrar_click', {'source': 'header'})">Registrá tu marca</a>
         </nav>
       </div>
     </header>
@@ -167,6 +167,7 @@ function isActive(href: string) {
           {navLinks.map(link => (
             <a href={link.href}>{link.label}</a>
           ))}
+          <a href="/registrar">Registrá tu marca</a>
         </nav>
       </div>
       <div class="footer-bottom">

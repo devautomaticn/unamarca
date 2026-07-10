@@ -1065,11 +1065,18 @@ const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
   });
 
   // ── Bootstrap: volver de Mercado Pago (?order=REF) o draft local ─────
-  const urlOrderRef = new URLSearchParams(window.location.search).get('order');
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlOrderRef = urlParams.get('order');
   if (urlOrderRef) {
     resumeOrder(urlOrderRef).then(ok => { if (!ok) restoreDraft(); });
   } else {
     restoreDraft();
+    // Prefill desde /verificar-marca (?marca=X&clase=N); pisa el draft a propósito
+    const urlMarca = (urlParams.get('marca') || '').trim().slice(0, 80);
+    const urlClase = parseInt(urlParams.get('clase') || '', 10);
+    if (urlMarca) input('ck-marca').value = urlMarca;
+    if (urlClase >= 1 && urlClase <= 45) selectClase(urlClase, false);
+    if (urlMarca || urlClase) saveDraft();
   }
 </script>
 

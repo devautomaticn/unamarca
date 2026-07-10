@@ -1275,8 +1275,48 @@ a:hover { text-decoration: underline; }
 .prose img { border-radius: var(--r-sm); margin-block: 2em; }
 .prose hr { border: none; border-top: 1px solid var(--c-border); margin-block: 3em; }
 
+.post-cta {
+  margin-top: var(--sp-md);
+  background: linear-gradient(135deg, var(--c-navy) 0%, var(--c-navy-mid) 100%);
+  border-radius: var(--r-lg);
+  padding: 2.5rem 2rem;
+  text-align: center;
+  color: #fff;
+}
+
+.post-cta h2 {
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.625rem;
+}
+
+.post-cta p {
+  color: rgba(255, 255, 255, 0.75);
+  max-width: 34rem;
+  margin: 0 auto 1.5rem;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.post-cta-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.post-cta-wa {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.post-cta-wa:hover { color: #fff; }
+
 .post-footer {
-  margin-top: var(--sp-lg);
+  margin-top: var(--sp-md);
   padding-top: var(--sp-md);
   border-top: 1px solid var(--c-border);
 }
