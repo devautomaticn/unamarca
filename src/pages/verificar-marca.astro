@@ -320,6 +320,9 @@ const structuredData = [
   .vm-verdict--warn .vm-verdict-icon { background: var(--c-amber); color: #fff; }
   .vm-verdict h2 { font-size: 1.3rem; margin: 0 0 0.4rem; color: var(--c-navy); }
   .vm-verdict p { color: var(--c-text-muted); margin: 0 auto 1rem; max-width: 460px; font-size: 0.95rem; }
+  .vm-cta-row { display: flex; gap: 0.75rem; justify-content: center; align-items: center; flex-wrap: wrap; }
+  .vm-btn-ghost { background: transparent; color: var(--c-navy); border-color: rgba(11, 29, 58, 0.25); }
+  .vm-btn-ghost:hover { background: rgba(11, 29, 58, 0.05); border-color: var(--c-navy); text-decoration: none; }
 
   .vm-summary { font-size: 0.88rem; color: var(--c-text-muted); margin-bottom: 0.85rem; font-weight: 500; }
 
@@ -503,6 +506,7 @@ const structuredData = [
 
     const marca = marcaInput.value.trim();
     const phrase = classesPhrase(sel);
+    const regUrl = `/registrar?marca=${encodeURIComponent(marca)}${sel.length === 1 ? `&clase=${Number(sel[0])}` : ''}`;
 
     // --- Verdict / CTA ---
     let verdict: string;
@@ -515,10 +519,12 @@ const structuredData = [
           </div>
           <h2>Encontramos una marca muy parecida</h2>
           <p>Hay al menos una marca vigente con alta similitud a «${escapeHtml(marca)}». Antes de presentar la solicitud conviene asesorarte para no arriesgar el arancel a una oposición.</p>
-          <a class="btn btn-primary" href="${waLink(msg)}" target="_blank" rel="noopener noreferrer" id="vm-cta">Contactarnos por WhatsApp</a>
+          <div class="vm-cta-row">
+            <a class="btn btn-primary" href="${waLink(msg)}" target="_blank" rel="noopener noreferrer" id="vm-cta">Contactarnos por WhatsApp</a>
+            <a class="btn vm-btn-ghost" href="${regUrl}" id="vm-cta-reg">Registrar de todos modos</a>
+          </div>
         </div>`;
     } else {
-      const regUrl = `/registrar?marca=${encodeURIComponent(marca)}${sel.length === 1 ? `&clase=${Number(sel[0])}` : ''}`;
       const sub = displayRows.length
         ? 'Encontramos algunos parecidos, pero ninguno lo suficientemente fuerte como para bloquear tu registro.'
         : 'No encontramos antecedentes que bloqueen tu marca. Conviene registrarla cuanto antes — en Argentina la prioridad es de quien registra primero.';
@@ -592,6 +598,10 @@ const structuredData = [
         source: 'verificar-marca',
         cta_type: conflict ? 'contactar' : 'solicitar',
       });
+      track('generate_lead', { source: 'verificar-marca' });
+    });
+    document.getElementById('vm-cta-reg')?.addEventListener('click', () => {
+      track('registrar_click', { source: 'verificar-marca', cta_type: 'registrar_igual' });
       track('generate_lead', { source: 'verificar-marca' });
     });
 
