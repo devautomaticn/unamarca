@@ -3,6 +3,11 @@
 // consulta el pago a la API de MP y actualiza el pedido de forma idempotente.
 // Siempre responde 200 a notificaciones válidas (un no-200 dispara reintentos).
 import { type CheckoutEnv, ensureSchema, json, hmacSha256Hex } from '../../_lib/checkout';
+import { sendPaymentEmail } from '../../_lib/notify';
+
+interface WebhookEnv extends CheckoutEnv {
+  RESEND_API_KEY?: string;
+}
 
 interface MpPayment {
   id: number;
@@ -23,7 +28,7 @@ function mapStatus(mpStatus: string): string {
   }
 }
 
-export const onRequestPost: PagesFunction<CheckoutEnv> = async ({ env, request }) => {
+export const onRequestPost: PagesFunction<WebhookEnv> = async ({ env, request }) => {
   if (!env.DB || !env.MP_ACCESS_TOKEN || !env.MP_WEBHOOK_SECRET) {
     return json({ error: 'Checkout no configurado' }, 500);
   }
@@ -81,8 +86,8 @@ export const onRequestPost: PagesFunction<CheckoutEnv> = async ({ env, request }
   if (!ref) return json({ ok: true, ignored: true });
 
   await ensureSchema(env.DB);
-  const row = await env.DB.prepare('SELECT ref, status FROM orders WHERE ref = ?')
-    .bind(ref).first<{ ref: string; status: string }>();
+  const row = await env.DB.prepare('SELECT ref, status, payload, completion FROM orders WHERE ref = ?')
+    .bind(ref).first<{ ref: string; status: string; payload: string; completion: string | null }>();
   if (!row) return json({ ok: true, ignored: true });
 
   const newStatus = mapStatus(payment.status);
@@ -94,6 +99,29 @@ export const onRequestPost: PagesFunction<CheckoutEnv> = async ({ env, request }
     `UPDATE orders SET status = ?, payment_id = ?, payment_status = ?, updated_at = ?
      WHERE ref = ?`
   ).bind(newStatus, String(payment.id), payment.status, new Date().toISOString(), ref).run();
+
+  // ── Aviso al admin de todo movimiento de pago ────────────
+  // Solo cuando el estado cambia (los reintentos de MP repiten el mismo estado
+  // y no deben duplicar emails). Un fallo acá no debe tirar el webhook: MP
+  // reintentaría y el pedido ya quedó actualizado.
+  if (newStatus !== row.status && env.RESEND_API_KEY) {
+    try {
+      const stored = JSON.parse(row.payload);
+      await sendPaymentEmail(env.RESEND_API_KEY, {
+        ref,
+        status: newStatus,
+        mpStatus: payment.status,
+        marca: stored.marca?.nombre || '',
+        clase: stored.clase ?? null,
+        total: stored.pricing?.total ?? 0,
+        clientEmail: stored.contacto?.email || '',
+        whatsapp: stored.contacto?.whatsapp || '',
+        completed: row.completion !== null,
+      });
+    } catch (e) {
+      console.error('Webhook: error enviando email de pago:', e);
+    }
+  }
 
   return json({ ok: true });
 };
