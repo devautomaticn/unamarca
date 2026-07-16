@@ -562,6 +562,34 @@ const faqSchema = {
     } catch { /* draft corrupto: ignorar */ }
   }
 
+  // ── Analytics: funnel GA4 ───────────────────────────────
+  // Cada evento se manda una sola vez por sesión (volver atrás y avanzar de
+  // nuevo no infla el funnel). sessionStorage sobrevive el ida-y-vuelta a MP.
+  const FIRED_KEY = 'um-ck-fired';
+  let fired = new Set<string>();
+  try { fired = new Set(JSON.parse(sessionStorage.getItem(FIRED_KEY) || '[]')); } catch { /* ignorar */ }
+  function track(name: string, params: Record<string, unknown> = {}, once = true) {
+    try {
+      if (once) {
+        if (fired.has(name)) return;
+        fired.add(name);
+        sessionStorage.setItem(FIRED_KEY, JSON.stringify([...fired]));
+      }
+      const w = window as any;
+      if (typeof w.gtag === 'function') w.gtag('event', name, params);
+    } catch { /* analytics nunca bloquea el checkout */ }
+  }
+
+  // Paso alcanzado → evento. Nombres distintos por paso para poder armar el
+  // funnel en GA4 sin registrar dimensiones personalizadas.
+  const STEP_EVENTS: Record<string, string> = {
+    '2': 'begin_checkout',   // completó el nombre de su marca
+    '3': 'ck_paso_pedido',   // dejó contacto, ve el precio
+    '4': 'ck_paso_pago',     // aceptó el pedido, ve el botón de pago
+    '5': 'ck_paso_titular',  // volvió de MP con pedido creado
+    '6': 'ck_paso_firma',    // completó titular, ve la carta poder
+  };
+
   // ── Navegación entre pasos ──────────────────────────────
   const TOTAL_STEPS = 6;
   const STEP_TITLES: Record<string, string> = {
@@ -583,6 +611,9 @@ const faqSchema = {
     }
     if (step === '4') updatePaySummary();
     if (step === '6') { renderPreview(); sizeCanvas(); }
+    if (STEP_EVENTS[step]) {
+      track(STEP_EVENTS[step], { checkout_step: parseInt(step, 10), currency: 'ARS', value: total() });
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -790,6 +821,7 @@ const faqSchema = {
     setErr('pago', '');
     mpBtn.disabled = true;
     $('ck-mp-label').textContent = 'Redirigiendo a Mercado Pago…';
+    track('add_payment_info', { currency: 'ARS', value: total() });
     try {
       const data = await createOrder();
       orderRef = data.ref;
@@ -797,6 +829,7 @@ const faqSchema = {
       window.location.href = data.init_point;
     } catch (e) {
       console.error('[um-checkout] error iniciando pago:', e);
+      track('ck_pago_error', { motivo: String(e).slice(0, 100) }, false);
       setErr('pago', 'No pudimos iniciar el pago. Probá de nuevo en unos segundos.');
       mpBtn.disabled = false;
       $('ck-mp-label').textContent = 'Pagar con Mercado Pago';
@@ -825,6 +858,9 @@ const faqSchema = {
   });
 
   function showPayBanner(status: string) {
+    // Nombre por estado (ck_pago_retorno_paid / _rejected / _pending_payment…)
+    // para que el desglose se vea en GA4 sin dimensiones personalizadas.
+    track(`ck_pago_retorno_${status.replace(/[^a-z0-9]/gi, '_')}`);
     const banner = $('ck-pay-banner');
     const kind =
       status === 'paid' ? 'ok' :

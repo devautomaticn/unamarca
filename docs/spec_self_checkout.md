@@ -339,6 +339,29 @@ personal data under Ley 25.326. Requirements:
 - Signature/PDF transits only through the Function → Resend; no third-party
   analytics on wizard steps that capture field values
 
+### GA4 funnel events (2026-07-16)
+
+The wizard fires step-level GA4 events — never field values, only step
+number, amount, and payment status. Deduped once per session via
+sessionStorage (`um-ck-fired`), so back-and-forth navigation doesn't inflate
+the funnel:
+
+| Event | Fired when |
+|-------|------------|
+| `begin_checkout` | reached Paso 2 (completed brand name) |
+| `ck_paso_pedido` | reached Paso 3 (left contact info, sees price) |
+| `ck_paso_pago` | reached Paso 4 (accepted order, sees pay button) |
+| `add_payment_info` | clicked "Pagar con Mercado Pago" |
+| `ck_pago_error` | order/preference creation failed (not deduped) |
+| `ck_pago_retorno_<status>` | returned from MP (`_paid` / `_rejected` / `_pending_payment`) |
+| `ck_paso_titular` | reached Paso 5 |
+| `ck_paso_firma` | reached Paso 6 |
+| `purchase` | final submit (titular + firma sent) — pre-existing |
+
+Note: `purchase` fires at final submit, not at actual payment. A
+paid-but-abandoned user fires `ck_pago_retorno_paid` but no `purchase`;
+server-side truth remains the MP webhook / D1.
+
 ---
 
 ## 9. Copy & legal requirements (summary)
