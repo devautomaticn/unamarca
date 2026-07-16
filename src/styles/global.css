@@ -1500,3 +1500,48 @@ a:hover { text-decoration: underline; }
   .wa-float span { display: none; }
   .wa-float { width: 56px; height: 56px; padding: 0; justify-content: center; border-radius: 50%; }
 }
+
+/* ─── Verificador: CTA inline en posts del blog ─── */
+.vm-inline-cta {
+  background: var(--c-blue-light);
+  border: 1.5px solid var(--c-blue);
+  border-radius: 16px;
+  padding: 1.5rem 1.75rem;
+  margin: 2rem 0;
+}
+.vm-inline-cta-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--c-navy);
+  margin: 0 0 0.35rem !important;
+}
+.vm-inline-cta-sub {
+  font-size: 0.9375rem;
+  color: var(--c-text-muted);
+  margin: 0 0 1rem !important;
+}
+.vm-inline-cta form {
+  display: flex;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+}
+.vm-inline-cta input[type="text"] {
+  flex: 1;
+  min-width: 200px;
+  border: 1.5px solid var(--c-border);
+  border-radius: 100px;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.9375rem;
+  font-family: var(--font);
+  background: #fff;
+}
+.vm-inline-cta input[type="text"]:focus {
+  outline: none;
+  border-color: var(--c-blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+.vm-inline-cta .btn { white-space: nowrap; }
+@media (max-width: 540px) {
+  .vm-inline-cta form { flex-direction: column; }
+  .vm-inline-cta .btn { justify-content: center; }
+}

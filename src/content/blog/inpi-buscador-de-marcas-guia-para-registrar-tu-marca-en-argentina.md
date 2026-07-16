@@ -7,6 +7,15 @@ tags: []
 
 Antes de registrar tu marca en Argentina, hay un paso que no podés saltearte: verificar que nadie más la haya registrado antes. El **buscador de marcas del INPI** es la herramienta gratuita que te permite hacer esa búsqueda en minutos. En esta guía te explicamos cómo usarla correctamente y qué hacer con los resultados.
 
+<aside class="vm-inline-cta">
+  <p class="vm-inline-cta-title">¿Querés el atajo? Verificá tu marca acá mismo</p>
+  <p class="vm-inline-cta-sub">Nuestro verificador gratuito busca antecedentes en el archivo del INPI por nombre y clase, sin registro y sin dejar tus datos.</p>
+  <form action="/verificar-marca/" method="get" onsubmit="typeof gtag==='function'&&gtag('event','verificar_click',{'source':'blog-inpi-buscador'})">
+    <input type="text" name="marca" placeholder="Escribí el nombre de tu marca" aria-label="Nombre de tu marca" required maxlength="80" />
+    <button type="submit" class="btn btn-primary">Verificar gratis</button>
+  </form>
+</aside>
+
 ## ¿Qué es el buscador de marcas del INPI?
 
 El INPI (Instituto Nacional de la Propiedad Industrial) ofrece un buscador online de marcas registradas y en trámite. Está disponible sin costo, sin registro previo y desde cualquier dispositivo.

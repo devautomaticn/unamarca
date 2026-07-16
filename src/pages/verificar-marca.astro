@@ -664,4 +664,11 @@ const structuredData = [
   });
 
   updateCount();
+
+  // Prefill desde ?marca= (mini formulario de los posts del blog)
+  const urlMarca = (new URLSearchParams(window.location.search).get('marca') || '').trim().slice(0, 80);
+  if (urlMarca) {
+    marcaInput.value = urlMarca;
+    marcaInput.focus();
+  }
 </script>

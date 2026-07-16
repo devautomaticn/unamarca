@@ -7,6 +7,15 @@ tags: []
 
 Antes de registrar tu marca en Argentina, hay una pregunta que tenés que responder: ¿alguien ya la registró? Verificarlo es gratis, toma minutos y puede ahorrarte tiempo y plata. Acá te explicamos cómo saber si una marca está registrada, qué significan los resultados y qué hacer según cada situación.
 
+<aside class="vm-inline-cta">
+  <p class="vm-inline-cta-title">Verificá tu marca gratis en 30 segundos</p>
+  <p class="vm-inline-cta-sub">Buscamos antecedentes en el archivo del INPI y te decimos si el nombre está disponible. Sin registro y sin dejar tus datos.</p>
+  <form action="/verificar-marca/" method="get" onsubmit="typeof gtag==='function'&&gtag('event','verificar_click',{'source':'blog-como-saber'})">
+    <input type="text" name="marca" placeholder="Escribí el nombre de tu marca" aria-label="Nombre de tu marca" required maxlength="80" />
+    <button type="submit" class="btn btn-primary">Verificar gratis</button>
+  </form>
+</aside>
+
 ## ¿Por qué verificar antes de registrar?
 
 Si presentás una solicitud de registro de una marca que ya existe, podés enfrentar una oposición del titular actual. Eso implica haber pagado el arancel sin resultado, y posiblemente haber invertido en packaging, redes sociales o publicidad con un nombre que después tenés que abandonar.
@@ -15,11 +24,9 @@ Desde marzo de 2026, el INPI ya no filtra conflictos con marcas existentes duran
 
 ## Cómo verificar si una marca está registrada
 
-La herramienta oficial es el buscador de marcas del INPI, disponible en [portaltramites.inpi.gob.ar](https://portaltramites.inpi.gob.ar). Es gratuita, no requiere registro previo y funciona desde cualquier dispositivo.
+La forma más rápida es nuestro [verificador gratuito de marcas](/verificar-marca): ingresás el nombre y las clases de tu actividad, y en segundos te muestra los antecedentes en el archivo del INPI y si el camino está libre. No pide registro previo ni datos de contacto.
 
-Ingresás el nombre que querés verificar, filtrás por "vigentes" (para ver marcas activas), y revisás los resultados. También conviene buscar marcas **en trámite**, porque una solicitud presentada antes que la tuya ya ocupa ese espacio aunque aún no tenga resolución.
-
-**Verificá tu marca ahora:** además del portal oficial, podés usar nuestra [herramienta gratuita para verificar la disponibilidad de tu marca](/verificar-marca). Ingresás el nombre y las clases de tu actividad, y te muestra en segundos los antecedentes en el archivo del INPI y si el camino está libre.
+También podés hacer la búsqueda en el buscador oficial del INPI, disponible en [portaltramites.inpi.gob.ar](https://portaltramites.inpi.gob.ar). Es gratuito y funciona desde cualquier dispositivo: ingresás el nombre que querés verificar, filtrás por "vigentes" (para ver marcas activas) y revisás los resultados. También conviene buscar marcas **en trámite**, porque una solicitud presentada antes que la tuya ya ocupa ese espacio aunque aún no tenga resolución.
 
 Para la guía detallada de cómo usar el buscador paso a paso, incluyendo cómo interpretar cada campo y los errores más frecuentes, leé: [buscador de marcas INPI: cómo verificar si tu nombre está disponible](/blog/inpi-buscador-de-marcas-guia-para-registrar-tu-marca-en-argentina).
 
