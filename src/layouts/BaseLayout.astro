@@ -11,6 +11,8 @@ interface Props {
   tags?: string[];
   structuredData?: object | object[];
   noindex?: boolean;
+  lang?: string;
+  ogLocale?: string;
 }
 
 const {
@@ -23,6 +25,8 @@ const {
   tags = [],
   structuredData,
   noindex = false,
+  lang = 'es',
+  ogLocale = 'es_AR',
 } = Astro.props;
 
 const SITE_URL = 'https://unamarca.com.ar';
@@ -42,7 +46,7 @@ function isActive(href: string) {
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang={lang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -63,7 +67,7 @@ function isActive(href: string) {
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:site_name" content={SITE_NAME} />
     <meta property="og:image" content={ogImageAbsolute} />
-    <meta property="og:locale" content="es_AR" />
+    <meta property="og:locale" content={ogLocale} />
     {type === 'article' && pubDate && (
       <meta property="article:published_time" content={pubDate} />
     )}

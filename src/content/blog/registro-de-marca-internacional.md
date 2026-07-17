@@ -63,7 +63,7 @@ La forma correcta de estimarlo es armar una lista corta de países objetivo y pe
 
 ## El caso inverso: registrar una marca extranjera en Argentina
 
-Si llegaste hasta acá siendo una empresa de afuera que quiere proteger su marca en Argentina, el punto de partida es el mismo pero al revés: **no podés designar Argentina en un registro de Madrid**. Tenés que presentar una solicitud nacional directa ante el INPI, definir las clases correspondientes y constituir un domicilio legal en el país a través de un representante local. El trámite es 100% online y, con el proceso vigente desde 2026, puede resolverse en aproximadamente 2 meses si no hay oposiciones.
+Si llegaste hasta acá siendo una empresa de afuera que quiere proteger su marca en Argentina, el punto de partida es el mismo pero al revés: **no podés designar Argentina en un registro de Madrid**. Tenés que presentar una solicitud nacional directa ante el INPI, definir las clases correspondientes y constituir un domicilio legal en el país a través de un representante local. El trámite es 100% online y, con el proceso vigente desde 2026, puede resolverse en aproximadamente 2 meses si no hay oposiciones. Si ese es tu caso, tenemos una guía específica en inglés: [trademark registration in Argentina for foreign companies](/trademark-registration-argentina).
 
 ## Antes que nada: asegurá tu marca en Argentina
 

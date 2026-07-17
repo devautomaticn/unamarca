@@ -1,0 +1,363 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const SITE_URL = 'https://unamarca.com.ar';
+const canonicalURL = `${SITE_URL}/trademark-registration-argentina`;
+
+const WA_LINK =
+  'https://wa.me/5491149712224?text=' +
+  encodeURIComponent(
+    "Hello! We're a company based outside Argentina and we'd like to register our trademark before the INPI. Could you help us?"
+  );
+
+const faqs = [
+  {
+    q: 'Can I use my Madrid Protocol (WIPO) registration to cover Argentina?',
+    a: 'No. Argentina is not a member of the Madrid Protocol, so an international registration obtained through WIPO has no legal effect in Argentina. To protect your brand here you must file a national application directly before the INPI (the Argentine trademark office).',
+  },
+  {
+    q: 'Do I need to be located in Argentina to register a trademark?',
+    a: 'No. You do not need a local company or a physical presence. However, foreign applicants must appoint a local representative and establish a legal domicile in Argentina for the application. We act as your representative and handle the entire process on your behalf.',
+  },
+  {
+    q: 'How long does trademark registration take in Argentina?',
+    a: 'Under the process in force since 2026, a straightforward application can be resolved in roughly 2 months if no oppositions are filed. Timelines extend if a third party opposes the application during the 30-day publication window.',
+  },
+  {
+    q: 'What does it cost to register a trademark in Argentina?',
+    a: 'The cost has two parts: the official INPI fee (charged per class) and our professional fee for preparing, filing and prosecuting the application. We provide a fixed quote up front once we know how many classes you need. Ask us for a quote for your specific case.',
+  },
+  {
+    q: 'Should I run a search before filing?',
+    a: 'Yes. A prior availability search in the relevant classes is strongly recommended to reduce the risk of rejection or opposition. We run the search and advise you on the classes that fit your products or services before filing.',
+  },
+];
+
+const structuredData = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'Trademark Registration in Argentina',
+    serviceType: 'Trademark registration and prosecution before the INPI',
+    areaServed: {
+      '@type': 'Country',
+      name: 'Argentina',
+    },
+    provider: {
+      '@type': 'Organization',
+      name: 'UnaMarca',
+      url: SITE_URL,
+    },
+    description:
+      'Trademark filing and prosecution before the INPI (Argentine trademark office) for foreign companies and international brands. We act as your local representative in Argentina.',
+    url: canonicalURL,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: f.a,
+      },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="Trademark Registration in Argentina for Foreign Companies | UnaMarca"
+  description="Argentina is not part of the Madrid Protocol. Foreign brands must file directly before the INPI. We act as your local representative and handle the full process."
+  canonicalURL={canonicalURL}
+  lang="en"
+  ogLocale="en_US"
+  structuredData={structuredData}
+>
+  <section class="en-hero">
+    <div class="container">
+      <p class="en-eyebrow">For foreign companies &amp; international brands</p>
+      <h1>Trademark Registration in Argentina</h1>
+      <p class="en-lead">
+        Argentina is not a member of the Madrid Protocol, so a WIPO international
+        registration does not protect you here. Foreign brands must file a
+        national application directly before the INPI. We act as your local
+        representative and take care of the entire process, end to end.
+      </p>
+      <div class="en-cta-row">
+        <a href={WA_LINK} class="en-btn en-btn-primary" target="_blank" rel="noopener noreferrer"
+          onclick="gtag('event', 'whatsapp_click', {'source': 'en_landing'})">
+          Request a quote
+        </a>
+        <a href="#how-it-works" class="en-btn en-btn-ghost">See how it works</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="en-section">
+    <div class="container en-narrow">
+      <h2>Why you can't rely on your Madrid Protocol registration</h2>
+      <p>
+        Trademark rights are territorial. Argentina is one of the few countries
+        that never joined the Madrid System, so an international registration
+        obtained through WIPO has no legal effect within the country. If your
+        brand operates, exports or licenses in Argentina, the only way to secure
+        exclusive rights is a national application filed directly with the
+        <strong>INPI</strong> (Instituto Nacional de la Propiedad Industrial).
+      </p>
+      <p>
+        Foreign applicants can register without a local company or physical
+        presence, but the law requires you to appoint a local representative and
+        establish a legal domicile in Argentina for the filing. That is exactly
+        what we do for you.
+      </p>
+    </div>
+  </section>
+
+  <section class="en-section en-alt" id="how-it-works">
+    <div class="container">
+      <h2>How it works</h2>
+      <ol class="en-steps">
+        <li>
+          <span class="en-step-n">1</span>
+          <h3>Availability search</h3>
+          <p>
+            We run a prior search in the relevant Nice classes and flag any
+            conflicting marks before you commit.
+          </p>
+        </li>
+        <li>
+          <span class="en-step-n">2</span>
+          <h3>Filing before the INPI</h3>
+          <p>
+            We prepare the application, act as your local representative and file
+            directly with the INPI on your behalf.
+          </p>
+        </li>
+        <li>
+          <span class="en-step-n">3</span>
+          <h3>Publication &amp; examination</h3>
+          <p>
+            The application is published for 30 days for third-party oppositions,
+            then examined by the INPI. We monitor and respond as needed.
+          </p>
+        </li>
+        <li>
+          <span class="en-step-n">4</span>
+          <h3>Registration</h3>
+          <p>
+            With no oppositions, the mark is granted, typically in about 2 months
+            under the process in force since 2026, and you receive the title.
+          </p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="en-section">
+    <div class="container en-narrow">
+      <h2>What's included</h2>
+      <ul class="en-list">
+        <li>Prior availability search and class advice</li>
+        <li>Local representation and legal domicile in Argentina</li>
+        <li>Preparation and filing of the application before the INPI</li>
+        <li>Monitoring of the publication and examination stages</li>
+        <li>A single point of contact, in English, throughout the process</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="en-section en-alt">
+    <div class="container en-narrow">
+      <h2>Frequently asked questions</h2>
+      <div class="en-faq">
+        {faqs.map((f) => (
+          <details>
+            <summary>{f.q}</summary>
+            <p>{f.a}</p>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="en-final">
+    <div class="container">
+      <h2>Protect your brand in Argentina</h2>
+      <p>
+        Tell us your trademark and the products or services it covers, and we'll
+        come back with a fixed quote and the recommended classes.
+      </p>
+      <a href={WA_LINK} class="en-btn en-btn-primary" target="_blank" rel="noopener noreferrer"
+        onclick="gtag('event', 'whatsapp_click', {'source': 'en_landing_final'})">
+        Request a quote
+      </a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .en-hero {
+    background: var(--c-navy, #0b1d3a);
+    color: #fff;
+    padding: 5rem 0 4rem;
+  }
+  .en-eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--c-blue, #2563eb);
+    margin-bottom: 1rem;
+  }
+  .en-hero h1 {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    line-height: 1.1;
+    margin: 0 0 1.25rem;
+    max-width: 16ch;
+  }
+  .en-lead {
+    font-size: 1.15rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.85);
+    max-width: 60ch;
+    margin: 0 0 2rem;
+  }
+  .en-cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .en-btn {
+    display: inline-block;
+    padding: 0.85rem 1.75rem;
+    border-radius: 100px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+  .en-btn:hover {
+    transform: translateY(-2px);
+  }
+  .en-btn-primary {
+    background: var(--c-green, #22c55e);
+    color: #05230f;
+  }
+  .en-btn-ghost {
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: #fff;
+  }
+  .en-section {
+    padding: 4rem 0;
+  }
+  .en-alt {
+    background: #f6f8fc;
+  }
+  .en-narrow {
+    max-width: 68ch;
+  }
+  .en-section h2,
+  .en-final h2 {
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    margin: 0 0 1.5rem;
+    color: var(--c-navy, #0b1d3a);
+  }
+  .en-section p {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    margin: 0 0 1.1rem;
+    color: #33415a;
+  }
+  .en-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  }
+  .en-steps li {
+    background: #fff;
+    border: 1px solid #e3e9f2;
+    border-radius: 16px;
+    padding: 1.75rem 1.5rem;
+  }
+  .en-step-n {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 100px;
+    background: var(--c-blue, #2563eb);
+    color: #fff;
+    font-weight: 700;
+    margin-bottom: 0.9rem;
+  }
+  .en-steps h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.15rem;
+    color: var(--c-navy, #0b1d3a);
+  }
+  .en-steps p {
+    font-size: 0.98rem;
+    margin: 0;
+  }
+  .en-list {
+    padding-left: 1.2rem;
+    margin: 0;
+  }
+  .en-list li {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    margin-bottom: 0.6rem;
+    color: #33415a;
+  }
+  .en-faq details {
+    border-bottom: 1px solid #e3e9f2;
+    padding: 1rem 0;
+  }
+  .en-faq summary {
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1.08rem;
+    color: var(--c-navy, #0b1d3a);
+    list-style: none;
+  }
+  .en-faq summary::-webkit-details-marker {
+    display: none;
+  }
+  .en-faq summary::before {
+    content: '+';
+    display: inline-block;
+    width: 1.2em;
+    color: var(--c-blue, #2563eb);
+    font-weight: 700;
+  }
+  .en-faq details[open] summary::before {
+    content: '\2013';
+  }
+  .en-faq p {
+    margin: 0.75rem 0 0 1.2em;
+    font-size: 1rem;
+    line-height: 1.65;
+    color: #33415a;
+  }
+  .en-final {
+    background: var(--c-navy, #0b1d3a);
+    color: #fff;
+    padding: 4rem 0;
+    text-align: center;
+  }
+  .en-final h2 {
+    color: #fff;
+  }
+  .en-final p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.85);
+    max-width: 55ch;
+    margin: 0 auto 2rem;
+  }
+</style>
