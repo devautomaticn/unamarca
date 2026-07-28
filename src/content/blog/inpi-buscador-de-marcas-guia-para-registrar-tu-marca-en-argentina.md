@@ -1,11 +1,25 @@
 ---
-title: 'Buscador de marcas INPI: cómo verificar si tu nombre está disponible'
-description: 'Cómo usar el buscador de marcas del INPI para verificar si tu nombre está disponible antes de registrarlo. Gratis, paso a paso, con consejos para no pasar nada por alto.'
+title: "Buscador de marcas INPI: consultá y verificá gratis"
+description: 'Cómo consultar el buscador de marcas del INPI y verificar si tu nombre está disponible antes de registrarlo. Guía paso a paso 2026 más verificador gratis.'
 pubDate: '2025-12-31'
+updatedDate: '2026-07-21'
 tags: []
+faqs:
+  - question: "¿El buscador de marcas del INPI es gratis?"
+    answer: "Sí. El buscador de marcas del INPI es gratuito, no requiere registro previo y se puede usar desde cualquier dispositivo en portaltramites.inpi.gob.ar."
+  - question: "¿Cómo sé si una marca ya está registrada en Argentina?"
+    answer: "Ingresá a portaltramites.inpi.gob.ar, buscá la opción de consulta de marcas, escribí la denominación exacta y revisá si aparecen marcas vigentes o en trámite en tu clase. Conviene probar también variantes del nombre, no solo la forma exacta."
+  - question: "¿Qué significa que una marca esté 'en trámite'?"
+    answer: "Que hay una solicitud presentada que todavía no tiene resolución. Ocupa el espacio igual que una marca vigente, porque la fecha de presentación da prioridad frente a solicitudes posteriores."
+  - question: "¿Puedo registrar una marca que figura como caducada?"
+    answer: "En principio ese nombre vuelve a estar disponible, pero conviene esperar a que el estado figure oficialmente actualizado o consultarlo con un profesional antes de presentar la solicitud."
+  - question: "¿El buscador detecta marcas parecidas o solo idénticas?"
+    answer: "Detecta coincidencias exactas o muy cercanas. Para similitudes fonéticas o conceptuales conviene una búsqueda de anterioridades más amplia, ya que el INPI evalúa parecidos visuales, sonoros y conceptuales, no solo nombres idénticos."
 ---
 
 Antes de registrar tu marca en Argentina, hay un paso que no podés saltearte: verificar que nadie más la haya registrado antes. El **buscador de marcas del INPI** es la herramienta gratuita que te permite hacer esa búsqueda en minutos. En esta guía te explicamos cómo usarla correctamente y qué hacer con los resultados.
+
+**En resumen:** el buscador de marcas del INPI es una herramienta online y gratuita para comprobar si un nombre ya está registrado en Argentina. Se usa desde [portaltramites.inpi.gob.ar](https://portaltramites.inpi.gob.ar), no requiere registro previo y permite buscar por denominación y por clase. Abajo te mostramos cómo usarlo paso a paso y cómo interpretar cada estado del resultado.
 
 <aside class="vm-inline-cta">
   <p class="vm-inline-cta-title">¿Querés el atajo? Verificá tu marca acá mismo</p>

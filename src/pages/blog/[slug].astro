@@ -17,6 +17,7 @@ const SITE_URL = 'https://unamarca.com.ar';
 // Explicit trailing slash: Cloudflare Pages serves dist/blog/slug/index.html at /blog/slug/
 const canonicalURL = `${SITE_URL}/blog/${post.id}/`;
 const pubDateISO = post.data.pubDate.toISOString();
+const updatedDateISO = post.data.updatedDate?.toISOString();
 
 function formatDate(date: Date): string {
   return date.toLocaleDateString('es-AR', {
@@ -32,7 +33,7 @@ const structuredData = {
   headline: post.data.title,
   description: post.data.description,
   datePublished: pubDateISO,
-  dateModified: pubDateISO,
+  dateModified: updatedDateISO ?? pubDateISO,
   url: canonicalURL,
   inLanguage: 'es-AR',
   author: {
@@ -50,6 +51,20 @@ const structuredData = {
     '@id': canonicalURL,
   },
 };
+
+const faqSchema = post.data.faqs?.length
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: post.data.faqs.map(faq => ({
+        '@type': 'Question',
+        name: faq.question,
+        acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+      })),
+    }
+  : null;
+
+const schemas = faqSchema ? [structuredData, faqSchema] : structuredData;
 ---
 
 <BaseLayout
@@ -58,8 +73,9 @@ const structuredData = {
   canonicalURL={canonicalURL}
   type="article"
   pubDate={pubDateISO}
+  updatedDate={updatedDateISO}
   tags={post.data.tags}
-  structuredData={structuredData}
+  structuredData={schemas}
 >
   <article class="blog-post">
     <div class="container">
@@ -68,6 +84,11 @@ const structuredData = {
           <time datetime={pubDateISO}>
             {formatDate(post.data.pubDate)}
           </time>
+          {post.data.updatedDate && (
+            <span class="post-updated">
+              · Actualizado el <time datetime={updatedDateISO}>{formatDate(post.data.updatedDate)}</time>
+            </span>
+          )}
           {post.data.tags && post.data.tags.length > 0 && (
             <ul class="tag-list" role="list">
               {post.data.tags.map(tag => (
@@ -83,6 +104,20 @@ const structuredData = {
       <div class="prose">
         <Content />
       </div>
+
+      {post.data.faqs && post.data.faqs.length > 0 && (
+        <section class="post-faq" aria-labelledby="faq-title">
+          <h2 id="faq-title">Preguntas frecuentes</h2>
+          <dl>
+            {post.data.faqs.map(faq => (
+              <div class="faq-item">
+                <dt>{faq.question}</dt>
+                <dd>{faq.answer}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
 
       <aside class="post-cta" aria-label="Registrá tu marca">
         <h2>Registrá tu marca 100% online</h2>
