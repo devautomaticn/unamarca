@@ -1,16 +1,25 @@
 # Spec — Self-Checkout de Registro de Marca (v1)
 
 **Status:** Draft — approved for initial implementation
-**Date:** 2026-07-03
+**Date:** 2026-07-03 (amended 2026-07-28: multi-class)
 **Owner:** Mike
+
+> **Amendment 2026-07-28 — Multi-class:** the clase selector is now a
+> multi-select (up to 5 clases per order; more → WhatsApp). Honorarios
+> ($40.000), arancel INPI ($38.994) and Garantía de Devolución ($7.000) are
+> ALL per clase — no multi-class discount. The garantía is a single toggle
+> covering every clase in the order; if INPI denies one clase, only the
+> honorarios of THAT clase are refunded (arancel never refunded). Payload
+> field `clase: number|null` became `clases: number[]` end-to-end (server
+> keeps reading legacy `clase` for old orders/drafts).
 
 ---
 
 ## 1. Overview
 
 A commercial, frictionless self-checkout wizard where an end user requests the
-registration of their trademark (marca denominativa, 1 clase, persona humana)
-in a single session: enter the marca → pick a clase → email + WhatsApp →
+registration of their trademark (marca denominativa, 1–5 clases, persona humana)
+in a single session: enter the marca → pick clases → email + WhatsApp →
 confirm the order (+ optional garantía) → (payment placeholder) → enter titular data →
 **sign the carta poder in-browser** → done. UnaMarca receives everything
 needed to file before INPI, including the signed carta poder PDF, with zero
@@ -35,11 +44,13 @@ async back-and-forth.
   and plan before payment; titular data after payment
 - Tipo de persona: **Humana only** (field visible, fixed/disabled)
 - Tipo de marca: **Denominativa only** (field visible, fixed/disabled)
-- Clase: **single select**, official Nice class names
-- Single base price (honorarios $40.000) + **Garantía de Devolución as an
-  order-bump upsell** ($7.000): if INPI denies the registration, the $40.000
-  honorarios are refunded (arancel never refunded). Worst case for UnaMarca:
-  the $7.000 covers transaction costs
+- Clases: **multi-select, up to 5**, official Nice class names; chips with
+  remove buttons; cap reached → WhatsApp escape hatch
+- Per-clase pricing (honorarios $40.000 × clase) + **Garantía de Devolución
+  as an order-bump upsell** ($7.000 × clase, one toggle covering all clases):
+  if INPI denies a clase, the $40.000 honorarios of that clase are refunded
+  (arancel never refunded). Worst case for UnaMarca: the $7.000/clase covers
+  transaction costs
 - When the garantía is NOT selected, the base order card shows a red-cross
   line ("Sin garantía de devolución…") — loss-aversion nudge
 - Vigilancia shown with strikethrough price → "Gratis con UnaMarca"
@@ -55,7 +66,7 @@ async back-and-forth.
 - Mercado Pago integration (v2 — the placeholder step is designed to be
   swapped for MP Checkout Pro without changing the wizard structure)
 - Personas jurídicas (different carta poder wording, representante legal)
-- Multiple clases / multi-class discount
+- Multi-class discount (all clases cost the same)
 - Multiple titulares
 - Marcas mixtas / figurativas (logo)
 - Trademark search integrated into the funnel
@@ -69,7 +80,7 @@ async back-and-forth.
 Cases outside scope get a visible WhatsApp exit instead of a dead end:
 
 - "¿La marca es para una empresa (SRL, SA, etc.)? Escribinos por WhatsApp"
-- "¿Necesitás registrar en más de una clase? Escribinos por WhatsApp"
+- "¿Necesitás registrar en más de 5 clases? Escribinos por WhatsApp"
 - "¿No sabés qué clase elegir? Escribinos por WhatsApp"
 
 ---
@@ -116,37 +127,42 @@ Only the two fields needed to reach the user if they abandon after paying:
 
 ### Paso 3 — Tu pedido (checkout)
 
-**Clase selector at the top** (moved here from Paso 1): single-select
-searchable dropdown, options shown as `Clase {n} — {nombre corto}` (short
+**Clase selector at the top** (moved here from Paso 1): multi-select
+searchable dropdown (panel stays open while toggling; selected clases render
+as removable chips), options shown as `Clase {n} — {nombre corto}` (short
 recognizable names, e.g. "Clase 3 — Cosméticos, perfumería, limpieza"). The
 full official Nice heading lives in the shared module (`textoOficial`) and is
 searchable too — it's what matters for the eventual filing, not for the UI.
-WhatsApp escape hatches for "no sé cuál elegir" and multi-class.
+Hard cap: 5 clases; at the cap a WhatsApp escape hatch appears. Also a
+WhatsApp hatch for "no sé cuál elegir".
 
 Below it, one base order card + one upsell checkbox card (order bump), instead
 of competing plan tiers:
 
-**Card "Registro de marca" — $40.000 (honorarios, + arancel INPI):**
+**Card "Registro de marca" — $40.000 × clase (honorarios, + arancel INPI):**
 - ✔ Presentación de la solicitud ante el INPI
 - ✔ Novedades del trámite por email
 - ✔ Vigilancia de marca ~~$XX.XXX~~ **Gratis**
 - Dynamic last line:
   - garantía OFF → ✗ (red) "Sin garantía de devolución: si el INPI deniega el
-    registro, los honorarios no se devuelven"
+    registro en una clase, los honorarios de esa clase no se devuelven"
   - garantía ON → ✔ (green) "Garantía de Devolución incluida: si el INPI
-    deniega el registro, te devolvemos los honorarios"
+    deniega el registro en una clase, te devolvemos los honorarios de esa clase"
 
 **Upsell card (checkbox, unchecked by default):**
-"Sumá la Garantía de Devolución — +$7.000. Si el INPI deniega tu registro, te
-devolvemos los $40.000 de honorarios."
+"Sumá la Garantía de Devolución — +$7.000 por clase. Si el INPI deniega el
+registro en alguna de tus clases, te devolvemos los $40.000 de honorarios de
+esa clase." Price shown updates with the number of selected clases.
 
-Economics: garantía payout refunds honorarios only (never the arancel), so
-UnaMarca's worst case keeps the $7.000, covering transaction costs.
+Economics: garantía payout refunds the honorarios of the denied clase only
+(never the arancel), so UnaMarca's worst case keeps the $7.000 of that clase,
+covering transaction costs.
 
 Pricing values are **config constants**, not hardcoded in markup
 (see §7 — they will change with inflation and UMAPI updates).
 
-Order summary always visible: `Honorarios + Arancel INPI (1 clase) = Total`.
+Order summary always visible: `Honorarios (N clases) + Garantía (N clases,
+if on) + Arancel INPI (N clases) = Total` — every line scales × clase.
 The arancel is always a separate, labeled line ("el arancel se paga al INPI")
 — required for price-transparency compliance and it builds trust.
 
@@ -267,7 +283,7 @@ DNI {{dni}}
   in Spanish ("A los 3 días del mes de julio de 2026").
 - **Marca** rendered in quotes, uppercase, exactly as entered (after trim).
 - **Clase:** template supports singular/plural ("en la clase 25" / "en las
-  clases 3 y 44") so multi-class in v2 needs no rewrite. v1 always singular.
+  clases 3 y 44") — used since the 2026-07-28 multi-class amendment.
 - **Apoderado block** (name, DNI, CUIT, domicilio of Michael Alan Simmons):
   config constants, never inline in the template.
 - The "vistas, observaciones y oposiciones" clause stays verbatim — it means
@@ -366,8 +382,9 @@ server-side truth remains the MP webhook / D1.
 
 ## 9. Copy & legal requirements (summary)
 
-- Advertised price framing: "Honorarios $40.000 **+ arancel INPI**" —
-  arancel always visible as its own line, never absorbed into a teaser price
+- Advertised price framing: "Honorarios $40.000 por clase **+ arancel INPI
+  por clase**" — arancel always visible as its own line, never absorbed into
+  a teaser price
 - Scope disclaimer at Paso 3 (verbatim in §4) — the user accepts INPI-outcome
   risk knowingly; UnaMarca is not responsible for the success of the solicitud
 - Naming: "Registro de marca" + "Garantía de Devolución" (upsell) — the

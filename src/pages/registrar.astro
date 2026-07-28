@@ -4,13 +4,13 @@
 // TODO wiring: POST /api/checkout/submit (PDF + emails).
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { NIZA_CLASSES } from '../lib/checkout/nizaClasses';
-import { PRICING, PROVINCIAS, waUrl, formatARS } from '../lib/checkout/constants';
+import { PRICING, MAX_CLASES, PROVINCIAS, waUrl, formatARS } from '../lib/checkout/constants';
 
 const SITE_URL = 'https://unamarca.com.ar';
 
 const waEmpresa = waUrl('Hola! Quiero registrar una marca a nombre de una empresa (persona jurídica).');
 const waClase = waUrl('Hola! Estoy registrando mi marca en unamarca.com.ar y no sé qué clase elegir.');
-const waMulti = waUrl('Hola! Quiero registrar una marca en más de una clase.');
+const waMulti = waUrl(`Hola! Quiero registrar una marca en más de ${MAX_CLASES} clases.`);
 
 // FAQ: respuestas cortas que derivan al post canónico de cada tema para no
 // competir con el blog por sus keywords (los posts siguen siendo la página
@@ -22,7 +22,7 @@ const faqs = [
   },
   {
     q: '¿Cuánto cuesta registrar una marca en Argentina?',
-    a: `El precio es fijo: ${formatARS(PRICING.honorarios)} de honorarios más el arancel del INPI de ${formatARS(PRICING.arancelInpi)} por clase (valor ${PRICING.arancelVigencia}), todo en un solo pago y sin costos ocultos. Tenés el detalle completo en <a href="/blog/cuanto-sale-registrar-una-marca">cuánto sale registrar una marca</a>.`,
+    a: `El precio es fijo y por clase: ${formatARS(PRICING.honorarios)} de honorarios más el arancel del INPI de ${formatARS(PRICING.arancelInpi)} (valor ${PRICING.arancelVigencia}) por cada clase que registres, todo en un solo pago y sin costos ocultos. Tenés el detalle completo en <a href="/blog/cuanto-sale-registrar-una-marca">cuánto sale registrar una marca</a>.`,
   },
   {
     q: '¿Cuánto tarda el registro de una marca?',
@@ -34,7 +34,7 @@ const faqs = [
   },
   {
     q: '¿Qué clase tengo que elegir?',
-    a: `Las marcas se registran por clase según el Clasificador de Niza: cada una agrupa productos o servicios distintos. En el formulario podés buscar tu rubro y elegir la clase indicada. Si tenés dudas, mirá la <a href="/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina">guía de clases de marcas</a> o escribinos por WhatsApp.`,
+    a: `Las marcas se registran por clase según el Clasificador de Niza: cada una agrupa productos o servicios distintos. En el formulario podés buscar tu rubro y elegir una o varias clases (hasta ${MAX_CLASES} en el mismo pedido). Si tenés dudas, mirá la <a href="/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina">guía de clases de marcas</a> o escribinos por WhatsApp.`,
   },
   {
     q: '¿Tengo que hacer algún trámite ante el INPI?',
@@ -301,15 +301,15 @@ const faqSchema = {
         <div class="ck-section-label">Tu pedido</div>
 
         <div class="ck-field">
-          <label>Clase de productos o servicios <em>*</em></label>
+          <label>Clases de productos o servicios <em>*</em></label>
           <div class="ck-dd" id="ck-clase-dd">
             <button type="button" class="ck-dd-btn" id="ck-clase-btn" aria-haspopup="listbox" aria-expanded="false">
-              <span id="ck-clase-label" class="ck-dd-placeholder">Seleccioná la clase…</span>
+              <span id="ck-clase-label" class="ck-dd-placeholder">Seleccioná una o más clases…</span>
               <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
             <div class="ck-dd-panel" id="ck-clase-panel" hidden>
               <input type="text" id="ck-clase-search" placeholder="Buscar… (ej: ropa, café, software)" autocomplete="off" />
-              <ul class="ck-dd-list" id="ck-clase-list" role="listbox">
+              <ul class="ck-dd-list" id="ck-clase-list" role="listbox" aria-multiselectable="true">
                 {NIZA_CLASSES.map(c => (
                   <li>
                     <button type="button" class="ck-dd-opt" data-num={c.num} data-extra={c.textoOficial} role="option">
@@ -321,10 +321,14 @@ const faqSchema = {
               </ul>
             </div>
           </div>
+          <div class="ck-chips" id="ck-clase-chips" hidden></div>
+          <p class="ck-help" id="ck-clase-max" hidden>
+            Llegaste al máximo de {MAX_CLASES} clases por pedido online.
+            ¿Necesitás más? <a href={waMulti} target="_blank" rel="noopener noreferrer">Escribinos por WhatsApp</a>
+          </p>
           <p class="ck-help">
-            La clase define qué productos o servicios protege tu marca.
+            Cada clase define qué productos o servicios protege tu marca. Podés elegir hasta {MAX_CLASES}.
             ¿No sabés cuál elegir? <a href={waClase} target="_blank" rel="noopener noreferrer">Consultanos por WhatsApp</a>
-            &nbsp;·&nbsp; <a href={waMulti} target="_blank" rel="noopener noreferrer">¿Necesitás más de una clase?</a>
           </p>
           <p class="ck-err" data-err="clase"></p>
         </div>
@@ -332,14 +336,14 @@ const faqSchema = {
         <div class="ck-order">
           <div class="ck-order-head">
             <span class="ck-order-name">Registro de marca</span>
-            <span class="ck-order-price">{formatARS(PRICING.honorarios)}</span>
+            <span class="ck-order-price" id="ck-order-price">{formatARS(PRICING.honorarios)}</span>
           </div>
-          <p class="ck-plan-sub">Honorarios</p>
+          <p class="ck-plan-sub">Honorarios · {formatARS(PRICING.honorarios)} por clase</p>
           <ul class="ck-plan-feats">
             <li>Presentación de la solicitud ante el INPI</li>
             <li>Novedades del trámite por email</li>
             <li>Vigilancia de marca <s>{formatARS(PRICING.vigilanciaLista)}</s> <b>Gratis</b></li>
-            <li id="ck-feat-garantia" class="ck-feat-off">Sin garantía de devolución: si el INPI deniega el registro, los honorarios no se devuelven</li>
+            <li id="ck-feat-garantia" class="ck-feat-off">Sin garantía de devolución: si el INPI deniega el registro en una clase, los honorarios de esa clase no se devuelven</li>
           </ul>
         </div>
 
@@ -348,11 +352,12 @@ const faqSchema = {
           <div class="ck-upsell-body">
             <div class="ck-upsell-head">
               <span class="ck-upsell-name">Sumá la Garantía de Devolución</span>
-              <span class="ck-upsell-price">+{formatARS(PRICING.garantia)}</span>
+              <span class="ck-upsell-price" id="ck-upsell-price">+{formatARS(PRICING.garantia)}</span>
             </div>
             <p class="ck-upsell-desc">
-              Si el INPI deniega tu registro, te devolvemos los
-              {formatARS(PRICING.honorarios)} de honorarios.
+              Si el INPI deniega el registro en alguna de tus clases, te devolvemos
+              los {formatARS(PRICING.honorarios)} de honorarios de esa clase.
+              Cuesta {formatARS(PRICING.garantia)} por clase.
             </p>
           </div>
         </label>
@@ -360,16 +365,16 @@ const faqSchema = {
 
       <div class="ck-card ck-summary">
         <div class="ck-sum-row">
-          <span>Honorarios — Registro de marca</span>
-          <span>{formatARS(PRICING.honorarios)}</span>
+          <span id="ck-sum-hon-label">Honorarios — Registro de marca (1 clase)</span>
+          <span id="ck-sum-hon">{formatARS(PRICING.honorarios)}</span>
         </div>
         <div class="ck-sum-row" id="ck-sum-garantia-row" hidden>
-          <span>Garantía de Devolución</span>
-          <span>{formatARS(PRICING.garantia)}</span>
+          <span id="ck-sum-gar-label">Garantía de Devolución (1 clase)</span>
+          <span id="ck-sum-gar">{formatARS(PRICING.garantia)}</span>
         </div>
         <div class="ck-sum-row">
-          <span>Arancel INPI (1 clase) <small>se paga al INPI · valor {PRICING.arancelVigencia}</small></span>
-          <span>{formatARS(PRICING.arancelInpi)}</span>
+          <span id="ck-sum-ara-label">Arancel INPI (1 clase) <small>se paga al INPI · valor {PRICING.arancelVigencia}</small></span>
+          <span id="ck-sum-ara">{formatARS(PRICING.arancelInpi)}</span>
         </div>
         <div class="ck-sum-row ck-sum-total">
           <span>Total</span>
@@ -399,7 +404,7 @@ const faqSchema = {
 
         <div class="ck-pay-summary">
           <div class="ck-pay-marca" id="ck-pay-marca">MARCA</div>
-          <div class="ck-pay-detail"><span id="ck-pay-plan">Registro Simple</span> · Clase <span id="ck-pay-clase">–</span></div>
+          <div class="ck-pay-detail"><span id="ck-pay-plan">Registro Simple</span> · <span id="ck-pay-clase">Clase –</span></div>
           <div class="ck-pay-total">Total: <b id="ck-pay-total">–</b></div>
         </div>
 
@@ -516,7 +521,7 @@ const faqSchema = {
 
 <script>
   import { NIZA_CLASSES } from '../lib/checkout/nizaClasses';
-  import { PRICING, formatARS } from '../lib/checkout/constants';
+  import { PRICING, MAX_CLASES, computeOrderPricing, formatARS } from '../lib/checkout/constants';
   import { formatCuitInput, isValidCuit, cuitMatchesDni } from '../lib/checkout/cuit';
   import { cartaPoderHTML, type CartaPoderData } from '../lib/checkout/cartaPoder';
 
@@ -528,7 +533,7 @@ const faqSchema = {
   const FIELDS_OPTIONAL = false;
 
   // ── Estado ──────────────────────────────────────────────
-  let clase: number | null = null;
+  let clases: number[] = [];
   let garantia = false;
   let orderRef: string | null = null; // pedido creado al iniciar el pago MP
 
@@ -543,7 +548,7 @@ const faqSchema = {
   function saveDraft() {
     const values: Record<string, string> = {};
     FIELD_IDS.forEach(id => { values[id] = input(id).value; });
-    localStorage.setItem(DRAFT_KEY, JSON.stringify({ values, clase, garantia }));
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({ values, clases, garantia }));
   }
 
   function restoreDraft() {
@@ -553,7 +558,11 @@ const faqSchema = {
       const draft = JSON.parse(raw);
       FIELD_IDS.forEach(id => { if (draft.values?.[id]) input(id).value = draft.values[id]; });
       syncConyuge();
-      if (draft.clase) selectClase(draft.clase, false);
+      // Drafts viejos guardaban una sola clase en `clase`
+      const draftClases = Array.isArray(draft.clases)
+        ? draft.clases
+        : (draft.clase ? [draft.clase] : []);
+      if (draftClases.length) setClases(draftClases, false);
       if (typeof draft.garantia === 'boolean') {
         garantia = draft.garantia;
         input('ck-garantia').checked = garantia;
@@ -640,7 +649,7 @@ const faqSchema = {
   function validatePedido(): boolean {
     clearErrs(['clase']);
     if (FIELDS_OPTIONAL) return true;
-    if (!clase) { setErr('clase', 'Seleccioná la clase de tu marca.'); return false; }
+    if (clases.length === 0) { setErr('clase', 'Seleccioná al menos una clase para tu marca.'); return false; }
     return true;
   }
 
@@ -736,23 +745,79 @@ const faqSchema = {
     });
   }
 
-  function selectClase(num: number, save = true) {
-    clase = num;
-    const c = NIZA_CLASSES.find(x => x.num === num);
+  /** "Clase 25" / "Clases 9, 25 y 35" */
+  function clasesTexto(): string {
+    if (clases.length === 0) return 'Clase –';
+    if (clases.length === 1) return `Clase ${clases[0]}`;
+    const nums = [...clases];
+    const last = nums.pop();
+    return `Clases ${nums.join(', ')} y ${last}`;
+  }
+
+  function renderClasesUI() {
     const label = $('ck-clase-label');
-    label.textContent = c ? `Clase ${c.num} — ${c.nombre}` : `Clase ${num}`;
-    label.classList.remove('ck-dd-placeholder');
-    document.querySelectorAll<HTMLElement>('.ck-dd-opt').forEach(opt => {
-      opt.classList.toggle('selected', parseInt(opt.dataset.num || '', 10) === num);
+    if (clases.length === 0) {
+      label.textContent = 'Seleccioná una o más clases…';
+      label.classList.add('ck-dd-placeholder');
+    } else if (clases.length === 1) {
+      const c = NIZA_CLASSES.find(x => x.num === clases[0]);
+      label.textContent = c ? `Clase ${c.num} — ${c.nombre}` : `Clase ${clases[0]}`;
+      label.classList.remove('ck-dd-placeholder');
+    } else {
+      label.textContent = clasesTexto();
+      label.classList.remove('ck-dd-placeholder');
+    }
+
+    // Chips con botón de quitar
+    const chips = $('ck-clase-chips');
+    chips.innerHTML = '';
+    clases.forEach(num => {
+      const c = NIZA_CLASSES.find(x => x.num === num);
+      const chip = document.createElement('span');
+      chip.className = 'ck-chip';
+      chip.title = c ? c.nombre : '';
+      chip.append(`Clase ${num}`);
+      const rm = document.createElement('button');
+      rm.type = 'button';
+      rm.setAttribute('aria-label', `Quitar la clase ${num}`);
+      rm.textContent = '×';
+      rm.addEventListener('click', () => toggleClase(num));
+      chip.append(rm);
+      chips.append(chip);
     });
-    setErr('clase', '');
+    chips.hidden = clases.length === 0;
+    $('ck-clase-max').hidden = clases.length < MAX_CLASES;
+
+    document.querySelectorAll<HTMLElement>('.ck-dd-opt').forEach(opt => {
+      opt.classList.toggle('selected', clases.includes(parseInt(opt.dataset.num || '', 10)));
+    });
+  }
+
+  function setClases(nums: number[], save = true) {
+    clases = [...new Set(nums.filter(n => Number.isInteger(n) && n >= 1 && n <= 45))]
+      .sort((a, b) => a - b)
+      .slice(0, MAX_CLASES);
+    if (clases.length) setErr('clase', '');
+    renderClasesUI();
+    updateSummary();
     if (save) saveDraft();
+  }
+
+  function toggleClase(num: number) {
+    if (clases.includes(num)) {
+      setClases(clases.filter(n => n !== num));
+    } else if (clases.length >= MAX_CLASES) {
+      $('ck-clase-max').hidden = false;
+    } else {
+      setClases([...clases, num]);
+    }
   }
 
   ddBtn.addEventListener('click', () => toggleDd());
   ddSearch.addEventListener('input', () => filterClases(ddSearch.value));
   document.querySelectorAll<HTMLElement>('.ck-dd-opt').forEach(opt => {
-    opt.addEventListener('click', () => { selectClase(parseInt(opt.dataset.num || '', 10)); toggleDd(false); });
+    // El panel queda abierto: es una selección múltiple
+    opt.addEventListener('click', () => toggleClase(parseInt(opt.dataset.num || '', 10)));
   });
   document.addEventListener('click', (e) => {
     if (!$('ck-clase-dd').contains(e.target as Node)) toggleDd(false);
@@ -760,21 +825,39 @@ const faqSchema = {
 
   // ── Garantía (upsell) y resumen ─────────────────────────
   const FEAT_GARANTIA = {
-    off: 'Sin garantía de devolución: si el INPI deniega el registro, los honorarios no se devuelven',
-    on: 'Garantía de Devolución incluida: si el INPI deniega el registro, te devolvemos los honorarios',
+    off: 'Sin garantía de devolución: si el INPI deniega el registro en una clase, los honorarios de esa clase no se devuelven',
+    on: 'Garantía de Devolución incluida: si el INPI deniega el registro en una clase, te devolvemos los honorarios de esa clase',
   };
 
+  // Antes de elegir clases el resumen muestra la base de 1 clase
+  function pricing() {
+    return computeOrderPricing(clases.length || 1, garantia);
+  }
   function total(): number {
-    return PRICING.honorarios + (garantia ? PRICING.garantia : 0) + PRICING.arancelInpi;
+    return pricing().total;
   }
 
   function updateSummary() {
+    const p = pricing();
+    const nLabel = p.clases === 1 ? '1 clase' : `${p.clases} clases`;
+
+    $('ck-order-price').textContent = formatARS(p.honorarios);
+    $('ck-upsell-price').textContent = `+${formatARS(PRICING.garantia * p.clases)}`;
+
     const feat = $('ck-feat-garantia');
     feat.textContent = garantia ? FEAT_GARANTIA.on : FEAT_GARANTIA.off;
     feat.classList.toggle('ck-feat-off', !garantia);
     feat.classList.toggle('ck-feat-on', garantia);
+
+    $('ck-sum-hon-label').textContent = `Honorarios — Registro de marca (${nLabel})`;
+    $('ck-sum-hon').textContent = formatARS(p.honorarios);
     $('ck-sum-garantia-row').hidden = !garantia;
-    $('ck-sum-total').textContent = formatARS(total());
+    $('ck-sum-gar-label').textContent = `Garantía de Devolución (${nLabel})`;
+    $('ck-sum-gar').textContent = formatARS(garantia ? p.garantia : PRICING.garantia * p.clases);
+    $('ck-sum-ara-label').innerHTML =
+      `Arancel INPI (${nLabel}) <small>se paga al INPI · valor ${PRICING.arancelVigencia}</small>`;
+    $('ck-sum-ara').textContent = formatARS(p.arancelInpi);
+    $('ck-sum-total').textContent = formatARS(p.total);
   }
 
   input('ck-garantia').addEventListener('change', () => {
@@ -786,7 +869,7 @@ const faqSchema = {
   function updatePaySummary() {
     $('ck-pay-marca').textContent = input('ck-marca').value.trim().toUpperCase() || 'TU MARCA';
     $('ck-pay-plan').textContent = 'Registro de marca' + (garantia ? ' + Garantía de Devolución' : '');
-    $('ck-pay-clase').textContent = clase ? String(clase) : '–';
+    $('ck-pay-clase').textContent = clasesTexto();
     $('ck-pay-total').textContent = formatARS(total());
   }
 
@@ -797,7 +880,7 @@ const faqSchema = {
   function orderBody() {
     return JSON.stringify({
       marca: { nombre: input('ck-marca').value.trim(), tipo: 'Denominativa' },
-      clase,
+      clases,
       contacto: {
         email: input('ck-email').value.trim(),
         whatsapp: input('ck-whatsapp').value.trim(),
@@ -885,7 +968,9 @@ const faqSchema = {
       orderRef = o.ref;
       const p = o.payload || {};
       if (p.marca?.nombre) input('ck-marca').value = p.marca.nombre;
-      if (p.clase) selectClase(p.clase, false);
+      // Pedidos viejos guardaban una sola clase en `clase`
+      const pedidoClases = Array.isArray(p.clases) ? p.clases : (p.clase ? [p.clase] : []);
+      if (pedidoClases.length) setClases(pedidoClases, false);
       if (p.contacto?.email) input('ck-email').value = p.contacto.email;
       if (p.contacto?.whatsapp) input('ck-whatsapp').value = p.contacto.whatsapp;
       garantia = !!p.garantia;
@@ -915,7 +1000,7 @@ const faqSchema = {
       localidad: input('ck-localidad').value.trim(),
       provincia: input('ck-provincia').value,
       marca: input('ck-marca').value,
-      clases: clase ? [clase] : [],
+      clases: [...clases],
       fecha: { dia: now.getDate(), mes: now.getMonth(), anio: now.getFullYear() },
     };
   }
@@ -1009,7 +1094,7 @@ const faqSchema = {
 
     const payload = {
       marca: { nombre: input('ck-marca').value.trim(), tipo: 'Denominativa' },
-      clase,
+      clases,
       titular: {
         tipoPersona: 'Humana',
         nombre: input('ck-nombre').value.trim(),
@@ -1039,12 +1124,7 @@ const faqSchema = {
         whatsapp: input('ck-whatsapp').value.trim(),
       },
       garantia,
-      pricing: {
-        honorarios: PRICING.honorarios,
-        garantia: garantia ? PRICING.garantia : 0,
-        arancelInpi: PRICING.arancelInpi,
-        total: total(),
-      },
+      pricing: pricing(),
       payment: { status: 'skipped', provider: null },
       firma: canvas.toDataURL('image/png'),
     };
@@ -1100,7 +1180,7 @@ const faqSchema = {
           transaction_id: ref,
           value: payload.pricing.total,
           currency: 'ARS',
-          items: [{ item_name: 'Registro de marca', item_variant: garantia ? 'con_garantia' : 'sin_garantia' }],
+          items: [{ item_name: 'Registro de marca', item_variant: garantia ? 'con_garantia' : 'sin_garantia', quantity: clases.length || 1 }],
         });
       }
       if (typeof w.fbq === 'function') {
@@ -1159,12 +1239,15 @@ const faqSchema = {
     resumeOrder(urlOrderRef).then(ok => { if (!ok) restoreDraft(); });
   } else {
     restoreDraft();
-    // Prefill desde /verificar-marca (?marca=X&clase=N); pisa el draft a propósito
+    // Prefill desde /verificar-marca (?marca=X&clase=N o ?clase=9,25); pisa el draft a propósito
     const urlMarca = (urlParams.get('marca') || '').trim().slice(0, 80);
-    const urlClase = parseInt(urlParams.get('clase') || '', 10);
+    const urlClases = (urlParams.get('clase') || '')
+      .split(',')
+      .map(s => parseInt(s, 10))
+      .filter(n => n >= 1 && n <= 45);
     if (urlMarca) input('ck-marca').value = urlMarca;
-    if (urlClase >= 1 && urlClase <= 45) selectClase(urlClase, false);
-    if (urlMarca || urlClase) saveDraft();
+    if (urlClases.length) setClases(urlClases, false);
+    if (urlMarca || urlClases.length) saveDraft();
   }
 </script>
 
@@ -1335,6 +1418,24 @@ const faqSchema = {
   text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.15rem;
 }
 .ck-dd-name { display: block; font-size: 0.78rem; color: #475569; line-height: 1.45; }
+
+/* Chips de clases seleccionadas (multi-select) */
+.ck-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.ck-chips[hidden] { display: none; }
+.ck-chip {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe;
+  border-radius: 100px; padding: 0.25rem 0.45rem 0.25rem 0.75rem;
+  font-size: 0.75rem; font-weight: 600;
+}
+.ck-chip button {
+  background: none; border: none; cursor: pointer; padding: 0 0.2rem;
+  color: #60a5fa; font-size: 0.95rem; line-height: 1; font-weight: 600;
+  transition: color .12s;
+}
+.ck-chip button:hover { color: #1e40af; }
+#ck-clase-max { color: #b45309; }
+#ck-clase-max[hidden] { display: none; }
 
 /* ─── Pedido + upsell de garantía ─── */
 .ck-order {

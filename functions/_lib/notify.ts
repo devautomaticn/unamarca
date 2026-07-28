@@ -8,11 +8,20 @@ function esc(s: string): string {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+/** "Clase 25" / "Clases 9, 25 y 35" / "Clase —" */
+function clasesLabel(clases: number[]): string {
+  if (clases.length === 0) return 'Clase —';
+  if (clases.length === 1) return `Clase ${clases[0]}`;
+  const nums = [...clases].sort((a, b) => a - b);
+  const last = nums.pop();
+  return `Clases ${nums.join(', ')} y ${last}`;
+}
+
 interface OrderEmailData {
   ref: string;
   status: string;
   marca: string;
-  clase: number | null;
+  clases: number[];
   clientEmail: string;
   garantia: boolean;
   total: number;
@@ -25,7 +34,7 @@ function clientHTML(d: OrderEmailData): string {
     <p style="margin:0 0 6px;color:#2563EB;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase">UnaMarca</p>
     <h1 style="margin:0 0 14px;color:#0B1D3A;font-size:21px;font-weight:800">¡Recibimos tu solicitud!</h1>
     <p style="margin:0 0 6px;color:#475569;font-size:14px;line-height:1.6">
-      Tu solicitud de registro de la marca <b>“${esc(d.marca.toUpperCase())}”</b>${d.clase ? ` (clase ${d.clase})` : ''} fue recibida correctamente.
+      Tu solicitud de registro de la marca <b>“${esc(d.marca.toUpperCase())}”</b>${d.clases.length ? ` (${clasesLabel(d.clases).toLowerCase()})` : ''} fue recibida correctamente.
     </p>
     <p style="margin:0 0 18px;color:#475569;font-size:14px;line-height:1.6">
       N° de referencia: <b style="color:#0B1D3A">${esc(d.ref)}</b>
@@ -52,7 +61,7 @@ function adminHTML(d: OrderEmailData): string {
   <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:16px;padding:36px;border:1px solid #e2e8f0">
     <p style="margin:0 0 6px;color:#2563EB;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase">UnaMarca · Self-Checkout</p>
     <h1 style="margin:0 0 4px;color:#0B1D3A;font-size:20px;font-weight:800">Solicitud completada: “${esc(d.marca.toUpperCase())}”</h1>
-    <p style="margin:0 0 16px;color:#64748b;font-size:13px">${esc(d.ref)} · Clase ${d.clase ?? '—'} · ${d.garantia ? 'Con Garantía' : 'Sin garantía'} · Total $${d.total.toLocaleString('es-AR')}</p>
+    <p style="margin:0 0 16px;color:#64748b;font-size:13px">${esc(d.ref)} · ${clasesLabel(d.clases)} · ${d.garantia ? 'Con Garantía' : 'Sin garantía'} · Total $${d.total.toLocaleString('es-AR')}</p>
     <p style="margin:0 0 16px;font-size:13px;font-weight:700;color:${d.status === 'paid' ? '#16a34a' : '#b45309'}">
       Estado de pago: ${esc(d.status)}
     </p>
@@ -78,7 +87,7 @@ export interface PaymentEmailData {
   status: string;    // estado interno: paid | payment_pending | rejected | refunded
   mpStatus: string;  // estado crudo de MP (approved, in_process, ...)
   marca: string;
-  clase: number | null;
+  clases: number[];
   total: number;
   clientEmail: string;
   whatsapp: string;
@@ -94,7 +103,7 @@ function paymentHTML(d: PaymentEmailData): string {
   <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:16px;padding:36px;border:1px solid #e2e8f0">
     <p style="margin:0 0 6px;color:#2563EB;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase">UnaMarca · Self-Checkout</p>
     <h1 style="margin:0 0 4px;color:#0B1D3A;font-size:20px;font-weight:800">Pago ${esc(info.label.toLowerCase())}: “${esc(d.marca.toUpperCase() || '(sin marca)')}”</h1>
-    <p style="margin:0 0 16px;color:#64748b;font-size:13px">${esc(d.ref)} · Clase ${d.clase ?? '—'} · Total $${d.total.toLocaleString('es-AR')}</p>
+    <p style="margin:0 0 16px;color:#64748b;font-size:13px">${esc(d.ref)} · ${clasesLabel(d.clases)} · Total $${d.total.toLocaleString('es-AR')}</p>
     <p style="margin:0 0 16px;font-size:13px;font-weight:700;color:${info.color}">
       Estado: ${esc(info.label)} (MP: ${esc(d.mpStatus)})
     </p>

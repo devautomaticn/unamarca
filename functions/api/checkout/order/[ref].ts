@@ -78,7 +78,8 @@ export const onRequestPatch: PagesFunction<NotifyEnv> = async ({ env, params, re
       ref,
       status: row.status,
       marca: stored.marca?.nombre || '',
-      clase: stored.clase ?? null,
+      // Pedidos viejos guardaban una sola clase en `clase`
+      clases: stored.clases ?? (stored.clase ? [stored.clase] : []),
       clientEmail: stored.contacto?.email || completion?.contacto?.email || '',
       garantia: !!stored.garantia,
       total: stored.pricing?.total ?? 0,

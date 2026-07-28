@@ -1,11 +1,14 @@
 // POST /api/checkout/order — crea el pedido en D1 y la preferencia de pago en
 // Mercado Pago (Checkout Pro). Devuelve { ref, init_point } para redirigir.
 import {
-  type CheckoutEnv, ensureSchema, newOrderRef, computePricing, json,
+  type CheckoutEnv, ensureSchema, newOrderRef, computePricing, sanitizeClases, json,
 } from '../../_lib/checkout';
+import { PRICING as PRICING_UNIT } from '../../../src/lib/checkout/constants';
 
 interface OrderBody {
   marca?: { nombre?: string; tipo?: string };
+  clases?: number[];
+  /** Legado: pedidos con una sola clase (clientes con la página vieja cacheada) */
   clase?: number | null;
   contacto?: { email?: string; whatsapp?: string };
   garantia?: boolean;
@@ -25,7 +28,11 @@ export const onRequestPost: PagesFunction<CheckoutEnv> = async (context) => {
   }
 
   const garantia = body.garantia === true;
-  const pricing = computePricing(garantia);
+  const clases = sanitizeClases(
+    body.clases ?? (typeof body.clase === 'number' ? [body.clase] : []),
+  );
+  const nClases = Math.max(1, clases.length);
+  const pricing = computePricing(nClases, garantia);
   const ref = newOrderRef();
   const origin = new URL(request.url).origin;
   const marcaNombre = (body.marca?.nombre || '').trim();
@@ -34,7 +41,7 @@ export const onRequestPost: PagesFunction<CheckoutEnv> = async (context) => {
 
   const payload = {
     marca: { nombre: marcaNombre, tipo: 'Denominativa' },
-    clase: typeof body.clase === 'number' ? body.clase : null,
+    clases,
     contacto: {
       email: (body.contacto?.email || '').trim(),
       whatsapp: (body.contacto?.whatsapp || '').trim(),
@@ -43,30 +50,31 @@ export const onRequestPost: PagesFunction<CheckoutEnv> = async (context) => {
     pricing,
   };
 
-  const items = [
+  const clasesLabel = nClases === 1 ? '1 clase' : `${nClases} clases`;
+  const items: { id: string; title: string; quantity: number; unit_price: number; currency_id: string }[] = [
     {
       id: 'registro',
       title: marcaNombre
-        ? `Registro de marca "${marcaNombre.toUpperCase()}" — Honorarios`
-        : 'Registro de marca — Honorarios',
-      quantity: 1,
-      unit_price: pricing.honorarios,
+        ? `Registro de marca "${marcaNombre.toUpperCase()}" — Honorarios (${clasesLabel})`
+        : `Registro de marca — Honorarios (${clasesLabel})`,
+      quantity: nClases,
+      unit_price: PRICING_UNIT.honorarios,
       currency_id: 'ARS',
     },
     {
       id: 'arancel',
-      title: 'Arancel INPI (1 clase)',
-      quantity: 1,
-      unit_price: pricing.arancelInpi,
+      title: `Arancel INPI (${clasesLabel})`,
+      quantity: nClases,
+      unit_price: PRICING_UNIT.arancelInpi,
       currency_id: 'ARS',
     },
   ];
   if (garantia) {
     items.push({
       id: 'garantia',
-      title: 'Garantía de Devolución',
-      quantity: 1,
-      unit_price: pricing.garantia,
+      title: `Garantía de Devolución (${clasesLabel})`,
+      quantity: nClases,
+      unit_price: PRICING_UNIT.garantia,
       currency_id: 'ARS',
     });
   }

@@ -1,5 +1,5 @@
 // Helpers compartidos del checkout (carpeta _lib: no se publica como ruta).
-import { PRICING } from '../../src/lib/checkout/constants';
+import { MAX_CLASES, computeOrderPricing } from '../../src/lib/checkout/constants';
 
 // Tipos mínimos de D1 (evitamos la dependencia @cloudflare/workers-types,
 // consistente con el resto de functions/ que no la usa)
@@ -46,14 +46,19 @@ export function newOrderRef(): string {
   return `UM-${ymd}-${rand}`;
 }
 
+/** Normaliza la lista de clases que manda el cliente: enteros 1–45, sin
+ *  duplicados, ordenadas, y nunca más de MAX_CLASES. */
+export function sanitizeClases(raw: unknown): number[] {
+  if (!Array.isArray(raw)) return [];
+  const nums = raw
+    .map(v => (typeof v === 'number' ? Math.floor(v) : parseInt(String(v), 10)))
+    .filter(n => Number.isInteger(n) && n >= 1 && n <= 45);
+  return [...new Set(nums)].sort((a, b) => a - b).slice(0, MAX_CLASES);
+}
+
 /** Precios calculados SIEMPRE en el servidor — nunca se confía en el cliente */
-export function computePricing(garantia: boolean) {
-  return {
-    honorarios: PRICING.honorarios,
-    garantia: garantia ? PRICING.garantia : 0,
-    arancelInpi: PRICING.arancelInpi,
-    total: PRICING.honorarios + (garantia ? PRICING.garantia : 0) + PRICING.arancelInpi,
-  };
+export function computePricing(nClases: number, garantia: boolean) {
+  return computeOrderPricing(nClases, garantia);
 }
 
 export function json(data: unknown, status = 200): Response {
