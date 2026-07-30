@@ -73,6 +73,9 @@ export const onRequestPatch: PagesFunction<NotifyEnv> = async ({ env, params, re
     const stored = JSON.parse(row.payload);
     const t = completion?.titular ?? {};
     const dom = t?.domicilio ?? {};
+    // Descripción y sitio web se cargan en el paso 5 (post-pago): viajan en completion
+    const descripcion = (completion?.marca?.descripcion || '').trim();
+    const sitioWeb = (completion?.marca?.sitioWeb || '').trim();
 
     await sendOrderEmails(env.RESEND_API_KEY, {
       ref,
@@ -84,6 +87,8 @@ export const onRequestPatch: PagesFunction<NotifyEnv> = async ({ env, params, re
       garantia: !!stored.garantia,
       total: stored.pricing?.total ?? 0,
       titularResumen: [
+        ['Descripción de la marca', descripcion],
+        ...(sitioWeb ? [['Página web', sitioWeb] as [string, string]] : []),
         ['Nombre', `${t.nombre || ''} ${t.apellido || ''}`.trim()],
         ['Documento', `${t.documento?.tipo || ''} ${t.documento?.numero || ''}`.trim()],
         ['CUIT/CUIL', t.cuit || ''],
