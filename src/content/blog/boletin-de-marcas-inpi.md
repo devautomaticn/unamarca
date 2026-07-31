@@ -80,4 +80,4 @@ Si estás en proceso de registrar tu marca y querés entender mejor el trámite,
 
 ---
 
-Si querés activar la vigilancia sobre tu marca, ingresá en [nuestro sistema Vigilante](https://vigilante.unamarca.com.ar/vigilancia). Y si tenés dudas sobre qué clases vigilar o si una solicitud en el Boletín representa un riesgo real para tu marca, [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491149712224&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0).
+Si querés activar la vigilancia sobre tu marca, ingresá en [nuestro sistema Vigilante](https://vigilante.unamarca.com.ar/vigilancia). Y si tenés dudas sobre qué clases vigilar o si una solicitud en el Boletín representa un riesgo real para tu marca, [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491148999564&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0).

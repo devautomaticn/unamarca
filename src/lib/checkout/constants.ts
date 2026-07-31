@@ -44,7 +44,7 @@ export const APODERADO = {
   domicilio: 'Juan Francisco Seguí 4635, Ciudad Autónoma de Buenos Aires',
 } as const;
 
-export const WHATSAPP_NUMBER = '5491149712224';
+export const WHATSAPP_NUMBER = '5491148999564';
 
 export function waUrl(text: string): string {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;

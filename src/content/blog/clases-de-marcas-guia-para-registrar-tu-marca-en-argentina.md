@@ -61,4 +61,4 @@ El arancel del INPI es por clase. Para entender los costos actualizados con el s
 
 ---
 
-Si no estás seguro de qué clases registrar para tu negocio específico, [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491149712224&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0). Te respondemos con un diagnóstico gratuito sobre qué clases aplican a tu caso.
+Si no estás seguro de qué clases registrar para tu negocio específico, [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491148999564&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0). Te respondemos con un diagnóstico gratuito sobre qué clases aplican a tu caso.

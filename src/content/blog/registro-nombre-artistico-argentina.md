@@ -89,4 +89,4 @@ Para ver los valores actualizados y entender el costo total del trámite: [cuán
 
 Registrar tu nombre artístico como marca no es un trámite solo para grandes artistas — es una decisión que conviene tomar antes de que surja el problema, no después. Una vez que tu nombre ganó visibilidad, la chance de que aparezca un conflicto crece con ella.
 
-Si tenés dudas sobre qué registrar, en qué clases o cómo arranca el proceso, [escribinos por WhatsApp](https://api.whatsapp.com/send/?phone=5491149712224&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0) — te damos un diagnóstico gratuito sin compromiso.
+Si tenés dudas sobre qué registrar, en qué clases o cómo arranca el proceso, [escribinos por WhatsApp](https://api.whatsapp.com/send/?phone=5491148999564&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0) — te damos un diagnóstico gratuito sin compromiso.

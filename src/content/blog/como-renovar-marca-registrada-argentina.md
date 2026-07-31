@@ -85,4 +85,4 @@ Para entender el proceso completo de registro desde el inicio, leé: [cómo regi
 
 ---
 
-Renovar una marca a tiempo es un trámite simple. Perder una marca por no renovarla, no lo es. Si tenés dudas sobre el estado de tu marca o necesitás ayuda con la renovación, [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491149712224&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0) — te respondemos con un diagnóstico gratuito.
+Renovar una marca a tiempo es un trámite simple. Perder una marca por no renovarla, no lo es. Si tenés dudas sobre el estado de tu marca o necesitás ayuda con la renovación, [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491148999564&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0) — te respondemos con un diagnóstico gratuito.

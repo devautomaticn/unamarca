@@ -84,4 +84,4 @@ El monitoreo manual del boletín es tedioso. Hay herramientas que lo automatizan
 
 ---
 
-Si alguien ya está usando tu marca o querés protegerla antes de que suceda, [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491149712224&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0) — te respondemos con un diagnóstico gratuito y te decimos cuál es el mejor camino según tu situación.
+Si alguien ya está usando tu marca o querés protegerla antes de que suceda, [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491148999564&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0) — te respondemos con un diagnóstico gratuito y te decimos cuál es el mejor camino según tu situación.

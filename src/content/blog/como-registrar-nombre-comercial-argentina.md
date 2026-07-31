@@ -93,4 +93,4 @@ No es obligatorio. El trámite se puede hacer en forma particular. Sin embargo, 
 
 ---
 
-Si tenés un nombre que vale para tu negocio, cada día que pasa sin registrarlo es un riesgo. [Contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491149712224&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0) — te respondemos con un diagnóstico gratuito sobre si tu nombre está disponible y en qué clases conviene registrarlo.
+Si tenés un nombre que vale para tu negocio, cada día que pasa sin registrarlo es un riesgo. [Contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491148999564&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0) — te respondemos con un diagnóstico gratuito sobre si tu nombre está disponible y en qué clases conviene registrarlo.

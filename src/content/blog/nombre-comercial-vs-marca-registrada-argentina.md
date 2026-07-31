@@ -75,4 +75,4 @@ Si ya estás en una situación de conflicto — alguien usa tu nombre o lo regis
 
 ---
 
-Usar un nombre sin registrarlo es construir sobre terreno prestado. Si ya tenés un nombre que vale para tu negocio, el paso lógico es protegerlo. [Contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491149712224&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0) — te respondemos con un diagnóstico gratuito sobre qué necesitás registrar y en qué clases.
+Usar un nombre sin registrarlo es construir sobre terreno prestado. Si ya tenés un nombre que vale para tu negocio, el paso lógico es protegerlo. [Contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491148999564&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0) — te respondemos con un diagnóstico gratuito sobre qué necesitás registrar y en qué clases.

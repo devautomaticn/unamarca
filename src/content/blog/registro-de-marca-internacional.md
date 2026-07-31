@@ -73,4 +73,4 @@ Antes de presentar, conviene confirmar que tu marca esté disponible: leé [cóm
 
 ---
 
-Si estás planificando proteger tu marca en varios países, o sos una empresa del exterior que necesita registrar en Argentina, [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491149712224&text=Hola%21+Quisiera+consultar+por+el+registro+de+marca+internacional&type=phone_number&app_absent=0). Te ayudamos a definir la estrategia país por país y coordinamos el registro local en Argentina.
+Si estás planificando proteger tu marca en varios países, o sos una empresa del exterior que necesita registrar en Argentina, [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491148999564&text=Hola%21+Quisiera+consultar+por+el+registro+de+marca+internacional&type=phone_number&app_absent=0). Te ayudamos a definir la estrategia país por país y coordinamos el registro local en Argentina.
