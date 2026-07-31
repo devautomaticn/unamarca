@@ -1299,15 +1299,17 @@ const faqSchema = {
     resumeOrder(urlOrderRef).then(ok => { if (!ok) restoreDraft(); });
   } else {
     restoreDraft();
-    // Prefill desde /verificar-marca (?marca=X&clase=N o ?clase=9,25); pisa el draft a propósito
+    // Prefill desde /verificar-marca (?marca=X&clase=N o ?clase=9,25&tel=…); pisa el draft a propósito
     const urlMarca = (urlParams.get('marca') || '').trim().slice(0, 80);
     const urlClases = (urlParams.get('clase') || '')
       .split(',')
       .map(s => parseInt(s, 10))
       .filter(n => n >= 1 && n <= 45);
+    const urlTel = (urlParams.get('tel') || '').trim().slice(0, 30);
     if (urlMarca) input('ck-marca').value = urlMarca;
     if (urlClases.length) setClases(urlClases, false);
-    if (urlMarca || urlClases.length) saveDraft();
+    if (urlTel) input('ck-whatsapp').value = urlTel;
+    if (urlMarca || urlClases.length || urlTel) saveDraft();
   }
 </script>
 
