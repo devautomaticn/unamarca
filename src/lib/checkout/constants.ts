@@ -7,10 +7,10 @@ export const PRICING = {
   /** Upsell: Garantía de Devolución, POR CLASE (si el INPI deniega una clase,
    *  se devuelven los honorarios de esa clase) */
   garantia: 7_000,
-  /** Arancel INPI: solicitud de registro, POR CLASE (100 UMAPIS, julio 2026) */
-  arancelInpi: 38_994,
+  /** Arancel INPI: solicitud de registro, POR CLASE (100 UMAPIS, agosto 2026) */
+  arancelInpi: 39_735,
   /** Mes de referencia del valor UMAPI mostrado */
-  arancelVigencia: 'julio 2026',
+  arancelVigencia: 'agosto 2026',
   /** Precio de lista de la vigilancia anual (se muestra tachado → gratis).
    *  TODO: igualar al precio real standalone de vigilante.unamarca.com.ar */
   vigilanciaLista: 30_000,

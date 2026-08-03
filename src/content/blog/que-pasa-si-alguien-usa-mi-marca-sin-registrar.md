@@ -2,6 +2,7 @@
 title: "¿Qué pasa si alguien usa mi marca sin registrarla? (Argentina)"
 description: "Si alguien usa tu marca en Argentina sin que esté registrada, tus opciones legales son limitadas. Te explicamos qué podés hacer y cómo protegerte antes de que sea tarde."
 pubDate: 2026-04-07
+updatedDate: 2026-08-03
 tags: []
 ---
 
@@ -70,7 +71,7 @@ Registrar antes de que haya un conflicto cuesta mucho menos — en dinero, tiemp
 
 ## ¿Y si todavía no registraste? Cuánto cuesta y cuánto tarda
 
-El arancel del INPI para una clase es de 100 UMAPIS (aproximadamente $38.994 ARS en julio 2026, actualizable mensualmente). Los honorarios profesionales para gestionar el trámite oscilan entre $200.000 y $300.000 ARS. Y con el nuevo proceso vigente desde 2026, el registro puede estar listo en aproximadamente 2 meses.
+El arancel del INPI para una clase es de 100 UMAPIS (aproximadamente $39.735 ARS en agosto 2026, actualizable mensualmente). Los honorarios profesionales para gestionar el trámite oscilan entre $200.000 y $300.000 ARS. Y con el nuevo proceso vigente desde 2026, el registro puede estar listo en aproximadamente 2 meses.
 
 Para más detalle sobre costos, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca). Y para entender los tiempos del proceso, leé: [cuánto tarda registrar una marca en Argentina](/blog/cuanto-tarda-registro-marca-argentina).
 

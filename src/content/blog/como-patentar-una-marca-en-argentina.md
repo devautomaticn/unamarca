@@ -2,6 +2,7 @@
 title: "Cómo patentar una marca en Argentina (y por qué se dice registrar)"
 description: "¿Querés patentar tu marca en Argentina? Te explicamos la diferencia entre patente y marca registrada, y cómo proteger tu nombre ante el INPI paso a paso."
 pubDate: 2026-04-11
+updatedDate: 2026-08-03
 tags: []
 ---
 
@@ -55,7 +56,7 @@ Para el proceso detallado paso a paso, leé: [cómo registrar una marca en Argen
 
 ## ¿Cuánto cuesta registrar una marca?
 
-El arancel del INPI se expresa en UMAPIS (Unidades de Medida Arancelaria de la Propiedad Industrial), sistema vigente desde abril de 2026 y actualizado mensualmente según inflación. El costo base es de **100 UMAPIS por clase** (aproximadamente $38.994 ARS en julio 2026, sujeto a actualización mensual).
+El arancel del INPI se expresa en UMAPIS (Unidades de Medida Arancelaria de la Propiedad Industrial), sistema vigente desde abril de 2026 y actualizado mensualmente según inflación. El costo base es de **100 UMAPIS por clase** (aproximadamente $39.735 ARS en agosto 2026, sujeto a actualización mensual).
 
 A eso se suman los honorarios profesionales si gestionás el trámite con un agente de la propiedad industrial, que oscilan entre $200.000 y $300.000 ARS. Para más detalle sobre costos, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca).
 
