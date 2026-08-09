@@ -44,11 +44,8 @@ export const APODERADO = {
   domicilio: 'Juan Francisco Seguí 4635, Ciudad Autónoma de Buenos Aires',
 } as const;
 
-export const WHATSAPP_NUMBER = '5491148999564';
-
-export function waUrl(text: string): string {
-  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
-}
+// Los números y los mensajes de WhatsApp viven en src/lib/wa.ts, que es el
+// contrato con el parser de atribución del CRM. No los redefinas acá.
 
 export const PROVINCIAS = [
   'Buenos Aires', 'Catamarca', 'Chaco', 'Chubut',

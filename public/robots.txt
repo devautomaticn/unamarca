@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /wa-catalog.json
 
 Sitemap: https://unamarca.com.ar/sitemap-index.xml

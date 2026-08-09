@@ -117,6 +117,7 @@ const structuredData = [
   description="Verificá gratis si tu marca está disponible para registrar en Argentina. Herramienta online en segundos. Si está libre, iniciá el registro al instante."
   canonicalURL={canonicalURL}
   type="website"
+  waContext="verificar_float"
   structuredData={structuredData}
 >
   <!-- =====================================================
@@ -371,7 +372,8 @@ const structuredData = [
 </style>
 
 <script>
-  const WA_NUMBER = '5491148999564';
+  import { VERIFICAR_CONFLICTO } from '../lib/wa';
+
   const ACTA_BASE = 'https://vigilante.unamarca.com.ar/inpi/acta/';
 
   const form = document.getElementById('vm-form') as HTMLFormElement;
@@ -459,9 +461,6 @@ const structuredData = [
     if (nums.length === 1) return `la clase ${nums[0]}`;
     return `las clases ${nums.slice(0, -1).join(', ')} y ${nums[nums.length - 1]}`;
   }
-  function waLink(text: string): string {
-    return `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`;
-  }
   function track(event: string, params: Record<string, unknown> = {}) {
     if (typeof (window as any).gtag === 'function') (window as any).gtag('event', event, params);
   }
@@ -511,7 +510,7 @@ const structuredData = [
     // --- Verdict / CTA ---
     let verdict: string;
     if (conflict) {
-      const msg = `Hola! Busqué la marca «${marca}» en ${phrase} y aparecieron marcas similares (ej. «${top.denominacion}»). Quiero asesorarme para registrarla.`;
+      const waConflictoHref = VERIFICAR_CONFLICTO.build(marca, phrase, top.denominacion);
       verdict = `
         <div class="vm-verdict vm-verdict--warn">
           <div class="vm-verdict-icon" aria-hidden="true">
@@ -520,7 +519,7 @@ const structuredData = [
           <h2>Encontramos una marca muy parecida</h2>
           <p>Hay al menos una marca vigente con alta similitud a «${escapeHtml(marca)}». Antes de presentar la solicitud conviene asesorarte para no arriesgar el arancel a una oposición.</p>
           <div class="vm-cta-row">
-            <a class="btn btn-primary" href="${waLink(msg)}" target="_blank" rel="noopener noreferrer" id="vm-cta">Contactarnos por WhatsApp</a>
+            <a class="btn btn-primary" href="${waConflictoHref}" target="_blank" rel="noopener noreferrer" id="vm-cta">Contactarnos por WhatsApp</a>
             <a class="btn vm-btn-ghost" href="${regUrl}" id="vm-cta-reg">Registrar de todos modos</a>
           </div>
         </div>`;
@@ -595,7 +594,7 @@ const structuredData = [
     const cta = document.getElementById('vm-cta');
     cta?.addEventListener('click', () => {
       track(conflict ? 'whatsapp_click' : 'registrar_click', {
-        source: 'verificar-marca',
+        source: conflict ? 'verificar_conflicto' : 'verificar-marca',
         cta_type: conflict ? 'contactar' : 'solicitar',
       });
       track('generate_lead', { source: 'verificar-marca' });

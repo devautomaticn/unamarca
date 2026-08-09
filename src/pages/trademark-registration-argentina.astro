@@ -1,14 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { waHref } from '../lib/wa';
 
 const SITE_URL = 'https://unamarca.com.ar';
 const canonicalURL = `${SITE_URL}/trademark-registration-argentina`;
 
-const WA_LINK =
-  'https://wa.me/5491149712224?text=' +
-  encodeURIComponent(
-    "Hello! We're a company based outside Argentina and we'd like to register our trademark before the INPI. Could you help us?"
-  );
+const WA_LINK = waHref('en_landing');
 
 const faqs = [
   {
@@ -73,6 +70,7 @@ const structuredData = [
   canonicalURL={canonicalURL}
   lang="en"
   ogLocale="en_US"
+  waContext="float_en"
   structuredData={structuredData}
 >
   <section class="en-hero">

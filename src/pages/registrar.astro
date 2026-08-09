@@ -4,13 +4,14 @@
 // TODO wiring: POST /api/checkout/submit (PDF + emails).
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { NIZA_CLASSES } from '../lib/checkout/nizaClasses';
-import { PRICING, MAX_CLASES, PROVINCIAS, waUrl, formatARS } from '../lib/checkout/constants';
+import { PRICING, MAX_CLASES, PROVINCIAS, formatARS } from '../lib/checkout/constants';
+import { waHref, waHrefMulticlase } from '../lib/wa';
 
 const SITE_URL = 'https://unamarca.com.ar';
 
-const waEmpresa = waUrl('Hola! Quiero registrar una marca a nombre de una empresa (persona jurídica).');
-const waClase = waUrl('Hola! Estoy registrando mi marca en unamarca.com.ar y no sé qué clase elegir.');
-const waMulti = waUrl(`Hola! Quiero registrar una marca en más de ${MAX_CLASES} clases.`);
+const waEmpresa = waHref('registrar_empresa');
+const waClase = waHref('registrar_clase');
+const waMulti = waHrefMulticlase(MAX_CLASES);
 
 // FAQ: respuestas cortas que derivan al post canónico de cada tema para no
 // competir con el blog por sus keywords (los posts siguen siendo la página
@@ -57,6 +58,7 @@ const faqSchema = {
   title="Registrar mi marca online en Argentina | UnaMarca"
   description="Registrá tu marca en el INPI sin moverte de tu casa: completá la solicitud online en minutos, firmá desde el celular y nosotros presentamos el trámite."
   canonicalURL={`${SITE_URL}/registrar`}
+  waContext="registrar_float"
   structuredData={faqSchema}
 >
 
@@ -97,7 +99,7 @@ const faqSchema = {
             <div class="ck-sel ck-sel--locked">
               <select id="ck-tipo-persona" disabled><option>Humana</option></select>
             </div>
-            <p class="ck-help">¿Es para una empresa? <a href={waEmpresa} target="_blank" rel="noopener noreferrer">Escribinos por WhatsApp</a></p>
+            <p class="ck-help">¿Es para una empresa? <a href={waEmpresa} target="_blank" rel="noopener noreferrer" onclick="gtag('event', 'whatsapp_click', {'source': 'registrar_empresa'})">Escribinos por WhatsApp</a></p>
           </div>
           <div class="ck-field">
             <label for="ck-tipo-marca">Tipo de marca</label>
@@ -342,11 +344,11 @@ const faqSchema = {
           <div class="ck-chips" id="ck-clase-chips" hidden></div>
           <p class="ck-help" id="ck-clase-max" hidden>
             Llegaste al máximo de {MAX_CLASES} clases por pedido online.
-            ¿Necesitás más? <a href={waMulti} target="_blank" rel="noopener noreferrer">Escribinos por WhatsApp</a>
+            ¿Necesitás más? <a href={waMulti} target="_blank" rel="noopener noreferrer" onclick="gtag('event', 'whatsapp_click', {'source': 'registrar_multiclase'})">Escribinos por WhatsApp</a>
           </p>
           <p class="ck-help">
             Cada clase define qué productos o servicios protege tu marca. Podés elegir hasta {MAX_CLASES}.
-            ¿No sabés cuál elegir? <a href={waClase} target="_blank" rel="noopener noreferrer">Consultanos por WhatsApp</a>
+            ¿No sabés cuál elegir? <a href={waClase} target="_blank" rel="noopener noreferrer" onclick="gtag('event', 'whatsapp_click', {'source': 'registrar_clase'})">Consultanos por WhatsApp</a>
           </p>
           <p class="ck-err" data-err="clase"></p>
         </div>

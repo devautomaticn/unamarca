@@ -1,6 +1,7 @@
 ---
 // ⚠️ BORRADOR para revisión legal de Mike antes del launch definitivo.
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { waHref } from '../lib/wa';
 
 const SITE_URL = 'https://unamarca.com.ar';
 ---
@@ -87,7 +88,7 @@ const SITE_URL = 'https://unamarca.com.ar';
     <h2>8. Contacto</h2>
     <p>
       Por consultas sobre estos términos podés escribirnos por
-      <a href="https://wa.me/5491149712224" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+      <a href={waHref('legal_terminos')} target="_blank" rel="noopener noreferrer" onclick="gtag('event', 'whatsapp_click', {'source': 'legal_terminos'})">WhatsApp</a>
       o responder cualquier email que te hayamos enviado.
     </p>
   </div>

@@ -5,7 +5,8 @@ export default defineConfig({
   site: 'https://unamarca.com.ar',
   integrations: [
     sitemap({
-      filter: (page) => !page.includes('/whatsapp/'),
+      filter: (page) =>
+        !page.includes('/whatsapp/') && !page.includes('/wa-catalog.json'),
     }),
   ],
   output: 'static',

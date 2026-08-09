@@ -145,6 +145,34 @@ If new blog posts need redirects, add them there in the format:
 
 ---
 
+## ⚠️ WhatsApp Messages Are a Contract
+
+Every WhatsApp link on the site prefills a message from the catalog in
+`src/lib/wa.ts`. The CRM matches those exact strings to attribute where each
+conversation came from (issue #64).
+
+**Changing a message text does not break the build or any test — it breaks
+attribution silently.** Contacts stop being counted as "Web" and start landing
+in "no match".
+
+Rules:
+- Never write a `wa.me` URL by hand. Use `waHref('<context>')` or one of the
+  builders in `src/lib/wa.ts`.
+- The floating button takes its message from the `waContext` prop on
+  `<BaseLayout>`. A new page without it falls back to `float_generic`.
+- The gtag `source` must equal the catalog key, so GA4 and the CRM join on the
+  same value. (Exception: the EN landing has two CTAs sharing one message —
+  they keep `en_landing` / `en_landing_final`.)
+- Bump `CATALOG_VERSION` when you change, add, or remove a message.
+- Never delete an entry from `WA_LEGACY`. Old messages keep arriving from
+  cached pages, saved chats and shared links.
+
+The catalog is published at `/wa-catalog.json` (generated at build time from
+`src/lib/wa.ts` by `src/pages/wa-catalog.json.ts`) so the CRM parser reads it
+instead of hardcoding the strings. Do not remove that endpoint.
+
+---
+
 ## ⚠️ SEO is the Top Priority
 
 This site depends on organic search traffic. Every change must preserve:
