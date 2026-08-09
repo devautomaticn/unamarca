@@ -1,0 +1,7 @@
+# wa-catalog.json es para el parser de atribución del CRM (#64), no para
+# buscadores. El X-Robots-Tag no puede salir del endpoint: en build estático
+# Astro descarta los headers de la Response, así que va acá.
+# Cache corto para que el parser tome los cambios de copy poco después del deploy.
+/wa-catalog.json
+  X-Robots-Tag: noindex
+  Cache-Control: public, max-age=300

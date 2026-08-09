@@ -6,16 +6,14 @@
 // punto — no borres este endpoint.
 //
 // Es público a propósito (no hay nada sensible: es copy de marketing y dos
-// números que ya están en toda la web). Queda fuera del sitemap y bloqueado en
-// robots.txt para que no compita por indexación.
+// números que ya están en toda la web). Queda fuera del sitemap, bloqueado en
+// robots.txt y con noindex vía public/_headers — el X-Robots-Tag NO puede ir
+// acá: en build estático Astro descarta los headers de esta Response.
 
 import type { APIRoute } from 'astro';
 import { buildCatalogExport } from '../lib/wa';
 
 export const GET: APIRoute = () =>
   new Response(JSON.stringify(buildCatalogExport(), null, 2), {
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-      'X-Robots-Tag': 'noindex',
-    },
+    headers: { 'Content-Type': 'application/json; charset=utf-8' },
   });
