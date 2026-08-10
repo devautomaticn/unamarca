@@ -1,5 +1,7 @@
-# www -> apex (evita contenido duplicado; www servia 200 en vez de redirigir)
-https://www.unamarca.com.ar/* https://unamarca.com.ar/:splat 301
+# NO agregar reglas www -> apex aca: Cloudflare Pages solo acepta paths como
+# origen en _redirects (el hostname absoluto es sintaxis de Netlify y se ignora
+# en silencio). El redirect www -> apex se resuelve con una Redirect Rule en el
+# dashboard de Cloudflare (zona unamarca.com.ar -> Rules -> Redirect Rules).
 
 /cuanto-sale-registrar-una-marca /blog/cuanto-sale-registrar-una-marca/ 301
 /cuanto-sale-registrar-una-marca/ /blog/cuanto-sale-registrar-una-marca/ 301
