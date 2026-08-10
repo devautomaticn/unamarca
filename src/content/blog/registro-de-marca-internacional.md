@@ -69,7 +69,7 @@ Si llegaste hasta acá siendo una empresa de afuera que quiere proteger su marca
 
 Toda estrategia internacional arranca por casa. Si tu marca todavía no está registrada en Argentina, ese es el primer paso, tanto para tener protección en tu mercado principal como para poder reclamar prioridad en el exterior dentro de los 6 meses del Convenio de París.
 
-Antes de presentar, conviene confirmar que tu marca esté disponible: leé [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente). Después, definí correctamente en qué categorías registrar con la [guía de clases de marcas](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina), y seguí el [paso a paso del trámite ante el INPI](/blog/como-registrar-una-marca-en-argentina-paso-a-paso). Para los costos actualizados del registro en Argentina, mirá [cuánto sale registrar una marca](/blog/cuanto-sale-registrar-una-marca).
+Antes de presentar, conviene confirmar que tu marca esté disponible en Argentina: usá el [buscador de marcas del INPI](/verificar-marca/) o leé [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente). Después, definí correctamente en qué categorías registrar con la [guía de clases de marcas](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina), y seguí el [paso a paso del trámite ante el INPI](/blog/como-registrar-una-marca-en-argentina-paso-a-paso). Para los costos actualizados del registro en Argentina, mirá [cuánto sale registrar una marca](/blog/cuanto-sale-registrar-una-marca).
 
 ---
 

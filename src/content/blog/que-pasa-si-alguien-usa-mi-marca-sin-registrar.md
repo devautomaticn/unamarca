@@ -32,7 +32,7 @@ En casos excepcionales, los tribunales han reconocido derechos basados en uso pr
 
 **3. Registrar inmediatamente tu marca**
 
-Si todavía nadie registró tu marca, el momento de actuar es ahora. Con el nuevo proceso del INPI, podés tener el registro en aproximadamente 2 meses. Mientras más esperás, más riesgo corrés de que alguien más lo haga primero. Entendé el proceso completo acá: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso).
+Si todavía nadie registró tu marca, el momento de actuar es ahora. Comprobalo en el [buscador de marcas del INPI](/verificar-marca/): si el nombre sigue libre, con el nuevo proceso podés tener el registro en aproximadamente 2 meses. Mientras más esperás, más riesgo corrés de que alguien más lo haga primero. Entendé el proceso completo acá: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso).
 
 ## ¿Qué pasa si tu marca ya está registrada y alguien la usa sin permiso?
 

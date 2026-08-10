@@ -31,7 +31,7 @@ Esto es un cambio radical respecto al proceso anterior, que podía extenderse en
 
 Si un tercero presenta una oposición durante los 30 días de publicación, el plazo se extiende. La resolución de oposiciones puede llevar varios meses adicionales dependiendo de la complejidad del caso.
 
-Por eso la **búsqueda previa** sigue siendo el paso más importante antes de presentar tu solicitud. Si detectás marcas similares antes de presentar, podés ajustar tu estrategia y evitar oposiciones. Explicamos cómo hacerla acá: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
+Por eso la **búsqueda previa** sigue siendo el paso más importante antes de presentar tu solicitud. Si detectás marcas similares antes de presentar, podés ajustar tu estrategia y evitar oposiciones. Podés hacerla ahora en el [buscador de marcas del INPI](/verificar-marca/), o leer cómo hacerla en detalle acá: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
 
 ## ¿Desde cuándo tengo protección?
 

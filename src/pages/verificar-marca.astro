@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 const SITE_URL = 'https://unamarca.com.ar';
-const canonicalURL = `${SITE_URL}/verificar-marca`;
+const canonicalURL = `${SITE_URL}/verificar-marca/`;
 
 // Niza class names (reused from functions/api/submit-form.ts).
 const NIZA: { n: number; name: string }[] = [
@@ -84,20 +84,36 @@ const structuredData = [
   {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
-    name: 'Verificar Marca — UnaMarca',
-    description: 'Herramienta gratuita para verificar si una marca está disponible para registrar en Argentina, consultando antecedentes en el archivo de solicitudes del INPI.',
+    name: 'Buscador de marcas INPI — UnaMarca',
+    description: 'Buscador gratuito de marcas registradas en Argentina. Consultá por nombre y clase los antecedentes del archivo de solicitudes del INPI y verificá si tu marca está disponible.',
     url: canonicalURL,
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web',
+    browserRequirements: 'Requiere JavaScript',
+    inLanguage: 'es-AR',
+    featureList: [
+      'Consulta de marcas registradas y en trámite del INPI',
+      'Búsqueda por denominación y por clase de Niza',
+      'Detección de marcas parecidas por similitud fonética',
+      'Filtro por marcas con registro vigente',
+    ],
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'ARS' },
     provider: { '@type': 'Organization', name: 'UnaMarca', url: SITE_URL },
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: `${canonicalURL}?marca={search_term_string}`,
+      },
+      'query-input': 'required name=search_term_string',
+    },
   },
   {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Inicio', item: SITE_URL },
-      { '@type': 'ListItem', position: 2, name: 'Verificar Marca', item: canonicalURL },
+      { '@type': 'ListItem', position: 2, name: 'Buscador de marcas INPI', item: canonicalURL },
     ],
   },
   {
@@ -113,8 +129,8 @@ const structuredData = [
 ---
 
 <BaseLayout
-  title="Verificar Marca — Consultá Disponibilidad Gratis | UnaMarca"
-  description="Verificá gratis si tu marca está disponible para registrar en Argentina. Herramienta online en segundos. Si está libre, iniciá el registro al instante."
+  title="Buscador de marcas INPI: consultá marcas registradas gratis"
+  description="Buscador de marcas del INPI online y gratis. Consultá marcas registradas en Argentina por nombre y clase, y verificá al instante si la tuya está disponible."
   canonicalURL={canonicalURL}
   type="website"
   waContext="verificar_float"
@@ -127,9 +143,9 @@ const structuredData = [
     <div class="container">
       <header class="vm-hero">
         <span class="section-label">Herramienta gratuita</span>
-        <h1>Verificá gratis si tu <span class="gradient-text">marca está disponible</span></h1>
+        <h1>Buscador de marcas del INPI: <span class="gradient-text">consultá gratis</span> si tu marca está registrada</h1>
         <p class="vm-hero-sub">
-          Buscá antecedentes en el archivo de solicitudes del INPI en segundos.
+          Consultá marcas registradas y en trámite en el archivo de solicitudes del INPI, en segundos.
           Ingresá el nombre de tu marca, elegí las clases de tu actividad y te decimos si el camino está libre.
         </p>
       </header>
@@ -212,12 +228,19 @@ const structuredData = [
   <section class="vm-copy-section">
     <div class="container">
       <div class="vm-copy">
-        <h2>Verificar una marca registrada en Argentina, antes de registrarla</h2>
+        <h2>Cómo consultar marcas registradas en el INPI</h2>
         <p>
           Antes de invertir en tu marca conviene <strong>verificar si ya está registrada</strong> o si
           hay solicitudes parecidas en trámite. Presentar una marca en conflicto puede costarte el
-          arancel del INPI y una posible oposición. Esta herramienta consulta la disponibilidad de tu
-          marca al instante, gratis y sin registrarte.
+          arancel del INPI y una posible oposición. Este buscador de marcas consulta la disponibilidad
+          de tu marca al instante, gratis y sin registrarte.
+        </p>
+        <p>
+          A diferencia del buscador oficial del INPI, que solo devuelve coincidencias exactas o muy
+          cercanas, acá podés ajustar la sensibilidad de la búsqueda para encontrar también
+          <strong>marcas parecidas</strong> — las que en la práctica generan la mayoría de las
+          oposiciones. Podés consultar por denominación y filtrar por las 45 clases de Niza o buscar
+          en todas a la vez.
         </p>
         <p>
           Si el resultado muestra que tu marca está disponible, el siguiente paso es presentar la

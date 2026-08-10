@@ -53,7 +53,7 @@ Cuando tengas dudas, es mejor registrar en más clases que en menos. Un registro
 
 Sí, y en muchos casos es necesario. Cada clase se paga por separado, pero el trámite se puede presentar en simultáneo para todas las clases que necesitás.
 
-Antes de decidir en qué clases registrar, verificá que tu marca esté disponible en cada una de ellas. Leé: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente). Y para entender el proceso completo de registro, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso).
+Antes de decidir en qué clases registrar, verificá que tu marca esté disponible en cada una de ellas: podés [consultar marcas registradas por nombre y clase](/verificar-marca/) gratis, o leé [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente). Y para entender el proceso completo de registro, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso).
 
 ## ¿Cuánto cuesta registrar por clase?
 

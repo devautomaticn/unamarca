@@ -30,7 +30,7 @@ Para proteger el nombre de tu emprendimiento, tenés que registrarlo como marca 
   * **No causar confusión.** No puede ser igual o muy similar a marcas ya registradas en la misma categoría.
   * **Ser lícito.** No debe ser engañoso ni ir contra el orden público.
 
-Por eso es fundamental hacer una búsqueda previa para evitar rechazos o inconvenientes legales. Podés aprender cómo hacerla acá: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
+Por eso es fundamental hacer una búsqueda previa para evitar rechazos o inconvenientes legales. Escribí el nombre que estás pensando en el [buscador de marcas gratis](/verificar-marca/) y fijate si ya está tomado, o aprendé cómo hacer la búsqueda acá: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
 
 ## Paso a paso para registrar el nombre de tu emprendimiento en el INPI
 

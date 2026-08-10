@@ -1,6 +1,6 @@
 ---
-title: "Buscador de marcas INPI: consultá y verificá gratis"
-description: 'Cómo consultar el buscador de marcas del INPI y verificar si tu nombre está disponible antes de registrarlo. Guía paso a paso 2026 más verificador gratis.'
+title: "Buscador de marcas del INPI: cómo usarlo paso a paso"
+description: 'Guía 2026 para usar el buscador oficial de marcas del INPI: dónde entrar, cómo buscar por denominación y clase, y qué significa cada estado del resultado.'
 pubDate: '2025-12-31'
 updatedDate: '2026-07-21'
 tags: []

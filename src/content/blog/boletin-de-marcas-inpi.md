@@ -76,7 +76,7 @@ La vigilancia de marcas tiene sentido para:
 - Emprendedores que ya solicitaron su registro y quieren monitorear si aparecen conflictos mientras el trámite está en curso
 - Negocios con presencia online donde la identidad de marca es un activo clave: e-commerce, servicios profesionales, productos propios
 
-Si estás en proceso de registrar tu marca y querés entender mejor el trámite, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso). Y si todavía no verificaste si tu marca está disponible antes de registrar, leé: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
+Si estás en proceso de registrar tu marca y querés entender mejor el trámite, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso). Y si todavía no verificaste si tu marca está disponible antes de registrar, consultala en nuestro [buscador de marcas del INPI](/verificar-marca/) o leé [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
 
 ---
 

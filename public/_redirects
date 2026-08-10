@@ -1,3 +1,6 @@
+# www -> apex (evita contenido duplicado; www servia 200 en vez de redirigir)
+https://www.unamarca.com.ar/* https://unamarca.com.ar/:splat 301
+
 /cuanto-sale-registrar-una-marca /blog/cuanto-sale-registrar-una-marca/ 301
 /cuanto-sale-registrar-una-marca/ /blog/cuanto-sale-registrar-una-marca/ 301
 

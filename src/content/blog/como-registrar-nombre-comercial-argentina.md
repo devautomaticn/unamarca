@@ -31,7 +31,7 @@ Para entender la diferencia entre nombre comercial y marca registrada en detalle
 
 Antes de presentar cualquier solicitud, revisá si ya existe una marca igual o similar registrada en tu rubro. Desde 2026, el INPI no verifica conflictos con marcas existentes durante el examen — esa responsabilidad recae sobre los propios titulares. Si presentás algo similar a una marca registrada y su titular presenta una oposición, tu solicitud puede caer.
 
-La búsqueda es gratuita en el buscador oficial del INPI. Explicamos cómo hacerlo en: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
+La búsqueda es gratuita: podés [consultar marcas registradas acá mismo](/verificar-marca/) o usar el buscador oficial del INPI. Explicamos cómo hacerlo en: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
 
 ### Paso 2 — Determiná qué tipo de marca registrar
 

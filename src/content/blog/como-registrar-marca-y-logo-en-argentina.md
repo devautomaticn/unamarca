@@ -44,7 +44,7 @@ Las marcas se registran por categorías de productos o servicios (clases). Tené
 
 El trámite es **100% online** ante el INPI a través de [portaltramites.inpi.gob.ar](https://portaltramites.inpi.gob.ar). Con el proceso vigente desde la Resolución 583/25 (marzo de 2026), los pasos son:
 
-1. **Búsqueda previa:** verificá que tu marca esté disponible en las clases que te interesan. Leé: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente)
+1. **Búsqueda previa:** verificá que tu marca esté disponible en las clases que te interesan. Hacela en el [buscador de marcas gratis](/verificar-marca/) o leé [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente)
 2. **Definir las clases:** determiná en qué categorías de la Clasificación de Niza corresponde registrar
 3. **Presentar la solicitud online** con tu CUIT y Clave Fiscal nivel 2 o superior
 4. **Pagar el arancel:** se genera una boleta de pago al momento de la solicitud (100 UMAPIS por clase, aproximadamente $39.735 ARS en agosto 2026, sujeto a actualización mensual)

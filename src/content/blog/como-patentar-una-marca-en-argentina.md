@@ -46,7 +46,7 @@ El trámite se hace 100% online ante el INPI y, con el proceso vigente desde 202
 
 Los pasos principales son:
 
-1. **Verificar disponibilidad:** antes de presentar, confirmá que tu marca no esté registrada por otra persona en tu rubro. Podés hacerlo en el buscador del INPI.
+1. **Verificar disponibilidad:** antes de presentar, confirmá que tu marca no esté registrada por otra persona en tu rubro. Podés hacerlo gratis en nuestro [buscador de marcas del INPI](/verificar-marca/).
 2. **Definir en qué clases registrar:** las marcas se registran por categorías (clases) según el tipo de producto o servicio.
 3. **Presentar la solicitud online** en [portaltramites.inpi.gob.ar](https://portaltramites.inpi.gob.ar) con tu CUIT y Clave Fiscal.
 4. **Pagar el arancel:** se genera una boleta de pago al momento de la solicitud.

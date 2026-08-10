@@ -31,7 +31,7 @@ Si tenés dudas sobre cuál elegir, podés leer [nuestra guía sobre cómo regis
 
 Antes de presentar la solicitud, es fundamental hacer una búsqueda previa para confirmar que no existe una marca igual o similar ya registrada en el mismo rubro. Este paso es más importante que nunca: desde marzo de 2026, el INPI ya no verifica conflictos con marcas existentes durante el examen de fondo — esa responsabilidad recae sobre los titulares de marcas registradas, que deben presentar oposiciones. Esto significa que si presentás una marca similar a una existente y nadie se opone, podría aprobarse — pero también significa que podrías quedar expuesto si alguien registra algo similar a la tuya.
 
-Podés hacer la búsqueda gratis en el buscador oficial del INPI. Explicamos cómo hacerlo en detalle acá: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
+Podés hacer la búsqueda gratis en nuestro [buscador de marcas del INPI](/verificar-marca/), que consulta por nombre y clase y también detecta marcas parecidas. Explicamos cómo hacerlo con el buscador oficial acá: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
 
 ## Paso 3 — Determiná en qué clases registrar tu marca
 

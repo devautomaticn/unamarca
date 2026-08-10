@@ -67,7 +67,7 @@ Algunos emprendedores creen que registrar el dominio web (.com.ar) o el usuario 
 
 ## ¿Cómo registrar tu marca?
 
-El trámite se hace 100% online ante el INPI. Con el nuevo proceso vigente desde 2026, puede resolverse en aproximadamente 2 meses si no hay oposiciones. Antes de presentar, es fundamental verificar que tu marca esté disponible.
+El trámite se hace 100% online ante el INPI. Con el nuevo proceso vigente desde 2026, puede resolverse en aproximadamente 2 meses si no hay oposiciones. Antes de presentar, es fundamental verificar que tu marca esté disponible: podés [consultarla gratis en el buscador de marcas del INPI](/verificar-marca/).
 
 Para el proceso completo, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso). Para saber cuánto cuesta, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca). Y para entender los tiempos, leé: [cuánto tarda registrar una marca en Argentina](/blog/cuanto-tarda-registro-marca-argentina).
 

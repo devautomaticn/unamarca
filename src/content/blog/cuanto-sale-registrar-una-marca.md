@@ -87,7 +87,7 @@ No. El arancel del INPI no es reembolsable. Si tu solicitud recibe una oposició
 
 Los honorarios profesionales dependen del acuerdo que tengas con el agente o estudio: algunos cobran todo por adelantado, otros solo cobran una parte si el trámite no avanza. Es un punto que conviene aclarar antes de contratar.
 
-Por eso la búsqueda previa no es un paso opcional: evitar una oposición desde el inicio es la forma más directa de proteger la inversión. Si la marca no está disponible o tiene un conflicto probable, mejor saberlo antes de pagar el arancel.
+Por eso la búsqueda previa no es un paso opcional: evitar una oposición desde el inicio es la forma más directa de proteger la inversión. Si la marca no está disponible o tiene un conflicto probable, mejor saberlo antes de pagar el arancel. Podés [consultar marcas registradas gratis](/verificar-marca/) antes de decidir.
 
 ## ¿Vale la pena el gasto?
 

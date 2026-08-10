@@ -52,7 +52,7 @@ Si no renovás dentro del período de gracia (6 meses posteriores al vencimiento
 - Cualquier tercero puede registrarla
 - Para recuperarla, tendrías que iniciar un registro nuevo — compitiendo con quien la haya solicitado mientras tanto
 
-Si llegaste tarde y la marca ya cayó, lo primero que tenés que hacer es verificar si alguien más ya la solicitó. Podés hacerlo en el buscador del INPI — te explicamos cómo acá: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
+Si llegaste tarde y la marca ya cayó, lo primero que tenés que hacer es verificar si alguien más ya la solicitó. Podés hacerlo al instante en el [buscador de marcas del INPI](/verificar-marca/) — y te explicamos cómo interpretar el resultado acá: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
 
 ## ¿Puedo cambiar algo al renovar?
 

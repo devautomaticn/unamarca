@@ -63,7 +63,7 @@ Depende de tu situación:
 
 Antes de presentar cualquier solicitud, lo primero es buscar en el sistema del INPI si ya existe una marca igual o parecida en las mismas clases. Desde 2026, el INPI ya no verifica conflictos de oficio — esa responsabilidad recae sobre los titulares de marcas existentes. Pero si presentás un nombre similar a uno ya registrado, el dueño puede oponerse y bloquear tu solicitud.
 
-Te explicamos cómo hacer esta búsqueda en detalle: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
+Escribí tu nombre artístico en el [buscador de marcas gratis](/verificar-marca/) para ver los antecedentes al instante, o te explicamos cómo hacer esta búsqueda en detalle: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
 
 ## Cómo registrar tu nombre artístico como marca
 

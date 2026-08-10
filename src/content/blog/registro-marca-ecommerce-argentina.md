@@ -58,7 +58,7 @@ No es obligatorio para empezar a vender. Pero ambas plataformas tienen política
 
 El trámite es 100% online ante el INPI, y con el nuevo proceso vigente desde 2026 puede resolverse en aproximadamente **2 meses** si no hay oposiciones.
 
-Antes de presentar la solicitud, es fundamental hacer una búsqueda previa para confirmar que tu marca está disponible — algo especialmente importante si usás un nombre que ya circula online. Podés ver cómo hacerlo acá: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
+Antes de presentar la solicitud, es fundamental hacer una búsqueda previa para confirmar que tu marca está disponible — algo especialmente importante si usás un nombre que ya circula online. Podés [consultar marcas registradas acá mismo](/verificar-marca/) o ver cómo hacerlo paso a paso: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
 
 Para el paso a paso completo del trámite, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso).
 
