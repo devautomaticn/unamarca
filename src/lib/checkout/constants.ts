@@ -35,6 +35,15 @@ export function computeOrderPricing(nClases: number, garantia: boolean) {
   };
 }
 
+/** Cuenta para el pago por transferencia (alternativa a Mercado Pago).
+ *  Se muestra en el paso 4, en el banner del paso 5, en la confirmación y en el
+ *  email al cliente: el usuario transfiere después, desde su home banking. */
+export const TRANSFERENCIA = {
+  alias: 'ALFIL.MARCO.PAPEL',
+  titular: 'Michael Alan Simmons',
+  banco: 'Banco Galicia',
+} as const;
+
 /** Datos del apoderado que figura en la carta poder */
 export const APODERADO = {
   tratamiento: 'Dr.',

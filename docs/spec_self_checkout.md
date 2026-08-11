@@ -4,6 +4,10 @@
 **Date:** 2026-07-03 (amended 2026-07-28: multi-class)
 **Owner:** Mike
 
+> **Amendment 2026-08-11 — Transferencia bancaria:** paso 4 pasa de un botón
+> único de Mercado Pago a **dos opciones con el mismo peso visual** (MP a la
+> izquierda, transferencia a la derecha). Ver §12.
+
 > **Amendment 2026-07-28 — Multi-class:** the clase selector is now a
 > multi-select (up to 5 clases per order; more → WhatsApp). Honorarios
 > ($40.000), arancel INPI ($38.994) and Garantía de Devolución ($7.000) are
@@ -179,7 +183,7 @@ refunded). Terms content: pending legal drafting — see §10.
 **Vigilancia strikethrough price:** must match the real standalone price
 charged on vigilante.unamarca.com.ar (credible anchor, not a fake one).
 
-### Paso 4 — Pago (placeholder in v1)
+### Paso 4 — Pago (dos métodos desde 2026-08-11 — ver §12)
 
 Prominent amber callout above the payment button: "Después de pagar, quedate
 cerca: volvés a esta página para completar los datos del titular y firmar la
@@ -471,3 +475,62 @@ Costo por cobro is a % of the total that varies by acreditation timing
 extra % if cuotas sin interés are enabled, plus provincial tax withholdings.
 Exact current rates: MP panel → "Costos por cobrar" — factor them into the
 $7.000 garantía margin math.
+
+---
+
+## 12. Transferencia bancaria (2026-08-11)
+
+Second payment method, offered **side by side with Mercado Pago and with the
+same visual weight** (MP left, transferencia right). Same price either way — no
+transfer discount (decided 2026-08-11; the MP fee saved stays as margin).
+
+Account data lives in `TRANSFERENCIA` (`src/lib/checkout/constants.ts`):
+alias `ALFIL.MARCO.PAPEL`, Michael Alan Simmons, Banco Galicia.
+
+### Flow
+
+1. Paso 4: user picks "Transferencia bancaria" → `POST /api/checkout/order`
+   with `metodo: 'transferencia'`. The Function **skips Mercado Pago entirely**
+   (no preference, no `MP_ACCESS_TOKEN` needed) and inserts the order with
+   `status: 'pending_transfer'`.
+2. The method chooser is replaced in place by a panel with alias / titular /
+   banco / importe / N° de pedido (alias and ref have copy buttons), a
+   "Enviar comprobante por WhatsApp" link, and the resume URL
+   `/registrar?order=<ref>`. **No redirect: the user never leaves the page.**
+3. "Continuar y completar mis datos" → paso 5, exactly like the MP return path.
+4. Pasos 5 y 6 are identical for both methods.
+
+### The alias appears four times, by design
+
+The user almost always transfers *later*, from their banking app, so the data
+has to survive past paso 4: (a) the paso 4 panel, (b) the paso 5 banner,
+(c) the confirmation screen, (d) the client email. Dropping any of them means
+the user loses the alias and the payment never arrives.
+
+### Consequences that are accepted, not bugs
+
+- **Signed solicitudes with no money.** The completion PATCH fires the emails
+  (with the signed carta poder) regardless of payment status — normal for
+  transferencia. The admin email is subject-prefixed `[TRANSFERENCIA
+  PENDIENTE]` with an amber block; the client copy says we file "dentro de las
+  48 horas hábiles **desde que se acredite la transferencia**".
+- **Manual reconciliation.** An AR alias transfer arrives with the payer's name
+  and CUIT, not our ref, so `pending_transfer` orders are matched by hand
+  (amount + name + the comprobante the client sends by WhatsApp with the ref).
+  There is deliberately **no admin endpoint to mark an order paid** and no
+  automatic reminder for stale `pending_transfer` orders — decided out of scope
+  on 2026-08-11; revisit if volume makes it painful.
+- Orphan orders: choosing transferencia and then going back to pick MP leaves a
+  `pending_transfer` row that never completes. Harmless, but it means
+  `pending_transfer` count ≠ people who said they'd transfer.
+
+### GA4
+
+`add_payment_info` now carries `metodo: 'mercadopago' | 'transferencia'`, plus
+`ck_pago_transferencia` when the alias panel opens and
+`ck_pago_retorno_pending_transfer` when a transfer order resumes from a link.
+
+### WhatsApp catalog
+
+New entry `registrar_comprobante` (prefix match, carries the order ref) —
+`CATALOG_VERSION` bumped to `1.1.0`.

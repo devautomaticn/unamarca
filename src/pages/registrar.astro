@@ -4,7 +4,7 @@
 // TODO wiring: POST /api/checkout/submit (PDF + emails).
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { NIZA_CLASSES } from '../lib/checkout/nizaClasses';
-import { PRICING, MAX_CLASES, PROVINCIAS, formatARS } from '../lib/checkout/constants';
+import { PRICING, MAX_CLASES, PROVINCIAS, TRANSFERENCIA, formatARS } from '../lib/checkout/constants';
 import { waHref, waHrefMulticlase } from '../lib/wa';
 
 const SITE_URL = 'https://unamarca.com.ar';
@@ -441,22 +441,95 @@ const faqSchema = {
         <div class="ck-stay">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="9" stroke="#b45309" stroke-width="1.5"/><path d="M10 5.5V10l3 2" stroke="#b45309" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <div>
-            <b>Después de pagar, quedate cerca:</b> volvés a esta página para
-            completar los datos del titular y <b>firmar la carta poder online</b>.
-            Te toma 2 minutos y tu solicitud queda lista para presentar.
+            <b>Quedate cerca:</b> después de elegir cómo pagar completás los datos
+            del titular y <b>firmás la carta poder online</b>. Te toma 2 minutos y
+            tu solicitud queda lista para presentar.
           </div>
         </div>
 
-        <button type="button" class="ck-mp-btn" id="ck-mp-btn">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="12" rx="11" ry="8" stroke="currentColor" stroke-width="1.6"/><path d="M5 12c2-.8 3.4-2.4 4.6-2.4 1.3 0 1.8 1.2 2.9 1.2 1 0 1.7-.9 3-.9 1.5 0 2.4 1.3 3.5 2.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-          <span id="ck-mp-label">Pagar con Mercado Pago</span>
-        </button>
+        <div class="ck-pay-methods" id="ck-pay-methods">
+          <button type="button" class="ck-pm" id="ck-mp-btn">
+            <span class="ck-pm-icon ck-pm-icon--mp">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><ellipse cx="12" cy="12" rx="11" ry="8" stroke="currentColor" stroke-width="1.6"/><path d="M5 12c2-.8 3.4-2.4 4.6-2.4 1.3 0 1.8 1.2 2.9 1.2 1 0 1.7-.9 3-.9 1.5 0 2.4 1.3 3.5 2.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            </span>
+            <span class="ck-pm-title">Mercado Pago</span>
+            <span class="ck-pm-desc">
+              Tarjeta de crédito o débito, cuotas y dinero en cuenta.
+              Se acredita al instante.
+            </span>
+            <span class="ck-pm-go" id="ck-mp-label">Pagar con Mercado Pago →</span>
+          </button>
+
+          <button type="button" class="ck-pm" id="ck-tr-btn">
+            <span class="ck-pm-icon ck-pm-icon--tr">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 9.5L12 4l9 5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 10.5v7M9.5 10.5v7M14.5 10.5v7M18.5 10.5v7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M3 20h18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </span>
+            <span class="ck-pm-title">Transferencia bancaria</span>
+            <span class="ck-pm-desc">
+              Desde tu home banking, con alias.
+              Te mostramos los datos de la cuenta.
+            </span>
+            <span class="ck-pm-go" id="ck-tr-label">Pagar por transferencia →</span>
+          </button>
+        </div>
+
         <p class="ck-err" data-err="pago" style="text-align:center; margin-top:0.6rem"></p>
 
-        <p class="ck-help ck-pay-note">
-          Vas a pagar en el sitio seguro de Mercado Pago y volvés acá para
-          terminar tu solicitud.
+        <p class="ck-help ck-pay-note" id="ck-pay-note">
+          El precio es el mismo con las dos formas de pago.
         </p>
+
+        <!-- Datos de la cuenta: se revela al elegir transferencia -->
+        <div class="ck-transfer" id="ck-transfer" hidden>
+          <div class="ck-transfer-head">
+            Transferí <b id="ck-tr-importe">–</b> a esta cuenta
+          </div>
+
+          <div class="ck-transfer-rows">
+            <div class="ck-tr-row">
+              <span class="ck-tr-k">Alias</span>
+              <span class="ck-tr-v"><b>{TRANSFERENCIA.alias}</b></span>
+              <button type="button" class="ck-copy" data-copy={TRANSFERENCIA.alias}>Copiar</button>
+            </div>
+            <div class="ck-tr-row">
+              <span class="ck-tr-k">Titular</span>
+              <span class="ck-tr-v">{TRANSFERENCIA.titular}</span>
+              <span></span>
+            </div>
+            <div class="ck-tr-row">
+              <span class="ck-tr-k">Banco</span>
+              <span class="ck-tr-v">{TRANSFERENCIA.banco}</span>
+              <span></span>
+            </div>
+            <div class="ck-tr-row">
+              <span class="ck-tr-k">N° de pedido</span>
+              <span class="ck-tr-v"><b id="ck-tr-ref">–</b></span>
+              <button type="button" class="ck-copy" id="ck-copy-ref">Copiar</button>
+            </div>
+          </div>
+
+          <p class="ck-transfer-note">
+            Podés transferir ahora o más tarde: <b>seguí completando tu solicitud
+            igual</b>. Presentamos ante el INPI dentro de las 48 horas hábiles
+            desde que se acredita la transferencia.
+          </p>
+
+          <a class="ck-transfer-wa" id="ck-tr-wa" href="#" target="_blank" rel="noopener noreferrer">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.1.1-1.8-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5.1-4.5-.1-.2-1.2-1.5-1.2-2.9s.7-2 1-2.3c.2-.3.5-.4.7-.4h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.3 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.1.3.7 1.2 1.5 1.9 1 .9 1.8 1.2 2.1 1.3.3.1.4.1.6-.1l.9-1c.2-.2.4-.2.6-.1l2 .9c.2.1.4.2.4.3.1.1.1.6-.1 1.2z"/></svg>
+            Enviar comprobante por WhatsApp
+          </a>
+
+          <p class="ck-transfer-resume">
+            ¿Cerrás la página? Retomá tu solicitud en
+            <a id="ck-tr-resume" href="#">este link</a>.
+          </p>
+
+          <button type="button" class="ck-btn ck-transfer-next" id="ck-tr-next">
+            Continuar y completar mis datos
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button type="button" class="ck-link-btn ck-transfer-otro" id="ck-tr-otro">← Elegir otra forma de pago</button>
+        </div>
       </div>
 
       <div class="ck-nav">
@@ -516,11 +589,25 @@ const faqSchema = {
         <h2>¡Listo! Recibimos tu solicitud.</h2>
         <p class="ck-done-ref">N° de referencia: <b id="ck-ref"></b></p>
         <p id="ck-done-mail">Te enviamos una copia de tu carta poder firmada a <b id="ck-done-email"></b>.</p>
-        <p>
+        <p id="ck-done-plazo">
           Presentaremos tu solicitud ante el INPI dentro de las próximas
           <b>48 horas hábiles</b> y te enviaremos todas las notificaciones del
           trámite por email.
         </p>
+
+        <!-- Recordatorio de la transferencia: solo si eligió ese medio de pago -->
+        <div class="ck-done-transfer" id="ck-done-transfer" hidden>
+          <p class="ck-done-transfer-title">Falta tu transferencia</p>
+          <p>
+            Transferí <b id="ck-done-importe">–</b> a <b>{TRANSFERENCIA.alias}</b>
+            ({TRANSFERENCIA.titular}, {TRANSFERENCIA.banco}). Presentamos tu
+            solicitud cuando se acredite.
+          </p>
+          <a class="ck-transfer-wa" id="ck-done-wa" href="#" target="_blank" rel="noopener noreferrer">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.1.1-1.8-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5.1-4.5-.1-.2-1.2-1.5-1.2-2.9s.7-2 1-2.3c.2-.3.5-.4.7-.4h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.3 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.1.3.7 1.2 1.5 1.9 1 .9 1.8 1.2 2.1 1.3.3.1.4.1.6-.1l.9-1c.2-.2.4-.2.6-.1l2 .9c.2.1.4.2.4.3.1.1.1.6-.1 1.2z"/></svg>
+            Enviar comprobante por WhatsApp
+          </a>
+        </div>
       </div>
     </section>
 
@@ -542,9 +629,10 @@ const faqSchema = {
 
 <script>
   import { NIZA_CLASSES } from '../lib/checkout/nizaClasses';
-  import { PRICING, MAX_CLASES, computeOrderPricing, formatARS } from '../lib/checkout/constants';
+  import { PRICING, MAX_CLASES, TRANSFERENCIA, computeOrderPricing, formatARS } from '../lib/checkout/constants';
   import { formatCuitInput, isValidCuit, cuitMatchesDni } from '../lib/checkout/cuit';
   import { cartaPoderHTML, type CartaPoderData } from '../lib/checkout/cartaPoder';
+  import { waHrefComprobante } from '../lib/wa';
 
   const DRAFT_KEY = 'um-checkout-draft';
   const $ = (id: string) => document.getElementById(id) as HTMLElement;
@@ -556,7 +644,9 @@ const faqSchema = {
   // ── Estado ──────────────────────────────────────────────
   let clases: number[] = [];
   let garantia = false;
-  let orderRef: string | null = null; // pedido creado al iniciar el pago MP
+  let orderRef: string | null = null; // pedido creado al iniciar el pago
+  type MetodoPago = 'mercadopago' | 'transferencia';
+  let metodoPago: MetodoPago = 'mercadopago';
 
   const FIELD_IDS = [
     'ck-marca', 'ck-nombre', 'ck-apellido', 'ck-tipodoc', 'ck-docnum',
@@ -931,9 +1021,17 @@ const faqSchema = {
   }
   input('ck-descripcion').addEventListener('input', updateDescripcionUI);
 
-  // ── Mercado Pago ────────────────────────────────────────
+  // ── Pago: Mercado Pago o transferencia ──────────────────
   const mpBtn = document.getElementById('ck-mp-btn') as HTMLButtonElement;
+  const trBtn = document.getElementById('ck-tr-btn') as HTMLButtonElement;
   const skipBtn = document.getElementById('ck-skip-pay') as HTMLButtonElement;
+
+  interface OrderResponse {
+    ref: string;
+    metodo?: MetodoPago;
+    init_point?: string;
+    importe?: number;
+  }
 
   function orderBody() {
     return JSON.stringify({
@@ -944,10 +1042,11 @@ const faqSchema = {
         whatsapp: input('ck-whatsapp').value.trim(),
       },
       garantia,
+      metodo: metodoPago,
     });
   }
 
-  async function createOrder(): Promise<{ ref: string; init_point: string }> {
+  async function createOrder(): Promise<OrderResponse> {
     const res = await fetch('/api/checkout/order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -960,21 +1059,93 @@ const faqSchema = {
 
   mpBtn.addEventListener('click', async () => {
     setErr('pago', '');
+    metodoPago = 'mercadopago';
     mpBtn.disabled = true;
     $('ck-mp-label').textContent = 'Redirigiendo a Mercado Pago…';
-    track('add_payment_info', { currency: 'ARS', value: total() });
+    track('add_payment_info', { currency: 'ARS', value: total(), metodo: 'mercadopago' });
     try {
       const data = await createOrder();
       orderRef = data.ref;
       saveDraft(); // por si vuelve en el mismo navegador
-      window.location.href = data.init_point;
+      window.location.href = data.init_point!;
     } catch (e) {
       console.error('[um-checkout] error iniciando pago:', e);
       track('ck_pago_error', { motivo: String(e).slice(0, 100) }, false);
       setErr('pago', 'No pudimos iniciar el pago. Probá de nuevo en unos segundos.');
       mpBtn.disabled = false;
-      $('ck-mp-label').textContent = 'Pagar con Mercado Pago';
+      $('ck-mp-label').textContent = 'Pagar con Mercado Pago →';
     }
+  });
+
+  // Transferencia: no hay redirect ni webhook. Se crea el pedido
+  // (pending_transfer), se muestran los datos de la cuenta y el usuario sigue
+  // completando la solicitud en la misma sesión. La acreditación se concilia a
+  // mano contra el N° de pedido que el cliente manda con el comprobante.
+  function showTransferPanel(ref: string, importe: number) {
+    $('ck-tr-importe').textContent = formatARS(importe);
+    $('ck-tr-ref').textContent = ref;
+    const wa = $('ck-tr-wa') as HTMLAnchorElement;
+    wa.href = waHrefComprobante(ref);
+    const resume = $('ck-tr-resume') as HTMLAnchorElement;
+    const resumeUrl = `${window.location.origin}/registrar?order=${encodeURIComponent(ref)}`;
+    resume.href = resumeUrl;
+    resume.textContent = resumeUrl;
+    $('ck-pay-methods').hidden = true;
+    $('ck-pay-note').hidden = true;
+    $('ck-transfer').hidden = false;
+  }
+
+  trBtn.addEventListener('click', async () => {
+    setErr('pago', '');
+    metodoPago = 'transferencia';
+    trBtn.disabled = true;
+    $('ck-tr-label').textContent = 'Generando tu pedido…';
+    track('add_payment_info', { currency: 'ARS', value: total(), metodo: 'transferencia' });
+    track('ck_pago_transferencia', { currency: 'ARS', value: total() });
+    try {
+      const data = await createOrder();
+      orderRef = data.ref;
+      saveDraft();
+      showTransferPanel(data.ref, data.importe ?? total());
+    } catch (e) {
+      console.error('[um-checkout] error creando pedido por transferencia:', e);
+      track('ck_pago_error', { motivo: String(e).slice(0, 100) }, false);
+      setErr('pago', 'No pudimos generar tu pedido. Probá de nuevo en unos segundos.');
+      metodoPago = 'mercadopago';
+    } finally {
+      trBtn.disabled = false;
+      $('ck-tr-label').textContent = 'Pagar por transferencia →';
+    }
+  });
+
+  $('ck-tr-next').addEventListener('click', () => {
+    showPayBanner('pending_transfer');
+    goTo('5');
+  });
+
+  // Volver al selector: el pedido ya creado se reusa si vuelve a transferencia,
+  // y queda huérfano (pending_transfer, sin completar) si termina pagando por MP.
+  $('ck-tr-otro').addEventListener('click', () => {
+    $('ck-transfer').hidden = true;
+    $('ck-pay-methods').hidden = false;
+    $('ck-pay-note').hidden = false;
+    metodoPago = 'mercadopago';
+  });
+
+  // Copiar alias / N° de pedido
+  document.querySelectorAll<HTMLButtonElement>('.ck-copy').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const value = btn.dataset.copy
+        ?? (btn.id === 'ck-copy-ref' ? $('ck-tr-ref').textContent || '' : '');
+      if (!value) return;
+      try {
+        await navigator.clipboard.writeText(value);
+        const prev = btn.textContent;
+        btn.textContent = '¡Copiado!';
+        btn.classList.add('ck-copy--ok');
+        setTimeout(() => { btn.textContent = prev; btn.classList.remove('ck-copy--ok'); }, 1600);
+      } catch { /* sin permiso de clipboard: el dato está a la vista igual */ }
+    });
   });
 
   // Saltar pago (demo): solo visible en previews y localhost — nunca en el
@@ -999,19 +1170,26 @@ const faqSchema = {
   });
 
   function showPayBanner(status: string) {
-    // Nombre por estado (ck_pago_retorno_paid / _rejected / _pending_payment…)
-    // para que el desglose se vea en GA4 sin dimensiones personalizadas.
-    track(`ck_pago_retorno_${status.replace(/[^a-z0-9]/gi, '_')}`);
     const banner = $('ck-pay-banner');
     const kind =
       status === 'paid' ? 'ok' :
       status === 'rejected' ? 'err' : 'warn';
+    // La transferencia se paga desde el home banking, casi siempre después de
+    // completar la solicitud: el alias tiene que volver a estar acá, no solo
+    // en el paso 4 donde el usuario ya no vuelve.
+    const transferMsg =
+      `<b>Falta tu transferencia de ${formatARS(total())}.</b> Alias ` +
+      `<b>${TRANSFERENCIA.alias}</b> (${TRANSFERENCIA.titular}, ${TRANSFERENCIA.banco}). ` +
+      `Pedido <b>${orderRef ?? ''}</b>. Seguí completando tus datos: presentamos ` +
+      `ante el INPI cuando se acredite.`;
     const msg =
-      status === 'paid'
-        ? '<b>✓ Pago aprobado.</b> Recibimos tu pago. Completá los datos para terminar tu solicitud.'
-        : status === 'rejected'
-          ? '<b>El pago fue rechazado.</b> Podés <button type="button" class="ck-banner-link" id="ck-retry-pay">reintentar el pago</button> o continuar y lo coordinamos después.'
-          : '<b>Tu pago está pendiente de confirmación.</b> Podés completar tus datos mientras tanto; te avisamos por email cuando se acredite.';
+      status === 'pending_transfer'
+        ? transferMsg
+        : status === 'paid'
+          ? '<b>✓ Pago aprobado.</b> Recibimos tu pago. Completá los datos para terminar tu solicitud.'
+          : status === 'rejected'
+            ? '<b>El pago fue rechazado.</b> Podés <button type="button" class="ck-banner-link" id="ck-retry-pay">reintentar el pago</button> o continuar y lo coordinamos después.'
+            : '<b>Tu pago está pendiente de confirmación.</b> Podés completar tus datos mientras tanto; te avisamos por email cuando se acredite.';
     banner.className = `ck-banner ck-banner--${kind}`;
     banner.innerHTML = msg;
     banner.hidden = false;
@@ -1025,6 +1203,7 @@ const faqSchema = {
       const o = await res.json();
       orderRef = o.ref;
       const p = o.payload || {};
+      if (p.metodo === 'transferencia') metodoPago = 'transferencia';
       if (p.marca?.nombre) input('ck-marca').value = p.marca.nombre;
       // Pedidos viejos guardaban una sola clase en `clase`
       const pedidoClases = Array.isArray(p.clases) ? p.clases : (p.clase ? [p.clase] : []);
@@ -1034,6 +1213,9 @@ const faqSchema = {
       garantia = !!p.garantia;
       input('ck-garantia').checked = garantia;
       updateSummary();
+      // Nombre por estado (ck_pago_retorno_paid / _rejected / _pending_transfer…)
+      // para que el desglose se vea en GA4 sin dimensiones personalizadas.
+      track(`ck_pago_retorno_${String(o.status).replace(/[^a-z0-9]/gi, '_')}`);
       showPayBanner(o.status);
       goTo('5');
       return true;
@@ -1188,7 +1370,9 @@ const faqSchema = {
       },
       garantia,
       pricing: pricing(),
-      payment: { status: 'skipped', provider: null },
+      // El estado real del pago vive en D1 (status del pedido); acá solo queda
+      // registrado el medio que eligió el usuario.
+      payment: { provider: metodoPago },
       firma: canvas.toDataURL('image/png'),
     };
 
@@ -1256,6 +1440,18 @@ const faqSchema = {
       $('ck-done-email').textContent = payload.contacto.email || 'tu email';
     } else {
       $('ck-done-mail').textContent = 'Modo demo (sin pago): no se envían emails.';
+    }
+
+    // Transferencia: el pago casi nunca está hecho a esta altura. Último
+    // recordatorio con el alias y el link para mandar el comprobante.
+    if (metodoPago === 'transferencia') {
+      $('ck-done-importe').textContent = formatARS(payload.pricing.total);
+      ($('ck-done-wa') as HTMLAnchorElement).href = waHrefComprobante(ref);
+      $('ck-done-transfer').hidden = false;
+      $('ck-done-plazo').innerHTML =
+        'Presentaremos tu solicitud ante el INPI dentro de las <b>48 horas hábiles</b> ' +
+        'desde que se acredite tu transferencia, y te enviaremos todas las ' +
+        'notificaciones del trámite por email.';
     }
 
     localStorage.removeItem(DRAFT_KEY);
@@ -1602,19 +1798,107 @@ const faqSchema = {
 .ck-pay-marca { font-size: 1.25rem; font-weight: 800; color: #0b1d3a; letter-spacing: -0.02em; }
 .ck-pay-detail { font-size: 0.8125rem; color: #64748b; margin-top: 0.2rem; }
 .ck-pay-total { font-size: 0.9375rem; color: #0b1d3a; margin-top: 0.6rem; }
-.ck-mp-btn {
-  display: flex; align-items: center; justify-content: center; gap: 0.6rem;
-  width: 100%; padding: 0.9375rem 1.5rem;
-  background: #009ee3; color: #fff; border: none; border-radius: 100px;
-  font-family: 'Inter', system-ui, sans-serif; font-size: 0.9375rem; font-weight: 600;
-  cursor: pointer; transition: background .18s, transform .18s, box-shadow .18s;
-}
-.ck-mp-btn:hover:not(:disabled) {
-  background: #0086c3; transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(0,158,227,.35);
-}
-.ck-mp-btn:disabled { opacity: 0.6; cursor: wait; }
 .ck-pay-note { margin-top: 0.875rem; text-align: center; }
+.ck-pay-note[hidden] { display: none; }
+
+/* ─── Formas de pago: dos opciones con el mismo peso ─── */
+.ck-pay-methods {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem;
+}
+.ck-pay-methods[hidden] { display: none; }
+.ck-pm {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 0.4rem;
+  padding: 1.25rem 1.25rem 1.125rem; text-align: left;
+  background: #fff; border: 1.5px solid #e2e8f0; border-radius: 14px;
+  font-family: 'Inter', system-ui, sans-serif; cursor: pointer;
+  transition: border-color .18s, transform .18s, box-shadow .18s;
+}
+.ck-pm:hover:not(:disabled) {
+  border-color: #2563eb; transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(37,99,235,.14);
+}
+.ck-pm:disabled { opacity: 0.6; cursor: wait; }
+.ck-pm-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 11px; margin-bottom: 0.3rem;
+}
+.ck-pm-icon--mp { background: #e6f6fd; color: #009ee3; }
+.ck-pm-icon--tr { background: #eef2ff; color: #4f46e5; }
+.ck-pm-title {
+  font-size: 1rem; font-weight: 700; color: #0b1d3a; letter-spacing: -0.01em;
+}
+.ck-pm-desc { font-size: 0.8125rem; color: #64748b; line-height: 1.55; }
+.ck-pm-go {
+  margin-top: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #2563eb;
+}
+
+/* ─── Datos de la transferencia ─── */
+.ck-transfer {
+  border: 1.5px solid #c7d2fe; background: #f5f7ff; border-radius: 14px;
+  padding: 1.25rem 1.375rem;
+}
+.ck-transfer[hidden] { display: none; }
+.ck-transfer-head {
+  font-size: 0.9375rem; color: #312e81; margin-bottom: 0.875rem;
+}
+.ck-transfer-head b { font-size: 1.125rem; font-weight: 800; color: #1e1b4b; }
+.ck-transfer-rows {
+  background: #fff; border: 1px solid #e0e7ff; border-radius: 11px;
+  padding: 0.25rem 0.875rem;
+}
+.ck-tr-row {
+  display: grid; grid-template-columns: 92px 1fr auto; align-items: center;
+  gap: 0.5rem; padding: 0.5rem 0; font-size: 0.875rem;
+}
+.ck-tr-row + .ck-tr-row { border-top: 1px solid #f1f5f9; }
+.ck-tr-k { color: #64748b; font-size: 0.8125rem; }
+.ck-tr-v { color: #0f172a; word-break: break-word; }
+.ck-tr-v b { font-weight: 700; letter-spacing: 0.01em; }
+.ck-copy {
+  background: none; border: 1px solid #c7d2fe; border-radius: 100px;
+  padding: 0.2rem 0.65rem; font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.75rem; font-weight: 600; color: #4f46e5; cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.ck-copy:hover { background: #eef2ff; }
+.ck-copy--ok { background: #dcfce7; border-color: #86efac; color: #15803d; }
+.ck-transfer-note {
+  margin: 0.875rem 0 0; font-size: 0.8125rem; color: #475569; line-height: 1.6;
+}
+.ck-transfer-wa {
+  display: inline-flex; align-items: center; gap: 0.45rem; margin-top: 0.875rem;
+  padding: 0.55rem 1.05rem; border-radius: 100px;
+  background: #25d366; color: #fff; text-decoration: none;
+  font-size: 0.8125rem; font-weight: 600;
+  transition: background .15s, transform .15s;
+}
+.ck-transfer-wa:hover { background: #1eb955; transform: translateY(-1px); }
+.ck-transfer-resume {
+  margin: 0.875rem 0 0; font-size: 0.75rem; color: #94a3b8; line-height: 1.6;
+  word-break: break-all;
+}
+.ck-transfer-resume a { color: #6366f1; }
+.ck-transfer-next { width: 100%; justify-content: center; margin-top: 1.125rem; }
+.ck-transfer-otro { display: block; margin: 0.5rem auto 0; }
+
+/* ─── Recordatorio de transferencia en la confirmación ─── */
+.ck-done-transfer {
+  margin-top: 1.5rem; padding: 1.125rem 1.25rem; text-align: left;
+  background: #f5f7ff; border: 1.5px solid #c7d2fe; border-radius: 12px;
+}
+.ck-done-transfer[hidden] { display: none; }
+.ck-done-transfer-title {
+  margin: 0 0 0.35rem; font-size: 0.9375rem; font-weight: 700; color: #312e81;
+}
+.ck-done-transfer p { font-size: 0.875rem; color: #475569; line-height: 1.6; }
+
+/* Va acá y no en el @media de arriba: las reglas base de esta sección se
+   declaran después, así que un override anterior en la hoja no las pisaría. */
+@media (max-width: 580px) {
+  .ck-pay-methods { grid-template-columns: 1fr; }
+  .ck-pm { padding: 1.125rem; }
+  .ck-tr-row { grid-template-columns: 84px 1fr auto; }
+}
 
 .ck-btn--ghost {
   background: transparent; color: #64748b;

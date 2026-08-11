@@ -28,7 +28,7 @@
 //  ("Entré al blog de UnaMarca…") antes que una intención genérica.
 // ────────────────────────────────────────────────────────────────────────────
 
-export const CATALOG_VERSION = '1.0.0';
+export const CATALOG_VERSION = '1.1.0';
 
 /** Agente IA. Recibe todos los CTAs de conversión. */
 export const WA_AGENTE = '5491148999564';
@@ -155,6 +155,18 @@ export const WA_MESSAGES = {
     match: 'exact',
     text: 'Hola! Estoy completando el formulario de registro y me trabé con algo.',
   },
+  registrar_comprobante: {
+    number: WA_AGENTE,
+    section: 'Checkout',
+    risk: 'nulo',
+    match: 'prefix',
+    prefix: 'Hola! Pagué por transferencia el pedido ',
+    template: 'Hola! Pagué por transferencia el pedido {ref} y te mando el comprobante.',
+    note:
+      'Checkout pagado por transferencia (alta 2026-08-11). {ref} es el N° de pedido ' +
+      '(UM-YYYYMMDD-XXXXXXXX): sirve para conciliar contra la tabla orders de D1, ' +
+      'porque la transferencia bancaria llega sin nuestra referencia. Matchear por prefijo.',
+  },
 
   // Verificador
   verificar_conflicto: {
@@ -273,14 +285,21 @@ function href(number: string, text: string): string {
   return `https://wa.me/${number}?text=${encodeURIComponent(text)}`;
 }
 
+/** Contextos que arman el texto con datos: no sirven para waHref/waText. */
+type WaTemplateContext =
+  | 'blog_post'
+  | 'registrar_multiclase'
+  | 'registrar_comprobante'
+  | 'verificar_conflicto';
+
 /** Link de WhatsApp para un contexto de mensaje estático. */
-export function waHref(context: Exclude<WaContext, 'blog_post' | 'registrar_multiclase' | 'verificar_conflicto'>): string {
+export function waHref(context: Exclude<WaContext, WaTemplateContext>): string {
   const entry = WA_MESSAGES[context] as Extract<WaEntry, { match: 'exact' }>;
   return href(entry.number, entry.text);
 }
 
 /** Texto del mensaje de un contexto estático (para reusar fuera de un href). */
-export function waText(context: Exclude<WaContext, 'blog_post' | 'registrar_multiclase' | 'verificar_conflicto'>): string {
+export function waText(context: Exclude<WaContext, WaTemplateContext>): string {
   return (WA_MESSAGES[context] as Extract<WaEntry, { match: 'exact' }>).text;
 }
 
@@ -306,6 +325,12 @@ export function waHrefBlogPost(title: string): string {
 export function waHrefMulticlase(maxClases: number): string {
   const e = WA_MESSAGES.registrar_multiclase;
   return href(e.number, e.template.replace('{maxClases}', String(maxClases)));
+}
+
+/** Link para mandar el comprobante de una transferencia, con el N° de pedido. */
+export function waHrefComprobante(ref: string): string {
+  const e = WA_MESSAGES.registrar_comprobante;
+  return href(e.number, e.template.replace('{ref}', ref));
 }
 
 /**

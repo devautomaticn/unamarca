@@ -1,9 +1,15 @@
-// POST /api/checkout/order — crea el pedido en D1 y la preferencia de pago en
-// Mercado Pago (Checkout Pro). Devuelve { ref, init_point } para redirigir.
+// POST /api/checkout/order — crea el pedido en D1.
+// · metodo 'mercadopago' (default): crea también la preferencia de Checkout Pro
+//   y devuelve { ref, init_point } para redirigir.
+// · metodo 'transferencia': no toca Mercado Pago. El pedido queda en
+//   'pending_transfer' y se devuelven los datos de la cuenta + el importe para
+//   mostrarlos en el wizard. La acreditación se concilia a mano (no hay webhook).
 import {
   type CheckoutEnv, ensureSchema, newOrderRef, computePricing, sanitizeClases, json,
 } from '../../_lib/checkout';
-import { PRICING as PRICING_UNIT } from '../../../src/lib/checkout/constants';
+import { PRICING as PRICING_UNIT, TRANSFERENCIA } from '../../../src/lib/checkout/constants';
+
+type MetodoPago = 'mercadopago' | 'transferencia';
 
 interface OrderBody {
   marca?: { nombre?: string; tipo?: string };
@@ -12,12 +18,13 @@ interface OrderBody {
   clase?: number | null;
   contacto?: { email?: string; whatsapp?: string };
   garantia?: boolean;
+  /** Ausente en clientes con la página vieja cacheada → Mercado Pago */
+  metodo?: MetodoPago;
 }
 
 export const onRequestPost: PagesFunction<CheckoutEnv> = async (context) => {
   const { env, request } = context;
 
-  if (!env.MP_ACCESS_TOKEN) return json({ error: 'MP_ACCESS_TOKEN no configurado' }, 500);
   if (!env.DB) return json({ error: 'Base de datos no configurada (binding DB)' }, 500);
 
   let body: OrderBody;
@@ -25,6 +32,11 @@ export const onRequestPost: PagesFunction<CheckoutEnv> = async (context) => {
     body = await request.json();
   } catch {
     return json({ error: 'Cuerpo inválido' }, 400);
+  }
+
+  const metodo: MetodoPago = body.metodo === 'transferencia' ? 'transferencia' : 'mercadopago';
+  if (metodo === 'mercadopago' && !env.MP_ACCESS_TOKEN) {
+    return json({ error: 'MP_ACCESS_TOKEN no configurado' }, 500);
   }
 
   const garantia = body.garantia === true;
@@ -48,7 +60,23 @@ export const onRequestPost: PagesFunction<CheckoutEnv> = async (context) => {
     },
     garantia,
     pricing,
+    metodo,
   };
+
+  // ── Transferencia: sin preferencia, sin redirect, sin webhook ──
+  if (metodo === 'transferencia') {
+    await env.DB.prepare(
+      `INSERT INTO orders (ref, created_at, status, payload)
+       VALUES (?, ?, 'pending_transfer', ?)`
+    ).bind(ref, new Date().toISOString(), JSON.stringify(payload)).run();
+
+    return json({
+      ref,
+      metodo,
+      importe: pricing.total,
+      transferencia: TRANSFERENCIA,
+    });
+  }
 
   const clasesLabel = nClases === 1 ? '1 clase' : `${nClases} clases`;
   const items: { id: string; title: string; quantity: number; unit_price: number; currency_id: string }[] = [
@@ -114,5 +142,5 @@ export const onRequestPost: PagesFunction<CheckoutEnv> = async (context) => {
      VALUES (?, ?, 'pending_payment', ?, ?)`
   ).bind(ref, new Date().toISOString(), pref.id, JSON.stringify(payload)).run();
 
-  return json({ ref, init_point: pref.init_point });
+  return json({ ref, metodo, init_point: pref.init_point });
 };

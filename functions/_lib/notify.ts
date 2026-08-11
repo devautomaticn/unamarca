@@ -1,5 +1,6 @@
 // Emails de confirmación de solicitud (cliente + admin) vía Resend,
 // con la carta poder firmada adjunta en PDF.
+import { TRANSFERENCIA } from '../../src/lib/checkout/constants';
 
 const FROM = 'UnaMarca <formulario@vigilante.unamarca.com.ar>';
 const ADMIN_EMAIL = 'mike@automaticnation.com';
@@ -28,7 +29,28 @@ interface OrderEmailData {
   titularResumen: [string, string][];
 }
 
+/** Bloque con los datos de la cuenta: solo para pedidos por transferencia, que
+ *  llegan acá casi siempre sin la plata acreditada todavía. */
+function transferBlockHTML(d: OrderEmailData): string {
+  return `<div style="background:#f5f7ff;border:1px solid #c7d2fe;border-radius:10px;padding:16px 20px;margin-bottom:18px">
+      <p style="margin:0 0 8px;color:#312e81;font-size:14px;font-weight:700">Falta tu transferencia de $${d.total.toLocaleString('es-AR')}</p>
+      <table style="width:100%;border-collapse:collapse">
+        <tr><td style="padding:3px 0;color:#64748b;font-size:13px;width:38%">Alias</td><td style="padding:3px 0;color:#0f172a;font-size:13px;font-weight:700">${esc(TRANSFERENCIA.alias)}</td></tr>
+        <tr><td style="padding:3px 0;color:#64748b;font-size:13px">Titular</td><td style="padding:3px 0;color:#0f172a;font-size:13px">${esc(TRANSFERENCIA.titular)}</td></tr>
+        <tr><td style="padding:3px 0;color:#64748b;font-size:13px">Banco</td><td style="padding:3px 0;color:#0f172a;font-size:13px">${esc(TRANSFERENCIA.banco)}</td></tr>
+        <tr><td style="padding:3px 0;color:#64748b;font-size:13px">N° de pedido</td><td style="padding:3px 0;color:#0f172a;font-size:13px;font-weight:700">${esc(d.ref)}</td></tr>
+      </table>
+      <p style="margin:10px 0 0;color:#475569;font-size:13px;line-height:1.6">
+        Cuando transfieras, mandanos el comprobante por WhatsApp con tu N° de pedido.
+      </p>
+    </div>`;
+}
+
 function clientHTML(d: OrderEmailData): string {
+  const porTransferencia = d.status === 'pending_transfer';
+  const plazo = porTransferencia
+    ? 'Presentaremos tu solicitud ante el INPI dentro de las <b>48 horas hábiles</b> desde que se acredite tu transferencia y te enviaremos todas las novedades del trámite a este email.'
+    : 'Presentaremos tu solicitud ante el INPI dentro de las próximas <b>48 horas hábiles</b> y te enviaremos todas las novedades del trámite a este email.';
   return `<!DOCTYPE html><html><body style="margin:0;padding:24px 16px;background:#f1f5f9;font-family:Inter,-apple-system,sans-serif">
   <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:16px;padding:36px;border:1px solid #e2e8f0">
     <p style="margin:0 0 6px;color:#2563EB;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase">UnaMarca</p>
@@ -39,11 +61,11 @@ function clientHTML(d: OrderEmailData): string {
     <p style="margin:0 0 18px;color:#475569;font-size:14px;line-height:1.6">
       N° de referencia: <b style="color:#0B1D3A">${esc(d.ref)}</b>
     </p>
+    ${porTransferencia ? transferBlockHTML(d) : ''}
     <div style="background:#f8faff;border:1px solid #e2e8f0;border-radius:10px;padding:16px 20px;margin-bottom:18px">
       <p style="margin:0;color:#475569;font-size:13px;line-height:1.65">
         📎 Adjuntamos la <b>carta poder firmada</b> que nos autoriza a gestionar el trámite.<br>
-        Presentaremos tu solicitud ante el INPI dentro de las próximas <b>48 horas hábiles</b>
-        y te enviaremos todas las novedades del trámite a este email.
+        ${plazo}
       </p>
     </div>
     <p style="margin:0;color:#94a3b8;font-size:12px;line-height:1.6">
@@ -62,9 +84,17 @@ function adminHTML(d: OrderEmailData): string {
     <p style="margin:0 0 6px;color:#2563EB;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase">UnaMarca · Self-Checkout</p>
     <h1 style="margin:0 0 4px;color:#0B1D3A;font-size:20px;font-weight:800">Solicitud completada: “${esc(d.marca.toUpperCase())}”</h1>
     <p style="margin:0 0 16px;color:#64748b;font-size:13px">${esc(d.ref)} · ${clasesLabel(d.clases)} · ${d.garantia ? 'Con Garantía' : 'Sin garantía'} · Total $${d.total.toLocaleString('es-AR')}</p>
-    <p style="margin:0 0 16px;font-size:13px;font-weight:700;color:${d.status === 'paid' ? '#16a34a' : '#b45309'}">
+    ${d.status === 'pending_transfer'
+      ? `<div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:14px 18px;margin-bottom:16px">
+      <p style="margin:0 0 4px;color:#92400e;font-size:14px;font-weight:800">⚠ TRANSFERENCIA PENDIENTE</p>
+      <p style="margin:0;color:#92400e;font-size:13px;line-height:1.6">
+        Eligió pagar por transferencia a ${esc(TRANSFERENCIA.alias)}. Verificá que se
+        hayan acreditado los $${d.total.toLocaleString('es-AR')} antes de presentar ante el INPI.
+      </p>
+    </div>`
+      : `<p style="margin:0 0 16px;font-size:13px;font-weight:700;color:${d.status === 'paid' ? '#16a34a' : '#b45309'}">
       Estado de pago: ${esc(d.status)}
-    </p>
+    </p>`}
     <table style="width:100%;border-collapse:collapse">${rows}</table>
     <p style="margin:16px 0 0;color:#94a3b8;font-size:12px">Carta poder firmada adjunta. Datos completos en D1 (orders / ${esc(d.ref)}).</p>
   </div>
@@ -152,7 +182,7 @@ export async function sendOrderEmails(
       from: FROM,
       to: [ADMIN_EMAIL],
       reply_to: d.clientEmail || undefined,
-      subject: `Solicitud completada: ${d.marca.toUpperCase() || '(sin marca)'} (${d.ref})`,
+      subject: `${d.status === 'pending_transfer' ? '[TRANSFERENCIA PENDIENTE] ' : ''}Solicitud completada: ${d.marca.toUpperCase() || '(sin marca)'} (${d.ref})`,
       html: adminHTML(d),
       attachments,
     }),
