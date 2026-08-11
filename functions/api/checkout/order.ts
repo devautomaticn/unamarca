@@ -5,16 +5,21 @@
 //   'pending_transfer' y se devuelven los datos de la cuenta + el importe para
 //   mostrarlos en el wizard. La acreditación se concilia a mano (no hay webhook).
 import {
-  type CheckoutEnv, ensureSchema, newOrderRef, computePricing, sanitizeClases, json,
+  type CheckoutEnv, ensureSchema, newOrderRef, computePricing, marcasDesdePayload, json,
 } from '../../_lib/checkout';
-import { PRICING as PRICING_UNIT, TRANSFERENCIA } from '../../../src/lib/checkout/constants';
+import {
+  PRICING as PRICING_UNIT, TRANSFERENCIA, contarLineas, clasesTexto,
+} from '../../../src/lib/checkout/constants';
 
 type MetodoPago = 'mercadopago' | 'transferencia';
 
 interface OrderBody {
+  /** v2: una o más marcas, cada una con sus clases */
+  marcas?: { nombre?: string; clases?: number[] }[];
+  /** Legado v1: una sola marca (clientes con la página vieja cacheada) */
   marca?: { nombre?: string; tipo?: string };
   clases?: number[];
-  /** Legado: pedidos con una sola clase (clientes con la página vieja cacheada) */
+  /** Legado: pedidos con una sola clase */
   clase?: number | null;
   contacto?: { email?: string; whatsapp?: string };
   garantia?: boolean;
@@ -40,20 +45,20 @@ export const onRequestPost: PagesFunction<CheckoutEnv> = async (context) => {
   }
 
   const garantia = body.garantia === true;
-  const clases = sanitizeClases(
-    body.clases ?? (typeof body.clase === 'number' ? [body.clase] : []),
-  );
-  const nClases = Math.max(1, clases.length);
-  const pricing = computePricing(nClases, garantia);
+  const marcas = marcasDesdePayload(body);
+  const nLineas = Math.max(1, contarLineas(marcas));
+  const pricing = computePricing(marcas, garantia);
   const ref = newOrderRef();
   const origin = new URL(request.url).origin;
-  const marcaNombre = (body.marca?.nombre || '').trim();
 
   await ensureSchema(env.DB);
 
   const payload = {
-    marca: { nombre: marcaNombre, tipo: 'Denominativa' },
-    clases,
+    marcas,
+    // Espejo v1 de la primera marca: lo siguen leyendo consumidores viejos
+    // (y hace legibles los pedidos de una sola marca en D1).
+    marca: { nombre: marcas[0]?.nombre || '', tipo: 'Denominativa' },
+    clases: marcas[0]?.clases ?? [],
     contacto: {
       email: (body.contacto?.email || '').trim(),
       whatsapp: (body.contacto?.whatsapp || '').trim(),
@@ -78,30 +83,42 @@ export const onRequestPost: PagesFunction<CheckoutEnv> = async (context) => {
     });
   }
 
-  const clasesLabel = nClases === 1 ? '1 clase' : `${nClases} clases`;
-  const items: { id: string; title: string; quantity: number; unit_price: number; currency_id: string }[] = [
-    {
-      id: 'registro',
-      title: marcaNombre
-        ? `Registro de marca "${marcaNombre.toUpperCase()}" — Honorarios (${clasesLabel})`
-        : `Registro de marca — Honorarios (${clasesLabel})`,
-      quantity: nClases,
-      unit_price: PRICING_UNIT.honorarios,
-      currency_id: 'ARS',
-    },
-    {
-      id: 'arancel',
-      title: `Arancel INPI (${clasesLabel})`,
-      quantity: nClases,
-      unit_price: PRICING_UNIT.arancelInpi,
-      currency_id: 'ARS',
-    },
-  ];
+  const lineasLabel = nLineas === 1 ? '1 clase' : `${nLineas} clases`;
+  type MpItem = { id: string; title: string; quantity: number; unit_price: number; currency_id: string };
+
+  // Honorarios: un ítem por marca, para que el detalle de Mercado Pago diga
+  // exactamente qué se está pagando. Arancel y garantía van agregados.
+  // Solo las marcas con clases: son las que suman líneas al total, y el importe
+  // de la preferencia tiene que dar exactamente pricing.total.
+  const marcasCobrables = marcas.filter(m => m.clases.length > 0);
+  const items: MpItem[] = marcasCobrables.length
+    ? marcasCobrables.map((m, i) => ({
+        id: `registro-${i + 1}`,
+        title: `Registro de marca "${m.nombre.toUpperCase()}" — Honorarios (${clasesTexto(m.clases)})`,
+        quantity: m.clases.length,
+        unit_price: PRICING_UNIT.honorarios,
+        currency_id: 'ARS',
+      }))
+    : [{
+        id: 'registro',
+        title: `Registro de marca — Honorarios (${lineasLabel})`,
+        quantity: nLineas,
+        unit_price: PRICING_UNIT.honorarios,
+        currency_id: 'ARS',
+      }];
+
+  items.push({
+    id: 'arancel',
+    title: `Arancel INPI (${lineasLabel})`,
+    quantity: nLineas,
+    unit_price: PRICING_UNIT.arancelInpi,
+    currency_id: 'ARS',
+  });
   if (garantia) {
     items.push({
       id: 'garantia',
-      title: `Garantía de Devolución (${clasesLabel})`,
-      quantity: nClases,
+      title: `Garantía de Devolución (${lineasLabel})`,
+      quantity: nLineas,
       unit_price: PRICING_UNIT.garantia,
       currency_id: 'ARS',
     });

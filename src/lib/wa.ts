@@ -28,7 +28,7 @@
 //  ("Entré al blog de UnaMarca…") antes que una intención genérica.
 // ────────────────────────────────────────────────────────────────────────────
 
-export const CATALOG_VERSION = '1.1.0';
+export const CATALOG_VERSION = '1.2.0';
 
 /** Agente IA. Recibe todos los CTAs de conversión. */
 export const WA_AGENTE = '5491148999564';
@@ -145,8 +145,21 @@ export const WA_MESSAGES = {
     prefix: 'Hola! Quiero registrar una marca en más de ',
     template: 'Hola! Quiero registrar una marca en más de {maxClases} clases.',
     note:
-      'El número sale de MAX_CLASES (hoy 5) en src/lib/checkout/constants.ts. ' +
+      'El número sale de MAX_CLASES (hoy 5) en src/lib/checkout/constants.ts, que ' +
+      'desde 2026-08-11 es el máximo de clases POR MARCA. ' +
       'Cambia si se cambia el máximo de clases del checkout: matchear por prefijo.',
+  },
+  registrar_multimarca: {
+    number: WA_AGENTE,
+    section: 'Checkout',
+    risk: 'nulo',
+    match: 'prefix',
+    prefix: 'Hola! Quiero registrar más de ',
+    template: 'Hola! Quiero registrar más de {maxMarcas} marcas en el mismo pedido.',
+    note:
+      'Checkout multi-marca (alta 2026-08-11). El número sale de MAX_MARCAS (hoy 3) ' +
+      'en src/lib/checkout/constants.ts: matchear por prefijo. No confundir con ' +
+      'registrar_multiclase, que es UNA marca en muchas clases.',
   },
   registrar_float: {
     number: WA_AGENTE,
@@ -289,6 +302,7 @@ function href(number: string, text: string): string {
 type WaTemplateContext =
   | 'blog_post'
   | 'registrar_multiclase'
+  | 'registrar_multimarca'
   | 'registrar_comprobante'
   | 'verificar_conflicto';
 
@@ -321,10 +335,16 @@ export function waHrefBlogPost(title: string): string {
   return href(e.number, e.template.replace('{titulo}', shortenPostTitle(title)));
 }
 
-/** Link de "quiero más de N clases" del checkout. */
+/** Link de "quiero más de N clases" (en una misma marca) del checkout. */
 export function waHrefMulticlase(maxClases: number): string {
   const e = WA_MESSAGES.registrar_multiclase;
   return href(e.number, e.template.replace('{maxClases}', String(maxClases)));
+}
+
+/** Link de "quiero más de N marcas en el mismo pedido" del checkout. */
+export function waHrefMultimarca(maxMarcas: number): string {
+  const e = WA_MESSAGES.registrar_multimarca;
+  return href(e.number, e.template.replace('{maxMarcas}', String(maxMarcas)));
 }
 
 /** Link para mandar el comprobante de una transferencia, con el N° de pedido. */

@@ -2,7 +2,9 @@
 // Fuente de verdad del estado de pago. Valida x-signature (HMAC-SHA256),
 // consulta el pago a la API de MP y actualiza el pedido de forma idempotente.
 // Siempre responde 200 a notificaciones válidas (un no-200 dispara reintentos).
-import { type CheckoutEnv, ensureSchema, json, hmacSha256Hex } from '../../_lib/checkout';
+import {
+  type CheckoutEnv, ensureSchema, json, hmacSha256Hex, marcasDesdePayload,
+} from '../../_lib/checkout';
 import { sendPaymentEmail } from '../../_lib/notify';
 
 interface WebhookEnv extends CheckoutEnv {
@@ -111,8 +113,7 @@ export const onRequestPost: PagesFunction<WebhookEnv> = async ({ env, request })
         ref,
         status: newStatus,
         mpStatus: payment.status,
-        marca: stored.marca?.nombre || '',
-        clases: stored.clases ?? (stored.clase ? [stored.clase] : []),
+        marcas: marcasDesdePayload(stored),
         total: stored.pricing?.total ?? 0,
         clientEmail: stored.contacto?.email || '',
         whatsapp: stored.contacto?.whatsapp || '',

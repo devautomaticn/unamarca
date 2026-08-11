@@ -18,9 +18,8 @@ export interface CartaPoderData {
   codigoPostal: string;
   localidad: string;
   provincia: string;
-  marca: string;
-  /** v1 siempre una sola clase; el template soporta plural para v2 */
-  clases: number[];
+  /** Un solo poder cubre todas las marcas del pedido: un bullet por marca */
+  marcas: { nombre: string; clases: number[] }[];
   fecha: { dia: number; mes: number; anio: number };
 }
 
@@ -30,6 +29,7 @@ export const MESES = [
 ];
 
 function joinClases(clases: number[]): string {
+  if (clases.length === 0) return 'la clase que corresponda';
   if (clases.length === 1) return `la clase ${clases[0]}`;
   const nums = [...clases].sort((a, b) => a - b);
   const last = nums.pop();
@@ -57,7 +57,8 @@ export interface CartaPoderTexto {
 }
 
 export function cartaPoderTexto(d: CartaPoderData): CartaPoderTexto {
-  const marca = d.marca.trim().toUpperCase();
+  const marcas = d.marcas.filter(m => m.nombre.trim());
+  const varias = marcas.length > 1;
   const doc = `${d.docTipo || 'DNI'} ${d.docNumero}`;
   return {
     encabezado: [
@@ -71,12 +72,18 @@ export function cartaPoderTexto(d: CartaPoderData): CartaPoderTexto {
       `${APODERADO.tratamiento} ${APODERADO.nombre}, DNI ${APODERADO.dni}, CUIT ${APODERADO.cuit}, ` +
       `con domicilio en ${APODERADO.domicilio}, para que en mi nombre y representación:`,
     bullets: [
-      `Solicite el registro de la marca “${marca}” ante el Instituto Nacional de la Propiedad Industrial (INPI) en ${joinClases(d.clases)} de la Clasificación Internacional de NIZA;`,
-      'Realice el seguimiento del trámite;',
+      ...marcas.map(m =>
+        `Solicite el registro de la marca “${m.nombre.trim().toUpperCase()}” ante el Instituto Nacional de la Propiedad Industrial (INPI) en ${joinClases(m.clases)} de la Clasificación Internacional de NIZA;`,
+      ),
+      varias ? 'Realice el seguimiento de los trámites;' : 'Realice el seguimiento del trámite;',
       'Conteste vistas, observaciones y oposiciones;',
-      'Presente escritos, recursos y cualquier otra gestión necesaria hasta la finalización del trámite.',
+      varias
+        ? 'Presente escritos, recursos y cualquier otra gestión necesaria hasta la finalización de los trámites.'
+        : 'Presente escritos, recursos y cualquier otra gestión necesaria hasta la finalización del trámite.',
     ],
-    cierre: 'La presente autorización se otorga a los efectos de que la marca sea registrada a mi nombre.',
+    cierre: varias
+      ? 'La presente autorización se otorga a los efectos de que las marcas sean registradas a mi nombre.'
+      : 'La presente autorización se otorga a los efectos de que la marca sea registrada a mi nombre.',
     firmaAclaracion: d.nombreApellido,
     firmaDoc: doc,
   };

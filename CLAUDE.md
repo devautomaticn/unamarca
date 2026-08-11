@@ -164,6 +164,9 @@ Rules:
   same value. (Exception: the EN landing has two CTAs sharing one message —
   they keep `en_landing` / `en_landing_final`.)
 - Bump `CATALOG_VERSION` when you change, add, or remove a message.
+- `registrar_multiclase` (una marca en más de `MAX_CLASES` clases) y
+  `registrar_multimarca` (más de `MAX_MARCAS` marcas en un pedido) llevan un
+  número en el texto: se matchean por prefijo, no exacto.
 - Never delete an entry from `WA_LEGACY`. Old messages keep arriving from
   cached pages, saved chats and shared links.
 

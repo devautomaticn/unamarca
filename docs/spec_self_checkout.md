@@ -1,8 +1,35 @@
 # Spec — Self-Checkout de Registro de Marca (v1)
 
 **Status:** Draft — approved for initial implementation
-**Date:** 2026-07-03 (amended 2026-07-28: multi-class)
+**Date:** 2026-07-03 (amended 2026-08-11: multi-marca)
 **Owner:** Mike
+
+> **Amendment 2026-08-11 — Multi-marca:** un pedido son ahora **1 a 3 marcas**,
+> cada una con **sus propias clases** (hasta 5 por marca; más → WhatsApp).
+> Cambios de UX: el paso 1 tiene una lista de marcas con "+ Agregar otra marca"
+> (con una sola marca se ve igual que antes); el paso 3 muestra **una tarjeta de
+> clases por marca**, con su subtotal; el paso 5 pide **una descripción y un
+> sitio web por marca**.
+>
+> La unidad de precio pasa a ser la **línea = marca × clase**. Honorarios,
+> arancel y garantía escalan por línea, sin descuento por volumen (Marca A en
+> 2 clases + Marca B en 2 clases = 4 líneas). Mercado Pago recibe un ítem de
+> honorarios por marca más el arancel y la garantía agregados.
+>
+> El payload pasa de `marca` + `clases[]` a **`marcas[]`** (`{nombre, tipo,
+> clases[], descripcion, sitioWeb}`) de punta a punta. El servidor sigue
+> leyendo los pedidos y borradores v1 (`marca` + `clases`/`clase`) vía
+> `marcasDesdePayload()`, y guarda un espejo v1 de la primera marca.
+>
+> **Una sola carta poder** cubre todas las marcas: un bullet de solicitud por
+> marca, una sola firma, un solo PDF. Los emails (cliente, admin y aviso de
+> pago) listan cada marca con sus clases; el del admin trae además la
+> descripción y el sitio de cada una, porque cada marca es **una presentación
+> separada ante el INPI**.
+>
+> Con el pedido ya creado, marcas y clases quedan **congeladas** (inputs
+> deshabilitados + aviso): el importe ya se cobró y lo presentado tiene que
+> coincidir con lo pagado.
 
 > **Amendment 2026-08-11 — Transferencia bancaria:** paso 4 pasa de un botón
 > único de Mercado Pago a **dos opciones con el mismo peso visual** (MP a la
@@ -264,16 +291,17 @@ Argentina, por la presente autorizo expresamente al Dr. Michael Alan Simmons,
 DNI 38.536.168, CUIT 20-38536168-9, con domicilio en Juan Francisco Seguí 4635,
 Ciudad Autónoma de Buenos Aires, para que en mi nombre y representación:
 
+  → un bullet por cada marca del pedido:
   • Solicite el registro de la marca “{{marcaNombre}}” ante el Instituto
-    Nacional de la Propiedad Industrial (INPI) en la clase {{clase}} de la
-    Clasificación Internacional de NIZA;
-  • Realice el seguimiento del trámite;
+    Nacional de la Propiedad Industrial (INPI) en {{la clase N | las clases
+    A, B y C}} de la Clasificación Internacional de NIZA;
+  • Realice el seguimiento {{del trámite | de los trámites}};
   • Conteste vistas, observaciones y oposiciones;
   • Presente escritos, recursos y cualquier otra gestión necesaria hasta la
-    finalización del trámite.
+    finalización {{del trámite | de los trámites}}.
 
-La presente autorización se otorga a los efectos de que la marca sea
-registrada a mi nombre.
+La presente autorización se otorga a los efectos de que {{la marca sea
+registrada | las marcas sean registradas}} a mi nombre.
 
 {{firma — signature image}}
 _________________________

@@ -4,14 +4,15 @@
 // TODO wiring: POST /api/checkout/submit (PDF + emails).
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { NIZA_CLASSES } from '../lib/checkout/nizaClasses';
-import { PRICING, MAX_CLASES, PROVINCIAS, TRANSFERENCIA, formatARS } from '../lib/checkout/constants';
-import { waHref, waHrefMulticlase } from '../lib/wa';
+import { PRICING, MAX_CLASES, MAX_MARCAS, PROVINCIAS, TRANSFERENCIA, formatARS } from '../lib/checkout/constants';
+import { waHref, waHrefMulticlase, waHrefMultimarca } from '../lib/wa';
 
 const SITE_URL = 'https://unamarca.com.ar';
 
 const waEmpresa = waHref('registrar_empresa');
 const waClase = waHref('registrar_clase');
 const waMulti = waHrefMulticlase(MAX_CLASES);
+const waMultiMarca = waHrefMultimarca(MAX_MARCAS);
 
 // FAQ: respuestas cortas que derivan al post canónico de cada tema para no
 // competir con el blog por sus keywords (los posts siguen siendo la página
@@ -35,7 +36,11 @@ const faqs = [
   },
   {
     q: '¿Qué clase tengo que elegir?',
-    a: `Las marcas se registran por clase según el Clasificador de Niza: cada una agrupa productos o servicios distintos. En el formulario podés buscar tu rubro y elegir una o varias clases (hasta ${MAX_CLASES} en el mismo pedido). Si tenés dudas, mirá la <a href="/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina">guía de clases de marcas</a> o escribinos por WhatsApp.`,
+    a: `Las marcas se registran por clase según el Clasificador de Niza: cada una agrupa productos o servicios distintos. En el formulario podés buscar tu rubro y elegir una o varias clases (hasta ${MAX_CLASES} por marca). Si tenés dudas, mirá la <a href="/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina">guía de clases de marcas</a> o escribinos por WhatsApp.`,
+  },
+  {
+    q: '¿Puedo registrar más de una marca en el mismo pedido?',
+    a: `Sí. En el primer paso podés agregar hasta ${MAX_MARCAS} marcas y en el paso 3 elegís las clases de cada una por separado. Cada marca es una solicitud independiente ante el INPI, así que se cobra por su cuenta: ${formatARS(PRICING.honorarios)} de honorarios más ${formatARS(PRICING.arancelInpi)} de arancel por cada clase de cada marca. Firmás una sola carta poder que cubre todas.`,
   },
   {
     q: '¿Tengo que hacer algún trámite ante el INPI?',
@@ -76,7 +81,7 @@ const faqSchema = {
 
     <div class="ck-progress" id="ck-progress">
       <div class="ck-progress-top">
-        <span id="ck-step-label">Paso 1 de 5</span>
+        <span id="ck-step-label">Paso 1 de 6</span>
         <span id="ck-step-title">Tu marca</span>
       </div>
       <div class="ck-bar"><div class="ck-bar-fill" id="ck-bar-fill" style="width: 20%"></div></div>
@@ -85,13 +90,27 @@ const faqSchema = {
     <!-- ══════════ PASO 1 · TU MARCA ══════════ -->
     <section class="ck-step" data-step="1">
       <div class="ck-card">
-        <div class="ck-section-label">Tu marca</div>
+        <div class="ck-section-label" id="ck-marcas-section-label">Tu marca</div>
 
+        <!-- Filas de marca: la primera se pinta siempre, las demás se agregan
+             con "+ Agregar otra marca". Ver renderMarcasStep1() en el script. -->
         <div class="ck-field">
-          <label for="ck-marca">Nombre de la marca <em>*</em></label>
-          <input type="text" id="ck-marca" placeholder="UnaMarca" autocomplete="off" maxlength="120" />
+          <div id="ck-marcas"></div>
           <p class="ck-err" data-err="marca"></p>
+          <button type="button" class="ck-add" id="ck-add-marca">
+            <span aria-hidden="true">+</span> Agregar otra marca
+          </button>
+          <p class="ck-help" id="ck-marca-max" hidden>
+            Podés registrar hasta {MAX_MARCAS} marcas en el mismo pedido.
+            ¿Necesitás más? <a href={waMultiMarca} target="_blank" rel="noopener noreferrer" onclick="gtag('event', 'whatsapp_click', {'source': 'registrar_multimarca'})">Escribinos por WhatsApp</a>
+          </p>
+          <p class="ck-help" id="ck-marca-help" hidden>
+            Cada marca se presenta como una solicitud separada ante el INPI y se
+            cobra por separado. En el paso 3 elegís las clases de cada una.
+          </p>
         </div>
+
+        <div class="ck-lock" id="ck-lock-marcas" hidden></div>
 
         <div class="ck-grid ck-g2">
           <div class="ck-field">
@@ -154,21 +173,29 @@ const faqSchema = {
       <div id="ck-pay-banner" class="ck-banner" hidden></div>
 
       <div class="ck-card">
-        <div class="ck-section-label">Sobre tu marca</div>
-
-        <div class="ck-field">
-          <label for="ck-descripcion"><span id="ck-descripcion-label">Descripción de tu marca</span> <em>*</em></label>
-          <textarea id="ck-descripcion" rows="4" maxlength="1000" placeholder="Describe los productos y/o servicios ofrecidos por la marca."></textarea>
-          <p class="ck-help" id="ck-descripcion-help">Mínimo 100 caracteres.</p>
-          <p class="ck-err" data-err="descripcion"></p>
-        </div>
-
-        <div class="ck-field">
-          <label for="ck-sitioweb">Página web <span class="ck-field-opt">(opcional)</span></label>
-          <input type="url" id="ck-sitioweb" placeholder="https://tumarca.com" autocomplete="url" inputmode="url" />
-          <p class="ck-err" data-err="sitioweb"></p>
-        </div>
+        <div class="ck-section-label" id="ck-desc-section-label">Sobre tu marca</div>
+        <!-- Un bloque por marca, clonado de #ck-desc-card-tpl (renderDescCards) -->
+        <div id="ck-desc-cards"></div>
       </div>
+
+      <template id="ck-desc-card-tpl">
+        <div class="ck-dcard">
+          <p class="ck-dcard-name" hidden></p>
+          <div class="ck-field">
+            <label>
+              <span class="ck-desc-label">Descripción de tu marca</span> <em>*</em>
+            </label>
+            <textarea class="ck-desc" rows="4" maxlength="1000" placeholder="Describe los productos y/o servicios ofrecidos por la marca."></textarea>
+            <p class="ck-help ck-desc-help">Mínimo 100 caracteres.</p>
+            <p class="ck-err ck-desc-err"></p>
+          </div>
+          <div class="ck-field">
+            <label>Página web <span class="ck-field-opt">(opcional)</span></label>
+            <input type="url" class="ck-sitio" placeholder="https://tumarca.com" autocomplete="url" inputmode="url" />
+            <p class="ck-err ck-sitio-err"></p>
+          </div>
+        </div>
+      </template>
 
       <div class="ck-card">
         <div class="ck-section-label">Datos del titular</div>
@@ -322,43 +349,59 @@ const faqSchema = {
 
         <div class="ck-field">
           <label>Clases de productos o servicios <em>*</em></label>
-          <div class="ck-dd" id="ck-clase-dd">
-            <button type="button" class="ck-dd-btn" id="ck-clase-btn" aria-haspopup="listbox" aria-expanded="false">
-              <span id="ck-clase-label" class="ck-dd-placeholder">Seleccioná una o más clases…</span>
-              <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
-            <div class="ck-dd-panel" id="ck-clase-panel" hidden>
-              <input type="text" id="ck-clase-search" placeholder="Buscar… (ej: ropa, café, software)" autocomplete="off" />
-              <ul class="ck-dd-list" id="ck-clase-list" role="listbox" aria-multiselectable="true">
-                {NIZA_CLASSES.map(c => (
-                  <li>
-                    <button type="button" class="ck-dd-opt" data-num={c.num} data-extra={c.textoOficial} role="option">
-                      <span class="ck-dd-num">Clase {c.num}</span>
-                      <span class="ck-dd-name">{c.nombre}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          <div class="ck-chips" id="ck-clase-chips" hidden></div>
-          <p class="ck-help" id="ck-clase-max" hidden>
-            Llegaste al máximo de {MAX_CLASES} clases por pedido online.
-            ¿Necesitás más? <a href={waMulti} target="_blank" rel="noopener noreferrer" onclick="gtag('event', 'whatsapp_click', {'source': 'registrar_multiclase'})">Escribinos por WhatsApp</a>
-          </p>
+          <!-- Una tarjeta por marca, clonada de #ck-clase-card-tpl.
+               Ver renderClasesCards() en el script. -->
+          <div id="ck-clases-cards"></div>
           <p class="ck-help">
-            Cada clase define qué productos o servicios protege tu marca. Podés elegir hasta {MAX_CLASES}.
+            Cada clase define qué productos o servicios protege tu marca. Podés elegir
+            hasta {MAX_CLASES} clases por marca.
             ¿No sabés cuál elegir? <a href={waClase} target="_blank" rel="noopener noreferrer" onclick="gtag('event', 'whatsapp_click', {'source': 'registrar_clase'})">Consultanos por WhatsApp</a>
           </p>
           <p class="ck-err" data-err="clase"></p>
+          <div class="ck-lock" id="ck-lock-clases" hidden></div>
         </div>
+
+        <!-- Molde de la tarjeta de clases (el <select> de Niza se renderiza acá
+             una sola vez y se clona por marca) -->
+        <template id="ck-clase-card-tpl">
+          <div class="ck-mcard">
+            <div class="ck-mcard-head">
+              <span class="ck-mcard-name"></span>
+              <span class="ck-mcard-sub" hidden></span>
+            </div>
+            <div class="ck-dd">
+              <button type="button" class="ck-dd-btn" aria-haspopup="listbox" aria-expanded="false">
+                <span class="ck-dd-label ck-dd-placeholder">Seleccioná una o más clases…</span>
+                <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="ck-dd-panel" hidden>
+                <input type="text" class="ck-dd-search" placeholder="Buscar… (ej: ropa, café, software)" autocomplete="off" />
+                <ul class="ck-dd-list" role="listbox" aria-multiselectable="true">
+                  {NIZA_CLASSES.map(c => (
+                    <li>
+                      <button type="button" class="ck-dd-opt" data-num={c.num} data-extra={c.textoOficial} role="option">
+                        <span class="ck-dd-num">Clase {c.num}</span>
+                        <span class="ck-dd-name">{c.nombre}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <div class="ck-chips" hidden></div>
+            <p class="ck-help ck-clase-max" hidden>
+              Llegaste al máximo de {MAX_CLASES} clases para esta marca.
+              ¿Necesitás más? <a href={waMulti} target="_blank" rel="noopener noreferrer" onclick="gtag('event', 'whatsapp_click', {'source': 'registrar_multiclase'})">Escribinos por WhatsApp</a>
+            </p>
+          </div>
+        </template>
 
         <div class="ck-order">
           <div class="ck-order-head">
-            <span class="ck-order-name">Registro de marca</span>
+            <span class="ck-order-name" id="ck-order-name">Registro de marca</span>
             <span class="ck-order-price" id="ck-order-price">{formatARS(PRICING.honorarios)}</span>
           </div>
-          <p class="ck-plan-sub">Honorarios · {formatARS(PRICING.honorarios)} por clase</p>
+          <p class="ck-plan-sub">Honorarios · {formatARS(PRICING.honorarios)} por clase de cada marca</p>
           <ul class="ck-plan-feats">
             <li>Presentación de la solicitud ante el INPI</li>
             <li>Novedades del trámite por email</li>
@@ -384,6 +427,8 @@ const faqSchema = {
       </div>
 
       <div class="ck-card ck-summary">
+        <!-- Detalle por marca: solo con más de una (renderSummaryMarcas) -->
+        <div id="ck-sum-marcas" hidden></div>
         <div class="ck-sum-row">
           <span id="ck-sum-hon-label">Honorarios — Registro de marca (1 clase)</span>
           <span id="ck-sum-hon">{formatARS(PRICING.honorarios)}</span>
@@ -424,8 +469,9 @@ const faqSchema = {
         <div class="ck-section-label">Pago</div>
 
         <div class="ck-pay-summary">
-          <div class="ck-pay-marca" id="ck-pay-marca">MARCA</div>
-          <div class="ck-pay-detail"><span id="ck-pay-plan">Registro Simple</span> · <span id="ck-pay-clase">Clase –</span></div>
+          <!-- Una línea por marca: "MARCA A · Clases 2 y 3" -->
+          <div id="ck-pay-marcas"></div>
+          <div class="ck-pay-detail" id="ck-pay-plan">Registro de marca</div>
           <div class="ck-pay-total">Total: <b id="ck-pay-total">–</b></div>
         </div>
 
@@ -586,7 +632,7 @@ const faqSchema = {
     <section class="ck-step" data-step="done" hidden>
       <div class="ck-card ck-done">
         <svg width="52" height="52" viewBox="0 0 52 52" fill="none"><circle cx="26" cy="26" r="25" fill="#22c55e" fill-opacity=".12"/><path d="M16 26.5l7 7 13-14" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <h2>¡Listo! Recibimos tu solicitud.</h2>
+        <h2 id="ck-done-title">¡Listo! Recibimos tu solicitud.</h2>
         <p class="ck-done-ref">N° de referencia: <b id="ck-ref"></b></p>
         <p id="ck-done-mail">Te enviamos una copia de tu carta poder firmada a <b id="ck-done-email"></b>.</p>
         <p id="ck-done-plazo">
@@ -629,7 +675,10 @@ const faqSchema = {
 
 <script>
   import { NIZA_CLASSES } from '../lib/checkout/nizaClasses';
-  import { PRICING, MAX_CLASES, TRANSFERENCIA, computeOrderPricing, formatARS } from '../lib/checkout/constants';
+  import {
+    PRICING, MAX_CLASES, MAX_MARCAS, TRANSFERENCIA,
+    computeOrderPricing, contarLineas, clasesTexto, lineasTexto, formatARS,
+  } from '../lib/checkout/constants';
   import { formatCuitInput, isValidCuit, cuitMatchesDni } from '../lib/checkout/cuit';
   import { cartaPoderHTML, type CartaPoderData } from '../lib/checkout/cartaPoder';
   import { waHrefComprobante } from '../lib/wa';
@@ -637,44 +686,61 @@ const faqSchema = {
   const DRAFT_KEY = 'um-checkout-draft';
   const $ = (id: string) => document.getElementById(id) as HTMLElement;
   const input = (id: string) => document.getElementById(id) as HTMLInputElement;
+  const tpl = (id: string) => (document.getElementById(id) as HTMLTemplateElement);
 
   // true = modo test (ningún campo obligatorio, formatos solo si hay valor)
   const FIELDS_OPTIONAL = false;
 
   // ── Estado ──────────────────────────────────────────────
-  let clases: number[] = [];
+  // Un pedido son 1..MAX_MARCAS marcas, cada una con sus propias clases.
+  // `descripcion` y `sitioWeb` se completan en el paso 5 (post-pago).
+  interface MarcaState {
+    nombre: string;
+    clases: number[];
+    descripcion: string;
+    sitioWeb: string;
+  }
+  const nuevaMarca = (nombre = ''): MarcaState =>
+    ({ nombre, clases: [], descripcion: '', sitioWeb: '' });
+
+  let marcas: MarcaState[] = [nuevaMarca()];
   let garantia = false;
   let orderRef: string | null = null; // pedido creado al iniciar el pago
   type MetodoPago = 'mercadopago' | 'transferencia';
   let metodoPago: MetodoPago = 'mercadopago';
 
+  /** Marcas y clases quedan congeladas una vez que existe el pedido: lo que se
+   *  presenta ante el INPI tiene que ser exactamente lo que se pagó. */
+  let pedidoBloqueado = false;
+
   const FIELD_IDS = [
-    'ck-marca', 'ck-nombre', 'ck-apellido', 'ck-tipodoc', 'ck-docnum',
+    'ck-nombre', 'ck-apellido', 'ck-tipodoc', 'ck-docnum',
     'ck-cuit', 'ck-genero', 'ck-estadocivil', 'ck-conyuge',
     'ck-pais', 'ck-calle', 'ck-numero', 'ck-piso', 'ck-depto',
     'ck-localidad', 'ck-codpostal', 'ck-provincia',
     'ck-email', 'ck-whatsapp',
-    'ck-descripcion', 'ck-sitioweb',
   ];
 
   function saveDraft() {
     const values: Record<string, string> = {};
     FIELD_IDS.forEach(id => { values[id] = input(id).value; });
-    localStorage.setItem(DRAFT_KEY, JSON.stringify({ values, clases, garantia }));
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({ values, marcas, garantia }));
+  }
+
+  function leerDraft(): any {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
   }
 
   function restoreDraft() {
     try {
-      const raw = localStorage.getItem(DRAFT_KEY);
-      if (!raw) return;
-      const draft = JSON.parse(raw);
+      const draft = leerDraft();
+      if (!draft) return;
       FIELD_IDS.forEach(id => { if (draft.values?.[id]) input(id).value = draft.values[id]; });
       syncConyuge();
-      // Drafts viejos guardaban una sola clase en `clase`
-      const draftClases = Array.isArray(draft.clases)
-        ? draft.clases
-        : (draft.clase ? [draft.clase] : []);
-      if (draftClases.length) setClases(draftClases, false);
+      setMarcas(marcasDesdeDraft(draft), false);
       if (typeof draft.garantia === 'boolean') {
         garantia = draft.garantia;
         input('ck-garantia').checked = garantia;
@@ -682,6 +748,45 @@ const faqSchema = {
       }
     } catch { /* draft corrupto: ignorar */ }
   }
+
+  /** Drafts v1: una sola marca en values['ck-marca'] + clases/clase sueltas,
+   *  con la descripción y el sitio en values. */
+  function marcasDesdeDraft(draft: any): MarcaState[] {
+    if (Array.isArray(draft?.marcas) && draft.marcas.length) {
+      return draft.marcas.map((m: any) => ({
+        nombre: String(m?.nombre ?? ''),
+        clases: Array.isArray(m?.clases) ? m.clases : [],
+        descripcion: String(m?.descripcion ?? ''),
+        sitioWeb: String(m?.sitioWeb ?? ''),
+      }));
+    }
+    const nombre = String(draft?.values?.['ck-marca'] ?? '');
+    const clases = Array.isArray(draft?.clases)
+      ? draft.clases
+      : (draft?.clase ? [draft.clase] : []);
+    if (!nombre && !clases.length) return [];
+    return [{
+      nombre,
+      clases,
+      descripcion: String(draft?.values?.['ck-descripcion'] ?? ''),
+      sitioWeb: String(draft?.values?.['ck-sitioweb'] ?? ''),
+    }];
+  }
+
+  /** Marcas tal como quedaron guardadas en el pedido (D1). Pedidos v1 traen una
+   *  sola marca en `marca` + `clases`/`clase`. */
+  function marcasDelPedido(p: any): MarcaState[] {
+    if (Array.isArray(p?.marcas) && p.marcas.length) {
+      return p.marcas.map((m: any) => nuevaMarcaCon(m?.nombre, m?.clases));
+    }
+    const clases = Array.isArray(p?.clases) ? p.clases : (p?.clase ? [p.clase] : []);
+    if (!p?.marca?.nombre && !clases.length) return [];
+    return [nuevaMarcaCon(p?.marca?.nombre, clases)];
+  }
+  const nuevaMarcaCon = (nombre: unknown, clases: unknown): MarcaState => ({
+    ...nuevaMarca(String(nombre ?? '')),
+    clases: Array.isArray(clases) ? clases : [],
+  });
 
   // ── Analytics: funnel GA4 ───────────────────────────────
   // Cada evento se manda una sola vez por sesión (volver atrás y avanzar de
@@ -713,10 +818,18 @@ const faqSchema = {
 
   // ── Navegación entre pasos ──────────────────────────────
   const TOTAL_STEPS = 6;
-  const STEP_TITLES: Record<string, string> = {
-    '1': 'Tu marca', '2': 'Contacto', '3': 'Tu pedido',
-    '4': 'Pago', '5': 'Datos del titular', '6': 'Revisión y firma',
-  };
+  function stepTitle(step: string): string {
+    const varias = marcas.length > 1;
+    switch (step) {
+      case '1': return varias ? 'Tus marcas' : 'Tu marca';
+      case '2': return 'Contacto';
+      case '3': return 'Tu pedido';
+      case '4': return 'Pago';
+      case '5': return 'Datos del titular';
+      case '6': return 'Revisión y firma';
+      default: return '';
+    }
+  }
 
   function goTo(step: string) {
     document.querySelectorAll<HTMLElement>('.ck-step').forEach(s => {
@@ -727,11 +840,12 @@ const faqSchema = {
     } else {
       const n = parseInt(step, 10);
       $('ck-step-label').textContent = `Paso ${n} de ${TOTAL_STEPS}`;
-      $('ck-step-title').textContent = STEP_TITLES[step];
+      $('ck-step-title').textContent = stepTitle(step);
       $('ck-bar-fill').style.width = `${(n / TOTAL_STEPS) * 100}%`;
     }
+    if (step === '3') renderClasesCards();
     if (step === '4') updatePaySummary();
-    if (step === '5') updateDescripcionUI();
+    if (step === '5') renderDescCards();
     if (step === '6') { renderPreview(); sizeCanvas(); }
     if (STEP_EVENTS[step]) {
       track(STEP_EVENTS[step], { checkout_step: parseInt(step, 10), currency: 'ARS', value: total() });
@@ -740,9 +854,11 @@ const faqSchema = {
   }
 
   // ── Errores inline ──────────────────────────────────────
-  function setErr(key: string, msg: string) {
-    const el = document.querySelector<HTMLElement>(`[data-err="${key}"]`);
+  function setErrEl(el: HTMLElement | null, msg: string) {
     if (el) { el.textContent = msg; el.style.display = msg ? 'block' : 'none'; }
+  }
+  function setErr(key: string, msg: string) {
+    setErrEl(document.querySelector<HTMLElement>(`[data-err="${key}"]`), msg);
   }
   function clearErrs(keys: string[]) { keys.forEach(k => setErr(k, '')); }
 
@@ -751,9 +867,26 @@ const faqSchema = {
   // solo cuando el usuario cargó algo.
   function validateStep1(): boolean {
     clearErrs(['marca']);
+    // Filas vacías de más: se descartan en silencio al continuar (el usuario
+    // agregó una marca y se arrepintió). Siempre queda al menos una.
+    if (!pedidoBloqueado && marcas.length > 1) {
+      const conNombre = marcas.filter(m => m.nombre.trim());
+      if (conNombre.length && conNombre.length !== marcas.length) {
+        setMarcas(conNombre);
+        renderMarcasStep1();
+      }
+    }
     if (FIELDS_OPTIONAL) return true;
-    if (input('ck-marca').value.trim().length < 2) {
-      setErr('marca', 'Ingresá el nombre de tu marca.');
+
+    if (marcas.some(m => m.nombre.trim().length < 2)) {
+      setErr('marca', marcas.length > 1
+        ? 'Completá el nombre de todas tus marcas (o quitá las que sobren).'
+        : 'Ingresá el nombre de tu marca.');
+      return false;
+    }
+    const nombres = marcas.map(m => m.nombre.trim().toLowerCase());
+    if (new Set(nombres).size !== nombres.length) {
+      setErr('marca', 'Repetiste una marca. Si querés registrarla en más clases, sumalas en el paso 3.');
       return false;
     }
     return true;
@@ -762,7 +895,13 @@ const faqSchema = {
   function validatePedido(): boolean {
     clearErrs(['clase']);
     if (FIELDS_OPTIONAL) return true;
-    if (clases.length === 0) { setErr('clase', 'Seleccioná al menos una clase para tu marca.'); return false; }
+    const sinClases = marcas.filter(m => m.clases.length === 0);
+    if (sinClases.length) {
+      setErr('clase', marcas.length > 1
+        ? `Elegí al menos una clase para ${sinClases.map(m => `“${m.nombre.trim().toUpperCase()}”`).join(' y ')}.`
+        : 'Seleccioná al menos una clase para tu marca.');
+      return false;
+    }
     return true;
   }
 
@@ -784,23 +923,35 @@ const faqSchema = {
   }
 
   function validateTitular(): boolean {
-    const keys = ['descripcion', 'sitioweb', 'nombre', 'apellido', 'docnum', 'cuit', 'genero', 'estadocivil', 'conyuge', 'calle', 'numero', 'localidad', 'codpostal', 'provincia'];
+    const keys = ['nombre', 'apellido', 'docnum', 'cuit', 'genero', 'estadocivil', 'conyuge', 'calle', 'numero', 'localidad', 'codpostal', 'provincia'];
     clearErrs(keys);
     let ok = true;
 
-    const descripcion = input('ck-descripcion').value.trim();
-    if (descripcion || !FIELDS_OPTIONAL) {
-      if (descripcion.length < MIN_DESCRIPCION) {
-        setErr('descripcion', `Contanos un poco más: mínimo ${MIN_DESCRIPCION} caracteres (llevás ${descripcion.length}).`);
+    // Descripción y sitio web: uno por marca, en las tarjetas del paso 5
+    let primerError: HTMLElement | null = null;
+    document.querySelectorAll<HTMLElement>('#ck-desc-cards .ck-dcard').forEach((card, i) => {
+      const m = marcas[i];
+      if (!m) return;
+      const errDesc = card.querySelector<HTMLElement>('.ck-desc-err')!;
+      const errSitio = card.querySelector<HTMLElement>('.ck-sitio-err')!;
+      setErrEl(errDesc, '');
+      setErrEl(errSitio, '');
+
+      const descripcion = m.descripcion.trim();
+      if ((descripcion || !FIELDS_OPTIONAL) && descripcion.length < MIN_DESCRIPCION) {
+        setErrEl(errDesc, `Contanos un poco más: mínimo ${MIN_DESCRIPCION} caracteres (llevás ${descripcion.length}).`);
+        primerError = primerError || card;
         ok = false;
       }
-    }
 
-    const sitioWeb = input('ck-sitioweb').value.trim();
-    if (sitioWeb && !/^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/\S*)?$/i.test(sitioWeb)) {
-      setErr('sitioweb', 'Ingresá una dirección web válida (ej: https://tumarca.com).');
-      ok = false;
-    }
+      const sitioWeb = m.sitioWeb.trim();
+      if (sitioWeb && !/^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/\S*)?$/i.test(sitioWeb)) {
+        setErrEl(errSitio, 'Ingresá una dirección web válida (ej: https://tumarca.com).');
+        primerError = primerError || card;
+        ok = false;
+      }
+    });
+    if (primerError) (primerError as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
 
     const req = (id: string, key: string, msg: string) => {
       if (!FIELDS_OPTIONAL && !input(id).value.trim()) { setErr(key, msg); ok = false; }
@@ -848,107 +999,221 @@ const faqSchema = {
   }
   input('ck-estadocivil').addEventListener('change', syncConyuge);
 
-  // ── Dropdown de clases ──────────────────────────────────
-  const ddBtn = $('ck-clase-btn');
-  const ddPanel = $('ck-clase-panel');
-  const ddSearch = input('ck-clase-search');
-
-  function normalize(s: string): string {
-    return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-  }
-
-  function toggleDd(open?: boolean) {
-    const show = open ?? ddPanel.hidden;
-    ddPanel.hidden = !show;
-    ddBtn.setAttribute('aria-expanded', String(show));
-    if (show) { ddSearch.value = ''; filterClases(''); ddSearch.focus(); }
-  }
-
-  function filterClases(q: string) {
-    const nq = normalize(q);
-    document.querySelectorAll<HTMLElement>('.ck-dd-opt').forEach(opt => {
-      // Busca en el nombre corto Y en el encabezado oficial completo
-      const text = normalize(`${opt.textContent || ''} ${opt.dataset.extra || ''}`);
-      (opt.parentElement as HTMLElement).hidden = nq !== '' && !text.includes(nq);
-    });
-  }
-
-  /** "Clase 25" / "Clases 9, 25 y 35" */
-  function clasesTexto(): string {
-    if (clases.length === 0) return 'Clase –';
-    if (clases.length === 1) return `Clase ${clases[0]}`;
-    const nums = [...clases];
-    const last = nums.pop();
-    return `Clases ${nums.join(', ')} y ${last}`;
-  }
-
-  function renderClasesUI() {
-    const label = $('ck-clase-label');
-    if (clases.length === 0) {
-      label.textContent = 'Seleccioná una o más clases…';
-      label.classList.add('ck-dd-placeholder');
-    } else if (clases.length === 1) {
-      const c = NIZA_CLASSES.find(x => x.num === clases[0]);
-      label.textContent = c ? `Clase ${c.num} — ${c.nombre}` : `Clase ${clases[0]}`;
-      label.classList.remove('ck-dd-placeholder');
-    } else {
-      label.textContent = clasesTexto();
-      label.classList.remove('ck-dd-placeholder');
-    }
-
-    // Chips con botón de quitar
-    const chips = $('ck-clase-chips');
-    chips.innerHTML = '';
-    clases.forEach(num => {
-      const c = NIZA_CLASSES.find(x => x.num === num);
-      const chip = document.createElement('span');
-      chip.className = 'ck-chip';
-      chip.title = c ? c.nombre : '';
-      chip.append(`Clase ${num}`);
-      const rm = document.createElement('button');
-      rm.type = 'button';
-      rm.setAttribute('aria-label', `Quitar la clase ${num}`);
-      rm.textContent = '×';
-      rm.addEventListener('click', () => toggleClase(num));
-      chip.append(rm);
-      chips.append(chip);
-    });
-    chips.hidden = clases.length === 0;
-    $('ck-clase-max').hidden = clases.length < MAX_CLASES;
-
-    document.querySelectorAll<HTMLElement>('.ck-dd-opt').forEach(opt => {
-      opt.classList.toggle('selected', clases.includes(parseInt(opt.dataset.num || '', 10)));
-    });
-  }
-
-  function setClases(nums: number[], save = true) {
-    clases = [...new Set(nums.filter(n => Number.isInteger(n) && n >= 1 && n <= 45))]
-      .sort((a, b) => a - b)
-      .slice(0, MAX_CLASES);
-    if (clases.length) setErr('clase', '');
-    renderClasesUI();
+  // ── Paso 1: filas de marca ──────────────────────────────
+  /** Normaliza el estado y repinta todo lo que depende de la lista de marcas. */
+  function setMarcas(lista: MarcaState[], save = true) {
+    const limpias = lista.slice(0, MAX_MARCAS).map(m => ({
+      nombre: String(m.nombre ?? '').slice(0, 120),
+      clases: [...new Set((m.clases ?? []).filter(n => Number.isInteger(n) && n >= 1 && n <= 45))]
+        .sort((a, b) => a - b)
+        .slice(0, MAX_CLASES),
+      descripcion: String(m.descripcion ?? ''),
+      sitioWeb: String(m.sitioWeb ?? ''),
+    }));
+    marcas = limpias.length ? limpias : [nuevaMarca()];
+    renderMarcasStep1();
     updateSummary();
     if (save) saveDraft();
   }
 
-  function toggleClase(num: number) {
-    if (clases.includes(num)) {
-      setClases(clases.filter(n => n !== num));
-    } else if (clases.length >= MAX_CLASES) {
-      $('ck-clase-max').hidden = false;
-    } else {
-      setClases([...clases, num]);
-    }
+  function renderMarcasStep1() {
+    const cont = $('ck-marcas');
+    cont.innerHTML = '';
+    const varias = marcas.length > 1;
+
+    marcas.forEach((m, i) => {
+      const row = document.createElement('div');
+      row.className = 'ck-marca-row';
+
+      const label = document.createElement('label');
+      label.setAttribute('for', `ck-marca-${i}`);
+      label.innerHTML = varias ? `Marca ${i + 1} <em>*</em>` : `Nombre de la marca <em>*</em>`;
+
+      const wrap = document.createElement('div');
+      wrap.className = 'ck-marca-input';
+
+      const inp = document.createElement('input');
+      inp.type = 'text';
+      inp.id = `ck-marca-${i}`;
+      inp.maxLength = 120;
+      inp.autocomplete = 'off';
+      inp.placeholder = i === 0 ? 'UnaMarca' : 'Nombre de la otra marca';
+      inp.value = m.nombre;
+      inp.disabled = pedidoBloqueado;
+      inp.addEventListener('input', () => {
+        m.nombre = inp.value;
+        setErr('marca', '');
+        saveDraft();
+      });
+      wrap.append(inp);
+
+      if (varias && !pedidoBloqueado) {
+        const rm = document.createElement('button');
+        rm.type = 'button';
+        rm.className = 'ck-marca-rm';
+        rm.textContent = '×';
+        rm.title = 'Quitar esta marca';
+        rm.setAttribute('aria-label', `Quitar la marca ${i + 1}`);
+        rm.addEventListener('click', () => {
+          setMarcas(marcas.filter((_, j) => j !== i));
+          setErr('marca', '');
+        });
+        wrap.append(rm);
+      }
+
+      row.append(label, wrap);
+      cont.append(row);
+    });
+
+    $('ck-add-marca').hidden = pedidoBloqueado || marcas.length >= MAX_MARCAS;
+    $('ck-marca-max').hidden = pedidoBloqueado || marcas.length < MAX_MARCAS;
+    $('ck-marca-help').hidden = !varias;
+    $('ck-marcas-section-label').textContent = varias ? 'Tus marcas' : 'Tu marca';
+
+    // El título del paso 1 cambia de singular a plural con la lista
+    const paso1 = document.querySelector<HTMLElement>('.ck-step[data-step="1"]');
+    if (paso1 && !paso1.hidden) $('ck-step-title').textContent = stepTitle('1');
   }
 
-  ddBtn.addEventListener('click', () => toggleDd());
-  ddSearch.addEventListener('input', () => filterClases(ddSearch.value));
-  document.querySelectorAll<HTMLElement>('.ck-dd-opt').forEach(opt => {
-    // El panel queda abierto: es una selección múltiple
-    opt.addEventListener('click', () => toggleClase(parseInt(opt.dataset.num || '', 10)));
+  $('ck-add-marca').addEventListener('click', () => {
+    if (marcas.length >= MAX_MARCAS) return;
+    marcas.push(nuevaMarca());
+    setMarcas(marcas);
+    (document.getElementById(`ck-marca-${marcas.length - 1}`) as HTMLInputElement | null)?.focus();
   });
+
+  // ── Paso 3: un selector de clases por marca ─────────────
+  function normalize(s: string): string {
+    return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  }
+
+  /** Refresca chips, label y subtotal de cada tarjeta ya montada */
+  let refreshCards: () => void = () => {};
+
+  function renderClasesCards() {
+    const cont = $('ck-clases-cards');
+    const molde = tpl('ck-clase-card-tpl');
+    cont.innerHTML = '';
+    const updaters: (() => void)[] = [];
+    const varias = marcas.length > 1;
+
+    marcas.forEach((m, i) => {
+      const card = (molde.content.firstElementChild!.cloneNode(true) as HTMLElement);
+      const nameEl = card.querySelector<HTMLElement>('.ck-mcard-name')!;
+      const subEl = card.querySelector<HTMLElement>('.ck-mcard-sub')!;
+      const btn = card.querySelector<HTMLButtonElement>('.ck-dd-btn')!;
+      const panel = card.querySelector<HTMLElement>('.ck-dd-panel')!;
+      const search = card.querySelector<HTMLInputElement>('.ck-dd-search')!;
+      const labelEl = card.querySelector<HTMLElement>('.ck-dd-label')!;
+      const chips = card.querySelector<HTMLElement>('.ck-chips')!;
+      const maxHelp = card.querySelector<HTMLElement>('.ck-clase-max')!;
+      const opts = Array.from(card.querySelectorAll<HTMLElement>('.ck-dd-opt'));
+
+      nameEl.textContent = m.nombre.trim().toUpperCase() || `Marca ${i + 1}`;
+      card.classList.toggle('ck-mcard--multi', varias);
+      btn.disabled = pedidoBloqueado;
+
+      const toggleClase = (num: number) => {
+        if (pedidoBloqueado) return;
+        if (m.clases.includes(num)) {
+          m.clases = m.clases.filter(n => n !== num);
+        } else if (m.clases.length >= MAX_CLASES) {
+          maxHelp.hidden = false;
+          return;
+        } else {
+          m.clases = [...m.clases, num].sort((a, b) => a - b);
+        }
+        setErr('clase', '');
+        refreshCards();
+        updateSummary();
+        saveDraft();
+      };
+
+      const update = () => {
+        // Label del botón
+        if (m.clases.length === 0) {
+          labelEl.textContent = 'Seleccioná una o más clases…';
+          labelEl.classList.add('ck-dd-placeholder');
+        } else if (m.clases.length === 1) {
+          const c = NIZA_CLASSES.find(x => x.num === m.clases[0]);
+          labelEl.textContent = c ? `Clase ${c.num} — ${c.nombre}` : `Clase ${m.clases[0]}`;
+          labelEl.classList.remove('ck-dd-placeholder');
+        } else {
+          labelEl.textContent = clasesTexto(m.clases);
+          labelEl.classList.remove('ck-dd-placeholder');
+        }
+
+        // Chips con botón de quitar
+        chips.innerHTML = '';
+        m.clases.forEach(num => {
+          const c = NIZA_CLASSES.find(x => x.num === num);
+          const chip = document.createElement('span');
+          chip.className = 'ck-chip';
+          chip.title = c ? c.nombre : '';
+          chip.append(`Clase ${num}`);
+          if (!pedidoBloqueado) {
+            const rm = document.createElement('button');
+            rm.type = 'button';
+            rm.setAttribute('aria-label', `Quitar la clase ${num}`);
+            rm.textContent = '×';
+            rm.addEventListener('click', () => toggleClase(num));
+            chip.append(rm);
+          }
+          chips.append(chip);
+        });
+        chips.hidden = m.clases.length === 0;
+        maxHelp.hidden = m.clases.length < MAX_CLASES;
+
+        // Subtotal por marca: solo tiene sentido con varias
+        subEl.hidden = !varias;
+        subEl.textContent = varias ? formatARS(subtotalMarca(m)) : '';
+
+        opts.forEach(opt => {
+          opt.classList.toggle('selected', m.clases.includes(parseInt(opt.dataset.num || '', 10)));
+        });
+      };
+
+      const filtrar = (q: string) => {
+        const nq = normalize(q);
+        opts.forEach(opt => {
+          // Busca en el nombre corto Y en el encabezado oficial completo
+          const text = normalize(`${opt.textContent || ''} ${opt.dataset.extra || ''}`);
+          (opt.parentElement as HTMLElement).hidden = nq !== '' && !text.includes(nq);
+        });
+      };
+
+      btn.addEventListener('click', () => {
+        const show = panel.hidden;
+        cerrarPaneles();
+        panel.hidden = !show;
+        btn.setAttribute('aria-expanded', String(show));
+        if (show) { search.value = ''; filtrar(''); search.focus(); }
+      });
+      search.addEventListener('input', () => filtrar(search.value));
+      // El panel queda abierto al elegir: es una selección múltiple
+      opts.forEach(opt => opt.addEventListener('click', () => toggleClase(parseInt(opt.dataset.num || '', 10))));
+
+      update();
+      updaters.push(update);
+      cont.append(card);
+    });
+
+    refreshCards = () => updaters.forEach(u => u());
+  }
+
+  function cerrarPaneles(excepto?: Element | null) {
+    document.querySelectorAll<HTMLElement>('#ck-clases-cards .ck-dd').forEach(dd => {
+      if (dd === excepto) return;
+      const panel = dd.querySelector<HTMLElement>('.ck-dd-panel')!;
+      if (!panel.hidden) {
+        panel.hidden = true;
+        dd.querySelector('.ck-dd-btn')!.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
   document.addEventListener('click', (e) => {
-    if (!$('ck-clase-dd').contains(e.target as Node)) toggleDd(false);
+    cerrarPaneles((e.target as HTMLElement).closest?.('.ck-dd'));
   });
 
   // ── Garantía (upsell) y resumen ─────────────────────────
@@ -957,31 +1222,63 @@ const faqSchema = {
     on: 'Garantía de Devolución incluida: si el INPI deniega el registro en una clase, te devolvemos los honorarios de esa clase',
   };
 
-  // Antes de elegir clases el resumen muestra la base de 1 clase
+  /** Líneas del pedido: una marca en una clase. Antes de elegir clases el
+   *  resumen muestra la base de 1 línea. */
+  function lineas(): number {
+    return contarLineas(marcas);
+  }
   function pricing() {
-    return computeOrderPricing(clases.length || 1, garantia);
+    return computeOrderPricing(lineas() || 1, garantia);
   }
   function total(): number {
     return pricing().total;
   }
+  /** Cuánto sale una marca sola, con sus clases (0 clases = $0) */
+  function subtotalMarca(m: MarcaState): number {
+    const unidad = PRICING.honorarios + PRICING.arancelInpi + (garantia ? PRICING.garantia : 0);
+    return unidad * m.clases.length;
+  }
+
+  function renderSummaryMarcas() {
+    const cont = $('ck-sum-marcas');
+    cont.innerHTML = '';
+    if (marcas.length < 2) { cont.hidden = true; return; }
+    marcas.forEach((m, i) => {
+      const row = document.createElement('div');
+      row.className = 'ck-sum-row ck-sum-marca';
+      const left = document.createElement('span');
+      left.innerHTML =
+        `<b>${(m.nombre.trim().toUpperCase() || `Marca ${i + 1}`).replace(/</g, '&lt;')}</b>` +
+        ` <small>${clasesTexto(m.clases, 'sin clase')}</small>`;
+      const right = document.createElement('span');
+      right.textContent = formatARS(subtotalMarca(m));
+      row.append(left, right);
+      cont.append(row);
+    });
+    cont.hidden = false;
+  }
 
   function updateSummary() {
     const p = pricing();
-    const nLabel = p.clases === 1 ? '1 clase' : `${p.clases} clases`;
+    const nLabel = lineasTexto(p.lineas, marcas.length);
 
+    $('ck-order-name').textContent = marcas.length > 1
+      ? `Registro de ${marcas.length} marcas`
+      : 'Registro de marca';
     $('ck-order-price').textContent = formatARS(p.honorarios);
-    $('ck-upsell-price').textContent = `+${formatARS(PRICING.garantia * p.clases)}`;
+    $('ck-upsell-price').textContent = `+${formatARS(PRICING.garantia * p.lineas)}`;
 
     const feat = $('ck-feat-garantia');
     feat.textContent = garantia ? FEAT_GARANTIA.on : FEAT_GARANTIA.off;
     feat.classList.toggle('ck-feat-off', !garantia);
     feat.classList.toggle('ck-feat-on', garantia);
 
+    renderSummaryMarcas();
     $('ck-sum-hon-label').textContent = `Honorarios — Registro de marca (${nLabel})`;
     $('ck-sum-hon').textContent = formatARS(p.honorarios);
     $('ck-sum-garantia-row').hidden = !garantia;
     $('ck-sum-gar-label').textContent = `Garantía de Devolución (${nLabel})`;
-    $('ck-sum-gar').textContent = formatARS(garantia ? p.garantia : PRICING.garantia * p.clases);
+    $('ck-sum-gar').textContent = formatARS(garantia ? p.garantia : PRICING.garantia * p.lineas);
     $('ck-sum-ara-label').innerHTML =
       `Arancel INPI (${nLabel}) <small>se paga al INPI · valor ${PRICING.arancelVigencia}</small>`;
     $('ck-sum-ara').textContent = formatARS(p.arancelInpi);
@@ -991,35 +1288,88 @@ const faqSchema = {
   input('ck-garantia').addEventListener('change', () => {
     garantia = input('ck-garantia').checked;
     updateSummary();
+    refreshCards(); // los subtotales por marca incluyen la garantía
     saveDraft();
   });
 
   function updatePaySummary() {
-    $('ck-pay-marca').textContent = input('ck-marca').value.trim().toUpperCase() || 'TU MARCA';
-    $('ck-pay-plan').textContent = 'Registro de marca' + (garantia ? ' + Garantía de Devolución' : '');
-    $('ck-pay-clase').textContent = clasesTexto();
+    const cont = $('ck-pay-marcas');
+    cont.innerHTML = '';
+    marcas.forEach((m, i) => {
+      const linea = document.createElement('div');
+      linea.className = 'ck-pay-marca';
+      const nombre = document.createElement('b');
+      nombre.textContent = m.nombre.trim().toUpperCase() || `MARCA ${i + 1}`;
+      const detalle = document.createElement('span');
+      detalle.textContent = ` · ${clasesTexto(m.clases)}`;
+      linea.append(nombre, detalle);
+      cont.append(linea);
+    });
+    $('ck-pay-plan').textContent =
+      (marcas.length > 1 ? `Registro de ${marcas.length} marcas` : 'Registro de marca') +
+      (garantia ? ' + Garantía de Devolución' : '');
     $('ck-pay-total').textContent = formatARS(total());
   }
 
-  // ── Descripción de la marca (paso 5) ────────────────────
+  // ── Descripción por marca (paso 5) ──────────────────────
   const MIN_DESCRIPCION = 100;
-  function updateDescripcionUI() {
-    const marca = input('ck-marca').value.trim();
-    $('ck-descripcion-label').textContent = marca ? `Descripción de ${marca}` : 'Descripción de tu marca';
-    const help = $('ck-descripcion-help');
-    const len = input('ck-descripcion').value.trim().length;
-    if (len === 0) {
-      help.textContent = `Mínimo ${MIN_DESCRIPCION} caracteres.`;
-      help.style.color = '';
-    } else if (len < MIN_DESCRIPCION) {
-      help.textContent = `Mínimo ${MIN_DESCRIPCION} caracteres · faltan ${MIN_DESCRIPCION - len}.`;
-      help.style.color = '';
-    } else {
-      help.textContent = `${len} caracteres ✓`;
-      help.style.color = '#16a34a';
-    }
+
+  function renderDescCards() {
+    const cont = $('ck-desc-cards');
+    const molde = tpl('ck-desc-card-tpl');
+    const varias = marcas.length > 1;
+    cont.innerHTML = '';
+    $('ck-desc-section-label').textContent = varias ? 'Sobre tus marcas' : 'Sobre tu marca';
+
+    marcas.forEach((m, i) => {
+      const card = (molde.content.firstElementChild!.cloneNode(true) as HTMLElement);
+      const nameEl = card.querySelector<HTMLElement>('.ck-dcard-name')!;
+      const labelEl = card.querySelector<HTMLElement>('.ck-desc-label')!;
+      const area = card.querySelector<HTMLTextAreaElement>('.ck-desc')!;
+      const help = card.querySelector<HTMLElement>('.ck-desc-help')!;
+      const sitio = card.querySelector<HTMLInputElement>('.ck-sitio')!;
+
+      const nombre = m.nombre.trim();
+      nameEl.textContent = nombre.toUpperCase() || `Marca ${i + 1}`;
+      nameEl.hidden = !varias;
+      labelEl.textContent = nombre ? `Descripción de ${nombre}` : 'Descripción de tu marca';
+      area.id = `ck-descripcion-${i}`;
+      card.querySelector('label')!.setAttribute('for', area.id);
+      area.value = m.descripcion;
+      sitio.id = `ck-sitioweb-${i}`;
+      card.querySelectorAll('label')[1].setAttribute('for', sitio.id);
+      sitio.value = m.sitioWeb;
+
+      const updateHelp = () => {
+        const len = area.value.trim().length;
+        if (len === 0) {
+          help.textContent = `Mínimo ${MIN_DESCRIPCION} caracteres.`;
+          help.style.color = '';
+        } else if (len < MIN_DESCRIPCION) {
+          help.textContent = `Mínimo ${MIN_DESCRIPCION} caracteres · faltan ${MIN_DESCRIPCION - len}.`;
+          help.style.color = '';
+        } else {
+          help.textContent = `${len} caracteres ✓`;
+          help.style.color = '#16a34a';
+        }
+      };
+
+      area.addEventListener('input', () => {
+        m.descripcion = area.value;
+        setErrEl(card.querySelector<HTMLElement>('.ck-desc-err'), '');
+        updateHelp();
+        saveDraft();
+      });
+      sitio.addEventListener('input', () => {
+        m.sitioWeb = sitio.value;
+        setErrEl(card.querySelector<HTMLElement>('.ck-sitio-err'), '');
+        saveDraft();
+      });
+
+      updateHelp();
+      cont.append(card);
+    });
   }
-  input('ck-descripcion').addEventListener('input', updateDescripcionUI);
 
   // ── Pago: Mercado Pago o transferencia ──────────────────
   const mpBtn = document.getElementById('ck-mp-btn') as HTMLButtonElement;
@@ -1035,8 +1385,7 @@ const faqSchema = {
 
   function orderBody() {
     return JSON.stringify({
-      marca: { nombre: input('ck-marca').value.trim(), tipo: 'Denominativa' },
-      clases,
+      marcas: marcas.map(m => ({ nombre: m.nombre.trim(), clases: m.clases })),
       contacto: {
         email: input('ck-email').value.trim(),
         whatsapp: input('ck-whatsapp').value.trim(),
@@ -1054,7 +1403,24 @@ const faqSchema = {
     });
     const data = await res.json();
     if (!res.ok || !data.ref) throw new Error(data.error || 'error creando pedido');
+    bloquearPedido();
     return data;
+  }
+
+  /** Con el pedido creado, marcas y clases quedan de solo lectura: el importe
+   *  ya está fijado y lo que se presenta ante el INPI tiene que coincidir. */
+  function bloquearPedido() {
+    if (pedidoBloqueado) return;
+    pedidoBloqueado = true;
+    const aviso =
+      'Tu pedido ya está generado, así que las marcas y las clases quedaron fijas. ' +
+      '¿Te falta agregar algo? Escribinos por WhatsApp y lo resolvemos.';
+    [$('ck-lock-marcas'), $('ck-lock-clases')].forEach(el => {
+      el.textContent = aviso;
+      el.hidden = false;
+    });
+    renderMarcasStep1();
+    renderClasesCards();
   }
 
   mpBtn.addEventListener('click', async () => {
@@ -1204,10 +1570,19 @@ const faqSchema = {
       orderRef = o.ref;
       const p = o.payload || {};
       if (p.metodo === 'transferencia') metodoPago = 'transferencia';
-      if (p.marca?.nombre) input('ck-marca').value = p.marca.nombre;
-      // Pedidos viejos guardaban una sola clase en `clase`
-      const pedidoClases = Array.isArray(p.clases) ? p.clases : (p.clase ? [p.clase] : []);
-      if (pedidoClases.length) setClases(pedidoClases, false);
+      // Descripciones y sitios ya cargados sobreviven en el draft local
+      const draftPrevio = marcasDesdeDraft(leerDraft());
+      const delPedido = marcasDelPedido(p);
+      if (delPedido.length) {
+        setMarcas(delPedido.map((m, i) => ({
+          ...m,
+          descripcion: draftPrevio[i]?.nombre.trim().toLowerCase() === m.nombre.trim().toLowerCase()
+            ? draftPrevio[i].descripcion : '',
+          sitioWeb: draftPrevio[i]?.nombre.trim().toLowerCase() === m.nombre.trim().toLowerCase()
+            ? draftPrevio[i].sitioWeb : '',
+        })), false);
+      }
+      bloquearPedido();
       if (p.contacto?.email) input('ck-email').value = p.contacto.email;
       if (p.contacto?.whatsapp) input('ck-whatsapp').value = p.contacto.whatsapp;
       garantia = !!p.garantia;
@@ -1239,8 +1614,7 @@ const faqSchema = {
       codigoPostal: input('ck-codpostal').value.trim(),
       localidad: input('ck-localidad').value.trim(),
       provincia: input('ck-provincia').value,
-      marca: input('ck-marca').value,
-      clases: [...clases],
+      marcas: marcas.map(m => ({ nombre: m.nombre, clases: [...m.clases] })),
       fecha: { dia: now.getDate(), mes: now.getMonth(), anio: now.getFullYear() },
     };
   }
@@ -1333,13 +1707,13 @@ const faqSchema = {
     $('ck-submit-spin').style.display = '';
 
     const payload = {
-      marca: {
-        nombre: input('ck-marca').value.trim(),
+      marcas: marcas.map(m => ({
+        nombre: m.nombre.trim(),
         tipo: 'Denominativa',
-        descripcion: input('ck-descripcion').value.trim(),
-        sitioWeb: input('ck-sitioweb').value.trim(),
-      },
-      clases,
+        clases: m.clases,
+        descripcion: m.descripcion.trim(),
+        sitioWeb: m.sitioWeb.trim(),
+      })),
       titular: {
         tipoPersona: 'Humana',
         nombre: input('ck-nombre').value.trim(),
@@ -1427,7 +1801,11 @@ const faqSchema = {
           transaction_id: ref,
           value: payload.pricing.total,
           currency: 'ARS',
-          items: [{ item_name: 'Registro de marca', item_variant: garantia ? 'con_garantia' : 'sin_garantia', quantity: clases.length || 1 }],
+          items: marcas.map(m => ({
+            item_name: 'Registro de marca',
+            item_variant: garantia ? 'con_garantia' : 'sin_garantia',
+            quantity: m.clases.length || 1,
+          })),
         });
       }
       if (typeof w.fbq === 'function') {
@@ -1442,6 +1820,15 @@ const faqSchema = {
       $('ck-done-mail').textContent = 'Modo demo (sin pago): no se envían emails.';
     }
 
+    const varias = marcas.length > 1;
+    if (varias) {
+      $('ck-done-title').textContent = '¡Listo! Recibimos tus solicitudes.';
+      $('ck-done-plazo').innerHTML =
+        `Presentaremos tus <b>${marcas.length} solicitudes</b> ante el INPI dentro de las ` +
+        'próximas <b>48 horas hábiles</b> y te enviaremos todas las notificaciones ' +
+        'del trámite por email.';
+    }
+
     // Transferencia: el pago casi nunca está hecho a esta altura. Último
     // recordatorio con el alias y el link para mandar el comprobante.
     if (metodoPago === 'transferencia') {
@@ -1449,7 +1836,8 @@ const faqSchema = {
       ($('ck-done-wa') as HTMLAnchorElement).href = waHrefComprobante(ref);
       $('ck-done-transfer').hidden = false;
       $('ck-done-plazo').innerHTML =
-        'Presentaremos tu solicitud ante el INPI dentro de las <b>48 horas hábiles</b> ' +
+        `Presentaremos ${varias ? `tus <b>${marcas.length} solicitudes</b>` : 'tu solicitud'} ` +
+        'ante el INPI dentro de las <b>48 horas hábiles</b> ' +
         'desde que se acredite tu transferencia, y te enviaremos todas las ' +
         'notificaciones del trámite por email.';
     }
@@ -1491,6 +1879,11 @@ const faqSchema = {
     btn.addEventListener('click', () => goTo(btn.dataset.back!));
   });
 
+  // ── Render inicial ──────────────────────────────────────
+  // El paso 1 arranca vacío en el HTML: la primera fila la pinta el script.
+  renderMarcasStep1();
+  updateSummary();
+
   // ── Bootstrap: volver de Mercado Pago (?order=REF) o draft local ─────
   const urlParams = new URLSearchParams(window.location.search);
   const urlOrderRef = urlParams.get('order');
@@ -1498,19 +1891,27 @@ const faqSchema = {
     resumeOrder(urlOrderRef).then(ok => { if (!ok) restoreDraft(); });
   } else {
     restoreDraft();
-    // Prefill desde /verificar-marca (?marca=X&clase=N o ?clase=9,25&tel=…&email=…); pisa el draft a propósito
-    const urlMarca = (urlParams.get('marca') || '').trim().slice(0, 80);
-    const urlClases = (urlParams.get('clase') || '')
+    // Prefill desde /verificar-marca y campañas. Formatos aceptados:
+    //   ?marca=X&clase=9,25            → una marca (legado)
+    //   ?marca=A&clase=2,3&marca=B&clase=4,6 → varias, apareadas por posición
+    const urlMarcas = urlParams.getAll('marca').map(s => s.trim().slice(0, 80));
+    const urlClases = urlParams.getAll('clase').map(v => v
       .split(',')
       .map(s => parseInt(s, 10))
-      .filter(n => n >= 1 && n <= 45);
+      .filter(n => n >= 1 && n <= 45));
     const urlTel = (urlParams.get('tel') || '').trim().slice(0, 30);
     const urlEmail = (urlParams.get('email') || '').trim().slice(0, 120);
-    if (urlMarca) input('ck-marca').value = urlMarca;
-    if (urlClases.length) setClases(urlClases, false);
+
+    const nDeep = Math.min(MAX_MARCAS, Math.max(urlMarcas.length, urlClases.length));
+    if (nDeep > 0) {
+      setMarcas(
+        Array.from({ length: nDeep }, (_, i) => nuevaMarcaCon(urlMarcas[i], urlClases[i])),
+        false,
+      );
+    }
     if (urlTel) input('ck-whatsapp').value = urlTel;
     if (urlEmail) input('ck-email').value = urlEmail;
-    if (urlMarca || urlClases.length || urlTel || urlEmail) saveDraft();
+    if (nDeep > 0 || urlTel || urlEmail) saveDraft();
   }
 </script>
 
@@ -1650,7 +2051,8 @@ const faqSchema = {
   background: #fff; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.1);
 }
 .ck-dd-btn svg { flex-shrink: 0; }
-#ck-clase-label {
+.ck-dd-btn:disabled { cursor: default; background: #f1f5f9; color: #64748b; }
+.ck-dd-label {
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
 }
 .ck-dd-placeholder { color: #c0ccd8; }
@@ -1699,8 +2101,77 @@ const faqSchema = {
   transition: color .12s;
 }
 .ck-chip button:hover { color: #1e40af; }
-#ck-clase-max { color: #b45309; }
-#ck-clase-max[hidden] { display: none; }
+.ck-clase-max { color: #b45309; }
+.ck-clase-max[hidden] { display: none; }
+
+/* ─── Multi-marca: filas del paso 1 ─── */
+.ck-marca-row + .ck-marca-row { margin-top: 0.875rem; }
+.ck-marca-input { display: flex; align-items: center; gap: 0.5rem; }
+.ck-marca-input input { flex: 1; min-width: 0; }
+.ck-marca-rm {
+  flex-shrink: 0; width: 34px; height: 34px; border-radius: 9px; cursor: pointer;
+  background: #fff; border: 1.5px solid #e2e8f0; color: #94a3b8;
+  font-size: 1.15rem; line-height: 1; font-weight: 600;
+  transition: color .15s, border-color .15s, background .15s;
+}
+.ck-marca-rm:hover { color: #dc2626; border-color: #fecaca; background: #fef2f2; }
+
+.ck-add {
+  display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer;
+  margin-top: 0.875rem; padding: 0.5rem 0.875rem;
+  background: #fff; border: 1.5px dashed #cbd5e1; border-radius: 100px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.8125rem; font-weight: 600; color: #2563eb;
+  transition: border-color .15s, background .15s;
+}
+.ck-add:hover { border-color: #2563eb; background: #eff6ff; }
+.ck-add[hidden] { display: none; }
+.ck-add span { font-size: 1rem; line-height: 1; }
+
+/* Aviso de pedido congelado (marcas y clases ya cobradas) */
+.ck-lock {
+  margin-top: 0.875rem; padding: 0.7rem 0.9rem; border-radius: 10px;
+  background: #f8fafc; border: 1px solid #e2e8f0;
+  font-size: 0.78rem; line-height: 1.55; color: #64748b;
+}
+.ck-lock[hidden] { display: none; }
+
+/* ─── Multi-marca: tarjeta de clases del paso 3 ─── */
+.ck-mcard + .ck-mcard { margin-top: 0.875rem; }
+/* Con una sola marca la tarjeta no se ve: es el selector de siempre.
+   Con varias se encuadra, para que quede claro qué clase es de qué marca. */
+.ck-mcard--multi {
+  border: 1.5px solid #e2e8f0; border-left: 3px solid #2563eb;
+  border-radius: 12px; background: #fbfcfe; padding: 0.875rem 1rem 1rem;
+}
+.ck-mcard-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 0.75rem; margin-bottom: 0.5rem;
+}
+.ck-mcard-name {
+  font-size: 0.72rem; font-weight: 800; color: #0b1d3a;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
+}
+.ck-mcard-sub { font-size: 0.78rem; font-weight: 700; color: #2563eb; white-space: nowrap; }
+.ck-mcard-sub[hidden] { display: none; }
+.ck-mcard .ck-chips:not([hidden]) { margin-top: 0.5rem; }
+.ck-mcard .ck-clase-max { margin-top: 0.4rem; }
+
+/* Detalle por marca dentro del resumen */
+.ck-sum-marca { color: #475569; }
+.ck-sum-marca b { color: #0b1d3a; font-weight: 700; letter-spacing: -0.01em; }
+.ck-sum-marca small { display: block; font-size: 0.7rem; color: #94a3b8; }
+
+/* ─── Multi-marca: descripción por marca (paso 5) ─── */
+.ck-dcard + .ck-dcard {
+  margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px dashed #e2e8f0;
+}
+.ck-dcard-name {
+  font-size: 0.72rem; font-weight: 800; color: #2563eb;
+  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.6rem;
+}
+.ck-dcard-name[hidden] { display: none; }
 
 /* ─── Pedido + upsell de garantía ─── */
 .ck-order {
@@ -1796,6 +2267,8 @@ const faqSchema = {
   padding: 1.25rem 1.375rem; margin-bottom: 1.25rem;
 }
 .ck-pay-marca { font-size: 1.25rem; font-weight: 800; color: #0b1d3a; letter-spacing: -0.02em; }
+.ck-pay-marca + .ck-pay-marca { margin-top: 0.15rem; }
+.ck-pay-marca span { font-size: 0.85rem; font-weight: 600; color: #64748b; letter-spacing: 0; }
 .ck-pay-detail { font-size: 0.8125rem; color: #64748b; margin-top: 0.2rem; }
 .ck-pay-total { font-size: 0.9375rem; color: #0b1d3a; margin-top: 0.6rem; }
 .ck-pay-note { margin-top: 0.875rem; text-align: center; }

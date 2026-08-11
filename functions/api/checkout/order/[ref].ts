@@ -2,7 +2,7 @@
 // PATCH /api/checkout/order/:ref — adjunta titular + firma (paso 6), genera el
 //        PDF de la carta poder y envía los emails (cliente + admin) vía Resend.
 // El ref es aleatorio y no adivinable: funciona como llave de lectura.
-import { type CheckoutEnv, ensureSchema, json } from '../../../_lib/checkout';
+import { type CheckoutEnv, ensureSchema, json, marcasDesdePayload } from '../../../_lib/checkout';
 import { sendOrderEmails } from '../../../_lib/notify';
 
 interface OrderRow {
@@ -69,26 +69,48 @@ export const onRequestPatch: PagesFunction<NotifyEnv> = async ({ env, params, re
   try {
     if (!env.RESEND_API_KEY) throw new Error('RESEND_API_KEY no configurada en este entorno');
 
-    // marca/clase/pricing salen del snapshot del servidor (no del cliente)
+    // marcas/clases/pricing salen del snapshot del servidor (no del cliente):
+    // es lo que el cliente pagó. Descripción y sitio web se cargan en el paso 5
+    // (post-pago) y solo existen en completion: se pegan por nombre de marca.
     const stored = JSON.parse(row.payload);
     const t = completion?.titular ?? {};
     const dom = t?.domicilio ?? {};
-    // Descripción y sitio web se cargan en el paso 5 (post-pago): viajan en completion
-    const descripcion = (completion?.marca?.descripcion || '').trim();
-    const sitioWeb = (completion?.marca?.sitioWeb || '').trim();
+
+    // Las dos listas salen del mismo array ordenado del wizard: el índice es la
+    // clave fiable. El nombre queda de respaldo por si el cliente reordenó.
+    // (Legado v1: la descripción venía suelta en completion.marca.)
+    const completionMarcas: any[] = Array.isArray(completion?.marcas)
+      ? completion.marcas
+      : (completion?.marca ? [completion.marca] : []);
+    const porNombre: Record<string, any> = {};
+    for (const m of completionMarcas) {
+      const key = String(m?.nombre ?? '').trim().toLowerCase();
+      if (key) porNombre[key] = m;
+    }
+
+    const marcas = marcasDesdePayload(stored).map((m, i) => {
+      const porIndice = completionMarcas[i];
+      const extra = (
+        String(porIndice?.nombre ?? '').trim().toLowerCase() === m.nombre.toLowerCase()
+          ? porIndice
+          : porNombre[m.nombre.toLowerCase()] ?? porIndice
+      ) ?? {};
+      return {
+        nombre: m.nombre,
+        clases: m.clases,
+        descripcion: (extra.descripcion || '').trim(),
+        sitioWeb: (extra.sitioWeb || '').trim(),
+      };
+    });
 
     await sendOrderEmails(env.RESEND_API_KEY, {
       ref,
       status: row.status,
-      marca: stored.marca?.nombre || '',
-      // Pedidos viejos guardaban una sola clase en `clase`
-      clases: stored.clases ?? (stored.clase ? [stored.clase] : []),
+      marcas,
       clientEmail: stored.contacto?.email || completion?.contacto?.email || '',
       garantia: !!stored.garantia,
       total: stored.pricing?.total ?? 0,
       titularResumen: [
-        ['Descripción de la marca', descripcion],
-        ...(sitioWeb ? [['Página web', sitioWeb] as [string, string]] : []),
         ['Nombre', `${t.nombre || ''} ${t.apellido || ''}`.trim()],
         ['Documento', `${t.documento?.tipo || ''} ${t.documento?.numero || ''}`.trim()],
         ['CUIT/CUIL', t.cuit || ''],

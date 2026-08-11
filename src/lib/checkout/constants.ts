@@ -16,23 +16,62 @@ export const PRICING = {
   vigilanciaLista: 30_000,
 } as const;
 
-/** Máximo de clases por pedido online; más que esto se deriva a WhatsApp */
+/** Máximo de clases POR MARCA; más que esto se deriva a WhatsApp */
 export const MAX_CLASES = 5;
 
-/** Totales del pedido para N clases. Todos los conceptos escalan por clase.
- *  Con 0 clases seleccionadas se muestra el precio de 1 (base del resumen). */
-export function computeOrderPricing(nClases: number, garantia: boolean) {
-  const n = Math.min(MAX_CLASES, Math.max(1, Math.floor(nClases) || 1));
+/** Máximo de marcas por pedido online; más que esto se deriva a WhatsApp */
+export const MAX_MARCAS = 3;
+
+/** Techo duro de líneas del pedido (una línea = una marca en una clase) */
+export const MAX_LINEAS = MAX_MARCAS * MAX_CLASES;
+
+/** Una marca del pedido. `descripcion` y `sitioWeb` se cargan post-pago (paso 5). */
+export interface MarcaPedido {
+  nombre: string;
+  tipo?: string;
+  clases: number[];
+  descripcion?: string;
+  sitioWeb?: string;
+}
+
+/** Líneas facturables del pedido: la suma de las clases de todas las marcas.
+ *  Marca A en 2 clases + Marca B en 2 clases = 4 líneas. */
+export function contarLineas(marcas: { clases?: number[] }[]): number {
+  return marcas.reduce((n, m) => n + (m.clases?.length ?? 0), 0);
+}
+
+/** Totales del pedido para N líneas (marca × clase). Todos los conceptos
+ *  escalan por línea, sin descuento por volumen. Con 0 líneas se muestra el
+ *  precio de 1 (base del resumen antes de elegir clases). */
+export function computeOrderPricing(lineas: number, garantia: boolean) {
+  const n = Math.min(MAX_LINEAS, Math.max(1, Math.floor(lineas) || 1));
   const honorarios = PRICING.honorarios * n;
   const garantiaMonto = garantia ? PRICING.garantia * n : 0;
   const arancelInpi = PRICING.arancelInpi * n;
   return {
+    lineas: n,
+    /** Alias legado: pedidos v1 (una sola marca) guardaban acá el N° de clases */
     clases: n,
     honorarios,
     garantia: garantiaMonto,
     arancelInpi,
     total: honorarios + garantiaMonto + arancelInpi,
   };
+}
+
+/** "Clase 25" / "Clases 9, 25 y 35" / "Clase –" (placeholder) */
+export function clasesTexto(clases: number[], vacio = 'Clase –'): string {
+  if (clases.length === 0) return vacio;
+  if (clases.length === 1) return `Clase ${clases[0]}`;
+  const nums = [...clases].sort((a, b) => a - b);
+  const last = nums.pop();
+  return `Clases ${nums.join(', ')} y ${last}`;
+}
+
+/** "1 clase" / "4 clases en 2 marcas" — la unidad de precio del resumen */
+export function lineasTexto(lineas: number, marcas: number): string {
+  const l = `${lineas} ${lineas === 1 ? 'clase' : 'clases'}`;
+  return marcas > 1 ? `${l} en ${marcas} marcas` : l;
 }
 
 /** Cuenta para el pago por transferencia (alternativa a Mercado Pago).

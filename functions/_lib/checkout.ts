@@ -1,5 +1,8 @@
 // Helpers compartidos del checkout (carpeta _lib: no se publica como ruta).
-import { MAX_CLASES, computeOrderPricing } from '../../src/lib/checkout/constants';
+import {
+  MAX_CLASES, MAX_MARCAS, computeOrderPricing, contarLineas,
+  type MarcaPedido,
+} from '../../src/lib/checkout/constants';
 
 // Tipos mínimos de D1 (evitamos la dependencia @cloudflare/workers-types,
 // consistente con el resto de functions/ que no la usa)
@@ -56,9 +59,47 @@ export function sanitizeClases(raw: unknown): number[] {
   return [...new Set(nums)].sort((a, b) => a - b).slice(0, MAX_CLASES);
 }
 
-/** Precios calculados SIEMPRE en el servidor — nunca se confía en el cliente */
-export function computePricing(nClases: number, garantia: boolean) {
-  return computeOrderPricing(nClases, garantia);
+/** Normaliza las marcas del pedido: nombre recortado, clases saneadas, sin
+ *  marcas vacías ni repetidas, nunca más de MAX_MARCAS. */
+export function sanitizeMarcas(raw: unknown): MarcaPedido[] {
+  if (!Array.isArray(raw)) return [];
+  const out: MarcaPedido[] = [];
+  const vistos = new Set<string>();
+  for (const m of raw) {
+    const nombre = String((m as any)?.nombre ?? '').trim().slice(0, 120);
+    if (!nombre) continue;
+    const key = nombre.toLowerCase();
+    if (vistos.has(key)) continue;
+    vistos.add(key);
+    out.push({ nombre, tipo: 'Denominativa', clases: sanitizeClases((m as any)?.clases) });
+    if (out.length >= MAX_MARCAS) break;
+  }
+  return out;
+}
+
+/** Convierte cualquier forma de payload (v2 multi-marca o v1 legado con
+ *  `marca` + `clases`/`clase`) a la lista de marcas normalizada. */
+export function marcasDesdePayload(p: {
+  marcas?: unknown;
+  marca?: { nombre?: string } | null;
+  clases?: unknown;
+  clase?: number | null;
+}): MarcaPedido[] {
+  const v2 = sanitizeMarcas(p.marcas);
+  if (v2.length) return v2;
+  const nombre = String(p.marca?.nombre ?? '').trim();
+  const clases = sanitizeClases(
+    Array.isArray(p.clases) ? p.clases : (typeof p.clase === 'number' ? [p.clase] : []),
+  );
+  return nombre || clases.length
+    ? [{ nombre, tipo: 'Denominativa', clases }]
+    : [];
+}
+
+/** Precios calculados SIEMPRE en el servidor — nunca se confía en el cliente.
+ *  Una línea = una marca en una clase. */
+export function computePricing(marcas: MarcaPedido[], garantia: boolean) {
+  return computeOrderPricing(contarLineas(marcas), garantia);
 }
 
 export function json(data: unknown, status = 200): Response {
