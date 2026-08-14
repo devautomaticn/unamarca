@@ -4,7 +4,7 @@
 // TODO wiring: POST /api/checkout/submit (PDF + emails).
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { NIZA_CLASSES } from '../lib/checkout/nizaClasses';
-import { PRICING, MAX_CLASES, MAX_MARCAS, PROVINCIAS, TRANSFERENCIA, formatARS } from '../lib/checkout/constants';
+import { PRICING, MAX_CLASES, MAX_MARCAS, PROVINCIAS, TRANSFERENCIA, TIPOS_MARCA, LOGO_ACCEPT, LOGO_CM_MAX, formatARS } from '../lib/checkout/constants';
 import { waHref, waHrefMulticlase, waHrefMultimarca } from '../lib/wa';
 
 const SITE_URL = 'https://unamarca.com.ar';
@@ -112,24 +112,38 @@ const faqSchema = {
 
         <div class="ck-lock" id="ck-lock-marcas" hidden></div>
 
-        <div class="ck-grid ck-g2">
-          <div class="ck-field">
-            <label for="ck-tipo-persona">Tipo de titular</label>
-            <div class="ck-sel ck-sel--locked">
-              <select id="ck-tipo-persona" disabled><option>Humana</option></select>
-            </div>
-            <p class="ck-help">¿Es para una empresa? <a href={waEmpresa} target="_blank" rel="noopener noreferrer" onclick="gtag('event', 'whatsapp_click', {'source': 'registrar_empresa'})">Escribinos por WhatsApp</a></p>
+        <div class="ck-field">
+          <label for="ck-tipo-persona">Tipo de titular</label>
+          <div class="ck-sel ck-sel--locked">
+            <select id="ck-tipo-persona" disabled><option>Humana</option></select>
           </div>
-          <div class="ck-field">
-            <label for="ck-tipo-marca">Tipo de marca</label>
-            <div class="ck-sel ck-sel--locked">
-              <select id="ck-tipo-marca" disabled><option>Denominativa</option></select>
-            </div>
-            <p class="ck-help">Registramos el nombre de tu marca (sin logo).</p>
-          </div>
+          <p class="ck-help">¿Es para una empresa? <a href={waEmpresa} target="_blank" rel="noopener noreferrer" onclick="gtag('event', 'whatsapp_click', {'source': 'registrar_empresa'})">Escribinos por WhatsApp</a></p>
         </div>
 
       </div>
+
+      <!-- Molde de fila de marca: nombre + tipo. Lo clona renderMarcasStep1(). -->
+      <template id="ck-marca-row-tpl">
+        <div class="ck-marca-row">
+          <div class="ck-field ck-marca-nombre">
+            <label class="ck-marca-label"></label>
+            <div class="ck-marca-input">
+              <input type="text" maxlength="120" autocomplete="off" />
+              <button type="button" class="ck-marca-rm" title="Quitar esta marca" hidden>×</button>
+            </div>
+            <p class="ck-help ck-marca-nombre-help" hidden></p>
+          </div>
+          <div class="ck-field ck-marca-tipo">
+            <label class="ck-tipo-label">Tipo de marca</label>
+            <div class="ck-sel">
+              <select class="ck-tipo-sel">
+                {TIPOS_MARCA.map(t => <option value={t.value}>{t.label}</option>)}
+              </select>
+            </div>
+            <p class="ck-help ck-tipo-help"></p>
+          </div>
+        </div>
+      </template>
 
       <div class="ck-nav">
         <span></span>
@@ -193,6 +207,57 @@ const faqSchema = {
             <label>Página web <span class="ck-field-opt">(opcional)</span></label>
             <input type="url" class="ck-sitio" placeholder="https://tumarca.com" autocomplete="url" inputmode="url" />
             <p class="ck-err ck-sitio-err"></p>
+          </div>
+
+          <!-- Logo: solo en mixtas y figurativas (renderDescCards lo muestra) -->
+          <div class="ck-logo" hidden>
+            <div class="ck-field">
+              <label>Imagen de tu marca <em>*</em></label>
+              <input type="file" class="ck-logo-file" accept={LOGO_ACCEPT} />
+              <p class="ck-help">
+                JPG, PNG o WebP. La convertimos a JPG, que es el formato que pide el INPI.
+              </p>
+              <p class="ck-err ck-logo-err"></p>
+            </div>
+
+            <div class="ck-logo-preview" hidden>
+              <img class="ck-logo-img" alt="Vista previa de la imagen de tu marca" />
+              <p class="ck-logo-meta"></p>
+            </div>
+
+            <div class="ck-grid ck-g2">
+              <div class="ck-field">
+                <label>Alto (cm) <em>*</em></label>
+                <input type="text" class="ck-logo-alto" inputmode="decimal" placeholder="5" />
+              </div>
+              <div class="ck-field">
+                <label>Ancho (cm) <em>*</em></label>
+                <input type="text" class="ck-logo-ancho" inputmode="decimal" placeholder="5" />
+              </div>
+            </div>
+            <p class="ck-help">
+              Las calculamos de tu imagen para respetar su proporción. Podés cambiarlas:
+              es el tamaño al que se publica el signo, hasta {LOGO_CM_MAX} cm de lado.
+            </p>
+            <p class="ck-err ck-medidas-err"></p>
+
+            <div class="ck-field">
+              <label>Enunciación de colores <em>*</em></label>
+              <input type="text" class="ck-colores" maxlength="200" placeholder="Rojo, verde y azul" />
+              <p class="ck-help">
+                Los colores que aparecen en la imagen. Si es en blanco y negro, escribí
+                “Blanco y negro”. La protección queda limitada a los colores que declares.
+              </p>
+              <p class="ck-err ck-colores-err"></p>
+            </div>
+
+            <!-- Solo mixta: el INPI corrige de oficio si la denominación no
+                 transcribe todo el texto de la imagen. -->
+            <label class="ck-terms ck-logo-confirm" hidden>
+              <input type="checkbox" class="ck-logo-ok" />
+              <span class="ck-logo-ok-txt"></span>
+            </label>
+            <p class="ck-err ck-confirm-err"></p>
           </div>
         </div>
       </template>
@@ -641,6 +706,15 @@ const faqSchema = {
           trámite por email.
         </p>
 
+        <!-- Solo si la imagen no llegó al servidor: el pedido se envía igual -->
+        <div class="ck-done-transfer" id="ck-done-logo" hidden>
+          <p class="ck-done-transfer-title">Nos falta la imagen de tu marca</p>
+          <p>
+            No pudimos guardar el archivo del logo. Te lo vamos a pedir por
+            WhatsApp para presentar la solicitud: tu pedido ya quedó registrado.
+          </p>
+        </div>
+
         <!-- Recordatorio de la transferencia: solo si eligió ese medio de pago -->
         <div class="ck-done-transfer" id="ck-done-transfer" hidden>
           <p class="ck-done-transfer-title">Falta tu transferencia</p>
@@ -678,6 +752,9 @@ const faqSchema = {
   import {
     PRICING, MAX_CLASES, MAX_MARCAS, TRANSFERENCIA,
     computeOrderPricing, contarLineas, clasesTexto, lineasTexto, formatARS,
+    TIPOS_MARCA, LOGO_MAX_PX, LOGO_JPEG_QUALITY, LOGO_CM_MAX,
+    formatCm, parseCm, medidasDesdePx, normalizeTipoMarca, requiereLogo,
+    tieneDenominacion, type TipoMarca,
   } from '../lib/checkout/constants';
   import { formatCuitInput, isValidCuit, cuitMatchesDni } from '../lib/checkout/cuit';
   import { cartaPoderHTML, type CartaPoderData } from '../lib/checkout/cartaPoder';
@@ -694,14 +771,34 @@ const faqSchema = {
   // ── Estado ──────────────────────────────────────────────
   // Un pedido son 1..MAX_MARCAS marcas, cada una con sus propias clases.
   // `descripcion` y `sitioWeb` se completan en el paso 5 (post-pago).
+  // El logo (mixta/figurativa) también es del paso 5: el INPI no lo necesita
+  // para cobrar, y pedir un archivo antes del pago cuesta conversión.
   interface MarcaState {
     nombre: string;
+    tipo: TipoMarca;
     clases: number[];
     descripcion: string;
     sitioWeb: string;
+    /** Enunciación de colores — obligatoria en mixta y figurativa */
+    colores: string;
+    alto: number | null;
+    ancho: number | null;
+    /** Solo mixta: el cliente confirma que la denominación transcribe todo el
+     *  texto de la imagen (si no coincide, el INPI corrige de oficio). */
+    confirmaTexto: boolean;
+    /** Key en R2, la escribe el servidor al subir */
+    logoKey: string | null;
+    /** Transitorios: no van al draft (un JPG no entra en localStorage) */
+    logoBlob?: Blob | null;
+    logoUrl?: string | null;
+    logoNombre?: string;
+    logoPx?: { ancho: number; alto: number } | null;
   }
-  const nuevaMarca = (nombre = ''): MarcaState =>
-    ({ nombre, clases: [], descripcion: '', sitioWeb: '' });
+  const nuevaMarca = (nombre = '', tipo: TipoMarca = 'denominativa'): MarcaState => ({
+    nombre, tipo, clases: [], descripcion: '', sitioWeb: '',
+    colores: '', alto: null, ancho: null, confirmaTexto: false,
+    logoKey: null, logoBlob: null, logoUrl: null, logoNombre: '', logoPx: null,
+  });
 
   let marcas: MarcaState[] = [nuevaMarca()];
   let garantia = false;
@@ -721,10 +818,24 @@ const faqSchema = {
     'ck-email', 'ck-whatsapp',
   ];
 
+  /** El draft guarda todo menos la imagen: un JPG en base64 no entra en la
+   *  cuota de localStorage. Si el cliente recarga antes de enviar, vuelve a
+   *  elegir el archivo (el resto de lo cargado sigue ahí). */
+  function marcaParaDraft(m: MarcaState) {
+    const { logoBlob, logoUrl, logoPx, ...resto } = m;
+    return resto;
+  }
+
   function saveDraft() {
     const values: Record<string, string> = {};
     FIELD_IDS.forEach(id => { values[id] = input(id).value; });
-    localStorage.setItem(DRAFT_KEY, JSON.stringify({ values, marcas, garantia }));
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({
+        values, marcas: marcas.map(marcaParaDraft), garantia,
+      }));
+    } catch (e) {
+      console.warn('[um-checkout] no se pudo guardar el draft:', e);
+    }
   }
 
   function leerDraft(): any {
@@ -754,10 +865,15 @@ const faqSchema = {
   function marcasDesdeDraft(draft: any): MarcaState[] {
     if (Array.isArray(draft?.marcas) && draft.marcas.length) {
       return draft.marcas.map((m: any) => ({
-        nombre: String(m?.nombre ?? ''),
+        ...nuevaMarca(String(m?.nombre ?? ''), normalizeTipoMarca(m?.tipo)),
         clases: Array.isArray(m?.clases) ? m.clases : [],
         descripcion: String(m?.descripcion ?? ''),
         sitioWeb: String(m?.sitioWeb ?? ''),
+        colores: String(m?.colores ?? ''),
+        alto: typeof m?.alto === 'number' ? m.alto : null,
+        ancho: typeof m?.ancho === 'number' ? m.ancho : null,
+        confirmaTexto: m?.confirmaTexto === true,
+        logoKey: typeof m?.logoKey === 'string' ? m.logoKey : null,
       }));
     }
     const nombre = String(draft?.values?.['ck-marca'] ?? '');
@@ -766,7 +882,7 @@ const faqSchema = {
       : (draft?.clase ? [draft.clase] : []);
     if (!nombre && !clases.length) return [];
     return [{
-      nombre,
+      ...nuevaMarca(nombre),
       clases,
       descripcion: String(draft?.values?.['ck-descripcion'] ?? ''),
       sitioWeb: String(draft?.values?.['ck-sitioweb'] ?? ''),
@@ -777,15 +893,18 @@ const faqSchema = {
    *  sola marca en `marca` + `clases`/`clase`. */
   function marcasDelPedido(p: any): MarcaState[] {
     if (Array.isArray(p?.marcas) && p.marcas.length) {
-      return p.marcas.map((m: any) => nuevaMarcaCon(m?.nombre, m?.clases));
+      return p.marcas.map((m: any) => nuevaMarcaCon(m?.nombre, m?.clases, m?.tipo, m?.logoKey));
     }
     const clases = Array.isArray(p?.clases) ? p.clases : (p?.clase ? [p.clase] : []);
     if (!p?.marca?.nombre && !clases.length) return [];
-    return [nuevaMarcaCon(p?.marca?.nombre, clases)];
+    return [nuevaMarcaCon(p?.marca?.nombre, clases, p?.marca?.tipo, null)];
   }
-  const nuevaMarcaCon = (nombre: unknown, clases: unknown): MarcaState => ({
-    ...nuevaMarca(String(nombre ?? '')),
+  const nuevaMarcaCon = (
+    nombre: unknown, clases: unknown, tipo?: unknown, logoKey?: unknown,
+  ): MarcaState => ({
+    ...nuevaMarca(String(nombre ?? ''), normalizeTipoMarca(tipo)),
     clases: Array.isArray(clases) ? clases : [],
+    logoKey: typeof logoKey === 'string' ? logoKey : null,
   });
 
   // ── Analytics: funnel GA4 ───────────────────────────────
@@ -884,9 +1003,11 @@ const faqSchema = {
         : 'Ingresá el nombre de tu marca.');
       return false;
     }
-    const nombres = marcas.map(m => m.nombre.trim().toLowerCase());
-    if (new Set(nombres).size !== nombres.length) {
-      setErr('marca', 'Repetiste una marca. Si querés registrarla en más clases, sumalas en el paso 3.');
+    // La clave incluye el tipo: la misma denominación como denominativa y como
+    // mixta son dos solicitudes distintas, no un duplicado.
+    const claves = marcas.map(m => `${m.nombre.trim().toLowerCase()}|${m.tipo}`);
+    if (new Set(claves).size !== claves.length) {
+      setErr('marca', 'Repetiste una marca con el mismo tipo. Si querés registrarla en más clases, sumalas en el paso 3.');
       return false;
     }
     return true;
@@ -950,6 +1071,33 @@ const faqSchema = {
         primerError = primerError || card;
         ok = false;
       }
+
+      // Logo, medidas y colores: obligatorios en mixta y figurativa
+      if (!requiereLogo(m.tipo)) return;
+      const errLogo = card.querySelector<HTMLElement>('.ck-logo-err')!;
+      const errMedidas = card.querySelector<HTMLElement>('.ck-medidas-err')!;
+      const errColores = card.querySelector<HTMLElement>('.ck-colores-err')!;
+      const errConfirm = card.querySelector<HTMLElement>('.ck-confirm-err')!;
+      [errLogo, errMedidas, errColores, errConfirm].forEach(el => setErrEl(el, ''));
+      if (FIELDS_OPTIONAL) return;
+
+      const fallo = (el: HTMLElement, msg: string) => {
+        setErrEl(el, msg);
+        primerError = primerError || card;
+        ok = false;
+      };
+      if (!m.logoBlob && !m.logoKey) {
+        fallo(errLogo, 'Subí la imagen de tu marca.');
+      }
+      if (m.alto === null || m.ancho === null) {
+        fallo(errMedidas, `Ingresá alto y ancho en centímetros, hasta ${LOGO_CM_MAX} (con punto: 3.5).`);
+      }
+      if (!m.colores.trim()) {
+        fallo(errColores, 'Escribí los colores de la imagen. Si es en blanco y negro, poné “Blanco y negro”.');
+      }
+      if (m.tipo === 'mixta' && !m.confirmaTexto) {
+        fallo(errConfirm, 'Confirmá que la denominación coincide con el texto de la imagen.');
+      }
     });
     if (primerError) (primerError as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
 
@@ -1003,12 +1151,21 @@ const faqSchema = {
   /** Normaliza el estado y repinta todo lo que depende de la lista de marcas. */
   function setMarcas(lista: MarcaState[], save = true) {
     const limpias = lista.slice(0, MAX_MARCAS).map(m => ({
-      nombre: String(m.nombre ?? '').slice(0, 120),
+      ...nuevaMarca(String(m.nombre ?? '').slice(0, 120), normalizeTipoMarca(m.tipo)),
       clases: [...new Set((m.clases ?? []).filter(n => Number.isInteger(n) && n >= 1 && n <= 45))]
         .sort((a, b) => a - b)
         .slice(0, MAX_CLASES),
       descripcion: String(m.descripcion ?? ''),
       sitioWeb: String(m.sitioWeb ?? ''),
+      colores: String(m.colores ?? ''),
+      alto: typeof m.alto === 'number' ? m.alto : null,
+      ancho: typeof m.ancho === 'number' ? m.ancho : null,
+      confirmaTexto: m.confirmaTexto === true,
+      logoKey: m.logoKey ?? null,
+      logoBlob: m.logoBlob ?? null,
+      logoUrl: m.logoUrl ?? null,
+      logoNombre: m.logoNombre ?? '',
+      logoPx: m.logoPx ?? null,
     }));
     marcas = limpias.length ? limpias : [nuevaMarca()];
     renderMarcasStep1();
@@ -1016,28 +1173,52 @@ const faqSchema = {
     if (save) saveDraft();
   }
 
+  /** Etiqueta del campo nombre según el tipo. En una figurativa no es la
+   *  denominación (no tiene): es la referencia con la que identificamos el
+   *  pedido, y el INPI nunca la ve. */
+  function labelNombre(tipo: TipoMarca, i: number, varias: boolean): string {
+    if (!tieneDenominacion(tipo)) {
+      return varias ? `Marca ${i + 1} — referencia` : 'Nombre de referencia';
+    }
+    return varias ? `Marca ${i + 1}` : 'Nombre de la marca';
+  }
+
   function renderMarcasStep1() {
     const cont = $('ck-marcas');
+    const molde = tpl('ck-marca-row-tpl');
     cont.innerHTML = '';
     const varias = marcas.length > 1;
 
     marcas.forEach((m, i) => {
-      const row = document.createElement('div');
-      row.className = 'ck-marca-row';
+      const row = (molde.content.firstElementChild!.cloneNode(true) as HTMLElement);
+      const label = row.querySelector<HTMLLabelElement>('.ck-marca-label')!;
+      const inp = row.querySelector<HTMLInputElement>('input[type="text"]')!;
+      const rm = row.querySelector<HTMLButtonElement>('.ck-marca-rm')!;
+      const nombreHelp = row.querySelector<HTMLElement>('.ck-marca-nombre-help')!;
+      const tipoLabel = row.querySelector<HTMLLabelElement>('.ck-tipo-label')!;
+      const sel = row.querySelector<HTMLSelectElement>('.ck-tipo-sel')!;
+      const tipoHelp = row.querySelector<HTMLElement>('.ck-tipo-help')!;
 
-      const label = document.createElement('label');
-      label.setAttribute('for', `ck-marca-${i}`);
-      label.innerHTML = varias ? `Marca ${i + 1} <em>*</em>` : `Nombre de la marca <em>*</em>`;
-
-      const wrap = document.createElement('div');
-      wrap.className = 'ck-marca-input';
-
-      const inp = document.createElement('input');
-      inp.type = 'text';
       inp.id = `ck-marca-${i}`;
+      label.setAttribute('for', inp.id);
+      sel.id = `ck-tipo-marca-${i}`;
+      tipoLabel.setAttribute('for', sel.id);
+
+      // Nombre y ayuda dependen del tipo elegido: se repintan sin re-render
+      // para no perder el foco mientras el usuario escribe.
+      const pintarPorTipo = () => {
+        label.innerHTML = `${labelNombre(m.tipo, i, varias)} <em>*</em>`;
+        inp.placeholder = tieneDenominacion(m.tipo)
+          ? (i === 0 ? 'UnaMarca' : 'Nombre de la otra marca')
+          : 'Cómo le decimos a este logo';
+        nombreHelp.textContent = tieneDenominacion(m.tipo)
+          ? ''
+          : 'Es solo para identificar tu pedido: la marca figurativa se presenta sin texto.';
+        nombreHelp.hidden = tieneDenominacion(m.tipo);
+        tipoHelp.textContent = TIPOS_MARCA.find(t => t.value === m.tipo)!.ayuda;
+      };
+
       inp.maxLength = 120;
-      inp.autocomplete = 'off';
-      inp.placeholder = i === 0 ? 'UnaMarca' : 'Nombre de la otra marca';
       inp.value = m.nombre;
       inp.disabled = pedidoBloqueado;
       inp.addEventListener('input', () => {
@@ -1045,23 +1226,34 @@ const faqSchema = {
         setErr('marca', '');
         saveDraft();
       });
-      wrap.append(inp);
 
-      if (varias && !pedidoBloqueado) {
-        const rm = document.createElement('button');
-        rm.type = 'button';
-        rm.className = 'ck-marca-rm';
-        rm.textContent = '×';
-        rm.title = 'Quitar esta marca';
-        rm.setAttribute('aria-label', `Quitar la marca ${i + 1}`);
-        rm.addEventListener('click', () => {
-          setMarcas(marcas.filter((_, j) => j !== i));
-          setErr('marca', '');
-        });
-        wrap.append(rm);
-      }
+      sel.value = m.tipo;
+      sel.disabled = pedidoBloqueado;
+      sel.parentElement!.classList.toggle('ck-sel--locked', pedidoBloqueado);
+      sel.addEventListener('change', () => {
+        m.tipo = normalizeTipoMarca(sel.value);
+        // Cambiar de tipo invalida lo que se cargó para el tipo anterior
+        if (!requiereLogo(m.tipo)) {
+          liberarLogo(m);
+          m.colores = '';
+          m.alto = null;
+          m.ancho = null;
+        }
+        m.confirmaTexto = false;
+        pintarPorTipo();
+        setErr('marca', '');
+        saveDraft();
+      });
 
-      row.append(label, wrap);
+      rm.hidden = !varias || pedidoBloqueado;
+      rm.setAttribute('aria-label', `Quitar la marca ${i + 1}`);
+      rm.addEventListener('click', () => {
+        liberarLogo(marcas[i]);
+        setMarcas(marcas.filter((_, j) => j !== i));
+        setErr('marca', '');
+      });
+
+      pintarPorTipo();
       cont.append(row);
     });
 
@@ -1311,6 +1503,107 @@ const faqSchema = {
     $('ck-pay-total').textContent = formatARS(total());
   }
 
+  // ── Logo de la marca: normalización y medidas (paso 5) ──
+  // El INPI acepta JPG y pide ALTO y ANCHO en cm. Las medidas son una
+  // declaración del tamaño de publicación, no una medición del archivo: lo
+  // único que tiene que ser cierto es la proporción del signo.
+
+  function liberarLogo(m?: MarcaState) {
+    if (!m) return;
+    if (m.logoUrl) URL.revokeObjectURL(m.logoUrl);
+    m.logoBlob = null;
+    m.logoUrl = null;
+    m.logoNombre = '';
+    m.logoPx = null;
+    m.logoKey = null;
+  }
+
+  function cargarImagen(url: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error('no se pudo leer la imagen'));
+      img.src = url;
+    });
+  }
+
+  /** Caja del contenido no transparente, en coordenadas de la imagen original.
+   *  Solo se usa en PNG: es el único formato con alfa que aceptamos, y el
+   *  margen vacío falsearía la proporción declarada. Los JPG no se recortan
+   *  (un fondo de color puede ser parte del signo). */
+  function cajaOpaca(img: HTMLImageElement, w: number, h: number) {
+    const escala = Math.min(1, 1200 / Math.max(w, h));
+    const sw = Math.max(1, Math.round(w * escala));
+    const sh = Math.max(1, Math.round(h * escala));
+    const c = document.createElement('canvas');
+    c.width = sw; c.height = sh;
+    const cx = c.getContext('2d', { willReadFrequently: true })!;
+    cx.drawImage(img, 0, 0, sw, sh);
+    let datos: Uint8ClampedArray;
+    try {
+      datos = cx.getImageData(0, 0, sw, sh).data;
+    } catch {
+      return null; // canvas contaminado: seguimos con la imagen entera
+    }
+
+    let minX = sw, minY = sh, maxX = -1, maxY = -1;
+    for (let y = 0; y < sh; y++) {
+      for (let x = 0; x < sw; x++) {
+        if (datos[(y * sw + x) * 4 + 3] > 8) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+    if (maxX < 0) return null; // imagen 100% transparente
+
+    return {
+      x: minX / escala,
+      y: minY / escala,
+      w: (maxX - minX + 1) / escala,
+      h: (maxY - minY + 1) / escala,
+    };
+  }
+
+  /** Convierte lo que haya elegido el cliente al JPG que sube al INPI:
+   *  recorta la transparencia (PNG), aplana sobre blanco — el JPG no tiene
+   *  canal alfa, sin fondo lo transparente saldría negro — y limita el lado
+   *  mayor, con lo que el peso deja de importar sin rechazarle nada a nadie. */
+  async function normalizarLogo(file: File): Promise<{ blob: Blob; ancho: number; alto: number }> {
+    const url = URL.createObjectURL(file);
+    try {
+      const img = await cargarImagen(url);
+      const w = img.naturalWidth;
+      const h = img.naturalHeight;
+      if (!w || !h) throw new Error('imagen sin dimensiones');
+
+      const caja = (file.type === 'image/png' ? cajaOpaca(img, w, h) : null)
+        ?? { x: 0, y: 0, w, h };
+
+      const escala = Math.min(1, LOGO_MAX_PX / Math.max(caja.w, caja.h));
+      const outW = Math.max(1, Math.round(caja.w * escala));
+      const outH = Math.max(1, Math.round(caja.h * escala));
+
+      const canvas = document.createElement('canvas');
+      canvas.width = outW;
+      canvas.height = outH;
+      const cx = canvas.getContext('2d')!;
+      cx.fillStyle = '#ffffff';
+      cx.fillRect(0, 0, outW, outH);
+      cx.drawImage(img, caja.x, caja.y, caja.w, caja.h, 0, 0, outW, outH);
+
+      const blob = await new Promise<Blob | null>(
+        r => canvas.toBlob(r, 'image/jpeg', LOGO_JPEG_QUALITY),
+      );
+      if (!blob) throw new Error('no se pudo generar el JPG');
+      return { blob, ancho: outW, alto: outH };
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+
   // ── Descripción por marca (paso 5) ──────────────────────
   const MIN_DESCRIPCION = 100;
 
@@ -1367,8 +1660,134 @@ const faqSchema = {
       });
 
       updateHelp();
+      montarLogo(card, m, i);
       cont.append(card);
     });
+  }
+
+  /** Bloque de imagen dentro de la tarjeta del paso 5. Solo mixtas y
+   *  figurativas; en denominativa queda oculto. */
+  function montarLogo(card: HTMLElement, m: MarcaState, i: number) {
+    const bloque = card.querySelector<HTMLElement>('.ck-logo')!;
+    if (!requiereLogo(m.tipo)) { bloque.hidden = true; return; }
+    bloque.hidden = false;
+
+    const file = card.querySelector<HTMLInputElement>('.ck-logo-file')!;
+    const prev = card.querySelector<HTMLElement>('.ck-logo-preview')!;
+    const img = card.querySelector<HTMLImageElement>('.ck-logo-img')!;
+    const meta = card.querySelector<HTMLElement>('.ck-logo-meta')!;
+    const alto = card.querySelector<HTMLInputElement>('.ck-logo-alto')!;
+    const ancho = card.querySelector<HTMLInputElement>('.ck-logo-ancho')!;
+    const colores = card.querySelector<HTMLInputElement>('.ck-colores')!;
+    const confirmWrap = card.querySelector<HTMLElement>('.ck-logo-confirm')!;
+    const confirmChk = card.querySelector<HTMLInputElement>('.ck-logo-ok')!;
+    const confirmTxt = card.querySelector<HTMLElement>('.ck-logo-ok-txt')!;
+    const errLogo = card.querySelector<HTMLElement>('.ck-logo-err')!;
+    const errMedidas = card.querySelector<HTMLElement>('.ck-medidas-err')!;
+    const errColores = card.querySelector<HTMLElement>('.ck-colores-err')!;
+    const errConfirm = card.querySelector<HTMLElement>('.ck-confirm-err')!;
+
+    file.id = `ck-logo-${i}`;
+    alto.id = `ck-logo-alto-${i}`;
+    ancho.id = `ck-logo-ancho-${i}`;
+    colores.id = `ck-colores-${i}`;
+    bloque.querySelectorAll('label').forEach(l => {
+      const campo = l.parentElement?.querySelector('input');
+      if (campo?.id && !l.classList.contains('ck-terms')) l.setAttribute('for', campo.id);
+    });
+
+    const pintarPreview = () => {
+      if (m.logoUrl) {
+        img.src = m.logoUrl;
+        img.hidden = false;
+        prev.hidden = false;
+        const px = m.logoPx;
+        meta.textContent = px
+          ? `${m.logoNombre || 'imagen'} → JPG de ${px.ancho}×${px.alto} px`
+          : `${m.logoNombre || 'imagen'} → JPG`;
+      } else if (m.logoKey) {
+        // Draft recuperado: el archivo ya está guardado, no hace falta resubirlo
+        img.hidden = true;
+        prev.hidden = false;
+        meta.textContent = 'Imagen ya cargada ✓ · elegí otra si querés cambiarla';
+      } else {
+        prev.hidden = true;
+      }
+    };
+
+    file.addEventListener('change', async () => {
+      const elegido = file.files?.[0];
+      if (!elegido) return;
+      setErrEl(errLogo, '');
+      prev.hidden = false;
+      img.hidden = true;
+      meta.textContent = 'Procesando la imagen…';
+      try {
+        const out = await normalizarLogo(elegido);
+        liberarLogo(m);
+        m.logoBlob = out.blob;
+        m.logoUrl = URL.createObjectURL(out.blob);
+        m.logoNombre = elegido.name;
+        m.logoPx = { ancho: out.ancho, alto: out.alto };
+        // Medidas nuevas: la imagen cambió, la proporción anterior ya no vale
+        const med = medidasDesdePx(out.ancho, out.alto);
+        m.alto = med.alto;
+        m.ancho = med.ancho;
+        alto.value = formatCm(m.alto);
+        ancho.value = formatCm(m.ancho);
+        setErrEl(errMedidas, '');
+        pintarPreview();
+        saveDraft();
+      } catch (e) {
+        console.error('[um-checkout] error procesando el logo:', e);
+        liberarLogo(m);
+        prev.hidden = true;
+        setErrEl(errLogo, 'No pudimos leer esa imagen. Probá con otro archivo JPG, PNG o WebP.');
+      }
+    });
+
+    // El teclado en es-AR da coma; el INPI usa punto. Se acepta cualquiera y al
+    // salir del campo se muestra ya normalizado, que es lo que se va a enviar.
+    const medida = (el: HTMLInputElement, campo: 'alto' | 'ancho') => {
+      el.value = formatCm(m[campo]);
+      el.addEventListener('input', () => {
+        m[campo] = parseCm(el.value);
+        setErrEl(errMedidas, '');
+        saveDraft();
+      });
+      el.addEventListener('blur', () => {
+        if (m[campo] !== null) el.value = formatCm(m[campo]);
+      });
+    };
+    medida(alto, 'alto');
+    medida(ancho, 'ancho');
+
+    colores.value = m.colores;
+    colores.addEventListener('input', () => {
+      m.colores = colores.value;
+      setErrEl(errColores, '');
+      saveDraft();
+    });
+
+    // La confirmación es solo de la mixta: es el tipo donde la denominación
+    // tiene que transcribir todo el texto de la imagen.
+    const esMixta = m.tipo === 'mixta';
+    confirmWrap.hidden = !esMixta;
+    errConfirm.hidden = !esMixta;
+    if (esMixta) {
+      const denom = m.nombre.trim().toUpperCase();
+      confirmTxt.textContent = denom
+        ? `Confirmo que “${denom}” es exactamente todo el texto que aparece en la imagen.`
+        : 'Confirmo que la denominación es exactamente todo el texto que aparece en la imagen.';
+      confirmChk.checked = m.confirmaTexto;
+      confirmChk.addEventListener('change', () => {
+        m.confirmaTexto = confirmChk.checked;
+        setErrEl(errConfirm, '');
+        saveDraft();
+      });
+    }
+
+    pintarPreview();
   }
 
   // ── Pago: Mercado Pago o transferencia ──────────────────
@@ -1385,7 +1804,7 @@ const faqSchema = {
 
   function orderBody() {
     return JSON.stringify({
-      marcas: marcas.map(m => ({ nombre: m.nombre.trim(), clases: m.clases })),
+      marcas: marcas.map(m => ({ nombre: m.nombre.trim(), tipo: m.tipo, clases: m.clases })),
       contacto: {
         email: input('ck-email').value.trim(),
         whatsapp: input('ck-whatsapp').value.trim(),
@@ -1574,13 +1993,23 @@ const faqSchema = {
       const draftPrevio = marcasDesdeDraft(leerDraft());
       const delPedido = marcasDelPedido(p);
       if (delPedido.length) {
-        setMarcas(delPedido.map((m, i) => ({
-          ...m,
-          descripcion: draftPrevio[i]?.nombre.trim().toLowerCase() === m.nombre.trim().toLowerCase()
-            ? draftPrevio[i].descripcion : '',
-          sitioWeb: draftPrevio[i]?.nombre.trim().toLowerCase() === m.nombre.trim().toLowerCase()
-            ? draftPrevio[i].sitioWeb : '',
-        })), false);
+        setMarcas(delPedido.map((m, i) => {
+          const previo = draftPrevio[i];
+          const mismo = previo?.nombre.trim().toLowerCase() === m.nombre.trim().toLowerCase();
+          if (!mismo) return m;
+          return {
+            ...m,
+            descripcion: previo.descripcion,
+            sitioWeb: previo.sitioWeb,
+            // El logo en sí no sobrevive al draft (es un Blob), pero sí lo que
+            // el cliente escribió alrededor y la key si ya se subió.
+            colores: previo.colores,
+            alto: previo.alto,
+            ancho: previo.ancho,
+            confirmaTexto: previo.confirmaTexto,
+            logoKey: m.logoKey ?? previo.logoKey,
+          };
+        }), false);
       }
       bloquearPedido();
       if (p.contacto?.email) input('ck-email').value = p.contacto.email;
@@ -1614,7 +2043,7 @@ const faqSchema = {
       codigoPostal: input('ck-codpostal').value.trim(),
       localidad: input('ck-localidad').value.trim(),
       provincia: input('ck-provincia').value,
-      marcas: marcas.map(m => ({ nombre: m.nombre, clases: [...m.clases] })),
+      marcas: marcas.map(m => ({ nombre: m.nombre, tipo: m.tipo, clases: [...m.clases] })),
       fecha: { dia: now.getDate(), mes: now.getMonth(), anio: now.getFullYear() },
     };
   }
@@ -1693,6 +2122,38 @@ const faqSchema = {
   });
 
   // ── Envío ───────────────────────────────────────────────
+  const requiereAlgunLogo = () => marcas.some(m => requiereLogo(m.tipo));
+
+  /** Sube los logos que todavía no están en el servidor, de a uno: el endpoint
+   *  hace read-modify-write del payload y en paralelo se pisarían.
+   *  Devuelve true si alguno quedó sin subir — el pedido se envía igual (el
+   *  cliente ya pagó) y la confirmación le avisa que se lo vamos a pedir. */
+  async function subirLogos(ref: string): Promise<boolean> {
+    let pendiente = false;
+    for (let i = 0; i < marcas.length; i++) {
+      const m = marcas[i];
+      if (!requiereLogo(m.tipo)) continue;
+      if (m.logoKey && !m.logoBlob) continue; // ya está guardado
+      if (!m.logoBlob) { pendiente = true; continue; }
+      try {
+        const res = await fetch(`/api/checkout/order/${encodeURIComponent(ref)}/logo?i=${i}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'image/jpeg' },
+          body: m.logoBlob,
+        });
+        if (!res.ok) throw new Error(String(res.status));
+        const data = await res.json();
+        m.logoKey = data.logoKey || null;
+        saveDraft();
+      } catch (e) {
+        console.error(`[um-checkout] no se pudo subir el logo de la marca ${i + 1}:`, e);
+        track('ck_logo_upload_error', { motivo: String(e).slice(0, 100) }, false);
+        pendiente = true;
+      }
+    }
+    return pendiente;
+  }
+
   const submitBtn = document.getElementById('ck-submit') as HTMLButtonElement;
   const termsCheck = input('ck-terms');
 
@@ -1706,13 +2167,22 @@ const faqSchema = {
     $('ck-submit-label').textContent = 'Enviando…';
     $('ck-submit-spin').style.display = '';
 
+    // Los logos van primero y de a uno: el endpoint hace read-modify-write del
+    // payload del pedido, y en paralelo se pisarían entre sí.
+    const logosPendientes = orderRef ? await subirLogos(orderRef) : requiereAlgunLogo();
+
     const payload = {
       marcas: marcas.map(m => ({
         nombre: m.nombre.trim(),
-        tipo: 'Denominativa',
+        tipo: m.tipo,
         clases: m.clases,
         descripcion: m.descripcion.trim(),
         sitioWeb: m.sitioWeb.trim(),
+        ...(requiereLogo(m.tipo) ? {
+          colores: m.colores.trim(),
+          alto: m.alto,
+          ancho: m.ancho,
+        } : {}),
       })),
       titular: {
         tipoPersona: 'Humana',
@@ -1841,6 +2311,8 @@ const faqSchema = {
         'desde que se acredite tu transferencia, y te enviaremos todas las ' +
         'notificaciones del trámite por email.';
     }
+
+    $('ck-done-logo').hidden = !logosPendientes;
 
     localStorage.removeItem(DRAFT_KEY);
     goTo('done');
@@ -2104,10 +2576,16 @@ const faqSchema = {
 .ck-clase-max { color: #b45309; }
 .ck-clase-max[hidden] { display: none; }
 
-/* ─── Multi-marca: filas del paso 1 ─── */
-.ck-marca-row + .ck-marca-row { margin-top: 0.875rem; }
+/* ─── Multi-marca: filas del paso 1 (nombre + tipo) ─── */
+.ck-marca-row { display: grid; grid-template-columns: 1fr 210px; gap: 1rem; align-items: start; }
+.ck-marca-row + .ck-marca-row {
+  margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #e2e8f0;
+}
+.ck-marca-row .ck-field { margin-bottom: 0; }
+@media (max-width: 580px) { .ck-marca-row { grid-template-columns: 1fr; gap: 0.75rem; } }
 .ck-marca-input { display: flex; align-items: center; gap: 0.5rem; }
 .ck-marca-input input { flex: 1; min-width: 0; }
+.ck-marca-rm[hidden] { display: none; }
 .ck-marca-rm {
   flex-shrink: 0; width: 34px; height: 34px; border-radius: 9px; cursor: pointer;
   background: #fff; border: 1.5px solid #e2e8f0; color: #94a3b8;
@@ -2172,6 +2650,36 @@ const faqSchema = {
   text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.6rem;
 }
 .ck-dcard-name[hidden] { display: none; }
+
+/* ─── Logo de la marca (mixta y figurativa, paso 5) ─── */
+.ck-logo {
+  margin-top: 0.25rem; padding: 1.125rem; border-radius: 12px;
+  background: #f8fafc; border: 1.5px solid #e2e8f0;
+}
+.ck-logo[hidden] { display: none; }
+.ck-logo .ck-field:last-of-type { margin-bottom: 0; }
+.ck-logo > .ck-help { margin-bottom: 1rem; }
+.ck-logo input[type="file"] {
+  padding: 0.5rem; font-size: 0.8125rem; cursor: pointer; background: #fff;
+}
+.ck-logo input[type="file"]::file-selector-button {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.8125rem; font-weight: 600; color: #2563eb; cursor: pointer;
+  margin-right: 0.75rem; padding: 0.4rem 0.8rem;
+  background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 100px;
+}
+.ck-logo-preview {
+  display: flex; align-items: center; gap: 0.875rem; margin-bottom: 1rem;
+  padding: 0.75rem; background: #fff; border: 1.5px solid #e2e8f0; border-radius: 10px;
+}
+.ck-logo-preview[hidden] { display: none; }
+.ck-logo-img {
+  width: 84px; height: 84px; object-fit: contain; flex-shrink: 0;
+  background: #fff; border: 1px solid #f1f5f9; border-radius: 8px;
+}
+.ck-logo-img[hidden] { display: none; }
+.ck-logo-meta { font-size: 0.78rem; color: #64748b; line-height: 1.5; word-break: break-word; }
+.ck-logo-confirm[hidden] { display: none; }
 
 /* ─── Pedido + upsell de garantía ─── */
 .ck-order {

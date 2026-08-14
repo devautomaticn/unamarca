@@ -9,13 +9,25 @@ import {
 } from '../../_lib/checkout';
 import {
   PRICING as PRICING_UNIT, TRANSFERENCIA, contarLineas, clasesTexto,
+  normalizeTipoMarca, tipoMarcaLabel, type MarcaPedido, type TipoMarca,
 } from '../../../src/lib/checkout/constants';
 
 type MetodoPago = 'mercadopago' | 'transferencia';
 
+/** Cómo se nombra la marca en el detalle de Mercado Pago, que el cliente ve en
+ *  el resumen de su tarjeta. En una figurativa el nombre es la referencia
+ *  interna: mostrarla ayuda a que reconozca el cargo. */
+function tituloMarca(m: MarcaPedido): string {
+  const tipo: TipoMarca = m.tipo ?? 'denominativa';
+  const nombre = `“${m.nombre.toUpperCase()}”`;
+  return tipo === 'denominativa'
+    ? `Registro de marca ${nombre}`
+    : `Registro de marca ${tipo} ${nombre}`;
+}
+
 interface OrderBody {
-  /** v2: una o más marcas, cada una con sus clases */
-  marcas?: { nombre?: string; clases?: number[] }[];
+  /** v2: una o más marcas, cada una con sus clases y su tipo */
+  marcas?: { nombre?: string; clases?: number[]; tipo?: string }[];
   /** Legado v1: una sola marca (clientes con la página vieja cacheada) */
   marca?: { nombre?: string; tipo?: string };
   clases?: number[];
@@ -56,8 +68,12 @@ export const onRequestPost: PagesFunction<CheckoutEnv> = async (context) => {
   const payload = {
     marcas,
     // Espejo v1 de la primera marca: lo siguen leyendo consumidores viejos
-    // (y hace legibles los pedidos de una sola marca en D1).
-    marca: { nombre: marcas[0]?.nombre || '', tipo: 'Denominativa' },
+    // (y hace legibles los pedidos de una sola marca en D1). El tipo va con la
+    // etiqueta capitalizada de siempre, que es lo que esos consumidores matchean.
+    marca: {
+      nombre: marcas[0]?.nombre || '',
+      tipo: tipoMarcaLabel(normalizeTipoMarca(marcas[0]?.tipo)),
+    },
     clases: marcas[0]?.clases ?? [],
     contacto: {
       email: (body.contacto?.email || '').trim(),
@@ -94,7 +110,7 @@ export const onRequestPost: PagesFunction<CheckoutEnv> = async (context) => {
   const items: MpItem[] = marcasCobrables.length
     ? marcasCobrables.map((m, i) => ({
         id: `registro-${i + 1}`,
-        title: `Registro de marca "${m.nombre.toUpperCase()}" — Honorarios (${clasesTexto(m.clases)})`,
+        title: `${tituloMarca(m)} — Honorarios (${clasesTexto(m.clases)})`,
         quantity: m.clases.length,
         unit_price: PRICING_UNIT.honorarios,
         currency_id: 'ARS',

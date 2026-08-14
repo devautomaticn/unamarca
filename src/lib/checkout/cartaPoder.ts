@@ -3,7 +3,7 @@
 // generar el PDF firmado: mismo template, imposible que diverjan.
 // Basada en el modelo real usado en producción (spec docs/spec_self_checkout.md §5).
 
-import { APODERADO } from './constants';
+import { APODERADO, normalizeTipoMarca, tieneDenominacion, type TipoMarca } from './constants';
 
 export interface CartaPoderData {
   nombreApellido: string;
@@ -18,8 +18,10 @@ export interface CartaPoderData {
   codigoPostal: string;
   localidad: string;
   provincia: string;
-  /** Un solo poder cubre todas las marcas del pedido: un bullet por marca */
-  marcas: { nombre: string; clases: number[] }[];
+  /** Un solo poder cubre todas las marcas del pedido: un bullet por marca.
+   *  Las figurativas no llevan denominación: el `nombre` es interno nuestro y
+   *  no se nombra en el poder. */
+  marcas: { nombre: string; tipo?: TipoMarca; clases: number[] }[];
   fecha: { dia: number; mes: number; anio: number };
 }
 
@@ -34,6 +36,16 @@ function joinClases(clases: number[]): string {
   const nums = [...clases].sort((a, b) => a - b);
   const last = nums.pop();
   return `las clases ${nums.join(', ')} y ${last}`;
+}
+
+/** Cómo se nombra cada marca en el bullet del poder.
+ *  La figurativa no tiene denominación: se la identifica por su tipo y sus
+ *  clases, nunca por el nombre de referencia interno (que el INPI no conoce). */
+function objetoMarca(m: { nombre: string; tipo?: TipoMarca }): string {
+  const tipo = normalizeTipoMarca(m.tipo);
+  if (!tieneDenominacion(tipo)) return 'la marca figurativa';
+  const nombre = `“${m.nombre.trim().toUpperCase()}”`;
+  return tipo === 'mixta' ? `la marca mixta ${nombre}` : `la marca ${nombre}`;
 }
 
 function domicilioLinea(d: CartaPoderData): string {
@@ -57,7 +69,10 @@ export interface CartaPoderTexto {
 }
 
 export function cartaPoderTexto(d: CartaPoderData): CartaPoderTexto {
-  const marcas = d.marcas.filter(m => m.nombre.trim());
+  // Las figurativas entran aunque no tengan nombre: no llevan denominación.
+  const marcas = d.marcas.filter(
+    m => m.nombre.trim() || !tieneDenominacion(normalizeTipoMarca(m.tipo)),
+  );
   const varias = marcas.length > 1;
   const doc = `${d.docTipo || 'DNI'} ${d.docNumero}`;
   return {
@@ -73,7 +88,7 @@ export function cartaPoderTexto(d: CartaPoderData): CartaPoderTexto {
       `con domicilio en ${APODERADO.domicilio}, para que en mi nombre y representación:`,
     bullets: [
       ...marcas.map(m =>
-        `Solicite el registro de la marca “${m.nombre.trim().toUpperCase()}” ante el Instituto Nacional de la Propiedad Industrial (INPI) en ${joinClases(m.clases)} de la Clasificación Internacional de NIZA;`,
+        `Solicite el registro de ${objetoMarca(m)} ante el Instituto Nacional de la Propiedad Industrial (INPI) en ${joinClases(m.clases)} de la Clasificación Internacional de NIZA;`,
       ),
       varias ? 'Realice el seguimiento de los trámites;' : 'Realice el seguimiento del trámite;',
       'Conteste vistas, observaciones y oposiciones;',

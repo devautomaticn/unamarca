@@ -25,13 +25,124 @@ export const MAX_MARCAS = 3;
 /** Techo duro de líneas del pedido (una línea = una marca en una clase) */
 export const MAX_LINEAS = MAX_MARCAS * MAX_CLASES;
 
-/** Una marca del pedido. `descripcion` y `sitioWeb` se cargan post-pago (paso 5). */
+/** Los tres tipos de marca que acepta el INPI en Marcas/Nuevas.
+ *  · denominativa: solo el nombre, sin imagen. Es el caso por defecto.
+ *  · mixta: nombre + logo. La denominación debe transcribir TODO el texto de
+ *    la imagen, o la Dirección corrige la solicitud.
+ *  · figurativa: solo el logo, SIN texto. No tiene denominación ante el INPI:
+ *    el `nombre` que guardamos es una referencia interna nuestra. */
+export type TipoMarca = 'denominativa' | 'mixta' | 'figurativa';
+
+export const TIPOS_MARCA: { value: TipoMarca; label: string; ayuda: string }[] = [
+  {
+    value: 'denominativa',
+    label: 'Denominativa',
+    ayuda: 'Registramos el nombre de tu marca, sin logo. Es la protección más amplia.',
+  },
+  {
+    value: 'mixta',
+    label: 'Mixta',
+    ayuda: 'Nombre y logo juntos. Después del pago te pedimos la imagen.',
+  },
+  {
+    value: 'figurativa',
+    label: 'Figurativa',
+    ayuda: 'Solo el logo, sin texto. Después del pago te pedimos la imagen.',
+  },
+];
+
+/** Normaliza cualquier forma histórica del tipo ('Denominativa', 'MIXTA', …).
+ *  Todo lo que no se reconozca cae en denominativa, que es lo que se vendió
+ *  hasta que existieron los otros dos tipos. */
+export function normalizeTipoMarca(raw: unknown): TipoMarca {
+  const v = String(raw ?? '').trim().toLowerCase();
+  return v === 'mixta' || v === 'figurativa' ? v : 'denominativa';
+}
+
+/** 'denominativa' → 'Denominativa' (para mostrar y para el payload legado v1) */
+export function tipoMarcaLabel(t: TipoMarca): string {
+  return TIPOS_MARCA.find(x => x.value === t)!.label;
+}
+
+/** Mixta y figurativa se presentan con imagen; denominativa no. */
+export function requiereLogo(t: TipoMarca): boolean {
+  return t !== 'denominativa';
+}
+
+/** La figurativa no lleva denominación ante el INPI: el nombre que guardamos
+ *  es solo una referencia interna para identificar el pedido. */
+export function tieneDenominacion(t: TipoMarca): boolean {
+  return t !== 'figurativa';
+}
+
+/** Una marca del pedido. `descripcion` y `sitioWeb` se cargan post-pago (paso 5),
+ *  igual que el logo y sus medidas cuando el tipo lo requiere. */
 export interface MarcaPedido {
   nombre: string;
-  tipo?: string;
+  tipo?: TipoMarca;
   clases: number[];
   descripcion?: string;
   sitioWeb?: string;
+  /** Enunciación de colores del logo (obligatoria en mixta y figurativa) */
+  colores?: string;
+  /** Medidas declaradas del signo, en cm, con un decimal */
+  alto?: number | null;
+  ancho?: number | null;
+  /** Key del JPG en R2 (bucket de logos). Null hasta que se sube. */
+  logoKey?: string | null;
+}
+
+// ── Logo: formato y medidas ───────────────────────────────
+// El INPI acepta JPG/JPEG y pide ALTO y ANCHO en cm, con punto decimal. No
+// declara mínimo ni máximo, así que el techo lo ponemos nosotros.
+
+/** Lo que aceptamos que suba el cliente. Todo se convierte a JPG en el navegador. */
+export const LOGO_ACCEPT = 'image/jpeg,image/png,image/webp';
+
+/** Tope de resolución del JPG que generamos: hace que el peso deje de importar
+ *  sin rechazarle el archivo a nadie. */
+export const LOGO_MAX_PX = 2000;
+export const LOGO_JPEG_QUALITY = 0.92;
+
+/** Medida por defecto del lado mayor del signo, en cm. El otro lado sale de la
+ *  proporción de la imagen. */
+export const LOGO_CM_LADO_MAYOR = 5;
+/** Techo nuestro, no del INPI */
+export const LOGO_CM_MAX = 8;
+export const LOGO_CM_MIN = 0.5;
+
+const round1 = (n: number) => Math.round(n * 10) / 10;
+
+/** Medidas declaradas a partir de los píxeles de la imagen ya recortada.
+ *  Son una declaración del tamaño de publicación, no una medición del archivo:
+ *  lo único que tiene que ser cierto es la proporción. Por eso se fija el lado
+ *  mayor en LOGO_CM_LADO_MAYOR y el menor se deriva. Nunca se usa el DPI del
+ *  metadato: los PNG de Canva/Illustrator lo traen arbitrario. */
+export function medidasDesdePx(anchoPx: number, altoPx: number): { alto: number; ancho: number } {
+  if (!(anchoPx > 0) || !(altoPx > 0)) {
+    return { alto: LOGO_CM_LADO_MAYOR, ancho: LOGO_CM_LADO_MAYOR };
+  }
+  const mayorPx = Math.max(anchoPx, altoPx);
+  const menorPx = Math.min(anchoPx, altoPx);
+  const menorCm = Math.max(LOGO_CM_MIN, round1(LOGO_CM_LADO_MAYOR * (menorPx / mayorPx)));
+  return anchoPx >= altoPx
+    ? { ancho: LOGO_CM_LADO_MAYOR, alto: menorCm }
+    : { alto: LOGO_CM_LADO_MAYOR, ancho: menorCm };
+}
+
+/** "5" / "3.2" — el INPI usa punto decimal, no coma */
+export function formatCm(n: number | null | undefined): string {
+  if (typeof n !== 'number' || !Number.isFinite(n)) return '';
+  return String(round1(n));
+}
+
+/** Acepta coma o punto (el teclado en es-AR da coma) y devuelve null si no es
+ *  un número válido dentro del rango. */
+export function parseCm(raw: string): number | null {
+  const n = parseFloat(String(raw).trim().replace(',', '.'));
+  if (!Number.isFinite(n) || n <= 0) return null;
+  const v = round1(n);
+  return v >= LOGO_CM_MIN && v <= LOGO_CM_MAX ? v : null;
 }
 
 /** Líneas facturables del pedido: la suma de las clases de todas las marcas.

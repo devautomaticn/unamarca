@@ -1,6 +1,7 @@
 // Helpers compartidos del checkout (carpeta _lib: no se publica como ruta).
 import {
-  MAX_CLASES, MAX_MARCAS, computeOrderPricing, contarLineas,
+  MAX_CLASES, MAX_MARCAS, LOGO_CM_MAX, LOGO_CM_MIN,
+  computeOrderPricing, contarLineas, normalizeTipoMarca, requiereLogo,
   type MarcaPedido,
 } from '../../src/lib/checkout/constants';
 
@@ -15,10 +16,44 @@ export interface D1Database {
   prepare(query: string): D1Statement;
 }
 
+// Tipos mínimos de R2, en la misma línea que los de D1: el bucket guarda los
+// logos de las marcas mixtas y figurativas.
+export interface R2ObjectBody {
+  arrayBuffer(): Promise<ArrayBuffer>;
+  size: number;
+}
+export interface R2Bucket {
+  get(key: string): Promise<R2ObjectBody | null>;
+  put(
+    key: string,
+    value: ArrayBuffer,
+    options?: { httpMetadata?: { contentType?: string } },
+  ): Promise<unknown>;
+}
+
 export interface CheckoutEnv {
   DB: D1Database;
   MP_ACCESS_TOKEN: string;
   MP_WEBHOOK_SECRET: string;
+  /** Binding del bucket de logos. Opcional: si falta, el checkout sigue
+   *  funcionando y el logo se le pide al cliente por WhatsApp. */
+  LOGOS?: R2Bucket;
+}
+
+/** Key del logo de una marca dentro del bucket. El índice es la posición de la
+ *  marca en el pedido, que es la clave estable del wizard. */
+export function logoKeyFor(ref: string, indice: number): string {
+  return `logos/${ref}/marca-${indice + 1}.jpg`;
+}
+
+export function base64FromArrayBuffer(buf: ArrayBuffer): string {
+  const bytes = new Uint8Array(buf);
+  let binary = '';
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
 }
 
 export async function ensureSchema(db: D1Database): Promise<void> {
@@ -59,8 +94,21 @@ export function sanitizeClases(raw: unknown): number[] {
   return [...new Set(nums)].sort((a, b) => a - b).slice(0, MAX_CLASES);
 }
 
+/** Medida del signo en cm: un decimal, dentro del rango que fijamos nosotros
+ *  (el INPI no declara mínimo ni máximo). Fuera de rango → null. */
+export function sanitizeCm(raw: unknown): number | null {
+  const n = typeof raw === 'number' ? raw : parseFloat(String(raw ?? '').replace(',', '.'));
+  if (!Number.isFinite(n)) return null;
+  const v = Math.round(n * 10) / 10;
+  return v >= LOGO_CM_MIN && v <= LOGO_CM_MAX ? v : null;
+}
+
 /** Normaliza las marcas del pedido: nombre recortado, clases saneadas, sin
- *  marcas vacías ni repetidas, nunca más de MAX_MARCAS. */
+ *  marcas vacías ni repetidas, nunca más de MAX_MARCAS.
+ *  El nombre se exige siempre: en una figurativa no es la denominación (no
+ *  tiene) sino la referencia interna con la que se identifica el pedido.
+ *  Los campos del logo (colores, medidas, key en R2) se completan post-pago;
+ *  acá solo se preservan si ya venían en el payload guardado. */
 export function sanitizeMarcas(raw: unknown): MarcaPedido[] {
   if (!Array.isArray(raw)) return [];
   const out: MarcaPedido[] = [];
@@ -68,10 +116,22 @@ export function sanitizeMarcas(raw: unknown): MarcaPedido[] {
   for (const m of raw) {
     const nombre = String((m as any)?.nombre ?? '').trim().slice(0, 120);
     if (!nombre) continue;
-    const key = nombre.toLowerCase();
+    const tipo = normalizeTipoMarca((m as any)?.tipo);
+    // La clave incluye el tipo: la misma denominación como denominativa y como
+    // mixta son dos solicitudes distintas ante el INPI, no un duplicado.
+    const key = `${nombre.toLowerCase()}|${tipo}`;
     if (vistos.has(key)) continue;
     vistos.add(key);
-    out.push({ nombre, tipo: 'Denominativa', clases: sanitizeClases((m as any)?.clases) });
+
+    const marca: MarcaPedido = { nombre, tipo, clases: sanitizeClases((m as any)?.clases) };
+    if (requiereLogo(tipo)) {
+      marca.colores = String((m as any)?.colores ?? '').trim().slice(0, 200);
+      marca.alto = sanitizeCm((m as any)?.alto);
+      marca.ancho = sanitizeCm((m as any)?.ancho);
+      const logoKey = String((m as any)?.logoKey ?? '').trim();
+      marca.logoKey = logoKey && logoKey.length <= 200 ? logoKey : null;
+    }
+    out.push(marca);
     if (out.length >= MAX_MARCAS) break;
   }
   return out;
@@ -81,7 +141,7 @@ export function sanitizeMarcas(raw: unknown): MarcaPedido[] {
  *  `marca` + `clases`/`clase`) a la lista de marcas normalizada. */
 export function marcasDesdePayload(p: {
   marcas?: unknown;
-  marca?: { nombre?: string } | null;
+  marca?: { nombre?: string; tipo?: unknown } | null;
   clases?: unknown;
   clase?: number | null;
 }): MarcaPedido[] {
@@ -92,7 +152,7 @@ export function marcasDesdePayload(p: {
     Array.isArray(p.clases) ? p.clases : (typeof p.clase === 'number' ? [p.clase] : []),
   );
   return nombre || clases.length
-    ? [{ nombre, tipo: 'Denominativa', clases }]
+    ? [{ nombre, tipo: normalizeTipoMarca(p.marca?.tipo), clases }]
     : [];
 }
 

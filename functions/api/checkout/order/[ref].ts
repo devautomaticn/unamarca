@@ -2,8 +2,11 @@
 // PATCH /api/checkout/order/:ref — adjunta titular + firma (paso 6), genera el
 //        PDF de la carta poder y envía los emails (cliente + admin) vía Resend.
 // El ref es aleatorio y no adivinable: funciona como llave de lectura.
-import { type CheckoutEnv, ensureSchema, json, marcasDesdePayload } from '../../../_lib/checkout';
-import { sendOrderEmails } from '../../../_lib/notify';
+import {
+  type CheckoutEnv, base64FromArrayBuffer, ensureSchema, json, marcasDesdePayload, sanitizeCm,
+} from '../../../_lib/checkout';
+import { sendOrderEmails, type MarcaEmail } from '../../../_lib/notify';
+import { requiereLogo } from '../../../../src/lib/checkout/constants';
 
 interface OrderRow {
   ref: string;
@@ -88,20 +91,49 @@ export const onRequestPatch: PagesFunction<NotifyEnv> = async ({ env, params, re
       if (key) porNombre[key] = m;
     }
 
-    const marcas = marcasDesdePayload(stored).map((m, i) => {
+    // El tipo y la key del logo salen del snapshot del servidor; la
+    // enunciación de colores y las medidas las carga el cliente en el paso 5.
+    const marcas: MarcaEmail[] = marcasDesdePayload(stored).map((m, i) => {
       const porIndice = completionMarcas[i];
       const extra = (
         String(porIndice?.nombre ?? '').trim().toLowerCase() === m.nombre.toLowerCase()
           ? porIndice
           : porNombre[m.nombre.toLowerCase()] ?? porIndice
       ) ?? {};
+      const tipo = m.tipo ?? 'denominativa';
       return {
         nombre: m.nombre,
         clases: m.clases,
+        tipo,
         descripcion: (extra.descripcion || '').trim(),
         sitioWeb: (extra.sitioWeb || '').trim(),
+        ...(requiereLogo(tipo) ? {
+          colores: String(extra.colores || '').trim(),
+          alto: sanitizeCm(extra.alto),
+          ancho: sanitizeCm(extra.ancho),
+          logoAdjunto: null as string | null,
+        } : {}),
       };
     });
+
+    // Los logos se adjuntan al email del admin: es lo que sube al portal del
+    // INPI. R2 queda como la copia durable. Si el binding no está (o el objeto
+    // no aparece) el email lo dice y el pedido se envía igual.
+    const logos: { filename: string; content: string }[] = [];
+    const storedMarcas = marcasDesdePayload(stored);
+    for (let i = 0; i < marcas.length; i++) {
+      const key = storedMarcas[i]?.logoKey;
+      if (!key || !env.LOGOS) continue;
+      try {
+        const obj = await env.LOGOS.get(key);
+        if (!obj) continue;
+        const filename = `logo-${ref}-marca-${i + 1}.jpg`;
+        logos.push({ filename, content: base64FromArrayBuffer(await obj.arrayBuffer()) });
+        marcas[i].logoAdjunto = filename;
+      } catch (e) {
+        console.error(`No se pudo leer el logo ${key}:`, e);
+      }
+    }
 
     await sendOrderEmails(env.RESEND_API_KEY, {
       ref,
@@ -122,7 +154,7 @@ export const onRequestPatch: PagesFunction<NotifyEnv> = async ({ env, params, re
         ['Email', stored.contacto?.email || ''],
         ['WhatsApp', stored.contacto?.whatsapp || ''],
       ],
-    }, completion?.cartaPdfBase64 || null);
+    }, completion?.cartaPdfBase64 || null, logos);
     emailSent = true;
   } catch (e) {
     console.error('Error generando PDF / enviando emails:', e);

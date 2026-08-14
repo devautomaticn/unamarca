@@ -1,6 +1,9 @@
 // Emails de confirmación de solicitud (cliente + admin) vía Resend,
 // con la carta poder firmada adjunta en PDF.
-import { TRANSFERENCIA, contarLineas } from '../../src/lib/checkout/constants';
+import {
+  TRANSFERENCIA, contarLineas, formatCm, normalizeTipoMarca, requiereLogo,
+  tipoMarcaLabel, type TipoMarca,
+} from '../../src/lib/checkout/constants';
 
 const FROM = 'UnaMarca <formulario@vigilante.unamarca.com.ar>';
 const ADMIN_EMAIL = 'mike@automaticnation.com';
@@ -24,6 +27,13 @@ export interface MarcaEmail {
   clases: number[];
   descripcion?: string;
   sitioWeb?: string;
+  tipo?: TipoMarca;
+  /** Solo en mixta y figurativa */
+  colores?: string;
+  alto?: number | null;
+  ancho?: number | null;
+  /** Nombre del JPG adjunto al email del admin, o null si no se pudo recuperar */
+  logoAdjunto?: string | null;
 }
 
 /** "MARCA A" / "MARCA A + MARCA B" — para asuntos y títulos */
@@ -68,10 +78,16 @@ function transferBlockHTML(d: OrderEmailData): string {
 
 /** Lista de marcas del email al cliente: una línea por marca con sus clases */
 function marcasClientHTML(marcas: MarcaEmail[]): string {
-  const filas = marcas.map(m => `<li style="margin:0 0 4px">
+  const filas = marcas.map(m => {
+    const tipo = normalizeTipoMarca(m.tipo);
+    const detalle = tipo === 'denominativa'
+      ? clasesLabel(m.clases).toLowerCase()
+      : `${clasesLabel(m.clases).toLowerCase()} · marca ${tipo}`;
+    return `<li style="margin:0 0 4px">
         <b style="color:#0B1D3A">“${esc(m.nombre.toUpperCase())}”</b>
-        <span style="color:#64748b"> — ${esc(clasesLabel(m.clases).toLowerCase())}</span>
-      </li>`).join('');
+        <span style="color:#64748b"> — ${esc(detalle)}</span>
+      </li>`;
+  }).join('');
   return `<ul style="margin:0 0 14px;padding-left:20px;color:#475569;font-size:14px;line-height:1.6">${filas}</ul>`;
 }
 
@@ -114,15 +130,33 @@ function clientHTML(d: OrderEmailData): string {
  *  su descripción y su sitio. Es lo que se carga en el portal del INPI, donde
  *  cada marca es una solicitud distinta. */
 function marcasAdminHTML(marcas: MarcaEmail[]): string {
-  return marcas.map((m, i) => `<div style="border:1px solid #e2e8f0;border-left:3px solid #2563EB;border-radius:10px;padding:14px 18px;margin-bottom:12px">
-      <p style="margin:0 0 2px;color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase">Solicitud ${i + 1} de ${marcas.length}</p>
-      <p style="margin:0 0 2px;color:#0B1D3A;font-size:16px;font-weight:800">“${esc(m.nombre.toUpperCase())}”</p>
+  return marcas.map((m, i) => {
+    const tipo = normalizeTipoMarca(m.tipo);
+    const conLogo = requiereLogo(tipo);
+    // La figurativa no lleva denominación: el nombre es referencia interna.
+    const titulo = tipo === 'figurativa'
+      ? `Figurativa · ref. interna “${esc(m.nombre.toUpperCase())}”`
+      : `“${esc(m.nombre.toUpperCase())}”`;
+    const medidas = [m.alto, m.ancho].every(v => typeof v === 'number')
+      ? `${formatCm(m.alto)} cm (alto) × ${formatCm(m.ancho)} cm (ancho)`
+      : '⚠ FALTAN — cargarlas a mano';
+    const logo = m.logoAdjunto
+      ? `${esc(m.logoAdjunto)} (adjunto a este email)`
+      : '⚠ NO SE PUDO RECUPERAR — pedírselo al cliente';
+
+    return `<div style="border:1px solid #e2e8f0;border-left:3px solid #2563EB;border-radius:10px;padding:14px 18px;margin-bottom:12px">
+      <p style="margin:0 0 2px;color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase">Solicitud ${i + 1} de ${marcas.length} · ${esc(tipoMarcaLabel(tipo))}</p>
+      <p style="margin:0 0 2px;color:#0B1D3A;font-size:16px;font-weight:800">${titulo}</p>
       <p style="margin:0 0 10px;color:#2563EB;font-size:13px;font-weight:700">${esc(clasesLabel(m.clases))}</p>
       <table style="width:100%;border-collapse:collapse">
+        ${conLogo ? `<tr><td style="padding:4px 0;color:#64748b;font-size:13px;width:34%;vertical-align:top">Logo (JPG)</td><td style="padding:4px 0;color:#0f172a;font-size:13px">${logo}</td></tr>
+        <tr><td style="padding:4px 0;color:#64748b;font-size:13px;vertical-align:top">Medidas</td><td style="padding:4px 0;color:#0f172a;font-size:13px">${esc(medidas)}</td></tr>
+        <tr><td style="padding:4px 0;color:#64748b;font-size:13px;vertical-align:top">Colores</td><td style="padding:4px 0;color:#0f172a;font-size:13px">${esc(m.colores || '—')}</td></tr>` : ''}
         <tr><td style="padding:4px 0;color:#64748b;font-size:13px;width:34%;vertical-align:top">Descripción</td><td style="padding:4px 0;color:#0f172a;font-size:13px;line-height:1.55">${esc(m.descripcion || '—')}</td></tr>
         ${m.sitioWeb ? `<tr><td style="padding:4px 0;color:#64748b;font-size:13px;vertical-align:top">Página web</td><td style="padding:4px 0;color:#0f172a;font-size:13px">${esc(m.sitioWeb)}</td></tr>` : ''}
       </table>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function adminHTML(d: OrderEmailData): string {
@@ -231,11 +265,15 @@ export async function sendOrderEmails(
   apiKey: string,
   d: OrderEmailData,
   pdfBase64: string | null,
+  /** Logos en JPG (mixtas y figurativas), ya leídos de R2. Solo al admin: es
+   *  quien los sube al portal del INPI, y el cliente ya tiene su propio archivo. */
+  logos: { filename: string; content: string }[] = [],
 ): Promise<void> {
   // Sin PDF (falla en el navegador) los emails salen igual, sin adjunto
-  const attachments = pdfBase64
+  const carta = pdfBase64
     ? [{ filename: `carta-poder-${d.ref}.pdf`, content: pdfBase64 }]
-    : undefined;
+    : [];
+  const adminAttachments = [...carta, ...logos];
 
   // Admin siempre; cliente solo si dejó email
   const sends: Promise<void>[] = [
@@ -245,7 +283,7 @@ export async function sendOrderEmails(
       reply_to: d.clientEmail || undefined,
       subject: `${d.status === 'pending_transfer' ? '[TRANSFERENCIA PENDIENTE] ' : ''}Solicitud completada: ${marcasTitulo(d.marcas)} (${d.ref})`,
       html: adminHTML(d),
-      attachments,
+      attachments: adminAttachments.length ? adminAttachments : undefined,
     }),
   ];
   if (d.clientEmail) {
@@ -254,7 +292,7 @@ export async function sendOrderEmails(
       to: [d.clientEmail],
       subject: `Recibimos tu solicitud de registro de marca — ${d.ref}`,
       html: clientHTML(d),
-      attachments,
+      attachments: carta.length ? carta : undefined,
     }));
   }
   await Promise.all(sends);
