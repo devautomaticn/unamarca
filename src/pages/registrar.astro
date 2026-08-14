@@ -212,6 +212,10 @@ const faqSchema = {
               <span class="ck-desc-label">Descripción de tu marca</span> <em>*</em>
             </label>
             <textarea class="ck-desc" rows="4" maxlength="1000" placeholder="Contanos qué productos o servicios vas a ofrecer con esta marca."></textarea>
+            <p class="ck-help ck-desc-guia">
+              Contá qué vendés o qué servicio prestás, a quién se lo ofrecés y por
+              qué canales (local, ecommerce, redes).
+            </p>
             <div class="ck-desc-foot">
               <p class="ck-help ck-desc-help">Mínimo 100 caracteres.</p>
               <!-- Arranque editable armado con las clases elegidas: el textarea
@@ -1926,10 +1930,16 @@ const faqSchema = {
   // ── Descripción por marca (paso 5) ──────────────────────
   const MIN_DESCRIPCION = 100;
 
-  /** Borrador editable armado con las clases que el cliente eligió. No se
+  /** Arranque editable armado con las clases que el cliente eligió. No se
    *  autocompleta: lo inserta él con "Partir de un ejemplo" y después lo edita.
    *  Prellenar sin pedirlo mandaría al INPI la misma descripción genérica en
-   *  todos los pedidos, que es peor que un textarea vacío. */
+   *  todos los pedidos, que es peor que un textarea vacío.
+   *
+   *  Es SOLO una afirmación cierta sobre la marca, nunca una instrucción al
+   *  cliente: lo que quede acá se guarda tal cual y termina en la solicitud. Una
+   *  versión anterior cerraba con "Detallá acá qué vendés…", que superaba el
+   *  mínimo de caracteres y entraba sin editar — se vio en el portal en la
+   *  primera prueba real. El coaching va en la ayuda del campo, no en el valor. */
   function sugerenciaDescripcion(m: MarcaState): string {
     const nombre = m.nombre.trim().toUpperCase() || 'La marca';
     const rubros = m.clases
@@ -1938,9 +1948,7 @@ const faqSchema = {
     const lista = rubros.length > 1
       ? `${rubros.slice(0, -1).join('; ')} y ${rubros[rubros.length - 1]}`
       : (rubros[0] ?? 'los productos y servicios de la marca');
-    return `${nombre} se dedica a ${lista}. ` +
-      'Detallá acá qué vendés o qué servicio prestás, a quién se lo ofrecés y ' +
-      'por qué canales (local, ecommerce, redes).';
+    return `${nombre} ofrece productos y servicios de ${lista}.`;
   }
 
   function renderDescCards() {
