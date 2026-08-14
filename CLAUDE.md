@@ -176,6 +176,44 @@ instead of hardcoding the strings. Do not remove that endpoint.
 
 ---
 
+---
+
+## Alta automática en el portal Vigilante
+
+Cuando un pedido se completa (el cliente firma y se envía la solicitud), además
+de los emails el checkout **da de alta el contacto, la marca y un trámite por
+clase** en `vigilante.unamarca.com.ar` vía su API externa v1.
+
+- Cliente: `functions/_lib/vigilante.ts`. Se llama desde el `PATCH
+  /api/checkout/order/:ref`, dentro de `waitUntil` (el cliente no espera al
+  portal) y después de los emails.
+- **La API key vive en el secret `VIGILANTE_API_KEY` de Cloudflare Pages, nunca
+  en el repo ni en el navegador.** El wizard no la ve: el alta la hace la Pages
+  Function. `VIGILANTE_API_BASE` es un override opcional para apuntar a otro
+  entorno.
+- `Idempotency-Key: alta-<ref>` — estable por pedido, así un reintento (timeout,
+  500, o un PATCH repetido dentro de las 48 h que el portal retiene la clave)
+  devuelve los ids del primer intento en vez de duplicar.
+- **Un trámite por clase.** Una marca en 2 clases son 2 trámites; no es un
+  duplicado.
+- **Nunca se manda `acta`.** Nada de lo que sale del checkout se presentó
+  todavía: el trámite nace `no_presentado` y el acta la carga el estudio a mano.
+- **Un 201 no significa que los datos estén bien.** El portal casi nunca rechaza:
+  lo raro entra igual y viene en `advertencias[]`. Se loguean y disparan un email
+  al estudio, porque es el único aviso de que el mapeo se rompió.
+- El resultado se guarda en la columna `orders.vigilante` (D1) para poder ver qué
+  pedidos quedaron sin cargar.
+- El portal ya avisa por email al estudio ante 400, 403 y 500. Nosotros avisamos
+  solo lo que él no ve: advertencias de un 201, timeouts de red, y la falta de
+  credencial (esto último solo en producción, para no llenar de mails los
+  previews).
+
+Si cambian los campos del paso 5 o 6 del wizard, hay que revisar el mapeo en el
+PATCH: los campos que la API no conoce entran como advertencia `campos_ignorados`
+y **no fallan**, así que un typo se descubre solo leyendo el email de aviso.
+
+---
+
 ## ⚠️ SEO is the Top Priority
 
 This site depends on organic search traffic. Every change must preserve:

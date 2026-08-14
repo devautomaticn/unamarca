@@ -252,6 +252,61 @@ export async function sendPaymentEmail(apiKey: string, d: PaymentEmailData): Pro
   });
 }
 
+/** Aviso al estudio de que un alta en el portal Vigilante necesita una mirada.
+ *  El portal ya avisa solo cuando devuelve 400, 403 o 500; esto cubre los tres
+ *  casos que del otro lado nadie ve: las advertencias de un 201 (el pedido
+ *  entró, pero algún campo del mapeo se rompió), un timeout de red (la request
+ *  nunca llegó) y el entorno sin credencial configurada. */
+export async function sendVigilanteAlert(
+  apiKey: string,
+  d: {
+    ref: string;
+    alta: {
+      ok: boolean; omitido?: boolean; status?: number; error?: string;
+      detalles?: string[]; tramites?: number[];
+      advertencias?: { codigo: string; mensaje: string; marca?: string }[];
+    };
+  },
+): Promise<void> {
+  const { alta } = d;
+  const asunto = alta.omitido
+    ? `Alta en Vigilante NO enviada (${d.ref})`
+    : !alta.ok
+      ? `Alta en Vigilante falló (${d.ref})`
+      : `Alta en Vigilante con advertencias (${d.ref})`;
+
+  const filas: string[] = [];
+  if (alta.error) filas.push(`<p><b>Motivo:</b> ${esc(alta.error)}</p>`);
+  if (alta.status) filas.push(`<p><b>HTTP:</b> ${alta.status}</p>`);
+  if (alta.detalles?.length) {
+    filas.push(`<ul>${alta.detalles.map(x => `<li>${esc(x)}</li>`).join('')}</ul>`);
+  }
+  if (alta.tramites?.length) {
+    filas.push(`<p><b>Trámites creados:</b> ${alta.tramites.join(', ')}</p>`);
+  }
+  if (alta.advertencias?.length) {
+    filas.push('<p><b>Advertencias:</b></p><ul>' + alta.advertencias.map(a =>
+      `<li><code>${esc(a.codigo)}</code> — ${esc(a.mensaje)}${a.marca ? ` (${esc(a.marca)})` : ''}</li>`
+    ).join('') + '</ul>');
+  }
+
+  const nota = alta.ok
+    ? 'El pedido entró al portal igual. Revisá los campos marcados: un 201 no significa que los datos estén bien.'
+    : 'El pedido está cobrado y guardado en D1, pero NO quedó cargado en el portal. Hay que darlo de alta a mano o reintentar.';
+
+  await sendResend(apiKey, {
+    from: FROM,
+    to: [ADMIN_EMAIL],
+    subject: asunto,
+    html: `<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#0f172a">
+      <h2 style="margin:0 0 .5rem">${esc(asunto)}</h2>
+      <p>Pedido <b>${esc(d.ref)}</b>.</p>
+      ${filas.join('\n')}
+      <p style="color:#64748b;font-size:14px">${esc(nota)}</p>
+    </body></html>`,
+  });
+}
+
 async function sendResend(apiKey: string, payload: unknown): Promise<void> {
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',

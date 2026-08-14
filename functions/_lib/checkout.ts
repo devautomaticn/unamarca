@@ -73,6 +73,15 @@ export async function ensureSchema(db: D1Database): Promise<void> {
   `).run();
 }
 
+/** Columna agregada después de la tabla original: D1 no tiene
+ *  `ADD COLUMN IF NOT EXISTS`, así que el intento repetido se traga el error.
+ *  Se llama solo desde el PATCH, no en cada request. */
+export async function ensureVigilanteColumn(db: D1Database): Promise<void> {
+  try {
+    await db.prepare('ALTER TABLE orders ADD COLUMN vigilante TEXT').run();
+  } catch { /* la columna ya existe */ }
+}
+
 /** Ref no adivinable: UM-YYYYMMDD-XXXXXXXX (base36). Es también la "llave" de
  *  lectura del pedido, por eso no usa un sufijo corto numérico. */
 export function newOrderRef(): string {
