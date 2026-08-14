@@ -425,18 +425,19 @@ const faqSchema = {
     <!-- ══════════ PASO 3 · PLAN ══════════ -->
     <section class="ck-step" data-step="3" hidden>
       <div class="ck-card">
-        <div class="ck-section-label">Tu pedido</div>
+        <div class="ck-section-label" id="ck-clases-section-label">Elegí tu clase</div>
 
         <div class="ck-field">
-          <label>Clases de productos o servicios <em>*</em></label>
+          <!-- La ayuda va antes de elegir: explica qué es una clase, que es lo
+               que hace falta saber para poder elegirla. -->
+          <p class="ck-help ck-clases-intro">
+            Cada clase protege un grupo distinto de productos o servicios; podés
+            elegir hasta {MAX_CLASES} por marca.
+            ¿No sabés cuál? <a href={waClase} target="_blank" rel="noopener noreferrer" onclick="gtag('event', 'whatsapp_click', {'source': 'registrar_clase'})">Consultanos por WhatsApp</a>
+          </p>
           <!-- Una tarjeta por marca, clonada de #ck-clase-card-tpl.
                Ver renderClasesCards() en el script. -->
           <div id="ck-clases-cards"></div>
-          <p class="ck-help">
-            Cada clase define qué productos o servicios protege tu marca. Podés elegir
-            hasta {MAX_CLASES} clases por marca.
-            ¿No sabés cuál elegir? <a href={waClase} target="_blank" rel="noopener noreferrer" onclick="gtag('event', 'whatsapp_click', {'source': 'registrar_clase'})">Consultanos por WhatsApp</a>
-          </p>
           <p class="ck-err" data-err="clase"></p>
           <div class="ck-lock" id="ck-lock-clases" hidden></div>
         </div>
@@ -469,6 +470,12 @@ const faqSchema = {
               </div>
             </div>
             <div class="ck-chips" hidden></div>
+            <!-- El encabezado oficial de Niza es lo que realmente se protege,
+                 pero es un párrafo por clase: va plegado, no a la vista. -->
+            <details class="ck-clase-det" hidden>
+              <summary></summary>
+              <div class="ck-clase-det-body"></div>
+            </details>
             <p class="ck-help ck-clase-max" hidden>
               Llegaste al máximo de {MAX_CLASES} clases para esta marca.
               ¿Necesitás más? <a href={waMulti} target="_blank" rel="noopener noreferrer" onclick="gtag('event', 'whatsapp_click', {'source': 'registrar_multiclase'})">Escribinos por WhatsApp</a>
@@ -476,19 +483,19 @@ const faqSchema = {
           </div>
         </template>
 
-        <div class="ck-order">
-          <div class="ck-order-head">
-            <span class="ck-order-name" id="ck-order-name">Registro de marca</span>
-            <span class="ck-order-price" id="ck-order-price">{formatARS(PRICING.honorarios)}</span>
-          </div>
-          <p class="ck-plan-sub">Honorarios · {formatARS(PRICING.honorarios)} por clase de cada marca</p>
-          <ul class="ck-plan-feats">
-            <li>Presentación de la solicitud ante el INPI</li>
-            <li>Novedades del trámite por email</li>
-            <li>Vigilancia de marca <s>{formatARS(PRICING.vigilanciaLista)}</s> <b>Gratis</b></li>
-            <li id="ck-feat-garantia" class="ck-feat-off">Sin garantía de devolución: si el INPI deniega el registro en una clase, los honorarios de esa clase no se devuelven</li>
-          </ul>
-        </div>
+      </div>
+
+      <!-- Qué comprás. El precio no se repite acá: vive en el resumen (rail en
+           desktop, tarjeta de abajo en mobile). -->
+      <div class="ck-card">
+        <div class="ck-section-label">Qué incluye</div>
+
+        <ul class="ck-plan-feats">
+          <li>Presentación de la solicitud ante el INPI</li>
+          <li>Novedades del trámite por email</li>
+          <li>Vigilancia de marca <s>{formatARS(PRICING.vigilanciaLista)}</s> <b>Gratis</b></li>
+          <li id="ck-feat-garantia" hidden></li>
+        </ul>
 
         <label class="ck-upsell">
           <input type="checkbox" id="ck-garantia" />
@@ -504,6 +511,16 @@ const faqSchema = {
             </p>
           </div>
         </label>
+
+        <details class="ck-fine">
+          <summary>Qué no incluye</summary>
+          <p>
+            El registro de una marca está sujeto a la resolución del INPI. Durante el trámite
+            pueden surgir oposiciones de terceros u observaciones; te notificaremos y podrás
+            decidir cómo continuar. Los honorarios no incluyen la negociación de oposiciones
+            ni la contestación de vistas, que se cotizan por separado si se presentan.
+          </p>
+        </details>
       </div>
 
       <div class="ck-card ck-summary">
@@ -526,13 +543,6 @@ const faqSchema = {
           <span id="ck-sum-total">{formatARS(PRICING.honorarios + PRICING.arancelInpi)}</span>
         </div>
       </div>
-
-      <p class="ck-disclaimer">
-        El registro de una marca está sujeto a la resolución del INPI. Durante el trámite
-        pueden surgir oposiciones de terceros u observaciones; te notificaremos y podrás
-        decidir cómo continuar. Los honorarios no incluyen la negociación de oposiciones
-        ni la contestación de vistas, que se cotizan por separado si se presentan.
-      </p>
 
       <div class="ck-nav">
         <button type="button" class="ck-back" data-back="2">← Volver</button>
@@ -1022,6 +1032,7 @@ const faqSchema = {
     // la que convence al que llega de orgánico, así que queda intacta.
     document.body.classList.toggle('ck-focus', step !== '1');
     document.body.classList.toggle('ck-fin', step === 'done');
+    document.body.dataset.ckStep = step;
 
     if (step === 'done') {
       $('ck-progress').hidden = true;
@@ -1387,6 +1398,9 @@ const faqSchema = {
       const search = card.querySelector<HTMLInputElement>('.ck-dd-search')!;
       const labelEl = card.querySelector<HTMLElement>('.ck-dd-label')!;
       const chips = card.querySelector<HTMLElement>('.ck-chips')!;
+      const detalle = card.querySelector<HTMLElement>('.ck-clase-det')!;
+      const detSum = detalle.querySelector<HTMLElement>('summary')!;
+      const detBody = detalle.querySelector<HTMLElement>('.ck-clase-det-body')!;
       const maxHelp = card.querySelector<HTMLElement>('.ck-clase-max')!;
       const opts = Array.from(card.querySelectorAll<HTMLElement>('.ck-dd-opt'));
 
@@ -1424,14 +1438,22 @@ const faqSchema = {
           labelEl.classList.remove('ck-dd-placeholder');
         }
 
-        // Chips con botón de quitar
+        // Chips con botón de quitar. Llevan el nombre de la clase, no solo el
+        // número: "Clase 43" a secas no le dice nada a nadie tres pantallas
+        // después, y es lo que el cliente está comprando.
         chips.innerHTML = '';
         m.clases.forEach(num => {
           const c = NIZA_CLASSES.find(x => x.num === num);
           const chip = document.createElement('span');
           chip.className = 'ck-chip';
-          chip.title = c ? c.nombre : '';
-          chip.append(`Clase ${num}`);
+          const n = document.createElement('b');
+          n.textContent = `Clase ${num}`;
+          chip.append(n);
+          if (c) {
+            const nom = document.createElement('span');
+            nom.textContent = c.nombre;
+            chip.append(nom);
+          }
           if (!pedidoBloqueado) {
             const rm = document.createElement('button');
             rm.type = 'button';
@@ -1444,6 +1466,28 @@ const faqSchema = {
         });
         chips.hidden = m.clases.length === 0;
         maxHelp.hidden = m.clases.length < MAX_CLASES;
+
+        // Encabezado oficial de Niza de cada clase elegida: es lo que realmente
+        // queda protegido, pero es un párrafo por clase. Va plegado.
+        detalle.hidden = m.clases.length === 0;
+        if (m.clases.length) {
+          detSum.textContent = m.clases.length === 1
+            ? 'Ver qué cubre exactamente esta clase'
+            : 'Ver qué cubre exactamente cada clase';
+          detBody.innerHTML = '';
+          m.clases.forEach(num => {
+            const c = NIZA_CLASSES.find(x => x.num === num);
+            if (!c) return;
+            const bloque = document.createElement('div');
+            bloque.className = 'ck-clase-det-item';
+            const t = document.createElement('b');
+            t.textContent = `Clase ${c.num} · ${c.nombre}`;
+            const p = document.createElement('p');
+            p.textContent = c.textoOficial;
+            bloque.append(t, p);
+            detBody.append(bloque);
+          });
+        }
 
         // Subtotal por marca: solo tiene sentido con varias
         subEl.hidden = !varias;
@@ -1480,6 +1524,9 @@ const faqSchema = {
     });
 
     refreshCards = () => updaters.forEach(u => u());
+    $('ck-clases-section-label').textContent = varias
+      ? 'Elegí las clases de cada marca'
+      : 'Elegí tu clase';
   }
 
   function cerrarPaneles(excepto?: Element | null) {
@@ -1498,10 +1545,12 @@ const faqSchema = {
   });
 
   // ── Garantía (upsell) y resumen ─────────────────────────
-  const FEAT_GARANTIA = {
-    off: 'Sin garantía de devolución: si el INPI deniega el registro en una clase, los honorarios de esa clase no se devuelven',
-    on: 'Garantía de Devolución incluida: si el INPI deniega el registro en una clase, te devolvemos los honorarios de esa clase',
-  };
+  // La garantía aparece en "Qué incluye" solo cuando está contratada. Antes
+  // había además una línea roja permanente ("sin garantía de devolución…")
+  // empujando el upsell desde adentro de la lista de beneficios: era el único
+  // elemento en rojo de la pantalla y leía como un problema, no como una oferta.
+  const FEAT_GARANTIA =
+    'Garantía de Devolución: si el INPI deniega el registro en una clase, te devolvemos los honorarios de esa clase';
 
   /** Líneas del pedido: una marca en una clase. Antes de elegir clases el
    *  resumen muestra la base de 1 línea. */
@@ -1543,16 +1592,11 @@ const faqSchema = {
     const p = pricing();
     const nLabel = lineasTexto(p.lineas, marcas.length);
 
-    $('ck-order-name').textContent = marcas.length > 1
-      ? `Registro de ${marcas.length} marcas`
-      : 'Registro de marca';
-    $('ck-order-price').textContent = formatARS(p.honorarios);
     $('ck-upsell-price').textContent = `+${formatARS(PRICING.garantia * p.lineas)}`;
 
     const feat = $('ck-feat-garantia');
-    feat.textContent = garantia ? FEAT_GARANTIA.on : FEAT_GARANTIA.off;
-    feat.classList.toggle('ck-feat-off', !garantia);
-    feat.classList.toggle('ck-feat-on', garantia);
+    feat.textContent = FEAT_GARANTIA;
+    feat.hidden = !garantia;
 
     renderSummaryMarcas();
     $('ck-sum-hon-label').textContent = `Honorarios — Registro de marca (${nLabel})`;
@@ -2718,21 +2762,46 @@ const faqSchema = {
 }
 .ck-dd-name { display: block; font-size: 0.78rem; color: #475569; line-height: 1.45; }
 
-/* Chips de clases seleccionadas (multi-select) */
-.ck-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.ck-clases-intro { margin-bottom: 0.875rem; }
+
+/* Clases seleccionadas. Una fila por clase con su nombre: es lo que el cliente
+   está comprando, y "Clase 43" a secas no se lo dice. */
+.ck-chips { display: grid; gap: 0.375rem; margin-top: 0.625rem; }
 .ck-chips[hidden] { display: none; }
 .ck-chip {
-  display: inline-flex; align-items: center; gap: 0.3rem;
-  background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe;
-  border-radius: 100px; padding: 0.25rem 0.45rem 0.25rem 0.75rem;
-  font-size: 0.75rem; font-weight: 600;
+  display: flex; align-items: center; gap: 0.5rem;
+  background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px;
+  padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+  font-size: 0.78rem; line-height: 1.35;
 }
+.ck-chip b { color: #1e40af; font-weight: 700; white-space: nowrap; }
+.ck-chip > span { color: #1e3a5f; min-width: 0; }
 .ck-chip button {
-  background: none; border: none; cursor: pointer; padding: 0 0.2rem;
-  color: #60a5fa; font-size: 0.95rem; line-height: 1; font-weight: 600;
+  margin-left: auto; flex-shrink: 0; background: none; border: none;
+  cursor: pointer; padding: 0 0.25rem;
+  color: #60a5fa; font-size: 1.05rem; line-height: 1; font-weight: 600;
   transition: color .12s;
 }
 .ck-chip button:hover { color: #1e40af; }
+
+/* Encabezado oficial de Niza, plegado */
+.ck-clase-det { margin-top: 0.5rem; }
+.ck-clase-det[hidden] { display: none; }
+.ck-clase-det summary {
+  cursor: pointer; list-style: none;
+  font-size: 0.75rem; font-weight: 600; color: #2563eb;
+}
+.ck-clase-det summary::-webkit-details-marker { display: none; }
+.ck-clase-det summary:hover { text-decoration: underline; }
+.ck-clase-det-item { margin-top: 0.625rem; }
+.ck-clase-det-item b {
+  display: block; font-size: 0.72rem; font-weight: 700; color: #0b1d3a;
+  margin-bottom: 0.2rem;
+}
+.ck-clase-det-item p {
+  margin: 0; font-size: 0.72rem; color: #94a3b8; line-height: 1.55;
+}
+
 .ck-clase-max { color: #b45309; }
 .ck-clase-max[hidden] { display: none; }
 
@@ -2841,16 +2910,7 @@ const faqSchema = {
 .ck-logo-meta { font-size: 0.78rem; color: #64748b; line-height: 1.5; word-break: break-word; }
 .ck-logo-confirm[hidden] { display: none; }
 
-/* ─── Pedido + upsell de garantía ─── */
-.ck-order {
-  border: 1.5px solid #e2e8f0; border-radius: 14px; background: #f8fafc;
-  padding: 1.25rem 1.375rem;
-}
-.ck-order-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
-.ck-order-name { font-size: 1rem; font-weight: 700; color: #0b1d3a; letter-spacing: -0.01em; }
-.ck-order-price { font-size: 1.375rem; font-weight: 800; color: #0b1d3a; letter-spacing: -0.02em; }
-.ck-plan-sub { font-size: 0.75rem; color: #94a3b8; margin: 0.15rem 0 0.75rem; }
-
+/* ─── Qué incluye + upsell de garantía ─── */
 .ck-upsell {
   display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer;
   border: 1.5px dashed #cbd5e1; border-radius: 14px; background: #fff;
@@ -2866,7 +2926,10 @@ const faqSchema = {
   flex-shrink: 0; margin-top: 3px; width: 17px; height: 17px;
   accent-color: #16a34a; cursor: pointer;
 }
-.ck-upsell-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+.ck-upsell-head {
+  display: flex; flex-wrap: wrap; justify-content: space-between;
+  align-items: baseline; gap: 0.25rem 1rem;
+}
 .ck-upsell-name { font-size: 0.9375rem; font-weight: 700; color: #0b1d3a; }
 .ck-upsell-price { font-size: 1rem; font-weight: 800; color: #16a34a; white-space: nowrap; }
 .ck-upsell-desc { font-size: 0.8125rem; color: #475569; line-height: 1.5; margin: 0.3rem 0 0; }
@@ -2884,11 +2947,27 @@ const faqSchema = {
 }
 .ck-plan-feats s { color: #94a3b8; margin-right: 0.25rem; }
 .ck-plan-feats b { color: #16a34a; font-weight: 700; }
-.ck-plan-feats li.ck-feat-off { color: #b91c1c; }
-.ck-plan-feats li.ck-feat-off::before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 13 13' fill='none'%3E%3Ccircle cx='6.5' cy='6.5' r='6.5' fill='%23ef4444' fill-opacity='.15'/%3E%3Cpath d='M4.4 4.4l4.2 4.2M8.6 4.4L4.4 8.6' stroke='%23dc2626' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E");
+.ck-plan-feats li[hidden] { display: none; }
+
+/* Letra chica plegada ("Qué no incluye"): la salvedad tiene que estar, pero no
+   compitiendo con el resto de la pantalla. */
+.ck-fine { margin-top: 1.125rem; border-top: 1px solid #f1f5f9; padding-top: 0.875rem; }
+.ck-fine summary {
+  cursor: pointer; list-style: none;
+  font-size: 0.78rem; font-weight: 600; color: #64748b;
+  display: inline-flex; align-items: center; gap: 0.4rem;
 }
-.ck-plan-feats li.ck-feat-on { color: #166534; font-weight: 600; }
+.ck-fine summary::-webkit-details-marker { display: none; }
+.ck-fine summary::before {
+  content: ''; width: 8px; height: 8px; flex-shrink: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2394a3b8' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: center;
+  transition: transform .18s;
+}
+.ck-fine[open] summary::before { transform: rotate(180deg); }
+.ck-fine p {
+  margin: 0.6rem 0 0; font-size: 0.75rem; color: #94a3b8; line-height: 1.6;
+}
 
 /* ─── Resumen ─── */
 .ck-summary { padding: 1.375rem 1.75rem; }
@@ -2904,11 +2983,6 @@ const faqSchema = {
   font-weight: 700; color: #0b1d3a; font-size: 0.9375rem;
 }
 .ck-sum-total > span:last-child { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.02em; }
-
-.ck-disclaimer {
-  font-size: 0.75rem; color: #94a3b8; line-height: 1.6;
-  margin: 0 0.25rem 1rem; padding: 0;
-}
 
 /* ─── Pago ─── */
 .ck-eta {
@@ -3278,9 +3352,14 @@ body.ck-focus .ck-progress {
     max-height: 55vh; overflow-y: auto;
   }
   .ck-rail--open .ck-rail-body { display: block; }
+  /* En el paso 3 el desglose completo ya está en la pantalla, así que la barra
+     fija solo repetiría el total. Aparece del paso 4 en adelante, que es donde
+     el formulario se hace largo y el total se pierde de vista. */
+  body[data-ck-step="3"] .ck-rail { display: none; }
+
   /* La barra fija no puede tapar el botón de Continuar */
-  body.ck-has-rail .ck-page { padding-bottom: 8rem; }
-  body.ck-has-rail .wa-float { bottom: 5.5rem; }
+  body.ck-has-rail:not([data-ck-step="3"]) .ck-page { padding-bottom: 8rem; }
+  body.ck-has-rail:not([data-ck-step="3"]) .wa-float { bottom: 5.5rem; }
   /* Con el resumen desplegado el botón flotante caería justo encima */
   body:has(.ck-rail--open) .wa-float { display: none; }
 }
