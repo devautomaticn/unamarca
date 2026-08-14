@@ -126,17 +126,12 @@ const faqSchema = {
 
       </div>
 
-      <!-- Molde de fila de marca: nombre + tipo. Lo clona renderMarcasStep1(). -->
+      <!-- Molde de fila de marca: tipo + nombre. Lo clona renderMarcasStep1().
+           El tipo va primero porque determina qué es el campo de la derecha: en
+           figurativa no hay denominación y el nombre pasa a ser una referencia
+           interna que asignamos nosotros. -->
       <template id="ck-marca-row-tpl">
         <div class="ck-marca-row">
-          <div class="ck-field ck-marca-nombre">
-            <label class="ck-marca-label"></label>
-            <div class="ck-marca-input">
-              <input type="text" maxlength="120" autocomplete="off" />
-              <button type="button" class="ck-marca-rm" title="Quitar esta marca" hidden>×</button>
-            </div>
-            <p class="ck-help ck-marca-nombre-help" hidden></p>
-          </div>
           <div class="ck-field ck-marca-tipo">
             <label class="ck-tipo-label">Tipo de marca</label>
             <div class="ck-sel">
@@ -144,7 +139,14 @@ const faqSchema = {
                 {TIPOS_MARCA.map(t => <option value={t.value}>{t.label}</option>)}
               </select>
             </div>
-            <p class="ck-help ck-tipo-help"></p>
+          </div>
+          <div class="ck-field ck-marca-nombre">
+            <label class="ck-marca-label"></label>
+            <div class="ck-marca-input">
+              <input type="text" maxlength="120" autocomplete="off" />
+              <button type="button" class="ck-marca-rm" title="Quitar esta marca" hidden>×</button>
+            </div>
+            <p class="ck-help ck-marca-nombre-help" hidden></p>
           </div>
         </div>
       </template>
@@ -190,15 +192,21 @@ const faqSchema = {
     <section class="ck-step" data-step="5" hidden>
       <div id="ck-pay-banner" class="ck-banner" hidden></div>
 
-      <div class="ck-card">
-        <div class="ck-section-label" id="ck-desc-section-label">Sobre tu marca</div>
-        <!-- Un bloque por marca, clonado de #ck-desc-card-tpl (renderDescCards) -->
-        <div id="ck-desc-cards"></div>
-      </div>
+      <!-- Una tarjeta colapsable por marca, clonada de #ck-desc-card-tpl
+           (renderDescCards). Cada marca es una solicitud independiente: se
+           cargan y se revisan de a una. -->
+      <div id="ck-desc-cards"></div>
 
       <template id="ck-desc-card-tpl">
-        <div class="ck-dcard">
-          <p class="ck-dcard-name" hidden></p>
+        <details class="ck-card ck-fold ck-dcard" open>
+          <summary class="ck-fold-head">
+            <span class="ck-fold-title">
+              <span class="ck-section-label ck-dcard-name">Sobre tu marca</span>
+              <span class="ck-fold-sub ck-dcard-sub"></span>
+            </span>
+            <svg class="ck-fold-caret" width="12" height="8" viewBox="0 0 10 6" fill="none" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </summary>
+          <div class="ck-fold-body">
           <div class="ck-field">
             <label>
               <span class="ck-desc-label">Descripción de tu marca</span> <em>*</em>
@@ -252,30 +260,15 @@ const faqSchema = {
               <p class="ck-err ck-colores-err"></p>
             </div>
 
-            <!-- Alto y ancho salen de la proporción de la imagen. Eran dos
-                 campos obligatorios vacíos con jerga del INPI ("medidas del
-                 signo en cm"): ahora se muestran calculados y se editan solo
-                 si el cliente quiere. -->
-            <details class="ck-medidas">
-              <summary>
-                <span class="ck-medidas-txt">Se publica a <b class="ck-medidas-val">–</b></span>
-                <span class="ck-medidas-cta">Ajustar</span>
-              </summary>
-              <div class="ck-grid ck-g2">
-                <div class="ck-field">
-                  <label>Alto (cm) <em>*</em></label>
-                  <input type="text" class="ck-logo-alto" inputmode="decimal" placeholder="5" />
-                </div>
-                <div class="ck-field">
-                  <label>Ancho (cm) <em>*</em></label>
-                  <input type="text" class="ck-logo-ancho" inputmode="decimal" placeholder="5" />
-                </div>
-              </div>
-              <p class="ck-help">
-                Es el tamaño al que se publica el signo, hasta {LOGO_CM_MAX} cm de lado.
-                Las calculamos de tu imagen para respetar su proporción.
-              </p>
-            </details>
+            <!-- El INPI pide ALTO y ANCHO del signo en cm. Los derivamos de la
+                 proporción de la imagen y NO se le muestran al cliente: es
+                 jerga del trámite que no puede resolver mejor que nosotros.
+                 Los campos siguen existiendo porque son los que viajan en el
+                 payload; quedan fuera de pantalla. -->
+            <div class="ck-sr">
+              <input type="text" class="ck-logo-alto" inputmode="decimal" tabindex="-1" aria-hidden="true" />
+              <input type="text" class="ck-logo-ancho" inputmode="decimal" tabindex="-1" aria-hidden="true" />
+            </div>
             <p class="ck-err ck-medidas-err"></p>
 
             <!-- Solo mixta: el INPI corrige de oficio si la denominación no
@@ -286,7 +279,8 @@ const faqSchema = {
             </label>
             <p class="ck-err ck-confirm-err"></p>
           </div>
-        </div>
+          </div>
+        </details>
       </template>
 
       <div class="ck-nav">
@@ -300,8 +294,15 @@ const faqSchema = {
 
     <!-- ══════════ PASO 6 · DATOS DEL TITULAR (post-pago, fase B) ══════════ -->
     <section class="ck-step" data-step="6" hidden>
-      <div class="ck-card">
-        <div class="ck-section-label">Datos del titular</div>
+      <details class="ck-card ck-fold" open>
+        <summary class="ck-fold-head">
+          <span class="ck-fold-title">
+            <span class="ck-section-label">Datos del titular</span>
+            <span class="ck-fold-sub" id="ck-fold-sub-titular">Quién es el dueño de la marca</span>
+          </span>
+          <svg class="ck-fold-caret" width="12" height="8" viewBox="0 0 10 6" fill="none" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </summary>
+        <div class="ck-fold-body">
         <p class="ck-help" style="margin-bottom: 1rem">
           Estos datos van en la carta poder y en la solicitud que presentamos
           ante el INPI. Son los del titular de la marca.
@@ -380,8 +381,18 @@ const faqSchema = {
           <p class="ck-err" data-err="conyuge"></p>
         </div>
 
-        <div class="ck-domicilio">
-          <p class="ck-dom-title">Domicilio real</p>
+        </div>
+      </details>
+
+      <details class="ck-card ck-fold" open>
+        <summary class="ck-fold-head">
+          <span class="ck-fold-title">
+            <span class="ck-section-label">Domicilio real</span>
+            <span class="ck-fold-sub">Dónde vive el titular</span>
+          </span>
+          <svg class="ck-fold-caret" width="12" height="8" viewBox="0 0 10 6" fill="none" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </summary>
+        <div class="ck-fold-body">
           <div class="ck-grid ck-g2">
             <div class="ck-field">
               <label for="ck-calle">Calle <em>*</em></label>
@@ -437,8 +448,7 @@ const faqSchema = {
             El titular vive fuera de Argentina
           </button>
         </div>
-
-      </div>
+      </details>
 
       <div class="ck-nav">
         <button type="button" class="ck-back" data-back="5">← Volver</button>
@@ -859,9 +869,9 @@ const faqSchema = {
   import {
     PRICING, MAX_CLASES, MAX_MARCAS, TRANSFERENCIA,
     computeOrderPricing, contarLineas, clasesTexto, lineasTexto, formatARS,
-    TIPOS_MARCA, LOGO_MAX_PX, LOGO_JPEG_QUALITY, LOGO_CM_MAX,
+    TIPOS_MARCA, LOGO_MAX_PX, LOGO_JPEG_QUALITY, LOGO_CM_MAX, LOGO_CM_LADO_MAYOR,
     formatCm, parseCm, medidasDesdePx, normalizeTipoMarca, requiereLogo,
-    tieneDenominacion, type TipoMarca,
+    tieneDenominacion, tipoMarcaLabel, type TipoMarca,
   } from '../lib/checkout/constants';
   import { formatCuitInput, isValidCuit, cuitMatchesDni } from '../lib/checkout/cuit';
   import { cartaPoderHTML, type CartaPoderData } from '../lib/checkout/cartaPoder';
@@ -1230,11 +1240,16 @@ const faqSchema = {
       if (!m.logoBlob && !m.logoKey) {
         fallo(errLogo, 'Subí la imagen de tu marca.');
       }
+      // Las medidas no se muestran: las derivamos de la imagen. Si por lo que
+      // sea faltan, se completan con el cuadrado por defecto en vez de frenar
+      // al cliente con un error que no puede resolver.
       if (m.alto === null || m.ancho === null) {
-        fallo(errMedidas, `Ingresá alto y ancho en centímetros, hasta ${LOGO_CM_MAX} (con punto: 3.5).`);
-        // Los campos viven plegados: si el error es de ellos, se abren solos
-        const det = card.querySelector<HTMLDetailsElement>('.ck-medidas');
-        if (det) det.open = true;
+        const med = m.logoPx
+          ? medidasDesdePx(m.logoPx.ancho, m.logoPx.alto)
+          : { alto: LOGO_CM_LADO_MAYOR, ancho: LOGO_CM_LADO_MAYOR };
+        m.alto = med.alto;
+        m.ancho = med.ancho;
+        saveDraft();
       }
       if (!m.colores.trim()) {
         fallo(errColores, 'Escribí los colores de la imagen. Si es en blanco y negro, poné “Blanco y negro”.');
@@ -1243,7 +1258,11 @@ const faqSchema = {
         fallo(errConfirm, 'Confirmá que la denominación coincide con el texto de la imagen.');
       }
     });
-    if (primerError) (primerError as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (primerError) {
+      // La tarjeta puede estar plegada: un error escondido no se puede corregir
+      (primerError as HTMLDetailsElement).open = true;
+      (primerError as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
     return ok;
   }
 
@@ -1301,6 +1320,8 @@ const faqSchema = {
     const err = Array.from(paso?.querySelectorAll<HTMLElement>('.ck-err') ?? [])
       .find(el => el.style.display === 'block' && el.textContent?.trim());
     if (!err) return;
+    // Si el campo quedó dentro de una tarjeta plegada, se abre antes de ir
+    err.closest('details')?.setAttribute('open', '');
     (err.closest('.ck-field') ?? err).scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
@@ -1360,6 +1381,13 @@ const faqSchema = {
     return varias ? `Marca ${i + 1}` : 'Nombre de la marca';
   }
 
+  /** La figurativa no lleva denominación ante el INPI, así que no tiene sentido
+   *  pedirle un nombre al cliente: se lo asignamos y el campo queda de solo
+   *  lectura. Lleva número para que dos figurativas del mismo pedido no choquen
+   *  con el control de duplicados. */
+  const nombreFigurativa = (i: number) => `Marca figurativa ${i + 1}`;
+  const esNombreFigurativaAuto = (s: string) => /^marca figurativa \d+$/i.test(s.trim());
+
   function renderMarcasStep1() {
     const cont = $('ck-marcas');
     const molde = tpl('ck-marca-row-tpl');
@@ -1374,25 +1402,30 @@ const faqSchema = {
       const nombreHelp = row.querySelector<HTMLElement>('.ck-marca-nombre-help')!;
       const tipoLabel = row.querySelector<HTMLLabelElement>('.ck-tipo-label')!;
       const sel = row.querySelector<HTMLSelectElement>('.ck-tipo-sel')!;
-      const tipoHelp = row.querySelector<HTMLElement>('.ck-tipo-help')!;
 
       inp.id = `ck-marca-${i}`;
       label.setAttribute('for', inp.id);
       sel.id = `ck-tipo-marca-${i}`;
       tipoLabel.setAttribute('for', sel.id);
 
-      // Nombre y ayuda dependen del tipo elegido: se repintan sin re-render
+      // El campo de nombre depende del tipo elegido: se repinta sin re-render
       // para no perder el foco mientras el usuario escribe.
       const pintarPorTipo = () => {
+        const conDenominacion = tieneDenominacion(m.tipo);
         label.innerHTML = `${labelNombre(m.tipo, i, varias)} <em>*</em>`;
-        inp.placeholder = tieneDenominacion(m.tipo)
+        inp.placeholder = conDenominacion
           ? (i === 0 ? 'UnaMarca' : 'Nombre de la otra marca')
-          : 'Cómo le decimos a este logo';
-        nombreHelp.textContent = tieneDenominacion(m.tipo)
+          : '';
+        nombreHelp.textContent = conDenominacion
           ? ''
-          : 'Es solo para identificar tu pedido: la marca figurativa se presenta sin texto.';
-        nombreHelp.hidden = tieneDenominacion(m.tipo);
-        tipoHelp.textContent = TIPOS_MARCA.find(t => t.value === m.tipo)!.ayuda;
+          : 'La marca figurativa se presenta sin texto: este nombre es solo nuestra referencia interna.';
+        nombreHelp.hidden = conDenominacion;
+        // Figurativa: el nombre lo ponemos nosotros y no se edita
+        inp.readOnly = !conDenominacion;
+        if (!conDenominacion) {
+          m.nombre = nombreFigurativa(i);
+          inp.value = m.nombre;
+        }
       };
 
       inp.maxLength = 120;
@@ -1415,6 +1448,12 @@ const faqSchema = {
           m.colores = '';
           m.alto = null;
           m.ancho = null;
+        }
+        // Al salir de figurativa el nombre que pusimos nosotros no sirve como
+        // denominación: se limpia para que el cliente escriba la suya.
+        if (tieneDenominacion(m.tipo) && esNombreFigurativaAuto(m.nombre)) {
+          m.nombre = '';
+          inp.value = '';
         }
         m.confirmaTexto = false;
         pintarPorTipo();
@@ -1909,19 +1948,20 @@ const faqSchema = {
     const molde = tpl('ck-desc-card-tpl');
     const varias = marcas.length > 1;
     cont.innerHTML = '';
-    $('ck-desc-section-label').textContent = varias ? 'Sobre tus marcas' : 'Sobre tu marca';
 
     marcas.forEach((m, i) => {
       const card = (molde.content.firstElementChild!.cloneNode(true) as HTMLElement);
       const nameEl = card.querySelector<HTMLElement>('.ck-dcard-name')!;
+      const subEl = card.querySelector<HTMLElement>('.ck-dcard-sub')!;
       const labelEl = card.querySelector<HTMLElement>('.ck-desc-label')!;
       const area = card.querySelector<HTMLTextAreaElement>('.ck-desc')!;
       const help = card.querySelector<HTMLElement>('.ck-desc-help')!;
       const sitio = card.querySelector<HTMLInputElement>('.ck-sitio')!;
 
       const nombre = m.nombre.trim();
+      // El título identifica la tarjeta cuando está plegada
       nameEl.textContent = nombre.toUpperCase() || `Marca ${i + 1}`;
-      nameEl.hidden = !varias;
+      subEl.textContent = `${tipoMarcaLabel(m.tipo)} · ${clasesTexto(m.clases, 'sin clase')}`;
       labelEl.textContent = nombre ? `Descripción de ${nombre}` : 'Descripción de tu marca';
       area.id = `ck-descripcion-${i}`;
       card.querySelector('label')!.setAttribute('for', area.id);
@@ -1987,8 +2027,6 @@ const faqSchema = {
     const img = card.querySelector<HTMLImageElement>('.ck-logo-img')!;
     const meta = card.querySelector<HTMLElement>('.ck-logo-meta')!;
     const otra = card.querySelector<HTMLButtonElement>('.ck-logo-otra')!;
-    const medidas = card.querySelector<HTMLDetailsElement>('.ck-medidas')!;
-    const medidasVal = card.querySelector<HTMLElement>('.ck-medidas-val')!;
     const alto = card.querySelector<HTMLInputElement>('.ck-logo-alto')!;
     const ancho = card.querySelector<HTMLInputElement>('.ck-logo-ancho')!;
     const colores = card.querySelector<HTMLInputElement>('.ck-colores')!;
@@ -2009,18 +2047,10 @@ const faqSchema = {
       if (campo?.id && !l.classList.contains('ck-terms')) l.setAttribute('for', campo.id);
     });
 
-    /** "Se publica a 5 × 3,2 cm" — resume las medidas sin obligar a abrir nada */
-    const pintarMedidas = () => {
-      medidasVal.textContent = (m.ancho !== null && m.alto !== null)
-        ? `${formatCm(m.ancho)} × ${formatCm(m.alto)} cm`
-        : '– cm';
-    };
-
     const pintarPreview = () => {
       const hayImagen = !!(m.logoUrl || m.logoKey);
       // Con imagen cargada el dropzone deja lugar a la vista previa
       drop.hidden = hayImagen;
-      medidas.hidden = !hayImagen;
       if (m.logoUrl) {
         img.src = m.logoUrl;
         img.hidden = false;
@@ -2037,7 +2067,6 @@ const faqSchema = {
       } else {
         prev.hidden = true;
       }
-      pintarMedidas();
     };
 
     const procesar = async (elegido: File | undefined) => {
@@ -2099,8 +2128,7 @@ const faqSchema = {
       el.addEventListener('input', () => {
         m[campo] = parseCm(el.value);
         setErrEl(errMedidas, '');
-        pintarMedidas();
-        saveDraft();
+          saveDraft();
       });
       el.addEventListener('blur', () => {
         if (m[campo] !== null) el.value = formatCm(m[campo]);
@@ -2806,6 +2834,28 @@ const faqSchema = {
   font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em;
   text-transform: uppercase; color: #94a3b8; margin-bottom: 1.25rem;
 }
+/* ─── Tarjeta colapsable ───
+   Un <details> con pinta de .ck-card. Se usa por marca en el paso 5 y para
+   separar identidad de domicilio en el paso 6: bloques largos que el cliente
+   puede cerrar una vez que los completó, para ver dónde está parado. */
+.ck-fold { padding: 0; }
+.ck-fold > summary {
+  cursor: pointer; list-style: none;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 1.5rem 2rem;
+}
+.ck-fold > summary::-webkit-details-marker { display: none; }
+.ck-fold > summary:hover .ck-fold-caret { color: #2563eb; }
+.ck-fold > summary .ck-section-label { margin-bottom: 0; }
+.ck-fold-title { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+.ck-fold-sub {
+  font-size: 0.78rem; color: #94a3b8; line-height: 1.4;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.ck-fold-caret { color: #94a3b8; flex-shrink: 0; transition: transform .2s, color .15s; }
+.ck-fold[open] .ck-fold-caret { transform: rotate(180deg); }
+.ck-fold-body { padding: 0 2rem 1.75rem; }
+
 .ck-grid { display: grid; gap: 1rem; margin-bottom: 1rem; }
 .ck-grid:last-child { margin-bottom: 0; }
 .ck-g2 { grid-template-columns: 1fr 1fr; }
@@ -2836,6 +2886,12 @@ const faqSchema = {
 .ck-field input:disabled, .ck-field select:disabled {
   color: #64748b; background: #f1f5f9; cursor: not-allowed;
 }
+/* Nombre asignado por nosotros (figurativa): se lee, no se edita */
+.ck-field input:read-only {
+  color: #64748b; background: #f1f5f9; cursor: default;
+}
+.ck-field input:read-only:hover { border-color: #e2e8f0; }
+.ck-field input:read-only:focus { background: #f1f5f9; border-color: #e2e8f0; box-shadow: none; }
 .ck-field-opt { color: #94a3b8; font-weight: 500; }
 
 .ck-sel { position: relative; }
@@ -2962,7 +3018,7 @@ const faqSchema = {
 .ck-clase-max[hidden] { display: none; }
 
 /* ─── Multi-marca: filas del paso 1 (nombre + tipo) ─── */
-.ck-marca-row { display: grid; grid-template-columns: 1fr 210px; gap: 1rem; align-items: start; }
+.ck-marca-row { display: grid; grid-template-columns: 210px 1fr; gap: 1rem; align-items: start; }
 .ck-marca-row + .ck-marca-row {
   margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #e2e8f0;
 }
@@ -3026,15 +3082,8 @@ const faqSchema = {
 .ck-sum-marca b { color: #0b1d3a; font-weight: 700; letter-spacing: -0.01em; }
 .ck-sum-marca small { display: block; font-size: 0.7rem; color: #94a3b8; }
 
-/* ─── Multi-marca: descripción por marca (paso 5) ─── */
-.ck-dcard + .ck-dcard {
-  margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px dashed #e2e8f0;
-}
-.ck-dcard-name {
-  font-size: 0.72rem; font-weight: 800; color: #2563eb;
-  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.6rem;
-}
-.ck-dcard-name[hidden] { display: none; }
+/* ─── Multi-marca: una tarjeta colapsable por marca (paso 5) ─── */
+.ck-dcard .ck-dcard-name { color: #2563eb; }
 .ck-desc-foot {
   display: flex; align-items: baseline; justify-content: space-between;
   gap: 1rem; flex-wrap: wrap;
@@ -3086,26 +3135,6 @@ const faqSchema = {
 .ck-logo-meta { font-size: 0.78rem; color: #64748b; line-height: 1.5; word-break: break-word; margin: 0; }
 .ck-logo-confirm[hidden] { display: none; }
 
-/* Medidas en cm: calculadas de la proporción de la imagen, editables si el
-   cliente quiere. Eran dos campos obligatorios vacíos con jerga del INPI. */
-.ck-medidas {
-  margin-bottom: 1rem; border: 1.5px solid #e2e8f0; border-radius: 10px;
-  background: #fff; padding: 0 0.9375rem;
-}
-.ck-medidas[hidden] { display: none; }
-.ck-medidas summary {
-  cursor: pointer; list-style: none;
-  display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem;
-  padding: 0.6875rem 0;
-}
-.ck-medidas summary::-webkit-details-marker { display: none; }
-.ck-medidas-txt { font-size: 0.8125rem; color: #64748b; }
-.ck-medidas-txt b { color: #0f172a; font-weight: 600; }
-.ck-medidas-cta { font-size: 0.78rem; font-weight: 600; color: #2563eb; white-space: nowrap; }
-.ck-medidas[open] .ck-medidas-cta::after { content: ' ▴'; }
-.ck-medidas:not([open]) .ck-medidas-cta::after { content: ' ▾'; }
-.ck-medidas > .ck-grid { margin-top: 0.25rem; }
-.ck-medidas > .ck-help { margin-bottom: 0.9375rem; }
 
 /* ─── Qué incluye + upsell de garantía ─── */
 .ck-upsell {
