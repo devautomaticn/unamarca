@@ -79,12 +79,16 @@ const faqSchema = {
       <p>Completá tu solicitud en unos minutos. Nosotros la presentamos ante el INPI.</p>
     </header>
 
+    <!-- Progreso por fase: el contador se reinicia después del pago (ver PHASES) -->
     <div class="ck-progress" id="ck-progress">
       <div class="ck-progress-top">
-        <span id="ck-step-label">Paso 1 de 6</span>
+        <span class="ck-progress-left">
+          <b id="ck-phase-label">Tu pedido</b>
+          <span id="ck-step-label">Paso 1 de 4</span>
+        </span>
         <span id="ck-step-title">Tu marca</span>
       </div>
-      <div class="ck-bar"><div class="ck-bar-fill" id="ck-bar-fill" style="width: 20%"></div></div>
+      <div class="ck-bar"><div class="ck-bar-fill" id="ck-bar-fill" style="width: 25%"></div></div>
     </div>
 
     <!-- ══════════ PASO 1 · TU MARCA ══════════ -->
@@ -182,7 +186,7 @@ const faqSchema = {
       </div>
     </section>
 
-    <!-- ══════════ PASO 5 · DATOS DEL TITULAR (post-pago) ══════════ -->
+    <!-- ══════════ PASO 5 · SOBRE TU MARCA (post-pago, fase B) ══════════ -->
     <section class="ck-step" data-step="5" hidden>
       <div id="ck-pay-banner" class="ck-banner" hidden></div>
 
@@ -262,11 +266,22 @@ const faqSchema = {
         </div>
       </template>
 
+      <div class="ck-nav">
+        <button type="button" class="ck-back" data-back="4">← Volver</button>
+        <button type="button" class="ck-btn" data-next="5">
+          Continuar
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- ══════════ PASO 6 · DATOS DEL TITULAR (post-pago, fase B) ══════════ -->
+    <section class="ck-step" data-step="6" hidden>
       <div class="ck-card">
         <div class="ck-section-label">Datos del titular</div>
         <p class="ck-help" style="margin-bottom: 1rem">
-          Ya casi está. Estos datos son necesarios para la carta poder y la
-          presentación de tu solicitud ante el INPI.
+          Estos datos van en la carta poder y en la solicitud que presentamos
+          ante el INPI. Son los del titular de la marca.
         </p>
 
         <div class="ck-grid ck-g2">
@@ -399,8 +414,8 @@ const faqSchema = {
       </div>
 
       <div class="ck-nav">
-        <button type="button" class="ck-back" data-back="4">← Volver</button>
-        <button type="button" class="ck-btn" data-next="5">
+        <button type="button" class="ck-back" data-back="5">← Volver</button>
+        <button type="button" class="ck-btn" data-next="6">
           Continuar
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
@@ -653,8 +668,8 @@ const faqSchema = {
       </div>
     </section>
 
-    <!-- ══════════ PASO 6 · REVISIÓN Y FIRMA ══════════ -->
-    <section class="ck-step" data-step="6" hidden>
+    <!-- ══════════ PASO 7 · REVISIÓN Y FIRMA (post-pago, fase B) ══════════ -->
+    <section class="ck-step" data-step="7" hidden>
       <div class="ck-card">
         <div class="ck-section-label">Revisá tu carta poder</div>
         <p class="ck-help" style="margin-bottom: 1rem">
@@ -685,7 +700,7 @@ const faqSchema = {
       </div>
 
       <div class="ck-nav">
-        <button type="button" class="ck-back" data-back="5">← Volver</button>
+        <button type="button" class="ck-back" data-back="6">← Volver</button>
         <button type="button" class="ck-btn" id="ck-submit" disabled>
           <span id="ck-submit-label">Confirmar y enviar solicitud</span>
           <svg id="ck-submit-spin" width="16" height="16" viewBox="0 0 16 16" fill="none" style="display:none"><circle cx="8" cy="8" r="6" stroke="rgba(255,255,255,.3)" stroke-width="2"/><path d="M8 2a6 6 0 0 1 6 6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
@@ -731,7 +746,33 @@ const faqSchema = {
       </div>
     </section>
 
-    <!-- ══════════ FAQ (siempre visible, no es un .ck-step) ══════════ -->
+    <!-- ══════════ RESUMEN PERSISTENTE ══════════
+         Un solo lugar donde vive el precio, desde que hay uno (paso 3) hasta la
+         firma. En desktop es una columna sticky al lado del formulario; en
+         mobile, una barra fija abajo que se despliega. Los resúmenes que ya
+         existen dentro de los pasos 3 y 4 se ocultan cuando este se ve, para
+         que el total nunca aparezca dos veces en la misma pantalla. -->
+    <aside class="ck-rail" id="ck-rail" hidden aria-label="Resumen de tu pedido">
+      <button type="button" class="ck-rail-bar" id="ck-rail-toggle"
+              aria-expanded="false" aria-controls="ck-rail-body">
+        <span class="ck-rail-bar-k">Total</span>
+        <span class="ck-rail-bar-v" id="ck-rail-bar-total">–</span>
+        <svg width="11" height="7" viewBox="0 0 10 6" fill="none" aria-hidden="true"><path d="M1 5l4-4 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+
+      <div class="ck-rail-body" id="ck-rail-body">
+        <div class="ck-rail-title">Tu pedido</div>
+        <div class="ck-rail-marcas" id="ck-rail-marcas"></div>
+        <div class="ck-rail-rows" id="ck-rail-rows"></div>
+        <div class="ck-rail-total">
+          <span>Total</span>
+          <b id="ck-rail-total">–</b>
+        </div>
+        <p class="ck-rail-note" id="ck-rail-note" hidden></p>
+      </div>
+    </aside>
+
+    <!-- ══════════ FAQ (solo en el paso 1: ver .ck-focus) ══════════ -->
     <section class="ck-faq" aria-labelledby="ck-faq-title">
       <h2 id="ck-faq-title">Preguntas frecuentes</h2>
       {faqs.map(({ q, a }) => (
@@ -925,47 +966,79 @@ const faqSchema = {
     } catch { /* analytics nunca bloquea el checkout */ }
   }
 
-  // Paso alcanzado → evento. Nombres distintos por paso para poder armar el
-  // funnel en GA4 sin registrar dimensiones personalizadas.
+  // Paso alcanzado → evento. Los nombres son un contrato con el funnel de GA4:
+  // no se renombran aunque el paso cambie de número o de contenido, o se rompe
+  // la comparabilidad con el histórico. `ck_paso_titular` sigue significando
+  // "llegó al post-pago" y `ck_paso_firma` "llegó a la firma".
   const STEP_EVENTS: Record<string, string> = {
     '2': 'begin_checkout',   // completó el nombre de su marca
     '3': 'ck_paso_pedido',   // dejó contacto, ve el precio
     '4': 'ck_paso_pago',     // aceptó el pedido, ve el botón de pago
-    '5': 'ck_paso_titular',  // volvió de MP con pedido creado
-    '6': 'ck_paso_firma',    // completó titular, ve la carta poder
+    '5': 'ck_paso_titular',  // volvió de MP con pedido creado (fase B, 1/3)
+    '6': 'ck_paso_datos',    // cargó lo de su marca, va por el titular (2/3)
+    '7': 'ck_paso_firma',    // completó titular, ve la carta poder (3/3)
   };
 
   // ── Navegación entre pasos ──────────────────────────────
-  const TOTAL_STEPS = 6;
+  // El pago parte el checkout en dos fases con contadores independientes: el
+  // que ya pagó no puede seguir leyendo "te faltan 2 pasos de 6". El paso de
+  // pago es el cierre de la fase A y no cuenta como paso propio (por eso la
+  // barra de la fase A nunca llega al 100% antes de pagar).
+  interface Phase { label: string; steps: string[]; beats: number }
+  const PHASES: Phase[] = [
+    { label: 'Tu pedido',    steps: ['1', '2', '3', '4'], beats: 4 },
+    { label: 'Tu solicitud', steps: ['5', '6', '7'],      beats: 3 },
+  ];
+  const phaseOf = (step: string) => PHASES.find(p => p.steps.includes(step)) ?? PHASES[0];
+
   function stepTitle(step: string): string {
     const varias = marcas.length > 1;
     switch (step) {
       case '1': return varias ? 'Tus marcas' : 'Tu marca';
       case '2': return 'Contacto';
-      case '3': return 'Tu pedido';
+      case '3': return varias ? 'Clases y precio' : 'Clase y precio';
       case '4': return 'Pago';
-      case '5': return 'Datos del titular';
-      case '6': return 'Revisión y firma';
+      case '5': return varias ? 'Sobre tus marcas' : 'Sobre tu marca';
+      case '6': return 'Titular';
+      case '7': return 'Firma';
       default: return '';
     }
+  }
+
+  /** Etiqueta de avance dentro de la fase. El paso de pago se muestra como tal
+   *  ("Pago") y no como "paso 4 de 4": es el final de la fase A, no un trámite. */
+  function progressLabel(step: string, phase: Phase): string {
+    if (step === '4') return 'Pago';
+    const i = phase.steps.indexOf(step) + 1;
+    return `Paso ${i} de ${phase.beats}`;
   }
 
   function goTo(step: string) {
     document.querySelectorAll<HTMLElement>('.ck-step').forEach(s => {
       s.hidden = s.dataset.step !== step;
     });
+    // Fuera del paso 1 el checkout entra en modo foco: sin hero, sin FAQ, sin
+    // footer y sin el CTA del header. El paso 1 es la página que ve Google y
+    // la que convence al que llega de orgánico, así que queda intacta.
+    document.body.classList.toggle('ck-focus', step !== '1');
+    document.body.classList.toggle('ck-fin', step === 'done');
+
     if (step === 'done') {
       $('ck-progress').hidden = true;
     } else {
-      const n = parseInt(step, 10);
-      $('ck-step-label').textContent = `Paso ${n} de ${TOTAL_STEPS}`;
+      const phase = phaseOf(step);
+      $('ck-progress').hidden = false;
+      $('ck-phase-label').textContent = phase.label;
+      $('ck-step-label').textContent = progressLabel(step, phase);
       $('ck-step-title').textContent = stepTitle(step);
-      $('ck-bar-fill').style.width = `${(n / TOTAL_STEPS) * 100}%`;
+      $('ck-bar-fill').style.width =
+        `${((phase.steps.indexOf(step) + 1) / phase.beats) * 100}%`;
     }
     if (step === '3') renderClasesCards();
     if (step === '4') updatePaySummary();
     if (step === '5') renderDescCards();
-    if (step === '6') { renderPreview(); sizeCanvas(); }
+    if (step === '7') { renderPreview(); sizeCanvas(); }
+    renderRail(step);
     if (STEP_EVENTS[step]) {
       track(STEP_EVENTS[step], { checkout_step: parseInt(step, 10), currency: 'ARS', value: total() });
     }
@@ -1043,12 +1116,9 @@ const faqSchema = {
     return ok;
   }
 
-  function validateTitular(): boolean {
-    const keys = ['nombre', 'apellido', 'docnum', 'cuit', 'genero', 'estadocivil', 'conyuge', 'calle', 'numero', 'localidad', 'codpostal', 'provincia'];
-    clearErrs(keys);
+  /** Paso 5 (fase B, 1/3): lo que describe a la marca. Una tarjeta por marca. */
+  function validateMarcaDetalle(): boolean {
     let ok = true;
-
-    // Descripción y sitio web: uno por marca, en las tarjetas del paso 5
     let primerError: HTMLElement | null = null;
     document.querySelectorAll<HTMLElement>('#ck-desc-cards .ck-dcard').forEach((card, i) => {
       const m = marcas[i];
@@ -1100,6 +1170,14 @@ const faqSchema = {
       }
     });
     if (primerError) (primerError as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return ok;
+  }
+
+  /** Paso 6 (fase B, 2/3): identidad y domicilio del titular. */
+  function validateTitular(): boolean {
+    const keys = ['nombre', 'apellido', 'docnum', 'cuit', 'genero', 'estadocivil', 'conyuge', 'calle', 'numero', 'localidad', 'codpostal', 'provincia'];
+    clearErrs(keys);
+    let ok = true;
 
     const req = (id: string, key: string, msg: string) => {
       if (!FIELDS_OPTIONAL && !input(id).value.trim()) { setErr(key, msg); ok = false; }
@@ -1139,6 +1217,17 @@ const faqSchema = {
     req('ck-provincia', 'provincia', 'Seleccioná la provincia.');
 
     return ok;
+  }
+
+  /** Lleva la vista al primer campo en rojo del paso visible. Sin esto, tocar
+   *  "Continuar" en una pantalla larga con el error fuera de cuadro se ve como
+   *  que el botón no hace nada. */
+  function scrollAlPrimerError() {
+    const paso = document.querySelector<HTMLElement>('.ck-step:not([hidden])');
+    const err = Array.from(paso?.querySelectorAll<HTMLElement>('.ck-err') ?? [])
+      .find(el => el.style.display === 'block' && el.textContent?.trim());
+    if (!err) return;
+    (err.closest('.ck-field') ?? err).scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   // Cónyuge: visible solo si el estado civil es Casado/a
@@ -1475,6 +1564,7 @@ const faqSchema = {
       `Arancel INPI (${nLabel}) <small>se paga al INPI · valor ${PRICING.arancelVigencia}</small>`;
     $('ck-sum-ara').textContent = formatARS(p.arancelInpi);
     $('ck-sum-total').textContent = formatARS(p.total);
+    updateRail();
   }
 
   input('ck-garantia').addEventListener('change', () => {
@@ -1482,6 +1572,75 @@ const faqSchema = {
     updateSummary();
     refreshCards(); // los subtotales por marca incluyen la garantía
     saveDraft();
+  });
+
+  // ── Resumen persistente (rail) ──────────────────────────
+  // Se ve desde que hay un precio (paso 3) hasta la firma. Es la única fuente
+  // del total: los resúmenes dentro de los pasos 3 y 4 se ocultan por CSS
+  // cuando el rail está a la vista.
+  const RAIL_STEPS = ['3', '4', '5', '6', '7'];
+
+  function renderRail(step: string) {
+    const rail = $('ck-rail');
+    const wrap = document.querySelector<HTMLElement>('.ck-wrap')!;
+    const ver = RAIL_STEPS.includes(step);
+    rail.hidden = !ver;
+    wrap.classList.toggle('ck-wrap--rail', ver);
+    document.body.classList.toggle('ck-has-rail', ver);
+    if (ver) updateRail();
+  }
+
+  function updateRail() {
+    if ($('ck-rail').hidden) return;
+    const p = pricing();
+    const nLabel = lineasTexto(p.lineas, marcas.length);
+
+    const cont = $('ck-rail-marcas');
+    cont.innerHTML = '';
+    marcas.forEach((m, i) => {
+      const fila = document.createElement('div');
+      fila.className = 'ck-rail-marca';
+      const nombre = document.createElement('b');
+      nombre.textContent = m.nombre.trim().toUpperCase() || `MARCA ${i + 1}`;
+      const clases = document.createElement('span');
+      clases.textContent = clasesTexto(m.clases, 'sin clase');
+      fila.append(nombre, clases);
+      cont.append(fila);
+    });
+
+    const filas: [string, string][] = [[`Honorarios (${nLabel})`, formatARS(p.honorarios)]];
+    if (garantia) filas.push([`Garantía de Devolución (${nLabel})`, formatARS(p.garantia)]);
+    filas.push([`Arancel INPI (${nLabel})`, formatARS(p.arancelInpi)]);
+
+    const rowsEl = $('ck-rail-rows');
+    rowsEl.innerHTML = '';
+    filas.forEach(([k, v]) => {
+      const row = document.createElement('div');
+      row.className = 'ck-rail-row';
+      const ks = document.createElement('span'); ks.textContent = k;
+      const vs = document.createElement('span'); vs.textContent = v;
+      row.append(ks, vs);
+      rowsEl.append(row);
+    });
+
+    const totalTxt = formatARS(p.total);
+    $('ck-rail-total').textContent = totalTxt;
+    $('ck-rail-bar-total').textContent = totalTxt;
+
+    // Con pedido creado el resumen deja de ser un precio a decidir y pasa a ser
+    // el comprobante de lo que se compró.
+    const nota = $('ck-rail-note');
+    nota.hidden = !orderRef;
+    if (orderRef) {
+      nota.textContent = metodoPago === 'transferencia'
+        ? `Pedido ${orderRef} · falta tu transferencia`
+        : `Pedido ${orderRef} · pago recibido`;
+    }
+  }
+
+  $('ck-rail-toggle').addEventListener('click', () => {
+    const abierto = $('ck-rail').classList.toggle('ck-rail--open');
+    $('ck-rail-toggle').setAttribute('aria-expanded', String(abierto));
   });
 
   function updatePaySummary() {
@@ -2052,7 +2211,7 @@ const faqSchema = {
     $('ck-cp-preview').innerHTML = cartaPoderHTML(cpData());
   }
 
-  $('ck-edit-datos').addEventListener('click', () => goTo('5'));
+  $('ck-edit-datos').addEventListener('click', () => goTo('6'));
 
   // ── Firma (canvas) ──────────────────────────────────────
   const canvas = document.getElementById('ck-sig') as HTMLCanvasElement;
@@ -2336,14 +2495,15 @@ const faqSchema = {
 
   // ── Botones Continuar / Volver ──────────────────────────
   const VALIDATORS: Record<string, () => boolean> = {
-    '1': validateStep1, '2': validateContacto, '3': validatePedido, '5': validateTitular,
+    '1': validateStep1, '2': validateContacto, '3': validatePedido,
+    '5': validateMarcaDetalle, '6': validateTitular,
   };
 
   document.querySelectorAll<HTMLElement>('[data-next]').forEach(btn => {
     btn.addEventListener('click', () => {
       const from = btn.dataset.next!;
       const validator = VALIDATORS[from];
-      if (validator && !validator()) return;
+      if (validator && !validator()) { scrollAlPrimerError(); return; }
       goTo(String(parseInt(from, 10) + 1));
     });
   });
@@ -3023,5 +3183,128 @@ const faqSchema = {
   font-size: 0.875rem; color: #475569; line-height: 1.65;
 }
 .ck-faq-item a { color: #2563eb; font-weight: 600; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   ESTRUCTURA · modo foco + resumen persistente
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─── Modo foco (a partir del paso 2) ───
+   El paso 1 es la página que indexa Google y la que convence al que llega de
+   orgánico: hero, FAQ y footer siguen en el HTML servido y solo se ocultan
+   cuando el usuario avanza, que es algo que el crawler nunca hace. De ahí en
+   adelante la pantalla es solo el formulario. */
+body.ck-focus .ck-header,
+body.ck-focus .ck-faq { display: none; }
+
+/* La navegación del sitio se esconde mientras el checkout está en curso, pero
+   vuelve en la confirmación (.ck-fin): ahí el usuario terminó y tiene que poder
+   irse a cualquier lado. */
+body.ck-focus:not(.ck-fin) .site-footer,
+body.ck-focus:not(.ck-fin) .site-header nav .nav-link,
+body.ck-focus:not(.ck-fin) .site-header .nav-cta { display: none; }
+
+body.ck-focus .ck-page { padding-top: 1rem; }
+
+/* Sin el hero, el progreso pasa a ser el ancla de la pantalla. 64px = alto del
+   .site-header sticky (padding-block 1rem + logo de 32px). */
+body.ck-focus .ck-progress {
+  position: sticky; top: 64px; z-index: 20;
+  margin-left: -1.25rem; margin-right: -1.25rem;
+  padding: 0.75rem 1.25rem 0.625rem;
+  background: #f4f6f9;
+}
+
+/* ─── Progreso por fase ─── */
+.ck-progress-left { display: inline-flex; align-items: baseline; gap: 0.5rem; min-width: 0; }
+#ck-phase-label {
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em;
+  text-transform: uppercase; color: #2563eb;
+}
+#ck-step-label::before { content: '·'; margin-right: 0.5rem; color: #cbd5e1; }
+#ck-step-title { white-space: nowrap; }
+
+/* ─── Resumen persistente ─── */
+.ck-rail[hidden] { display: none; }
+.ck-rail-title {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: #94a3b8; margin-bottom: 0.75rem;
+}
+.ck-rail-marca {
+  display: flex; flex-direction: column; gap: 0.1rem;
+  padding-bottom: 0.625rem; margin-bottom: 0.625rem; border-bottom: 1px dashed #e2e8f0;
+}
+.ck-rail-marca b {
+  font-size: 0.78rem; font-weight: 800; color: #0b1d3a; letter-spacing: -0.01em;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ck-rail-marca span { font-size: 0.72rem; color: #94a3b8; }
+.ck-rail-rows { display: grid; gap: 0.4rem; }
+.ck-rail-row { display: flex; justify-content: space-between; gap: 0.75rem; }
+.ck-rail-row span:first-child { font-size: 0.75rem; color: #64748b; line-height: 1.4; }
+.ck-rail-row span:last-child { font-size: 0.78rem; font-weight: 600; color: #334155; white-space: nowrap; }
+.ck-rail-total {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem;
+  margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1.5px solid #e2e8f0;
+}
+.ck-rail-total span { font-size: 0.8125rem; font-weight: 700; color: #0b1d3a; }
+.ck-rail-total b { font-size: 1.125rem; font-weight: 800; color: #0b1d3a; letter-spacing: -0.02em; }
+.ck-rail-note {
+  margin: 0.75rem 0 0; font-size: 0.7rem; line-height: 1.5; color: #64748b;
+  background: #f8fafc; border-radius: 8px; padding: 0.5rem 0.625rem;
+}
+.ck-rail-note[hidden] { display: none; }
+
+/* ─── Mobile: barra fija abajo, desplegable ─── */
+@media (max-width: 1023px) {
+  .ck-rail {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 400;
+    background: #fff; border-top: 1.5px solid #e2e8f0;
+    box-shadow: 0 -6px 24px rgba(15,23,42,.10);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  .ck-rail-bar {
+    display: flex; align-items: center; gap: 0.5rem; width: 100%; cursor: pointer;
+    background: none; border: none; padding: 0.875rem 1.25rem;
+    font-family: 'Inter', system-ui, sans-serif; color: #0b1d3a;
+  }
+  .ck-rail-bar-k { font-size: 0.8125rem; font-weight: 600; color: #64748b; }
+  .ck-rail-bar-v {
+    font-size: 1rem; font-weight: 800; letter-spacing: -0.02em; margin-left: auto;
+  }
+  .ck-rail-bar svg { color: #94a3b8; transition: transform .2s; flex-shrink: 0; }
+  .ck-rail--open .ck-rail-bar svg { transform: rotate(180deg); }
+  .ck-rail-body {
+    display: none; padding: 0 1.25rem 1.125rem;
+    max-height: 55vh; overflow-y: auto;
+  }
+  .ck-rail--open .ck-rail-body { display: block; }
+  /* La barra fija no puede tapar el botón de Continuar */
+  body.ck-has-rail .ck-page { padding-bottom: 8rem; }
+  body.ck-has-rail .wa-float { bottom: 5.5rem; }
+  /* Con el resumen desplegado el botón flotante caería justo encima */
+  body:has(.ck-rail--open) .wa-float { display: none; }
+}
+
+/* ─── Desktop: columna sticky al lado del formulario ─── */
+@media (min-width: 1024px) {
+  .ck-rail-bar { display: none; }
+  .ck-wrap--rail { max-width: 1040px; display: grid; gap: 0 2rem;
+    grid-template-columns: minmax(0, 1fr) 300px; align-items: start; }
+  /* Cabecera, progreso y FAQ cruzan las dos columnas; cada paso ocupa la
+     izquierda y el rail se ubica solo a su derecha (los pasos ocultos son
+     display:none, así que no participan de la grilla). */
+  .ck-wrap--rail > .ck-header,
+  .ck-wrap--rail > .ck-progress,
+  .ck-wrap--rail > .ck-faq { grid-column: 1 / -1; }
+  .ck-wrap--rail > .ck-step { grid-column: 1; }
+  .ck-rail {
+    grid-column: 2; position: sticky; top: 96px;
+    background: #fff; border-radius: 18px; padding: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 6px 24px rgba(0,0,0,.05);
+  }
+  /* El total ya lo dice el rail: en desktop no se repite dentro del paso */
+  .ck-wrap--rail .ck-summary,
+  .ck-wrap--rail .ck-pay-summary { display: none; }
+}
 
 </style>
