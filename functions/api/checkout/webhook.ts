@@ -114,6 +114,7 @@ export const onRequestPost: PagesFunction<WebhookEnv> = async ({ env, request })
         status: newStatus,
         mpStatus: payment.status,
         marcas: marcasDesdePayload(stored),
+        garantia: !!stored.garantia,
         total: stored.pricing?.total ?? 0,
         clientEmail: stored.contacto?.email || '',
         whatsapp: stored.contacto?.whatsapp || '',

@@ -178,6 +178,7 @@ export interface PaymentEmailData {
   status: string;    // estado interno: paid | payment_pending | rejected | refunded
   mpStatus: string;  // estado crudo de MP (approved, in_process, ...)
   marcas: MarcaEmail[];
+  garantia: boolean;
   total: number;
   clientEmail: string;
   whatsapp: string;
@@ -193,7 +194,7 @@ function paymentHTML(d: PaymentEmailData): string {
   <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:16px;padding:36px;border:1px solid #e2e8f0">
     <p style="margin:0 0 6px;color:#2563EB;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase">UnaMarca · Self-Checkout</p>
     <h1 style="margin:0 0 4px;color:#0B1D3A;font-size:20px;font-weight:800">Pago ${esc(info.label.toLowerCase())}: “${esc(marcasTitulo(d.marcas))}”</h1>
-    <p style="margin:0 0 16px;color:#64748b;font-size:13px">${esc(d.ref)} · ${esc(alcanceLabel(d.marcas))} · Total $${d.total.toLocaleString('es-AR')}</p>
+    <p style="margin:0 0 16px;color:#64748b;font-size:13px">${esc(d.ref)} · ${esc(alcanceLabel(d.marcas))} · ${d.garantia ? 'Con Garantía' : 'Sin garantía'} · Total $${d.total.toLocaleString('es-AR')}</p>
     <p style="margin:0 0 16px;font-size:13px;font-weight:700;color:${info.color}">
       Estado: ${esc(info.label)} (MP: ${esc(d.mpStatus)})
     </p>
