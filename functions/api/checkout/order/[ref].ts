@@ -16,6 +16,7 @@ interface OrderRow {
   payment_status: string | null;
   payload: string;
   completion: string | null;
+  vigilante: string | null;
 }
 
 interface NotifyEnv extends CheckoutEnv, VigilanteEnv {
@@ -25,13 +26,22 @@ interface NotifyEnv extends CheckoutEnv, VigilanteEnv {
 export const onRequestGet: PagesFunction<CheckoutEnv> = async ({ env, params }) => {
   if (!env.DB) return json({ error: 'Base de datos no configurada' }, 500);
   await ensureSchema(env.DB);
+  // La columna puede no existir en pedidos viejos ni en una base recién creada
+  await ensureVigilanteColumn(env.DB);
 
   const ref = String(params.ref || '');
   const row = await env.DB.prepare(
-    'SELECT ref, status, payment_status, payload, completion FROM orders WHERE ref = ?'
+    'SELECT ref, status, payment_status, payload, completion, vigilante FROM orders WHERE ref = ?'
   ).bind(ref).first<OrderRow>();
 
   if (!row) return json({ error: 'Pedido no encontrado' }, 404);
+
+  // El alta en el portal corre en waitUntil, así que no se puede ver en la
+  // respuesta del PATCH. Se expone acá: es la única forma de verificar que un
+  // pedido quedó cargado sin entrar al panel de Cloudflare. El ref ya es la
+  // llave de lectura del pedido entero, así que no agrega superficie.
+  let vigilante: unknown = null;
+  try { vigilante = row.vigilante ? JSON.parse(row.vigilante) : null; } catch { /* ignorar */ }
 
   return json({
     ref: row.ref,
@@ -39,6 +49,7 @@ export const onRequestGet: PagesFunction<CheckoutEnv> = async ({ env, params }) 
     paymentStatus: row.payment_status,
     payload: JSON.parse(row.payload),
     completed: row.completion !== null,
+    vigilante,
   });
 };
 
