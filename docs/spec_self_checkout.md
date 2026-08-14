@@ -1,8 +1,43 @@
 # Spec — Self-Checkout de Registro de Marca (v1)
 
 **Status:** Draft — approved for initial implementation
-**Date:** 2026-07-03 (amended 2026-08-11: multi-marca)
+**Date:** 2026-07-03 (amended 2026-08-14: estructura en dos fases)
 **Owner:** Mike
+
+> **Amendment 2026-08-14 — Estructura en dos fases (rediseño de UX, en curso):**
+> el pago parte el checkout en dos fases con **contadores independientes**:
+> **Fase A · "Tu pedido"** (pasos 1-4, cierra en el pago) y **Fase B · "Tu
+> solicitud"** (pasos 5-7). El contador se reinicia al pasar el pago: el que ya
+> pagó no puede seguir leyendo "Paso 5 de 6". El paso de pago cierra la fase A y
+> no cuenta como paso propio, así que la barra nunca llega al 100% antes de
+> cobrar.
+>
+> **La Fase B pasa de 2 a 3 pantallas:** paso 5 "Sobre tu marca"
+> (descripción/sitio/logo), paso 6 "Titular" (identidad + domicilio), paso 7
+> "Firma". Antes el paso 5 era un scroll de ~20 campos (~25 en mixta). La firma
+> deja de ser el paso 6 y pasa a ser el 7.
+>
+> **Modo foco** (`body.ck-focus`, a partir del paso 2): se ocultan hero, FAQ,
+> footer y el CTA del header, y el progreso queda sticky. El **paso 1 no se
+> toca**: es la página que indexa Google (FAQPage + H1) y el crawler nunca
+> avanza de paso, así que el HTML servido sigue completo. En la confirmación
+> (`body.ck-fin`) vuelve la navegación del sitio.
+>
+> **Resumen de pedido persistente** (`#ck-rail`): columna sticky en desktop
+> (≥1024px, grilla de dos columnas sobre `.ck-wrap`) y barra fija desplegable en
+> mobile, viva del paso 3 a la firma; post-pago muestra el N° de pedido y el
+> estado del pago. Los resúmenes que ya vivían dentro de los pasos 3 y 4 se
+> ocultan en desktop: **el total no se dice dos veces en la misma pantalla**.
+>
+> **Los nombres de eventos GA4 quedan pegados a la pantalla que miden, no al
+> número de paso** — si se renombran, se rompe la comparabilidad del funnel con
+> el histórico. `ck_paso_titular` sigue significando "llegó al post-pago" y
+> `ck_paso_firma` "llegó a la firma"; se suma `ck_paso_datos` para la pantalla
+> nueva. Ver §8.
+>
+> Pendiente de esta ronda: contenido y densidad de cada paso (uno por uno), y la
+> persistencia (captura de lead al salir del paso 2 + autosave parcial en cada
+> pantalla de la Fase B, hoy todo vive en localStorage hasta el submit final).
 
 > **Amendment 2026-08-11 — Multi-marca:** un pedido son ahora **1 a 3 marcas**,
 > cada una con **sus propias clases** (hasta 5 por marca; más → WhatsApp).
@@ -402,9 +437,18 @@ the funnel:
 | `add_payment_info` | clicked "Pagar con Mercado Pago" |
 | `ck_pago_error` | order/preference creation failed (not deduped) |
 | `ck_pago_retorno_<status>` | returned from MP (`_paid` / `_rejected` / `_pending_payment`) |
-| `ck_paso_titular` | reached Paso 5 |
-| `ck_paso_firma` | reached Paso 6 |
+| `ck_paso_titular` | reached the post-pago (Paso 5 — "Sobre tu marca") |
+| `ck_paso_datos` | reached Paso 6 ("Titular") — added 2026-08-14 |
+| `ck_paso_firma` | reached the firma (Paso 7) |
 | `purchase` | final submit (titular + firma sent) — pre-existing |
+
+**The event names are a contract with the funnel, not a description of the
+step number.** When the wizard was split into two phases (2026-08-14) the
+firma moved from Paso 6 to Paso 7 and `ck_paso_titular` stopped being the
+titular screen — both event names stayed put, because renaming them breaks
+comparability with every month of history already in GA4. Same rule as the
+WhatsApp message catalog: changing them breaks nothing at build time and
+everything in the reports.
 
 Note: `purchase` fires at final submit, not at actual payment. A
 paid-but-abandoned user fires `ck_pago_retorno_paid` but no `purchase`;
