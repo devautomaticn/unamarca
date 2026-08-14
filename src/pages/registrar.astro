@@ -203,8 +203,14 @@ const faqSchema = {
             <label>
               <span class="ck-desc-label">Descripción de tu marca</span> <em>*</em>
             </label>
-            <textarea class="ck-desc" rows="4" maxlength="1000" placeholder="Describe los productos y/o servicios ofrecidos por la marca."></textarea>
-            <p class="ck-help ck-desc-help">Mínimo 100 caracteres.</p>
+            <textarea class="ck-desc" rows="4" maxlength="1000" placeholder="Contanos qué productos o servicios vas a ofrecer con esta marca."></textarea>
+            <div class="ck-desc-foot">
+              <p class="ck-help ck-desc-help">Mínimo 100 caracteres.</p>
+              <!-- Arranque editable armado con las clases elegidas: el textarea
+                   en blanco con mínimo de 100 caracteres es donde más gente se
+                   traba del post-pago. -->
+              <button type="button" class="ck-link-btn ck-desc-sug">Partir de un ejemplo</button>
+            </div>
             <p class="ck-err ck-desc-err"></p>
           </div>
           <div class="ck-field">
@@ -216,34 +222,25 @@ const faqSchema = {
           <!-- Logo: solo en mixtas y figurativas (renderDescCards lo muestra) -->
           <div class="ck-logo" hidden>
             <div class="ck-field">
-              <label>Imagen de tu marca <em>*</em></label>
-              <input type="file" class="ck-logo-file" accept={LOGO_ACCEPT} />
-              <p class="ck-help">
-                JPG, PNG o WebP. La convertimos a JPG, que es el formato que pide el INPI.
-              </p>
+              <label class="ck-logo-label">Imagen de tu marca <em>*</em></label>
+              <!-- El input queda fuera de pantalla: el área clickeable y de
+                   arrastre es el .ck-drop, no el "Choose File" del navegador. -->
+              <input type="file" class="ck-logo-file ck-sr" accept={LOGO_ACCEPT} />
+              <div class="ck-drop" tabindex="0" role="button">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.5 15v3A2.5 2.5 0 0 0 6 20.5h12a2.5 2.5 0 0 0 2.5-2.5v-3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                <span class="ck-drop-title">Subí la imagen de tu marca</span>
+                <span class="ck-drop-sub">Arrastrala acá o tocá para elegirla · JPG, PNG o WebP</span>
+              </div>
               <p class="ck-err ck-logo-err"></p>
             </div>
 
             <div class="ck-logo-preview" hidden>
               <img class="ck-logo-img" alt="Vista previa de la imagen de tu marca" />
-              <p class="ck-logo-meta"></p>
-            </div>
-
-            <div class="ck-grid ck-g2">
-              <div class="ck-field">
-                <label>Alto (cm) <em>*</em></label>
-                <input type="text" class="ck-logo-alto" inputmode="decimal" placeholder="5" />
-              </div>
-              <div class="ck-field">
-                <label>Ancho (cm) <em>*</em></label>
-                <input type="text" class="ck-logo-ancho" inputmode="decimal" placeholder="5" />
+              <div class="ck-logo-side">
+                <p class="ck-logo-meta"></p>
+                <button type="button" class="ck-link-btn ck-logo-otra">Cambiar imagen</button>
               </div>
             </div>
-            <p class="ck-help">
-              Las calculamos de tu imagen para respetar su proporción. Podés cambiarlas:
-              es el tamaño al que se publica el signo, hasta {LOGO_CM_MAX} cm de lado.
-            </p>
-            <p class="ck-err ck-medidas-err"></p>
 
             <div class="ck-field">
               <label>Enunciación de colores <em>*</em></label>
@@ -254,6 +251,32 @@ const faqSchema = {
               </p>
               <p class="ck-err ck-colores-err"></p>
             </div>
+
+            <!-- Alto y ancho salen de la proporción de la imagen. Eran dos
+                 campos obligatorios vacíos con jerga del INPI ("medidas del
+                 signo en cm"): ahora se muestran calculados y se editan solo
+                 si el cliente quiere. -->
+            <details class="ck-medidas">
+              <summary>
+                <span class="ck-medidas-txt">Se publica a <b class="ck-medidas-val">–</b></span>
+                <span class="ck-medidas-cta">Ajustar</span>
+              </summary>
+              <div class="ck-grid ck-g2">
+                <div class="ck-field">
+                  <label>Alto (cm) <em>*</em></label>
+                  <input type="text" class="ck-logo-alto" inputmode="decimal" placeholder="5" />
+                </div>
+                <div class="ck-field">
+                  <label>Ancho (cm) <em>*</em></label>
+                  <input type="text" class="ck-logo-ancho" inputmode="decimal" placeholder="5" />
+                </div>
+              </div>
+              <p class="ck-help">
+                Es el tamaño al que se publica el signo, hasta {LOGO_CM_MAX} cm de lado.
+                Las calculamos de tu imagen para respetar su proporción.
+              </p>
+            </details>
+            <p class="ck-err ck-medidas-err"></p>
 
             <!-- Solo mixta: el INPI corrige de oficio si la denominación no
                  transcribe todo el texto de la imagen. -->
@@ -393,22 +416,26 @@ const faqSchema = {
               <p class="ck-err" data-err="codpostal"></p>
             </div>
           </div>
-          <div class="ck-grid ck-g2">
-            <div class="ck-field">
-              <label for="ck-provincia">Provincia <em>*</em></label>
-              <div class="ck-sel">
-                <select id="ck-provincia">
-                  <option value="">Seleccionar…</option>
-                  {PROVINCIAS.map(p => <option value={p}>{p}</option>)}
-                </select>
-              </div>
-              <p class="ck-err" data-err="provincia"></p>
+          <div class="ck-field">
+            <label for="ck-provincia">Provincia <em>*</em></label>
+            <div class="ck-sel">
+              <select id="ck-provincia">
+                <option value="">Seleccionar…</option>
+                {PROVINCIAS.map(p => <option value={p}>{p}</option>)}
+              </select>
             </div>
-            <div class="ck-field">
-              <label for="ck-pais">País <em>*</em></label>
-              <input type="text" id="ck-pais" value="Argentina" autocomplete="country-name" />
-            </div>
+            <p class="ck-err" data-err="provincia"></p>
           </div>
+
+          <!-- Casi todos los titulares viven en Argentina: el campo está, pero
+               no ocupa lugar hasta que hace falta. -->
+          <div class="ck-field ck-pais-row" id="ck-pais-row" hidden>
+            <label for="ck-pais">País <em>*</em></label>
+            <input type="text" id="ck-pais" value="Argentina" autocomplete="country-name" />
+          </div>
+          <button type="button" class="ck-link-btn ck-pais-toggle" id="ck-pais-toggle">
+            El titular vive fuera de Argentina
+          </button>
         </div>
 
       </div>
@@ -556,7 +583,7 @@ const faqSchema = {
     <!-- ══════════ PASO 4 · PAGO (placeholder v1) ══════════ -->
     <section class="ck-step" data-step="4" hidden>
       <div class="ck-card">
-        <div class="ck-section-label">Pago</div>
+        <div class="ck-section-label">Cómo querés pagar</div>
 
         <div class="ck-pay-summary">
           <!-- Una línea por marca: "MARCA A · Clases 2 y 3" -->
@@ -565,23 +592,13 @@ const faqSchema = {
           <div class="ck-pay-total">Total: <b id="ck-pay-total">–</b></div>
         </div>
 
-        <div class="ck-eta">
-          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16z" stroke="#1e40af" stroke-width="1.5"/><path d="M7 10.2l2.2 2.2L13.5 8" stroke="#1e40af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <div>
-            Si no hay vistas u oposiciones, la marca suele resultar inscripta
-            en un plazo de <b>60 a 90 días</b> desde ingresada la solicitud.
-            Recibirás novedades a lo largo de todo el proceso.
-          </div>
-        </div>
-
-        <div class="ck-stay">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="9" stroke="#b45309" stroke-width="1.5"/><path d="M10 5.5V10l3 2" stroke="#b45309" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <div>
-            <b>Quedate cerca:</b> después de elegir cómo pagar completás los datos
-            del titular y <b>firmás la carta poder online</b>. Te toma 2 minutos y
-            tu solicitud queda lista para presentar.
-          </div>
-        </div>
+        <!-- Fijar la expectativa de que después del pago falta algo evita
+             abandonos en la fase B, pero no puede ser un cartel de alerta justo
+             antes del botón de pagar: va en texto plano, sin caja de color. -->
+        <p class="ck-pay-lead">
+          Después de pagar te pedimos los datos del titular y tu firma. Son dos
+          minutos y tu solicitud queda lista para presentar.
+        </p>
 
         <div class="ck-pay-methods" id="ck-pay-methods">
           <button type="button" class="ck-pm" id="ck-mp-btn">
@@ -593,7 +610,7 @@ const faqSchema = {
               Tarjeta de crédito o débito, cuotas y dinero en cuenta.
               Se acredita al instante.
             </span>
-            <span class="ck-pm-go" id="ck-mp-label">Pagar con Mercado Pago →</span>
+            <span class="ck-pm-go" id="ck-mp-label">Pagar con Mercado Pago</span>
           </button>
 
           <button type="button" class="ck-pm" id="ck-tr-btn">
@@ -605,7 +622,7 @@ const faqSchema = {
               Desde tu home banking, con alias.
               Te mostramos los datos de la cuenta.
             </span>
-            <span class="ck-pm-go" id="ck-tr-label">Pagar por transferencia →</span>
+            <span class="ck-pm-go" id="ck-tr-label">Pagar por transferencia</span>
           </button>
         </div>
 
@@ -666,6 +683,14 @@ const faqSchema = {
           </button>
           <button type="button" class="ck-link-btn ck-transfer-otro" id="ck-tr-otro">← Elegir otra forma de pago</button>
         </div>
+
+        <!-- El plazo del trámite tranquiliza, pero no es una instrucción: va al
+             pie, no en un banner arriba del botón de pagar. -->
+        <p class="ck-fine-note">
+          Presentamos tu solicitud ante el INPI dentro de las 48 horas hábiles.
+          Si no hay vistas u oposiciones, la marca suele resultar inscripta en un
+          plazo de 60 a 90 días desde ingresada, y recibís novedades en cada etapa.
+        </p>
       </div>
 
       <div class="ck-nav">
@@ -700,6 +725,7 @@ const faqSchema = {
           <span class="ck-sig-hint" id="ck-sig-hint">Firmá acá</span>
         </div>
         <div class="ck-sig-foot">
+          <button type="button" class="ck-link-btn" id="ck-sig-undo" hidden>↶ Deshacer</button>
           <button type="button" class="ck-link-btn" id="ck-sig-clear">Borrar y firmar de nuevo</button>
         </div>
 
@@ -723,13 +749,43 @@ const faqSchema = {
       <div class="ck-card ck-done">
         <svg width="52" height="52" viewBox="0 0 52 52" fill="none"><circle cx="26" cy="26" r="25" fill="#22c55e" fill-opacity=".12"/><path d="M16 26.5l7 7 13-14" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <h2 id="ck-done-title">¡Listo! Recibimos tu solicitud.</h2>
-        <p class="ck-done-ref">N° de referencia: <b id="ck-ref"></b></p>
         <p id="ck-done-mail">Te enviamos una copia de tu carta poder firmada a <b id="ck-done-email"></b>.</p>
-        <p id="ck-done-plazo">
-          Presentaremos tu solicitud ante el INPI dentro de las próximas
-          <b>48 horas hábiles</b> y te enviaremos todas las notificaciones del
-          trámite por email.
+
+        <div class="ck-done-ref">
+          <span>Tu N° de pedido</span>
+          <b id="ck-ref"></b>
+          <button type="button" class="ck-copy" id="ck-copy-done">Copiar</button>
+        </div>
+        <p class="ck-done-ref-help">Guardalo: con ese número seguimos tu trámite por WhatsApp o email.</p>
+      </div>
+
+      <!-- Qué pasa ahora. El trámite dura meses y el cliente acaba de pagar:
+           saber qué sigue es lo que evita el "¿en qué quedó lo mío?" a las dos
+           semanas. -->
+      <div class="ck-card">
+        <div class="ck-section-label">Qué pasa ahora</div>
+        <ol class="ck-timeline" id="ck-timeline">
+          <li>
+            <b>Presentamos tu solicitud ante el INPI</b>
+            <span id="ck-tl-presenta">Dentro de las próximas 48 horas hábiles. Te avisamos por email cuando esté ingresada.</span>
+          </li>
+          <li>
+            <b>Publicación en el Boletín de Marcas</b>
+            <span>El INPI publica tu solicitud y se abre un plazo de 30 días para que terceros puedan oponerse.</span>
+          </li>
+          <li>
+            <b>Resolución</b>
+            <span>Si no hay vistas ni oposiciones, la marca suele quedar inscripta entre 60 y 90 días desde la presentación.</span>
+          </li>
+        </ol>
+        <p class="ck-fine-note">
+          Te escribimos por email en cada etapa. Si aparece una oposición o una
+          vista, te avisamos y te contamos las opciones antes de hacer nada.
         </p>
+      </div>
+
+      <!-- Solo se muestra si hay algo pendiente (transferencia o imagen) -->
+      <div class="ck-card ck-done ck-done-extra" id="ck-done-extra" hidden>
 
         <!-- Solo si la imagen no llegó al servidor: el pedido se envía igual -->
         <div class="ck-done-transfer" id="ck-done-logo" hidden>
@@ -902,6 +958,7 @@ const faqSchema = {
       if (!draft) return;
       FIELD_IDS.forEach(id => { if (draft.values?.[id]) input(id).value = draft.values[id]; });
       syncConyuge();
+      syncPais();
       setMarcas(marcasDesdeDraft(draft), false);
       if (typeof draft.garantia === 'boolean') {
         garantia = draft.garantia;
@@ -1039,9 +1096,12 @@ const faqSchema = {
     } else {
       const phase = phaseOf(step);
       $('ck-progress').hidden = false;
+      const avance = progressLabel(step, phase);
+      const titulo = stepTitle(step);
       $('ck-phase-label').textContent = phase.label;
-      $('ck-step-label').textContent = progressLabel(step, phase);
-      $('ck-step-title').textContent = stepTitle(step);
+      $('ck-step-label').textContent = avance;
+      // En el paso de pago el avance ya dice "Pago": no se repite a la derecha
+      $('ck-step-title').textContent = titulo === avance ? '' : titulo;
       $('ck-bar-fill').style.width =
         `${((phase.steps.indexOf(step) + 1) / phase.beats) * 100}%`;
     }
@@ -1172,6 +1232,9 @@ const faqSchema = {
       }
       if (m.alto === null || m.ancho === null) {
         fallo(errMedidas, `Ingresá alto y ancho en centímetros, hasta ${LOGO_CM_MAX} (con punto: 3.5).`);
+        // Los campos viven plegados: si el error es de ellos, se abren solos
+        const det = card.querySelector<HTMLDetailsElement>('.ck-medidas');
+        if (det) det.open = true;
       }
       if (!m.colores.trim()) {
         fallo(errColores, 'Escribí los colores de la imagen. Si es en blanco y negro, poné “Blanco y negro”.');
@@ -1246,6 +1309,20 @@ const faqSchema = {
     $('ck-conyuge-row').hidden = input('ck-estadocivil').value !== 'Casado/a';
   }
   input('ck-estadocivil').addEventListener('change', syncConyuge);
+
+  // País: oculto mientras sea Argentina, que es el caso de casi todos. Si un
+  // draft trae otro país, el campo aparece solo.
+  function syncPais() {
+    const otro = input('ck-pais').value.trim().toLowerCase() !== 'argentina';
+    $('ck-pais-row').hidden = !otro;
+    $('ck-pais-toggle').hidden = otro;
+  }
+  $('ck-pais-toggle').addEventListener('click', () => {
+    $('ck-pais-row').hidden = false;
+    $('ck-pais-toggle').hidden = true;
+    input('ck-pais').select();
+    input('ck-pais').focus();
+  });
 
   // ── Paso 1: filas de marca ──────────────────────────────
   /** Normaliza el estado y repinta todo lo que depende de la lista de marcas. */
@@ -1810,6 +1887,23 @@ const faqSchema = {
   // ── Descripción por marca (paso 5) ──────────────────────
   const MIN_DESCRIPCION = 100;
 
+  /** Borrador editable armado con las clases que el cliente eligió. No se
+   *  autocompleta: lo inserta él con "Partir de un ejemplo" y después lo edita.
+   *  Prellenar sin pedirlo mandaría al INPI la misma descripción genérica en
+   *  todos los pedidos, que es peor que un textarea vacío. */
+  function sugerenciaDescripcion(m: MarcaState): string {
+    const nombre = m.nombre.trim().toUpperCase() || 'La marca';
+    const rubros = m.clases
+      .map(n => NIZA_CLASSES.find(c => c.num === n)?.nombre.toLowerCase())
+      .filter(Boolean) as string[];
+    const lista = rubros.length > 1
+      ? `${rubros.slice(0, -1).join('; ')} y ${rubros[rubros.length - 1]}`
+      : (rubros[0] ?? 'los productos y servicios de la marca');
+    return `${nombre} se dedica a ${lista}. ` +
+      'Detallá acá qué vendés o qué servicio prestás, a quién se lo ofrecés y ' +
+      'por qué canales (local, ecommerce, redes).';
+  }
+
   function renderDescCards() {
     const cont = $('ck-desc-cards');
     const molde = tpl('ck-desc-card-tpl');
@@ -1836,8 +1930,12 @@ const faqSchema = {
       card.querySelectorAll('label')[1].setAttribute('for', sitio.id);
       sitio.value = m.sitioWeb;
 
+      const sug = card.querySelector<HTMLButtonElement>('.ck-desc-sug')!;
+
       const updateHelp = () => {
         const len = area.value.trim().length;
+        // El atajo solo tiene sentido con el campo en blanco
+        sug.hidden = len > 0;
         if (len === 0) {
           help.textContent = `Mínimo ${MIN_DESCRIPCION} caracteres.`;
           help.style.color = '';
@@ -1855,6 +1953,14 @@ const faqSchema = {
         setErrEl(card.querySelector<HTMLElement>('.ck-desc-err'), '');
         updateHelp();
         saveDraft();
+      });
+
+      sug.addEventListener('click', () => {
+        area.value = sugerenciaDescripcion(m);
+        area.dispatchEvent(new Event('input'));
+        area.focus();
+        // El cursor al final, listo para editar
+        area.setSelectionRange(area.value.length, area.value.length);
       });
       sitio.addEventListener('input', () => {
         m.sitioWeb = sitio.value;
@@ -1876,9 +1982,13 @@ const faqSchema = {
     bloque.hidden = false;
 
     const file = card.querySelector<HTMLInputElement>('.ck-logo-file')!;
+    const drop = card.querySelector<HTMLElement>('.ck-drop')!;
     const prev = card.querySelector<HTMLElement>('.ck-logo-preview')!;
     const img = card.querySelector<HTMLImageElement>('.ck-logo-img')!;
     const meta = card.querySelector<HTMLElement>('.ck-logo-meta')!;
+    const otra = card.querySelector<HTMLButtonElement>('.ck-logo-otra')!;
+    const medidas = card.querySelector<HTMLDetailsElement>('.ck-medidas')!;
+    const medidasVal = card.querySelector<HTMLElement>('.ck-medidas-val')!;
     const alto = card.querySelector<HTMLInputElement>('.ck-logo-alto')!;
     const ancho = card.querySelector<HTMLInputElement>('.ck-logo-ancho')!;
     const colores = card.querySelector<HTMLInputElement>('.ck-colores')!;
@@ -1899,29 +2009,41 @@ const faqSchema = {
       if (campo?.id && !l.classList.contains('ck-terms')) l.setAttribute('for', campo.id);
     });
 
+    /** "Se publica a 5 × 3,2 cm" — resume las medidas sin obligar a abrir nada */
+    const pintarMedidas = () => {
+      medidasVal.textContent = (m.ancho !== null && m.alto !== null)
+        ? `${formatCm(m.ancho)} × ${formatCm(m.alto)} cm`
+        : '– cm';
+    };
+
     const pintarPreview = () => {
+      const hayImagen = !!(m.logoUrl || m.logoKey);
+      // Con imagen cargada el dropzone deja lugar a la vista previa
+      drop.hidden = hayImagen;
+      medidas.hidden = !hayImagen;
       if (m.logoUrl) {
         img.src = m.logoUrl;
         img.hidden = false;
         prev.hidden = false;
         const px = m.logoPx;
         meta.textContent = px
-          ? `${m.logoNombre || 'imagen'} → JPG de ${px.ancho}×${px.alto} px`
-          : `${m.logoNombre || 'imagen'} → JPG`;
+          ? `${m.logoNombre || 'imagen'} · JPG de ${px.ancho}×${px.alto} px`
+          : `${m.logoNombre || 'imagen'} · JPG`;
       } else if (m.logoKey) {
         // Draft recuperado: el archivo ya está guardado, no hace falta resubirlo
         img.hidden = true;
         prev.hidden = false;
-        meta.textContent = 'Imagen ya cargada ✓ · elegí otra si querés cambiarla';
+        meta.textContent = 'Imagen ya cargada ✓';
       } else {
         prev.hidden = true;
       }
+      pintarMedidas();
     };
 
-    file.addEventListener('change', async () => {
-      const elegido = file.files?.[0];
+    const procesar = async (elegido: File | undefined) => {
       if (!elegido) return;
       setErrEl(errLogo, '');
+      drop.hidden = true;
       prev.hidden = false;
       img.hidden = true;
       meta.textContent = 'Procesando la imagen…';
@@ -1945,9 +2067,30 @@ const faqSchema = {
         console.error('[um-checkout] error procesando el logo:', e);
         liberarLogo(m);
         prev.hidden = true;
+        pintarPreview();
         setErrEl(errLogo, 'No pudimos leer esa imagen. Probá con otro archivo JPG, PNG o WebP.');
       }
+    };
+
+    file.addEventListener('change', () => procesar(file.files?.[0]));
+
+    // Dropzone: click, teclado y arrastrar-y-soltar sobre el mismo bloque
+    drop.addEventListener('click', () => file.click());
+    drop.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); file.click(); }
     });
+    ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, (e) => {
+      e.preventDefault();
+      drop.classList.add('ck-drop--over');
+    }));
+    ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, (e) => {
+      e.preventDefault();
+      drop.classList.remove('ck-drop--over');
+    }));
+    drop.addEventListener('drop', (e) => {
+      procesar((e as DragEvent).dataTransfer?.files?.[0]);
+    });
+    otra.addEventListener('click', () => file.click());
 
     // El teclado en es-AR da coma; el INPI usa punto. Se acepta cualquiera y al
     // salir del campo se muestra ya normalizado, que es lo que se va a enviar.
@@ -1956,6 +2099,7 @@ const faqSchema = {
       el.addEventListener('input', () => {
         m[campo] = parseCm(el.value);
         setErrEl(errMedidas, '');
+        pintarMedidas();
         saveDraft();
       });
       el.addEventListener('blur', () => {
@@ -2061,7 +2205,7 @@ const faqSchema = {
       track('ck_pago_error', { motivo: String(e).slice(0, 100) }, false);
       setErr('pago', 'No pudimos iniciar el pago. Probá de nuevo en unos segundos.');
       mpBtn.disabled = false;
-      $('ck-mp-label').textContent = 'Pagar con Mercado Pago →';
+      $('ck-mp-label').textContent = 'Pagar con Mercado Pago';
     }
   });
 
@@ -2102,7 +2246,7 @@ const faqSchema = {
       metodoPago = 'mercadopago';
     } finally {
       trBtn.disabled = false;
-      $('ck-tr-label').textContent = 'Pagar por transferencia →';
+      $('ck-tr-label').textContent = 'Pagar por transferencia';
     }
   });
 
@@ -2123,8 +2267,9 @@ const faqSchema = {
   // Copiar alias / N° de pedido
   document.querySelectorAll<HTMLButtonElement>('.ck-copy').forEach(btn => {
     btn.addEventListener('click', async () => {
+      const REFS: Record<string, string> = { 'ck-copy-ref': 'ck-tr-ref', 'ck-copy-done': 'ck-ref' };
       const value = btn.dataset.copy
-        ?? (btn.id === 'ck-copy-ref' ? $('ck-tr-ref').textContent || '' : '');
+        ?? (REFS[btn.id] ? $(REFS[btn.id]).textContent || '' : '');
       if (!value) return;
       try {
         await navigator.clipboard.writeText(value);
@@ -2260,7 +2405,7 @@ const faqSchema = {
   // ── Firma (canvas) ──────────────────────────────────────
   const canvas = document.getElementById('ck-sig') as HTMLCanvasElement;
   const ctx = canvas.getContext('2d')!;
-  const SIG_H = 180;
+  const SIG_H = 210;
   let strokes: { x: number; y: number }[][] = [];
   let drawing = false;
 
@@ -2312,16 +2457,29 @@ const faqSchema = {
     ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
   });
-  const endStroke = () => { drawing = false; updateSubmitState(); };
+  const endStroke = () => { drawing = false; syncSigUI(); };
   canvas.addEventListener('pointerup', endStroke);
   canvas.addEventListener('pointercancel', endStroke);
   window.addEventListener('resize', sizeCanvas);
 
+  /** Deshacer un trazo evita tener que rehacer toda la firma por un temblor,
+   *  que es lo único que se podía hacer antes. */
+  function syncSigUI() {
+    $('ck-sig-undo').hidden = strokes.length === 0;
+    $('ck-sig-hint').hidden = strokes.length > 0;
+    updateSubmitState();
+  }
+
+  $('ck-sig-undo').addEventListener('click', () => {
+    strokes.pop();
+    redraw();
+    syncSigUI();
+  });
+
   $('ck-sig-clear').addEventListener('click', () => {
     strokes = [];
     redraw();
-    $('ck-sig-hint').hidden = false;
-    updateSubmitState();
+    syncSigUI();
   });
 
   // ── Envío ───────────────────────────────────────────────
@@ -2494,13 +2652,14 @@ const faqSchema = {
     }
 
     const varias = marcas.length > 1;
-    if (varias) {
-      $('ck-done-title').textContent = '¡Listo! Recibimos tus solicitudes.';
-      $('ck-done-plazo').innerHTML =
-        `Presentaremos tus <b>${marcas.length} solicitudes</b> ante el INPI dentro de las ` +
-        'próximas <b>48 horas hábiles</b> y te enviaremos todas las notificaciones ' +
-        'del trámite por email.';
-    }
+    const queCosa = varias ? `tus <b>${marcas.length} solicitudes</b>` : 'tu solicitud';
+    if (varias) $('ck-done-title').textContent = '¡Listo! Recibimos tus solicitudes.';
+
+    // Primer paso de la línea de tiempo: con transferencia el reloj no arranca
+    // hasta que se acredita, y decirlo acá evita el reclamo a las 48 horas.
+    $('ck-tl-presenta').innerHTML = metodoPago === 'transferencia'
+      ? `Presentamos ${queCosa} dentro de las <b>48 horas hábiles</b> desde que se acredite tu transferencia.`
+      : `Presentamos ${queCosa} dentro de las próximas <b>48 horas hábiles</b>. Te avisamos por email cuando esté ingresada.`;
 
     // Transferencia: el pago casi nunca está hecho a esta altura. Último
     // recordatorio con el alias y el link para mandar el comprobante.
@@ -2508,14 +2667,11 @@ const faqSchema = {
       $('ck-done-importe').textContent = formatARS(payload.pricing.total);
       ($('ck-done-wa') as HTMLAnchorElement).href = waHrefComprobante(ref);
       $('ck-done-transfer').hidden = false;
-      $('ck-done-plazo').innerHTML =
-        `Presentaremos ${varias ? `tus <b>${marcas.length} solicitudes</b>` : 'tu solicitud'} ` +
-        'ante el INPI dentro de las <b>48 horas hábiles</b> ' +
-        'desde que se acredite tu transferencia, y te enviaremos todas las ' +
-        'notificaciones del trámite por email.';
     }
 
     $('ck-done-logo').hidden = !logosPendientes;
+    // La tarjeta de pendientes solo existe si hay alguno
+    $('ck-done-extra').hidden = metodoPago !== 'transferencia' && !logosPendientes;
 
     localStorage.removeItem(DRAFT_KEY);
     goTo('done');
@@ -2879,6 +3035,12 @@ const faqSchema = {
   text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.6rem;
 }
 .ck-dcard-name[hidden] { display: none; }
+.ck-desc-foot {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 1rem; flex-wrap: wrap;
+}
+.ck-desc-sug { font-size: 0.75rem; }
+.ck-desc-sug[hidden] { display: none; }
 
 /* ─── Logo de la marca (mixta y figurativa, paso 5) ─── */
 .ck-logo {
@@ -2887,16 +3049,29 @@ const faqSchema = {
 }
 .ck-logo[hidden] { display: none; }
 .ck-logo .ck-field:last-of-type { margin-bottom: 0; }
-.ck-logo > .ck-help { margin-bottom: 1rem; }
-.ck-logo input[type="file"] {
-  padding: 0.5rem; font-size: 0.8125rem; cursor: pointer; background: #fff;
+
+/* Input real fuera de pantalla: el área clickeable es el .ck-drop */
+.ck-sr {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
-.ck-logo input[type="file"]::file-selector-button {
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 0.8125rem; font-weight: 600; color: #2563eb; cursor: pointer;
-  margin-right: 0.75rem; padding: 0.4rem 0.8rem;
-  background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 100px;
+
+/* Dropzone. Reemplaza al "Choose File / No file chosen" del navegador, que era
+   lo único sin estilar del checkout y no invitaba a arrastrar nada. */
+.ck-drop {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  gap: 0.2rem; cursor: pointer;
+  padding: 1.5rem 1.25rem; border-radius: 12px;
+  background: #fff; border: 1.5px dashed #cbd5e1; color: #94a3b8;
+  transition: border-color .15s, background .15s, color .15s;
 }
+.ck-drop[hidden] { display: none; }
+.ck-drop:hover, .ck-drop:focus-visible, .ck-drop--over {
+  border-color: #2563eb; background: #f5f9ff; color: #2563eb; outline: none;
+}
+.ck-drop-title { font-size: 0.875rem; font-weight: 600; color: #0b1d3a; margin-top: 0.35rem; }
+.ck-drop-sub { font-size: 0.75rem; line-height: 1.5; }
+
 .ck-logo-preview {
   display: flex; align-items: center; gap: 0.875rem; margin-bottom: 1rem;
   padding: 0.75rem; background: #fff; border: 1.5px solid #e2e8f0; border-radius: 10px;
@@ -2907,8 +3082,30 @@ const faqSchema = {
   background: #fff; border: 1px solid #f1f5f9; border-radius: 8px;
 }
 .ck-logo-img[hidden] { display: none; }
-.ck-logo-meta { font-size: 0.78rem; color: #64748b; line-height: 1.5; word-break: break-word; }
+.ck-logo-side { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 0.2rem; }
+.ck-logo-meta { font-size: 0.78rem; color: #64748b; line-height: 1.5; word-break: break-word; margin: 0; }
 .ck-logo-confirm[hidden] { display: none; }
+
+/* Medidas en cm: calculadas de la proporción de la imagen, editables si el
+   cliente quiere. Eran dos campos obligatorios vacíos con jerga del INPI. */
+.ck-medidas {
+  margin-bottom: 1rem; border: 1.5px solid #e2e8f0; border-radius: 10px;
+  background: #fff; padding: 0 0.9375rem;
+}
+.ck-medidas[hidden] { display: none; }
+.ck-medidas summary {
+  cursor: pointer; list-style: none;
+  display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem;
+  padding: 0.6875rem 0;
+}
+.ck-medidas summary::-webkit-details-marker { display: none; }
+.ck-medidas-txt { font-size: 0.8125rem; color: #64748b; }
+.ck-medidas-txt b { color: #0f172a; font-weight: 600; }
+.ck-medidas-cta { font-size: 0.78rem; font-weight: 600; color: #2563eb; white-space: nowrap; }
+.ck-medidas[open] .ck-medidas-cta::after { content: ' ▴'; }
+.ck-medidas:not([open]) .ck-medidas-cta::after { content: ' ▾'; }
+.ck-medidas > .ck-grid { margin-top: 0.25rem; }
+.ck-medidas > .ck-help { margin-bottom: 0.9375rem; }
 
 /* ─── Qué incluye + upsell de garantía ─── */
 .ck-upsell {
@@ -2985,25 +3182,18 @@ const faqSchema = {
 .ck-sum-total > span:last-child { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.02em; }
 
 /* ─── Pago ─── */
-.ck-eta {
-  display: flex; align-items: flex-start; gap: 0.7rem;
-  background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 12px;
-  padding: 0.875rem 1.25rem; margin-bottom: 0.875rem;
-  font-size: 0.875rem; color: #1e40af; line-height: 1.6;
+/* Antes había dos banners de color (azul con el plazo, ámbar con "quedate
+   cerca") apilados encima de los botones de pagar. La información quedó, el
+   color se fue: la pantalla tiene un solo acento y es el de pagar. */
+.ck-pay-lead {
+  font-size: 0.875rem; color: #475569; line-height: 1.6;
+  margin: 0 0 1.125rem;
 }
-.ck-eta svg { flex-shrink: 0; margin-top: 2px; }
-.ck-eta b { font-weight: 700; }
-
-.ck-stay {
-  display: flex; align-items: flex-start; gap: 0.7rem;
-  background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 12px;
-  padding: 1rem 1.25rem; margin-bottom: 1.25rem;
-  font-size: 0.875rem; color: #92400e; line-height: 1.6;
+.ck-fine-note {
+  margin: 1.25rem 0 0; padding-top: 1rem; border-top: 1px solid #f1f5f9;
+  font-size: 0.75rem; color: #94a3b8; line-height: 1.6;
 }
-.ck-stay svg { flex-shrink: 0; margin-top: 2px; }
-.ck-stay b { font-weight: 700; }
 
-/* ─── Pago (placeholder) ─── */
 .ck-pay-summary {
   background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 12px;
   padding: 1.25rem 1.375rem; margin-bottom: 1.25rem;
@@ -3042,10 +3232,17 @@ const faqSchema = {
 .ck-pm-title {
   font-size: 1rem; font-weight: 700; color: #0b1d3a; letter-spacing: -0.01em;
 }
-.ck-pm-desc { font-size: 0.8125rem; color: #64748b; line-height: 1.55; }
+.ck-pm-desc { font-size: 0.8125rem; color: #64748b; line-height: 1.55; flex: 1; }
+/* El CTA era un texto azul suelto y no se leía como algo clickeable. Ahora
+   parece lo que es. La tarjeta entera sigue siendo el botón. */
 .ck-pm-go {
-  margin-top: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #2563eb;
+  display: block; align-self: stretch; margin-top: 0.875rem; text-align: center;
+  padding: 0.6875rem 1rem; border-radius: 100px;
+  background: #0b1d3a; color: #fff;
+  font-size: 0.875rem; font-weight: 600;
+  transition: background .18s;
 }
+.ck-pm:hover:not(:disabled) .ck-pm-go { background: #2563eb; }
 
 /* ─── Datos de la transferencia ─── */
 .ck-transfer {
@@ -3139,15 +3336,18 @@ const faqSchema = {
 }
 
 /* ─── Carta poder (preview) ─── */
+/* Se muestra completa, no resumida: es el documento que la persona firma. Lo
+   que cambia es que se pueda leer — el texto justificado a 13px en un celular
+   abre ríos entre palabras y se lee como un bloque gris. */
 .ck-cp {
   background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
-  padding: 1.75rem; font-size: 0.8125rem; color: #1e293b; line-height: 1.7;
+  padding: 1.75rem; font-size: 0.875rem; color: #1e293b; line-height: 1.75;
   box-shadow: inset 0 1px 4px rgba(15,23,42,.03);
 }
-.ck-cp-dest { margin: 0 0 1rem; font-weight: 600; }
-.ck-cp-p { margin: 0 0 1rem; text-align: justify; }
-.ck-cp-ul { margin: 0 0 1rem; padding-left: 1.4rem; }
-.ck-cp-ul li { margin-bottom: 0.4rem; text-align: justify; }
+.ck-cp-dest { margin: 0 0 1.125rem; font-weight: 600; }
+.ck-cp-p { margin: 0 0 1.125rem; text-align: left; }
+.ck-cp-ul { margin: 0 0 1.125rem; padding-left: 1.4rem; }
+.ck-cp-ul li { margin-bottom: 0.5rem; text-align: left; }
 .ck-cp-firma { margin-top: 2.25rem; width: 230px; }
 .ck-cp-firma-space { height: 64px; }
 .ck-cp-firma-img { height: 64px; display: block; object-fit: contain; object-position: left bottom; }
@@ -3174,8 +3374,9 @@ const faqSchema = {
   color: #c0ccd8; font-size: 0.9375rem; font-weight: 500; pointer-events: none;
 }
 .ck-sig-hint[hidden] { display: none; }
-.ck-sig-foot { display: flex; justify-content: flex-end; }
+.ck-sig-foot { display: flex; justify-content: flex-end; gap: 1.25rem; }
 .ck-sig-foot .ck-link-btn { margin-top: 0.5rem; }
+.ck-sig-foot .ck-link-btn[hidden] { display: none; }
 
 .ck-terms {
   display: flex; align-items: flex-start; gap: 0.6rem; cursor: pointer;
@@ -3225,11 +3426,46 @@ const faqSchema = {
 }
 .ck-done p { font-size: 0.9rem; color: #64748b; line-height: 1.65; margin: 0 auto 0.75rem; max-width: 30rem; }
 .ck-done p b { color: #0b1d3a; }
+.ck-done-extra { padding-top: 1.75rem; }
+.ck-done-extra[hidden] { display: none; }
+
+/* El N° de pedido es lo único que el cliente tiene que guardar de esta
+   pantalla: se muestra como un dato copiable, no como una línea de texto. */
 .ck-done-ref {
-  display: inline-block; background: #eff6ff; color: #1e40af !important;
-  border-radius: 100px; padding: 0.35rem 1rem; font-size: 0.8125rem !important;
+  display: inline-flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+  justify-content: center;
+  background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px;
+  padding: 0.75rem 1.125rem; margin-top: 0.5rem;
 }
-.ck-done-ref b { color: #1e40af !important; }
+.ck-done-ref > span {
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: #60a5fa;
+}
+.ck-done-ref b {
+  font-size: 1.0625rem; font-weight: 800; color: #1e40af; letter-spacing: -0.01em;
+}
+.ck-done-ref-help {
+  font-size: 0.75rem !important; color: #94a3b8 !important; margin-top: 0.625rem !important;
+}
+
+/* Línea de tiempo del trámite */
+.ck-timeline { list-style: none; margin: 0; padding: 0; }
+.ck-timeline li {
+  position: relative; padding: 0 0 1.25rem 1.75rem;
+  border-left: 1.5px solid #e2e8f0; margin-left: 5px;
+}
+.ck-timeline li:last-child { padding-bottom: 0; border-left-color: transparent; }
+.ck-timeline li::before {
+  content: ''; position: absolute; left: -6.5px; top: 3px;
+  width: 11px; height: 11px; border-radius: 50%;
+  background: #fff; border: 2.5px solid #2563eb;
+}
+.ck-timeline b {
+  display: block; font-size: 0.875rem; font-weight: 700; color: #0b1d3a;
+  margin-bottom: 0.2rem;
+}
+.ck-timeline span { display: block; font-size: 0.8125rem; color: #64748b; line-height: 1.6; }
+.ck-timeline span b { display: inline; font-size: inherit; color: #0b1d3a; margin: 0; }
 
 /* ─── FAQ ─── */
 .ck-faq { margin-top: 3.5rem; }
@@ -3352,14 +3588,16 @@ body.ck-focus .ck-progress {
     max-height: 55vh; overflow-y: auto;
   }
   .ck-rail--open .ck-rail-body { display: block; }
-  /* En el paso 3 el desglose completo ya está en la pantalla, así que la barra
-     fija solo repetiría el total. Aparece del paso 4 en adelante, que es donde
-     el formulario se hace largo y el total se pierde de vista. */
-  body[data-ck-step="3"] .ck-rail { display: none; }
+  /* En los pasos 3 y 4 el pedido ya está entero en la pantalla (el desglose y
+     el resumen de pago), así que la barra fija solo repetiría el total. Aparece
+     en la fase B, que es donde el formulario se hace largo y no hay nada más
+     que le recuerde al cliente qué compró. */
+  body[data-ck-step="3"] .ck-rail,
+  body[data-ck-step="4"] .ck-rail { display: none; }
 
   /* La barra fija no puede tapar el botón de Continuar */
-  body.ck-has-rail:not([data-ck-step="3"]) .ck-page { padding-bottom: 8rem; }
-  body.ck-has-rail:not([data-ck-step="3"]) .wa-float { bottom: 5.5rem; }
+  body.ck-has-rail:not([data-ck-step="3"]):not([data-ck-step="4"]) .ck-page { padding-bottom: 8rem; }
+  body.ck-has-rail:not([data-ck-step="3"]):not([data-ck-step="4"]) .wa-float { bottom: 5.5rem; }
   /* Con el resumen desplegado el botón flotante caería justo encima */
   body:has(.ck-rail--open) .wa-float { display: none; }
 }
