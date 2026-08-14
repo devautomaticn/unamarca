@@ -947,17 +947,73 @@ const faqSchema = {
     return resto;
   }
 
-  function saveDraft() {
+  function draftBody() {
     const values: Record<string, string> = {};
     FIELD_IDS.forEach(id => { values[id] = input(id).value; });
+    // `at` viaja a las dos copias (local y servidor) para poder decidir cuál es
+    // más nueva al retomar el pedido desde otro dispositivo.
+    return { values, marcas: marcas.map(marcaParaDraft), garantia, at: new Date().toISOString() };
+  }
+
+  function saveDraft() {
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify({
-        values, marcas: marcas.map(marcaParaDraft), garantia,
-      }));
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draftBody()));
     } catch (e) {
       console.warn('[um-checkout] no se pudo guardar el draft:', e);
     }
+    // Con pedido creado, lo mismo va al servidor: el localStorage no sobrevive
+    // a cerrar la pestaña en otro dispositivo ni a limpiar el navegador, y del
+    // otro lado quedaría un pedido cobrado y sin datos.
+    programarProgreso();
   }
+
+  // ── Progreso post-pago en el servidor ───────────────────
+  // Se manda con debounce mientras el cliente escribe, y de nuevo al salir de
+  // la página. Solo existe una vez que hay pedido: antes del pago no hay dónde
+  // guardarlo ni nada que perder.
+  const PROGRESO_DEBOUNCE_MS = 2500;
+  let progresoTimer: number | undefined;
+  let progresoPendiente = false;
+
+  function programarProgreso() {
+    if (!orderRef) return;
+    progresoPendiente = true;
+    clearTimeout(progresoTimer);
+    progresoTimer = window.setTimeout(() => { void enviarProgreso(); }, PROGRESO_DEBOUNCE_MS);
+  }
+
+  async function enviarProgreso() {
+    if (!orderRef || !progresoPendiente) return;
+    progresoPendiente = false;
+    clearTimeout(progresoTimer);
+    try {
+      await fetch(`/api/checkout/order/${encodeURIComponent(orderRef)}/progreso`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(draftBody()),
+        keepalive: true,
+      });
+    } catch (e) {
+      // Nunca bloquea al cliente: el localStorage sigue siendo la copia local
+      console.warn('[um-checkout] no se pudo guardar el progreso:', e);
+      progresoPendiente = true;
+    }
+  }
+
+  /** Último intento cuando se va la página. sendBeacon sobrevive al unload, que
+   *  es justo el caso que esto viene a cubrir. */
+  function flushProgreso() {
+    if (!orderRef || !progresoPendiente) return;
+    progresoPendiente = false;
+    const url = `/api/checkout/order/${encodeURIComponent(orderRef)}/progreso`;
+    const blob = new Blob([JSON.stringify(draftBody())], { type: 'application/json' });
+    if (!navigator.sendBeacon?.(url, blob)) void enviarProgreso();
+  }
+
+  window.addEventListener('pagehide', flushProgreso);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flushProgreso();
+  });
 
   function leerDraft(): any {
     try {
@@ -2373,8 +2429,30 @@ const faqSchema = {
       orderRef = o.ref;
       const p = o.payload || {};
       if (p.metodo === 'transferencia') metodoPago = 'transferencia';
-      // Descripciones y sitios ya cargados sobreviven en el draft local
-      const draftPrevio = marcasDesdeDraft(leerDraft());
+
+      // De dónde sale lo que el cliente ya había cargado del post-pago: gana la
+      // copia más nueva. La local se escribe en cada tecla y suele ir adelante;
+      // la del servidor es la que salva el caso que motivó todo esto —otro
+      // dispositivo, o el storage borrado— y también el de empezar en el celular
+      // y seguir en la compu, donde lo local está viejo. Un draft sin `at` es
+      // anterior a que existiera el guardado en servidor: pierde siempre.
+      const draftLocal = leerDraft();
+      const cuando = (x: any) => Date.parse(x?.at ?? '') || 0;
+      const fuente = cuando(draftLocal) >= cuando(o.progreso)
+        ? (draftLocal || o.progreso || null)
+        : o.progreso;
+
+      // Titular y contacto: solo desde la fuente elegida y sin pisar con vacío
+      if (fuente?.values) {
+        FIELD_IDS.forEach(id => {
+          const v = String(fuente.values[id] ?? '').trim();
+          if (v) input(id).value = fuente.values[id];
+        });
+        syncConyuge();
+        syncPais();
+      }
+
+      const draftPrevio = marcasDesdeDraft(fuente);
       const delPedido = marcasDelPedido(p);
       if (delPedido.length) {
         setMarcas(delPedido.map((m, i) => {
@@ -2740,6 +2818,9 @@ const faqSchema = {
       const from = btn.dataset.next!;
       const validator = VALIDATORS[from];
       if (validator && !validator()) { scrollAlPrimerError(); return; }
+      // Cada pantalla completada de la fase B se sube sin esperar al debounce:
+      // es el momento en que más datos nuevos hay para perder.
+      void enviarProgreso();
       goTo(String(parseInt(from, 10) + 1));
     });
   });

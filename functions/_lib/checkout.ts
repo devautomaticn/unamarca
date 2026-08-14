@@ -73,13 +73,22 @@ export async function ensureSchema(db: D1Database): Promise<void> {
   `).run();
 }
 
-/** Columna agregada después de la tabla original: D1 no tiene
+/** Columnas agregadas después de la tabla original: D1 no tiene
  *  `ADD COLUMN IF NOT EXISTS`, así que el intento repetido se traga el error.
- *  Se llama solo desde el PATCH, no en cada request. */
+ *  Se llaman solo desde las rutas que las usan, no en cada request.
+ *  · `vigilante` — resultado del alta en el portal.
+ *  · `progreso`  — lo que el cliente lleva cargado del post-pago, guardado a
+ *    medida que escribe. NO es `completion`: eso es la versión final firmada. */
+async function addColumn(db: D1Database, sql: string): Promise<void> {
+  try { await db.prepare(sql).run(); } catch { /* la columna ya existe */ }
+}
+
 export async function ensureVigilanteColumn(db: D1Database): Promise<void> {
-  try {
-    await db.prepare('ALTER TABLE orders ADD COLUMN vigilante TEXT').run();
-  } catch { /* la columna ya existe */ }
+  await addColumn(db, 'ALTER TABLE orders ADD COLUMN vigilante TEXT');
+}
+
+export async function ensureProgresoColumn(db: D1Database): Promise<void> {
+  await addColumn(db, 'ALTER TABLE orders ADD COLUMN progreso TEXT');
 }
 
 /** Ref no adivinable: UM-YYYYMMDD-XXXXXXXX (base36). Es también la "llave" de

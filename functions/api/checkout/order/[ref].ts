@@ -3,8 +3,8 @@
 //        PDF de la carta poder y envía los emails (cliente + admin) vía Resend.
 // El ref es aleatorio y no adivinable: funciona como llave de lectura.
 import {
-  type CheckoutEnv, base64FromArrayBuffer, ensureSchema, ensureVigilanteColumn,
-  json, marcasDesdePayload, sanitizeCm,
+  type CheckoutEnv, base64FromArrayBuffer, ensureSchema, ensureProgresoColumn,
+  ensureVigilanteColumn, json, marcasDesdePayload, sanitizeCm,
 } from '../../../_lib/checkout';
 import { sendOrderEmails, sendVigilanteAlert, type MarcaEmail } from '../../../_lib/notify';
 import { crearAltaVigilante, type VigilanteEnv } from '../../../_lib/vigilante';
@@ -17,6 +17,7 @@ interface OrderRow {
   payload: string;
   completion: string | null;
   vigilante: string | null;
+  progreso: string | null;
 }
 
 interface NotifyEnv extends CheckoutEnv, VigilanteEnv {
@@ -26,12 +27,13 @@ interface NotifyEnv extends CheckoutEnv, VigilanteEnv {
 export const onRequestGet: PagesFunction<CheckoutEnv> = async ({ env, params }) => {
   if (!env.DB) return json({ error: 'Base de datos no configurada' }, 500);
   await ensureSchema(env.DB);
-  // La columna puede no existir en pedidos viejos ni en una base recién creada
+  // Las columnas pueden no existir en pedidos viejos ni en una base recién creada
   await ensureVigilanteColumn(env.DB);
+  await ensureProgresoColumn(env.DB);
 
   const ref = String(params.ref || '');
   const row = await env.DB.prepare(
-    'SELECT ref, status, payment_status, payload, completion, vigilante FROM orders WHERE ref = ?'
+    'SELECT ref, status, payment_status, payload, completion, vigilante, progreso FROM orders WHERE ref = ?'
   ).bind(ref).first<OrderRow>();
 
   if (!row) return json({ error: 'Pedido no encontrado' }, 404);
@@ -43,6 +45,11 @@ export const onRequestGet: PagesFunction<CheckoutEnv> = async ({ env, params }) 
   let vigilante: unknown = null;
   try { vigilante = row.vigilante ? JSON.parse(row.vigilante) : null; } catch { /* ignorar */ }
 
+  // Lo que el cliente llevaba cargado del post-pago. Es lo que permite retomar
+  // desde otro dispositivo o con el storage borrado.
+  let progreso: unknown = null;
+  try { progreso = row.progreso ? JSON.parse(row.progreso) : null; } catch { /* ignorar */ }
+
   return json({
     ref: row.ref,
     status: row.status,
@@ -50,6 +57,7 @@ export const onRequestGet: PagesFunction<CheckoutEnv> = async ({ env, params }) 
     payload: JSON.parse(row.payload),
     completed: row.completion !== null,
     vigilante,
+    progreso,
   });
 };
 
