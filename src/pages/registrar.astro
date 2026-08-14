@@ -2759,21 +2759,33 @@ const faqSchema = {
     resumeOrder(urlOrderRef).then(ok => { if (!ok) restoreDraft(); });
   } else {
     restoreDraft();
-    // Prefill desde /verificar-marca y campañas. Formatos aceptados:
-    //   ?marca=X&clase=9,25            → una marca (legado)
-    //   ?marca=A&clase=2,3&marca=B&clase=4,6 → varias, apareadas por posición
+    // Prefill desde /verificar-marca, campañas y otros proyectos. Los tres
+    // parámetros repetibles (marca, clase, tipo) se aparean POR POSICIÓN:
+    //   ?marca=X&clase=9,25                        → una marca (legado)
+    //   ?marca=A&clase=2,3&marca=B&clase=4,6       → varias
+    //   ?marca=A&clase=25&tipo=mixta               → con tipo de marca
+    // `tipo` acepta denominativa | mixta | figurativa, sin distinguir mayúsculas.
+    // Cualquier otro valor cae en denominativa, que es el caso por defecto y el
+    // único que no necesita que el cliente suba una imagen después.
     const urlMarcas = urlParams.getAll('marca').map(s => s.trim().slice(0, 80));
     const urlClases = urlParams.getAll('clase').map(v => v
       .split(',')
       .map(s => parseInt(s, 10))
       .filter(n => n >= 1 && n <= 45));
+    const urlTipos = urlParams.getAll('tipo').map(s => s.trim());
     const urlTel = (urlParams.get('tel') || '').trim().slice(0, 30);
     const urlEmail = (urlParams.get('email') || '').trim().slice(0, 120);
 
-    const nDeep = Math.min(MAX_MARCAS, Math.max(urlMarcas.length, urlClases.length));
+    const nDeep = Math.min(
+      MAX_MARCAS,
+      Math.max(urlMarcas.length, urlClases.length, urlTipos.length),
+    );
     if (nDeep > 0) {
+      // En una figurativa el nombre que venga por URL se descarta: la marca
+      // figurativa no tiene denominación ante el INPI y la referencia interna
+      // la asigna renderMarcasStep1(), igual que cuando el tipo se elige a mano.
       setMarcas(
-        Array.from({ length: nDeep }, (_, i) => nuevaMarcaCon(urlMarcas[i], urlClases[i])),
+        Array.from({ length: nDeep }, (_, i) => nuevaMarcaCon(urlMarcas[i], urlClases[i], urlTipos[i])),
         false,
       );
     }

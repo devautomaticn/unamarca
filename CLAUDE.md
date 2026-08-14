@@ -178,6 +178,41 @@ instead of hardcoding the strings. Do not remove that endpoint.
 
 ---
 
+## Deep links a `/registrar` (contrato con otros proyectos)
+
+`/verificar-marca`, las campañas y proyectos externos prellenan el wizard con
+query params. **`marca`, `clase` y `tipo` son repetibles y se aparean por
+posición.**
+
+| Param | Formato | Notas |
+|---|---|---|
+| `marca` | texto, se recorta a 80 chars | Repetible, hasta `MAX_MARCAS` (3). |
+| `clase` | enteros 1–45 separados por coma | Repetible. `?clase=9,25` = una marca en dos clases. |
+| `tipo` | `denominativa` \| `mixta` \| `figurativa` | Repetible. No distingue mayúsculas. Cualquier otro valor cae en `denominativa`. |
+| `tel` | texto, 30 chars | Prellena WhatsApp. |
+| `email` | texto, 120 chars | Prellena email. |
+| `order` | ref del pedido | Retoma un pedido existente e **ignora todos los demás params**. |
+
+```
+/registrar?marca=X&clase=9,25                          una marca (legado)
+/registrar?marca=A&clase=2,3&marca=B&clase=4,6         varias
+/registrar?marca=A&clase=25&tipo=mixta                 con tipo
+/registrar?clase=25&tipo=figurativa                    figurativa (no lleva nombre)
+```
+
+Reglas que hay que respetar al cambiar esto:
+
+- **En una figurativa el `marca` que venga se descarta.** No tiene denominación
+  ante el INPI: la referencia interna la asigna `renderMarcasStep1()`, igual que
+  cuando el tipo se elige a mano en el paso 1.
+- Un `tipo` desconocido cae en `denominativa` en silencio. Es el default seguro:
+  es el único que no obliga al cliente a subir una imagen después.
+- **El deep link pisa el draft guardado en `localStorage`.** Si el usuario tenía
+  un pedido a medias, las marcas del link reemplazan las suyas (y se pierden las
+  descripciones que hubiera cargado).
+
+---
+
 ## Alta automática en el portal Vigilante
 
 Cuando un pedido se completa (el cliente firma y se envía la solicitud), además
