@@ -5,7 +5,11 @@
 // required header server-side and normalizes non-JSON upstream errors (403/429/500).
 // See docs/spec_relevamiento.html §11.
 
-const UPSTREAM = 'https://vigilante.unamarca.com.ar/api/relevamiento/search';
+// OJO: tiene que ser el host final, no `vigilante.unamarca.com.ar`. Ese ahora
+// responde 301 a vigilante.com.ar, y un 301 sobre un POST lo convierte en GET
+// al seguirlo, así que el upstream contesta 405 y la búsqueda muere. Si alguna
+// vez vuelve a moverse el dominio, hay que tocar esta constante.
+const UPSTREAM = 'https://vigilante.com.ar/api/relevamiento/search';
 
 function json(obj: unknown, status: number) {
   return new Response(JSON.stringify(obj), {
