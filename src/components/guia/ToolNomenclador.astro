@@ -1,0 +1,41 @@
+---
+// Sugerencia de clases a partir de lo que vende el cliente.
+// Pega a /api/nomenclador/suggest. La clase que elija acá queda guardada y la
+// levanta el paso 5 (términos), que es lo que hace que la guía se encadene.
+interface Props {
+  /** Un alcance por marca, para llenar el campo de un click. */
+  alcances: { valor: string; de: string }[];
+}
+const { alcances } = Astro.props;
+---
+
+<div class="g-tool" data-tool="nomenclador">
+  <p class="g-tool-head"><span>Herramienta</span> Nomenclador</p>
+  <p class="g-tool-hace">
+    Describí lo que vendés y te sugiere las clases que podrían corresponder, con
+    los términos oficiales de cada una. La decisión final es tuya.
+  </p>
+
+  <div class="g-tool-form">
+    <label class="g-tool-campo">
+      <span>Lo que vendés</span>
+      <textarea data-nom-desc rows="2" maxlength="400"
+                placeholder="Ej.: velas artesanales de soja, aromáticas y decorativas"></textarea>
+    </label>
+
+    {alcances.length > 0 && (
+      <p class="g-tool-atajos">
+        <span>De tus marcas:</span>
+        {alcances.map(a => (
+          <button type="button" class="g-chip" data-nom-atajo={a.valor}>{a.de}</button>
+        ))}
+      </p>
+    )}
+
+    <div class="g-tool-acciones">
+      <button type="button" class="g-btn" data-nom-buscar>Sugerir clases</button>
+    </div>
+  </div>
+
+  <div class="g-tool-out" data-nom-out hidden></div>
+</div>

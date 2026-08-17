@@ -1,0 +1,1143 @@
+---
+// El cuerpo de la guía. Vive aparte de la página porque `[token].astro`
+// decide antes si mostrar esto o la pantalla de bloqueo, y con 700 líneas
+// adentro de un ternario no se lee nada.
+//
+// ⚠️ Del comprador sólo sabemos su mail y, si el chat lo dio, sus marcas (cada
+// una con su tipo y su propio alcance). Puede no haber ninguna. Todo valor que
+// aparezca acá se muestra COMO EJEMPLO, nunca como instrucción: quien presenta
+// la solicitud es él y la decisión es suya. Ver src/lib/guia/cliente.ts.
+
+import Paso from './Paso.astro';
+import Ejemplo from './Ejemplo.astro';
+import Trampa from './Trampa.astro';
+import Dato from './Dato.astro';
+import ToolRelevamiento from './ToolRelevamiento.astro';
+import ToolNomenclador from './ToolNomenclador.astro';
+import ToolTerminos from './ToolTerminos.astro';
+import ToolVigilancia from './ToolVigilancia.astro';
+import Delegar from './Delegar.astro';
+import { algunaConLogo, marcasEjemplo, MAX_EJEMPLOS } from '../../lib/guia/cliente';
+import { PRICING } from '../../lib/checkout/constants';
+import '../../styles/guia.css';
+import type { GuiaCliente } from '../../lib/guia/cliente';
+
+interface Props {
+  cliente: GuiaCliente;
+}
+const { cliente } = Astro.props;
+
+const arancel = PRICING.arancelInpi.toLocaleString('es-AR');
+
+// Las marcas del chat, recortadas al tope de ejemplos. Puede ser una lista
+// vacía: en ese caso la guía usa ejemplos ilustrativos y lo dice.
+const marcas = marcasEjemplo(cliente);
+const hayDatos = marcas.length > 0;
+const varias = marcas.length > 1;
+const ocultas = cliente.marcas.length - marcas.length;
+const conLogo = algunaConLogo(cliente);
+
+const nombres = marcas.map(m => m.nombre);
+const tipos = [...new Set(marcas.map(m => m.tipo.toUpperCase()))];
+/** Un ejemplo de alcance por marca, para que se vea que cada una va por su lado. */
+const alcances = marcas
+  .filter(m => m.alcance)
+  .map(m => ({ valor: m.alcance!, de: m.nombre }));
+
+// Ejemplos ilustrativos para cuando el chat no dejó datos.
+const EJ_NOMBRES = ['MA-LIO', 'CASA VERDE'];
+const EJ_ALCANCE = 'Velas artesanales de soja y aromáticas';
+const EJ_TIPOS = ['DENOMINATIVA', 'MIXTA', 'FIGURATIVA'];
+
+const P = {
+  'que-protege':     { n: '1',  titulo: 'Qué te da una marca registrada',        resumen: 'Y qué no te da, que es la parte que casi nadie sabe.' },
+  'el-nombre':       { n: '2',  titulo: 'Qué nombres se pueden registrar',       resumen: 'Por qué "Velas Ma-Lio" es peor marca que "Ma-Lio".' },
+  'clase':           { n: '3',  titulo: 'En qué clase va tu marca',              resumen: 'Primero la clase: sin ella no se puede buscar bien.' },
+  'antecedentes':    { n: '4',  titulo: '¿Tu marca está libre?',                 resumen: 'Buscar antecedentes antes de pagar, no después.' },
+  'terminos':        { n: '5',  titulo: 'Los términos que vas a pedir',          resumen: 'La redacción oficial, elegida del listado, no escrita a mano.' },
+  'clave-fiscal':    { n: '6',  titulo: 'Clave fiscal y habilitación del INPI',  resumen: 'Sin esto el portal ni siquiera te muestra el botón.' },
+  'entrar':          { n: '7',  titulo: 'Entrar y abrir la solicitud',           resumen: 'MARCAS → TRÁMITES → SOLICITUD NUEVA.' },
+  'datos-marca':     { n: '8',  titulo: 'Datos de la marca',                     resumen: 'Tipo de marca y denominación. Dos campos, varias trampas.' },
+  'protecciones':    { n: '9',  titulo: 'Protecciones: clase y términos',        resumen: 'Acá es donde se rompe la mayoría de las solicitudes.' },
+  'titularidad':     { n: '10', titulo: 'Titularidad',                           resumen: 'Quién queda como dueño de la marca.' },
+  'secciones-vacias':{ n: '11', titulo: 'Las cuatro secciones que dejás vacías', resumen: 'Media pantalla del formulario no aplica a tu caso.' },
+  'revisar':         { n: '12', titulo: 'Guardar borrador y revisar',            resumen: 'El último momento en que todo se puede corregir gratis.' },
+  'firmar':          { n: '13', titulo: 'Firmar el trámite',                     resumen: 'Guardado no es presentado. Falta firmar.' },
+  'pagar':           { n: '14', titulo: 'Pagar el arancel',                      resumen: 'Firmado tampoco es presentado. Falta el VEP.' },
+  'que-sigue':       { n: '15', titulo: 'Qué pasa ahora y cuánto tarda',         resumen: 'Publicación, plazos y desde cuándo podés usar la marca.' },
+  'oposiciones':     { n: '16', titulo: 'Oposiciones y vistas',                  resumen: 'Qué es cada una, y cuál podés contestar solo.' },
+  'mantener':        { n: '17', titulo: 'Mantener la marca viva',                resumen: 'Dos fechas que si se te pasan, perdés lo que pagaste.' },
+  'ayuda':           { n: '18', titulo: 'Cuándo esto te queda grande',           resumen: 'Sin vueltas: en qué casos conviene delegar.' },
+} as const;
+
+const PARTES = [
+  { titulo: 'Entender',         nota: 'Leer',             pasos: ['que-protege', 'el-nombre'] },
+  { titulo: 'Preparar',         nota: 'Antes de empezar', pasos: ['clase', 'antecedentes', 'terminos', 'clave-fiscal'] },
+  { titulo: 'Presentar',        nota: 'En el portal',     pasos: ['entrar', 'datos-marca', 'protecciones', 'titularidad', 'secciones-vacias', 'revisar', 'firmar', 'pagar'] },
+  { titulo: 'Después',          nota: 'Seguimiento',      pasos: ['que-sigue', 'oposiciones', 'mantener', 'ayuda'] },
+] as const;
+
+type PasoId = keyof typeof P;
+const paso = (id: PasoId) => ({ id, ...P[id] });
+---
+
+  <div class="g-wrap" data-token={cliente.token}>
+    <aside class="g-idx" aria-label="Índice de la guía">
+      <p class="g-idx-titulo">Tu guía</p>
+      <p class="g-idx-marca">{hayDatos ? nombres.join(' · ') : 'Registro de marca'}</p>
+
+      <nav class="g-idx-nav">
+        {PARTES.map(parte => (
+          <div class="g-idx-parte">
+            <p class="g-idx-parte-h">{parte.titulo}<span>{parte.nota}</span></p>
+            <ul>
+              {parte.pasos.map(id => (
+                <li>
+                  <a href={`#${id}`} data-idx={id}>
+                    <span class="g-idx-n">{P[id as PasoId].n}</span>
+                    <span class="g-idx-t">{P[id as PasoId].titulo}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </nav>
+
+      <button type="button" class="g-idx-todo" data-abrir-todo>Abrir todos los pasos</button>
+    </aside>
+
+    <main class="g-main">
+      <header class="g-hero">
+        <p class="g-hero-kicker">Guía de registro de marca · INPI Argentina</p>
+        <h1>Registrá {varias ? 'tus marcas' : 'tu marca'} vos mismo</h1>
+        <p class="g-hero-sub">
+          El trámite completo, paso a paso. Leelo entero antes de empezar: son unos
+          20 minutos y te ahorra los errores que cuestan dinero.
+        </p>
+
+        {hayDatos ? (
+          <div class="g-marcas">
+            <p class="g-marcas-h">{varias ? 'Ejemplos de tus marcas' : 'Ejemplo de tu marca'}</p>
+            <ul>
+              {marcas.map(m => (
+                <li>
+                  <span class="g-marcas-n">{m.nombre}</span>
+                  <span class="g-marcas-t">{m.tipo}</span>
+                  <span class="g-marcas-a">{m.alcance ?? 'Alcance a definir'}</span>
+                </li>
+              ))}
+            </ul>
+            {ocultas > 0 && (
+              <p class="g-marcas-mas">
+                Y {ocultas} marca{ocultas > 1 ? 's' : ''} más. El trámite es el mismo para todas.
+              </p>
+            )}
+          </div>
+        ) : (
+          <p class="g-destacado">
+            El trámite es el mismo para cualquier marca. Los valores que aparecen en cada
+            paso son ejemplos: los tuyos los completás vos.
+          </p>
+        )}
+
+        <p class="g-hero-arancel">
+          Arancel del INPI: <strong>${arancel}</strong> por marca y por clase
+          ({PRICING.arancelVigencia}).
+        </p>
+
+        <p class="g-hero-lic">
+          Guía de <strong>{cliente.email}</strong>. Este link es único y personal.
+        </p>
+      </header>
+
+      <h2 class="g-parte" id="parte-1"><span>Parte 1</span> Entender</h2>
+
+      <Paso {...paso('que-protege')} abierto={true}>
+        <p>
+          Registrar una marca es comprar un <strong>derecho de exclusividad</strong>: nadie
+          más puede usar tu nombre para vender lo mismo que vos. No es un trámite de
+          "anotarse" ni un certificado decorativo. Es un título de propiedad, y como tal
+          se puede vender, heredar, licenciar y hasta dejar en garantía.
+        </p>
+
+        <p>Lo que mucha gente no sabe es dónde terminan los límites:</p>
+
+        <ul class="g-lista">
+          <li><strong>Protege por clase, no en general.</strong> Si registrás en la clase de velas, alguien puede registrar el mismo nombre para software. Son mercados distintos y la ley los trata como cosas distintas.</li>
+          <li><strong>Protege sólo en Argentina.</strong> No existe el registro mundial. Si vendés a Uruguay o España, ahí tu marca está libre para cualquiera.</li>
+          <li><strong>Dura 10 años</strong> desde que se concede, y se renueva indefinidamente.</li>
+          <li><strong>La protección empieza con el registro, no con la solicitud.</strong> Mientras tanto tu marca está "en trámite" y la usás bajo tu responsabilidad.</li>
+        </ul>
+
+        <Dato titulo="Tener el dominio o la cuenta de Instagram no es tener la marca">
+          <p>
+            Son cosas separadas. El dominio te lo da un registrador de internet, el usuario
+            de Instagram te lo da una red social, y ninguno de los dos te da derecho sobre
+            el nombre. Si otro registra la marca, puede pedir que le entregues el dominio y
+            que Instagram te baje la cuenta. Pasa seguido.
+          </p>
+        </Dato>
+
+      </Paso>
+
+      <Paso {...paso('el-nombre')}>
+        <p>
+          Antes de iniciar el trámite hay algo que define el resultado: <strong>qué tan
+          distintivo es el nombre</strong>. La ley no registra palabras que describen el
+          producto, porque nadie puede apropiarse del idioma común.
+        </p>
+
+        <div class="g-tabla-wrap">
+          <table class="g-tabla">
+            <thead>
+              <tr><th>Tipo de nombre</th><th>Ejemplo</th><th>Qué pasa</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Inventado</td><td>Kodak, Zara</td><td class="g-ok">La más fuerte. Se registra sin problema.</td></tr>
+              <tr><td>Arbitrario</td><td>Apple (para computadoras)</td><td class="g-ok">Fuerte. La palabra existe pero no describe el producto.</td></tr>
+              <tr><td>Sugestivo</td><td>Netflix</td><td class="g-medio">Registrable. Sugiere sin describir.</td></tr>
+              <tr><td>Descriptivo</td><td>Velas Aromáticas Premium</td><td class="g-mal">Se rechaza. Describe el producto.</td></tr>
+              <tr><td>Genérico</td><td>Vela</td><td class="g-mal">Imposible. Es el nombre de la cosa.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <Trampa titulo="No conviene meter el producto adentro del nombre" nivel="caro">
+          <p>
+            Esto sale del propio INPI: si se pide <em>"Verdulería Pepito"</em> te exigen
+            limitar la marca, mientras que <em>"Pepito"</em> para la clase de verdulerías se
+            resuelve derecho. Al agregar la palabra que describe el rubro le estás pidiendo
+            al INPI exclusividad sobre una palabra común, y eso te frena el expediente.
+          </p>
+        </Trampa>
+
+      </Paso>
+
+      <h2 class="g-parte" id="parte-2"><span>Parte 2</span> Preparar, antes de iniciar el trámite</h2>
+
+      <Paso {...paso('clase')} tono="hacer">
+        <p>
+          Las marcas se registran por rubro, usando una lista internacional de 45 clases
+          (el Nomenclador de Niza). Del 1 al 34 son productos, del 35 al 45 son servicios.
+          Esto va primero porque sin saber la clase no se puede buscar bien si tu marca
+          está libre: el mismo nombre puede estar ocupado en un rubro y libre en el tuyo.
+        </p>
+
+        <p class="g-destacado">
+          Cada marca en cada clase es <strong>una solicitud y un arancel aparte</strong>.
+          {varias
+            ? ` Y como cada una de tus marcas vende algo distinto, no tienen por qué caer en la misma clase: pasá cada alcance por el nomenclador por separado.`
+            : ' Una marca en dos clases son dos solicitudes.'}
+        </p>
+
+        <ToolNomenclador alcances={alcances} />
+
+
+
+        <Trampa titulo="El error de clase no tiene devolución" nivel="caro">
+          <p>
+            Si se presenta en la clase equivocada, el INPI no lo corrige ni devuelve el
+            arancel: concede una marca que no protege lo que vendés. Un caso típico: quien
+            fabrica velas registra en la clase 4, pero si además vende llaveros o placas
+            decorativas de resina, eso es otra clase y es otra solicitud.
+          </p>
+        </Trampa>
+
+        <Dato titulo="¿Conviene registrar en varias clases?">
+          <p>
+            Depende de qué vendas hoy y qué pienses vender en dos años. Cada clase suma
+            ${arancel} de arancel. La regla práctica: registrar donde facturás hoy, y sumar
+            una clase más sólo si hay un plan concreto, no una idea.
+          </p>
+        </Dato>
+      </Paso>
+
+      <Paso {...paso('antecedentes')} tono="hacer">
+        <p>
+          Con la clase ya definida, ahora sí la búsqueda sirve. El INPI <strong>no te
+          avisa</strong> si tu marca choca con otra: cobra el arancel, publica la solicitud,
+          y si aparece un titular anterior que se opone, perdiste la plata y el tiempo.
+          Buscar antes es la diferencia entre un trámite y un gasto.
+        </p>
+
+        <ToolRelevamiento marcas={hayDatos ? nombres : []} />
+
+        <p>También podés realizar la búsqueda en el portal oficial del INPI:</p>
+
+        <ol class="g-lista g-lista--num">
+          <li>Entrá al módulo de búsquedas del portal del INPI.</li>
+          <li>Completá el campo <strong>DENOMINACIÓN</strong>.</li>
+          <li>Tildá el casillero <strong>SOLO VIGENTES</strong>.</li>
+          <li>Repetí con variantes: sin espacios, con y sin guion, plural, y cómo suena escrito distinto.</li>
+        </ol>
+
+
+        <Trampa titulo="Que no aparezca idéntica no significa que esté libre">
+          <p>
+            El INPI rechaza marcas <em>confundibles</em>, no sólo idénticas. "Ma-Lio" y
+            "Malío" son la misma marca a los ojos de la ley. Si aparece algo parecido en tu
+            clase o en una clase relacionada, conviene frenar y consultar antes de pagar.
+          </p>
+        </Trampa>
+
+        <Dato titulo="Una marca igual en otra clase no siempre te frena">
+          <p>
+            Si los productos no tienen nada que ver, conviven. Pero el titular de la otra
+            marca <strong>puede oponerse igual</strong> y ganar si logra convencer al INPI de
+            que los rubros están vinculados. Vale la pena mirarlo, no descartarlo de entrada.
+          </p>
+        </Dato>
+      </Paso>
+
+      <Paso {...paso('terminos')} tono="hacer">
+        <p>
+          Dentro de la clase hay que elegir <strong>qué productos exactos</strong> protege
+          la marca. No se pide "toda la clase": eso el INPI lo rechaza. Se eligen términos
+          concretos del listado oficial.
+        </p>
+
+        <Trampa titulo="Conviene elegirlos del listado, no escribirlos" nivel="caro">
+          <p>
+            Este es el requisito del trámite acelerado que más gente pierde. Si la
+            descripción se tipea a mano en vez de tildarla del listado, el expediente sale
+            de la vía rápida y encima queda expuesto a que un analista observe la redacción.
+            La redacción oficial se copia tal cual, con las mayúsculas y los corchetes como
+            están.
+          </p>
+        </Trampa>
+
+        <ToolTerminos />
+
+
+        <Dato titulo="Ni muy pocos ni demasiados">
+          <p>
+            Pocos términos dejan huecos: con sólo "velas aromáticas", alguien podría vender
+            "velas de té" con tu nombre. Demasiados exponen a que el INPI observe por pedir
+            cosas que no se fabrican. El punto justo suele ser lo que hoy vendés más lo que
+            es claramente lo mismo.
+          </p>
+        </Dato>
+      </Paso>
+
+      <Paso {...paso('clave-fiscal')} tono="hacer">
+        <p>
+          El portal del INPI entra con tu clave fiscal. Hay dos requisitos y el segundo se
+          lo saltea casi todo el mundo:
+        </p>
+
+        <ol class="g-lista g-lista--num">
+          <li><strong>Clave fiscal nivel 2 o superior.</strong> Si la sacaste por home banking ya tenés nivel 3, que alcanza de sobra. Si es nivel 1, hay que elevarla.</li>
+          <li><strong>El servicio del INPI tiene que estar habilitado en tu clave fiscal.</strong> Se agrega desde el Administrador de Relaciones, sumando el servicio del INPI a tu CUIT.</li>
+        </ol>
+
+        <Trampa titulo="Si no habilitaste el servicio, el botón no aparece">
+          <p>
+            No sale ningún cartel explicando el motivo: la opción de cargar la solicitud
+            simplemente no está en el menú. Si llegás al portal y no encontrás SOLICITUD
+            NUEVA, no es que estás mirando mal, es que falta la habilitación.
+          </p>
+        </Trampa>
+
+        <Delegar
+          contexto="guia_presentacion"
+          texto="Este es el paso que más gente traba, y depende de tu clave fiscal, no del INPI. Si no lo lográs,"
+          enlace="escribinos y te hacemos un precio especial por presentar el trámite nosotros"
+        />
+
+      </Paso>
+
+      <h2 class="g-parte" id="parte-3"><span>Parte 3</span> Presentar la solicitud</h2>
+
+      <Paso {...paso('entrar')} tono="hacer">
+        <p>
+          Entrá al Portal de Trámites del INPI con tu CUIT y clave fiscal, y seguí este
+          camino en el menú de arriba:
+        </p>
+
+        <p class="g-ruta"><span>MARCAS</span><span>TRÁMITES</span><span>SOLICITUD NUEVA</span></p>
+
+        {varias && (
+          <p class="g-destacado">
+            Este recorrido se repite entero por cada marca y cada clase. No hay forma de
+            cargar dos marcas en la misma solicitud.
+          </p>
+        )}
+
+
+        <Dato titulo="Los seis requisitos del trámite acelerado">
+          <p>
+            El INPI resuelve más rápido las solicitudes que cumplen todo esto. Presentando
+            vos mismo vas a cumplir cinco sin hacer nada especial:
+          </p>
+          <ol class="g-lista g-lista--num">
+            <li>No invocar prioridad de otro país.</li>
+            <li>No presentarlo por gestor de negocios.</li>
+            <li><strong>Clasificar eligiendo términos del listado oficial, sin escribirlos a mano.</strong> Este es el que más gente pierde. Ver paso 5.</li>
+            <li>No usar palabras que puedan dañar la moral.</li>
+            <li>Pedir una marca original.</li>
+            <li>No mencionar el producto en la denominación.</li>
+          </ol>
+        </Dato>
+
+        <Dato titulo="Reservate 40 minutos seguidos">
+          <p>
+            El formulario es una sola pantalla larga con varias secciones. Se puede guardar
+            borrador y volver, pero el portal se pone raro si queda abierto mucho tiempo.
+            Conviene tener a mano el CUIT, el domicilio completo y la lista de términos del
+            paso 5.
+          </p>
+        </Dato>
+      </Paso>
+
+      <Paso {...paso('datos-marca')} tono="hacer">
+        <p>
+          Primera sección: <strong>DATOS DE LA MARCA</strong>. El portal ofrece diez tipos de
+          marca (sonora, olfativa, tridimensional y otras rarezas). Los que se usan son
+          tres.
+        </p>
+
+        <Ejemplo
+          campo="Tipo de marca"
+          espera="Denominativa: sólo el nombre. Mixta: nombre y logo juntos. Figurativa: sólo el logo."
+          ejemplo={hayDatos
+            ? marcas.map(m => ({ valor: m.tipo.toUpperCase(), de: m.nombre }))
+            : EJ_TIPOS}
+          generico={!hayDatos}
+        />
+
+        <Ejemplo
+          campo="Denominación"
+          espera="El nombre tal como se quiere registrar."
+          ejemplo={hayDatos ? nombres : EJ_NOMBRES}
+          copiable={hayDatos}
+          generico={!hayDatos}
+        />
+
+        <Dato titulo="Por qué la denominativa protege más">
+          <p>
+            La denominativa protege el nombre escrito de cualquier forma, con cualquier
+            tipografía y color. La mixta protege el conjunto de nombre y logo: si mañana se
+            rediseña el logo, la protección queda vieja. Por eso, cuando hay que elegir una
+            sola, casi siempre conviene la denominativa.
+          </p>
+        </Dato>
+
+        {conLogo && (
+          <>
+            <Trampa titulo="En marcas mixtas, el texto tiene que coincidir exactamente con el logo" nivel="caro">
+              <p>
+                Si en la imagen dice "Ma-Lio Velas Artesanales" y en denominación se escribe
+                sólo "Ma-Lio", el INPI <strong>cambia la denominación</strong> y la deja
+                reflejando todo lo que se lee en el logo. Termina siendo una marca distinta
+                de la que se pidió. Conviene transcribir todo el texto que aparece en la
+                imagen, sin omitir nada.
+              </p>
+            </Trampa>
+
+            <div class="g-req">
+              <p class="g-req-h">Requisitos de la imagen</p>
+              <ul class="g-lista">
+                <li>Formato JPG, hasta 2 MB.</li>
+                <li>Encuadrada dentro del espacio que marca el formulario.</li>
+                <li>Blanco y negro o color, según corresponda, e indicar si se reivindican colores.</li>
+                <li>Informar alto (máximo 27 cm) y ancho (máximo 18 cm).</li>
+                <li>El logo no se puede cambiar después. Si se rediseña, es una marca nueva.</li>
+              </ul>
+            </div>
+          </>
+        )}
+
+      </Paso>
+
+      <Paso {...paso('protecciones')} tono="hacer">
+        <p>
+          Sección <strong>PROTECCIONES</strong>. Al elegir la clase, el sistema tarda unos
+          segundos y carga la tabla con todos los términos de esa clase. Ahí se tildan los
+          que correspondan, usando el buscador de la tabla.
+        </p>
+
+        <div class="g-elegidos" data-elegidos hidden></div>
+
+        <Trampa titulo="No se puede pedir 'toda la clase'">
+          <p>
+            El INPI lo rechaza expresamente, igual que los términos genéricos o ambiguos.
+            Si lo que vendés no está en el listado, existe el botón "AGREGAR
+            PRODUCTOS/SERVICIOS NO INCLUIDOS EN EL LISTADO", pero usarlo saca del trámite
+            acelerado. Sirve sólo si de verdad no hay ningún término que aplique.
+          </p>
+        </Trampa>
+
+      </Paso>
+
+      <Paso {...paso('titularidad')} tono="hacer">
+        <p>
+          Sección <strong>TITULARIDAD</strong>: quién va a ser el dueño de la marca. Acá se
+          define a nombre de quién queda el título, así que conviene mirarlo bien antes de
+          cargar. Son todos datos tuyos, que sólo vos tenés.
+        </p>
+
+        <Trampa titulo="El buscador por CUIT de arriba de todo puede pisarte los datos" nivel="caro">
+          <p>
+            Arriba de la sección hay un campo CUIT con un botón <strong>Buscar</strong>. Sirve
+            para recuperar datos de trámites anteriores, y al usarlo <strong>reemplaza lo que
+            ya esté cargado</strong> con lo que tenga guardado el sistema, que suele estar
+            desactualizado. Lo más seguro es dejarlo en blanco y completar los campos de
+            abajo a mano.
+          </p>
+        </Trampa>
+
+        <div class="g-tabla-wrap">
+          <table class="g-tabla">
+            <thead><tr><th>Campo</th><th>Qué espera</th></tr></thead>
+            <tbody>
+              <tr><td>Tipo de persona</td><td>HUMANA si la marca va a tu nombre, JURÍDICA si va a nombre de una sociedad.</td></tr>
+              <tr><td>Nombre / Razón social</td><td>Como figura en el documento o en el estatuto.</td></tr>
+              <tr><td>Número CUIT/CUIL</td><td>El mismo con el que entraste al portal, si el titular sos vos.</td></tr>
+              <tr><td>Porcentaje</td><td>100 si hay un solo titular. Con varios, la suma tiene que dar exactamente 100.</td></tr>
+              <tr><td>Correo electrónico</td><td>Ahí llegan las notificaciones del expediente. Conviene uno que se revise.</td></tr>
+              <tr><td>Domicilio</td><td>País, provincia, localidad, calle, número y código postal.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <Trampa titulo="Cargar no es agregar">
+          <p>
+            Después de completar los campos hay que apretar <strong>Agregar</strong> y ver que
+            el titular aparezca en la tabla "Titulares Cargados" de abajo. Si no aparece ahí,
+            no está cargado, por más que los campos estén llenos.
+          </p>
+        </Trampa>
+
+        <Dato titulo="¿A nombre tuyo o de tu empresa?">
+          <p>
+            Con SRL o SA, en general conviene que la marca sea de la sociedad: es un activo
+            de la empresa y se vende con ella. Siendo monotributista o sin sociedad armada,
+            va a nombre de la persona y después se transfiere (es un trámite aparte,
+            arancelado). Lo que no conviene es ponerla a nombre de un socio "por ahora" sin
+            nada escrito.
+          </p>
+        </Dato>
+      </Paso>
+
+      <Paso {...paso('secciones-vacias')} tono="hacer">
+        <p>
+          Cuatro de las secciones del formulario normalmente no aplican. Se dejan vacías y
+          se sigue de largo.
+        </p>
+
+        <div class="g-vacias">
+          <div>
+            <p class="g-vacias-h">PRIORIDADES</p>
+            <p>Sólo si la marca ya se pidió en otro país en los últimos 6 meses y hay certificado de prioridad.</p>
+          </div>
+          <div>
+            <p class="g-vacias-h">REPRESENTACIÓN</p>
+            <p><strong>Esta es la clave de hacerlo vos.</strong> Se completa sólo cuando el trámite lo presenta un tercero. Si el CUIT con el que entraste es el mismo del titular, no hace falta completarla, y tampoco necesitás carta poder.</p>
+          </div>
+          <div>
+            <p class="g-vacias-h">OBSERVACIONES</p>
+            <p>Aclaraciones libres. Sin nada raro que explicar, en blanco. Escribir de más acá sólo le da material a un analista para observar.</p>
+          </div>
+          <div>
+            <p class="g-vacias-h">DOCUMENTACIÓN RESPALDATORIA</p>
+            <p>Estatuto, poder, ratificación o certificado de prioridad. Nada de eso aplica cuando una persona humana registra su propia marca.</p>
+          </div>
+        </div>
+
+        <Dato titulo="Esto es lo que te ahorra presentarlo vos">
+          <p>
+            La sección REPRESENTACIÓN y la carta poder son todo el trabajo administrativo
+            que existe cuando el trámite se delega. Presentándolo vos, desaparece.
+          </p>
+        </Dato>
+      </Paso>
+
+      <Paso {...paso('revisar')} tono="hacer">
+        <p>
+          Abajo de todo hay dos botones: <strong>GUARDAR BORRADOR</strong> y
+          <strong>FINALIZAR</strong>. Conviene guardar el borrador y revisar con la cabeza
+          fría antes de finalizar, porque finalizado no se corrige.
+        </p>
+
+        <div class="g-check">
+          <p class="g-check-h">Antes de finalizar</p>
+          <ul>
+            <li><label><input type="checkbox" /> La denominación está escrita exactamente como se quiere registrar</label></li>
+            <li><label><input type="checkbox" /> El tipo de marca es el correcto</label></li>
+            <li><label><input type="checkbox" /> La clase es la correcta</label></li>
+            <li><label><input type="checkbox" /> Reabriste el borrador y los términos siguen ahí</label></li>
+            <li><label><input type="checkbox" /> El titular aparece en la tabla "Titulares Cargados"</label></li>
+            <li><label><input type="checkbox" /> Los porcentajes suman 100</label></li>
+            <li><label><input type="checkbox" /> El correo electrónico es uno que se revisa</label></li>
+            <li><label><input type="checkbox" /> El domicilio está completo</label></li>
+            {conLogo && <li><label><input type="checkbox" /> El logo está adjunto y las medidas cargadas</label></li>}
+          </ul>
+        </div>
+
+        <Trampa titulo="Si la página se congela, no la recargues todavía">
+          <p>
+            El portal usa ventanas de aviso del navegador que a veces quedan trabadas y
+            parece que se colgó todo. Antes de recargar (y perder lo cargado), probá cerrar
+            el cartel, hacer clic fuera y esperar unos segundos. Recargar es el último
+            recurso, no el primero.
+          </p>
+        </Trampa>
+      </Paso>
+
+      <Paso {...paso('firmar')} tono="hacer">
+        <p>
+          Guardar y finalizar <strong>no presenta la solicitud</strong>. Falta firmarla, y es
+          un paso aparte que está en otra parte del menú.
+        </p>
+
+        <p class="g-ruta"><span>MIS TRÁMITES</span><span>Consulta trámites cargados</span><span>Trámites para Firmar</span></p>
+
+        <ol class="g-lista g-lista--num">
+          <li>Buscá la solicitud en la solapa <strong>Trámites para Firmar</strong>.</li>
+          <li>Tildala en la casilla de la izquierda.</li>
+          <li>Hacé clic en <strong>Firmar Trámite</strong>.</li>
+        </ol>
+
+        <Trampa titulo="Acá se queda colgada la mitad de las solicitudes" nivel="caro">
+          <p>
+            Es el error más común de todos: se completa el formulario, se ve que quedó
+            guardado, y la persona se va tranquila pensando que ya registró la marca. La
+            solicitud queda en el limbo, sin fecha de presentación, y mientras tanto
+            cualquiera puede pedir el mismo nombre y quedar adelante en la fila.
+          </p>
+        </Trampa>
+      </Paso>
+
+      <Paso {...paso('pagar')} tono="hacer">
+        <p>
+          Último paso, y tampoco es opcional: <strong>la solicitud recién queda presentada
+          cuando se paga el arancel</strong>.
+        </p>
+
+        <p class="g-ruta"><span>MIS TRÁMITES</span><span>Consulta trámites cargados</span><span>Trámites para ingresar</span></p>
+
+        <ol class="g-lista g-lista--num">
+          <li>Seleccioná el trámite a abonar.</li>
+          <li>Generá el <strong>volante electrónico de pago (VEP)</strong>.</li>
+          <li>Pagalo desde el home banking, en la sección de pagos VEP.</li>
+        </ol>
+
+        <p class="g-destacado">
+          Arancel de solicitud: <strong>${arancel}</strong> por marca y por clase, valor de
+          {' '}{PRICING.arancelVigencia}. El INPI lo actualiza seguido, así que puede haber
+          cambiado.
+        </p>
+
+        <Trampa titulo="El VEP vence">
+          <p>
+            Si se genera el volante y no se paga dentro del plazo, se vence y hay que generar
+            uno nuevo. No pasa nada grave, pero la fecha de presentación de la marca es la
+            del pago: cada día que pasa, la marca queda más atrás en la fila.
+          </p>
+        </Trampa>
+
+      </Paso>
+
+      <h2 class="g-parte" id="parte-4"><span>Parte 4</span> Después de presentar</h2>
+
+      <Paso {...paso('que-sigue')}>
+        <p>
+          Ya hay número de acta. A partir de acá el trámite avanza solo, pero conviene saber
+          qué está pasando en cada etapa.
+        </p>
+
+        <ol class="g-timeline">
+          <li>
+            <span class="g-tl-t">Presentada</span>
+            <p>La solicitud tiene fecha y número de acta. Esa fecha define el lugar en la fila frente a cualquier otro que pida lo mismo después.</p>
+          </li>
+          <li>
+            <span class="g-tl-t">Publicación en el Boletín de Marcas</span>
+            <p>El INPI publica la solicitud para que cualquier tercero que se sienta afectado pueda oponerse. Se abre una ventana de 30 días.</p>
+          </li>
+          <li>
+            <span class="g-tl-t">Plazo de oposiciones</span>
+            <p>Si nadie se opone en esos 30 días, el expediente sigue a estudio de fondo sin ese obstáculo.</p>
+          </li>
+          <li>
+            <span class="g-tl-t">Estudio de fondo</span>
+            <p>Un analista revisa que la marca sea registrable y que no choque con otras. Acá pueden salir observaciones (vistas).</p>
+          </li>
+          <li>
+            <span class="g-tl-t">La marca se concede</span>
+            <p>Sale el título. Protección por 10 años desde la concesión, renovable.</p>
+          </li>
+        </ol>
+
+        <Dato titulo="¿Desde cuándo se puede usar la marca?">
+          <p>
+            Usarla mientras está en trámite no está prohibido, pero el propio INPI recomienda
+            esperar al menos <strong>30 días desde la publicación</strong> para saber si
+            alguien se opuso. Antes de eso se está invirtiendo en packaging y cartelería de
+            una marca que todavía puede caerse. El símbolo ® se usa recién cuando está
+            concedida.
+          </p>
+        </Dato>
+
+        <ToolVigilancia marcas={hayDatos ? nombres : []} email={cliente.email} />
+      </Paso>
+
+      <Paso {...paso('oposiciones')}>
+        <p>
+          Dos cosas distintas que se confunden seguido, y la diferencia importa porque una
+          se puede manejar sola y la otra no.
+        </p>
+
+        <div class="g-dos">
+          <div>
+            <p class="g-dos-h">Oposición</p>
+            <p>La presenta <strong>un tercero</strong>, normalmente el titular de una marca parecida, dentro de los 30 días de la publicación.</p>
+            <p>Desde la notificación hay <strong>3 meses</strong> para llegar a un acuerdo. Muchas se resuelven con una limitación de términos o un acuerdo de coexistencia.</p>
+            <p>Si no se levanta, el INPI intima al oponente a mantenerla pagando una tasa. Si no la paga, se convierte en un llamado de atención y el expediente vuelve a estudio.</p>
+          </div>
+          <div>
+            <p class="g-dos-h">Vista</p>
+            <p>La hace <strong>el propio INPI</strong> durante el estudio de fondo: encontró un problema con la marca o con los términos.</p>
+            <p>El INPI dice, en sus propias palabras, que si el trámite recibe una observación en la etapa de estudio de fondo <strong>hay que recurrir a un abogado o agente de la propiedad industrial</strong> para contestarla.</p>
+            <p class="g-dos-nota">Esta parte se sale de lo que se puede hacer solo. No es una limitación de esta guía: es cómo funciona el trámite.</p>
+          </div>
+        </div>
+
+        <Dato titulo="Recibir una oposición no es perder">
+          <p>
+            Es más común de lo que parece, y buena parte se negocia. Lo que sí es fatal es
+            dejar pasar el plazo sin hacer nada: ahí se pierde por incomparecencia, no por
+            tener razón o no tenerla.
+          </p>
+        </Dato>
+      </Paso>
+
+      <Paso {...paso('mantener')}>
+        <p>
+          La marca concedida no se mantiene sola. Hay dos fechas que si se pasan, cuestan
+          plata o directamente la marca.
+        </p>
+
+        <div class="g-fechas">
+          <div>
+            <p class="g-fechas-n">Año 6</p>
+            <p class="g-fechas-h">Declaración jurada de medio término</p>
+            <p>Se presenta durante el sexto año de vigencia, para informar que la marca está en uso. Es arancelada. Si no se presenta en plazo, después hay que pagar una tasa extra por cada año de atraso, y sin eso no dan curso a la renovación.</p>
+          </div>
+          <div>
+            <p class="g-fechas-n">Año 10</p>
+            <p class="g-fechas-h">Renovación</p>
+            <p>Se puede pedir desde los 6 meses previos al vencimiento. Hay 6 meses de gracia después, pagando un arancel adicional. Al renovar se presenta también la declaración jurada de uso de los últimos 5 años.</p>
+          </div>
+        </div>
+
+        <Dato titulo="Las marcas no pagan anualidades">
+          <p>
+            A diferencia de las patentes, no hay cuota anual. Entre la concesión y el año 6
+            no hay que pagar nada. El riesgo no es el costo, es olvidarse de las dos fechas.
+          </p>
+        </Dato>
+      </Paso>
+
+      <Paso {...paso('ayuda')}>
+        <p>
+          Esta guía cubre el camino normal: una marca propia, sin conflictos, presentada por
+          su dueño. Hay situaciones donde hacerlo solo deja de tener sentido, y preferimos
+          decirlo antes que después.
+        </p>
+
+        <ul class="g-lista">
+          <li><strong>Llegó una vista del INPI.</strong> Contestarla requiere un escrito legal. El propio INPI recomienda un abogado o agente.</li>
+          <li><strong>Opusieron la marca.</strong> Son 3 meses y una negociación por delante.</li>
+          <li><strong>Aparece una marca parecida en tu clase</strong> y no está claro si frena o no.</li>
+          <li><strong>Hay que registrar afuera del país.</strong> Cada país es su propio trámite y su propia oficina.</li>
+          <li><strong>La marca va a nombre de varios socios</strong> o hay que transferirla a una sociedad.</li>
+        </ul>
+
+        <Delegar
+          contexto="guia_ayuda"
+          texto="Si te trabaste en cualquiera de estos casos, o simplemente preferís no seguir solo,"
+          enlace="escribinos y vemos cómo seguir"
+        />
+      </Paso>
+
+      <footer class="g-foot">
+        <p>
+          Guía de {cliente.email}. Actualizada con el portal del INPI vigente a agosto de
+          2026. Cuando el INPI cambie algo, esta página se actualiza y tu link sigue siendo
+          el mismo.
+        </p>
+        <p class="g-foot-legal">
+          Material informativo. No constituye asesoramiento legal: los datos que aparecen
+          son ejemplos y la solicitud la presentás vos, bajo tu criterio.
+        </p>
+      </footer>
+    </main>
+  </div>
+
+<script>
+  const wrap = document.querySelector<HTMLElement>('.g-wrap');
+  if (wrap) {
+    // ── Estado compartido entre pasos ──────────────────────────────────────
+    // Lo que se elige en el paso 4 (clase) y en el 5 (términos) se muestra de
+    // nuevo en el 9, que es donde hay que cargarlo en el portal. Es lo que hace
+    // que esto sea una guía y no una lista de links: el resultado no se pierde.
+    // Vive en sessionStorage: dura la sesión del navegador, no deja rastro
+    // permanente en la máquina del cliente.
+    const KEY = `um-guia-${wrap.dataset.token || 'anon'}`;
+    type Estado = { clase: number | null; terminos: string[] };
+    let estado: Estado = { clase: null, terminos: [] };
+    try { estado = { ...estado, ...JSON.parse(sessionStorage.getItem(KEY) || '{}') }; } catch {}
+    const guardar = () => {
+      try { sessionStorage.setItem(KEY, JSON.stringify(estado)); } catch {}
+      pintarElegidos();
+    };
+
+    const esc = (t: string) =>
+      t.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+
+    /** Llama al proxy y devuelve JSON, o tira un Error con texto para mostrar. */
+    async function pedir(url: string, init?: RequestInit) {
+      let res: Response;
+      try {
+        res = await fetch(url, init);
+      } catch {
+        throw new Error('Error de conexión. Revisá tu internet e intentá de nuevo.');
+      }
+      // `astro dev` no corre las Pages Functions: /api/* devuelve el 404 de Astro
+      // en HTML. Sin este aviso el error parece un problema del servicio.
+      if (!(res.headers.get('content-type') || '').includes('application/json')) {
+        throw new Error(
+          res.status === 404
+            ? 'Las herramientas no funcionan con `astro dev`, que no corre las Pages Functions. Probalas en un preview de Cloudflare o con `wrangler pages dev`.'
+            : 'El servicio no respondió como esperábamos. Intentá de nuevo en unos minutos.'
+        );
+      }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'No pudimos completar la consulta.');
+      return data;
+    }
+
+    const salida = (el: HTMLElement, html: string) => { el.innerHTML = html; el.hidden = false; };
+    const error = (el: HTMLElement, msg: string) =>
+      salida(el, `<p class="g-tool-error">${esc(msg)}</p>`);
+    const cargando = (el: HTMLElement, txt: string) =>
+      salida(el, `<p class="g-tool-cargando">${esc(txt)}</p>`);
+
+    function ocupar(btn: HTMLButtonElement, on: boolean, textoOcupado = 'Buscando…') {
+      if (on) { btn.dataset.antes = btn.textContent || ''; btn.textContent = textoOcupado; }
+      else if (btn.dataset.antes) { btn.textContent = btn.dataset.antes; }
+      btn.disabled = on;
+    }
+
+    // ── Paso 3 · Relevamiento ──────────────────────────────────────────────
+    const relMarca = document.querySelector<HTMLInputElement>('[data-rel-marca]');
+    const relOut = document.querySelector<HTMLElement>('[data-rel-out]');
+    if (relMarca && relOut) {
+      document.querySelectorAll<HTMLButtonElement>('[data-rel-atajo]').forEach(b => {
+        b.addEventListener('click', () => { relMarca.value = b.dataset.relAtajo || ''; });
+      });
+
+      document.querySelector<HTMLButtonElement>('[data-rel-buscar]')?.addEventListener('click', async function () {
+        const marca = relMarca.value.trim();
+        if (!marca) { error(relOut, 'Escribí una marca para buscar.'); return; }
+        const clases = clasesDe('rel');
+        const vigentes = document.querySelector<HTMLInputElement>('[data-rel-vigentes]')?.checked ?? true;
+
+        ocupar(this, true);
+        cargando(relOut, 'Buscando en la base del INPI…');
+        try {
+          const d = await pedir('/api/relevamiento/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              marca, clases, modes: ['palabras', 'fonetica'],
+              min_score: 60, solo_vigentes: vigentes,
+            }),
+          });
+          const res = (d.results || []) as any[];
+          if (!res.length) {
+            salida(relOut, `<p class="g-tool-ok">No aparecieron marcas parecidas a «${esc(marca)}»${clases.length ? ' en esas clases' : ''}. Es buena señal, pero no es un certificado: el INPI decide con su propio criterio.</p>`);
+            return;
+          }
+          const top = res.slice(0, 12);
+          salida(relOut, `
+            <p class="g-tool-aviso">Aparecieron <strong>${res.length}</strong> marcas parecidas${clases.length ? ' en esas clases' : ''}. Cuanto más alto el parecido, más riesgo de que te frenen.</p>
+            <div class="g-tabla-wrap"><table class="g-tabla g-tabla--res">
+              <thead><tr><th>Marca</th><th>Clase</th><th>Estado</th><th>Parecido</th></tr></thead>
+              <tbody>${top.map(r => `<tr>
+                <td><strong>${esc(r.denominacion)}</strong></td>
+                <td>${esc(String(r.clase))}</td>
+                <td>${esc(r.estado_label || '')}</td>
+                <td><span class="g-score g-score--${r.score >= 80 ? 'alto' : r.score >= 65 ? 'medio' : 'bajo'}">${Math.round(r.score)}</span></td>
+              </tr>`).join('')}</tbody>
+            </table></div>
+            ${res.length > top.length ? `<p class="g-tool-nota">Mostramos las ${top.length} más parecidas de ${res.length}.</p>` : ''}`);
+        } catch (e: any) {
+          error(relOut, e.message);
+        } finally {
+          ocupar(this, false);
+        }
+      });
+    }
+
+    // ── Selector múltiple de clases (relevamiento y vigilancia) ────────────
+    /** Las clases tildadas de un selector. */
+    const clasesDe = (campo: string) =>
+      Array.from(document.querySelectorAll<HTMLInputElement>(`[data-multi-op="${campo}"]:checked`))
+        .map(c => parseInt(c.value, 10));
+
+    /** Tilda una clase y refresca el resumen del disparador. */
+    function marcarClase(campo: string, num: number) {
+      const cb = document.querySelector<HTMLInputElement>(`[data-multi-op="${campo}"][value="${num}"]`);
+      if (cb) { cb.checked = true; resumirClases(campo); }
+    }
+
+    function resumirClases(campo: string) {
+      const el = document.querySelector<HTMLElement>(`[data-multi-resumen="${campo}"]`);
+      if (!el) return;
+      const n = clasesDe(campo);
+      el.textContent =
+        n.length === 0 ? el.dataset.vacio || el.textContent || ''
+        : n.length <= 4 ? `Clase${n.length > 1 ? 's' : ''} ${n.join(', ')}`
+        : `${n.length} clases elegidas`;
+    }
+
+    document.querySelectorAll<HTMLElement>('[data-multi]').forEach(d => {
+      const campo = d.dataset.multi!;
+      const res = document.querySelector<HTMLElement>(`[data-multi-resumen="${campo}"]`);
+      if (res) res.dataset.vacio = res.textContent || '';
+      d.querySelectorAll('input').forEach(i => i.addEventListener('change', () => resumirClases(campo)));
+    });
+
+    // ── Paso 3 · Nomenclador ───────────────────────────────────────────────
+    const nomDesc = document.querySelector<HTMLTextAreaElement>('[data-nom-desc]');
+    const nomOut = document.querySelector<HTMLElement>('[data-nom-out]');
+    if (nomDesc && nomOut) {
+      document.querySelectorAll<HTMLButtonElement>('[data-nom-atajo]').forEach(b => {
+        b.addEventListener('click', () => { nomDesc.value = b.dataset.nomAtajo || ''; });
+      });
+
+      document.querySelector<HTMLButtonElement>('[data-nom-buscar]')?.addEventListener('click', async function () {
+        const descripcion = nomDesc.value.trim();
+        if (!descripcion) { error(nomOut, 'Contá qué vendés para poder sugerirte una clase.'); return; }
+
+        ocupar(this, true, 'Analizando…');
+        cargando(nomOut, 'Buscando las clases que corresponden…');
+        try {
+          const d = await pedir('/api/nomenclador/suggest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ descripcion }),
+          });
+          const cls = (d.classes || []) as any[];
+          if (!cls.length) {
+            error(nomOut, 'No encontramos una clase clara con esa descripción. Probá nombrando el producto concreto (no el beneficio).');
+            return;
+          }
+          salida(nomOut, `
+            <p class="g-tool-aviso">Estas son las clases que mejor encajan. Al elegir una, queda cargada en la búsqueda del paso 4 y en los términos del paso 5.</p>
+            ${cls.map(c => `
+              <div class="g-clase">
+                <p class="g-clase-h"><strong>Clase ${c.num}</strong> · ${esc(c.nombre || '')}</p>
+                <p class="g-clase-t">${(c.terminos || []).slice(0, 6).map((t: any) => `<code>${esc(t.termino)}</code>`).join(' ')}</p>
+                <button type="button" class="g-btn g-btn--chico" data-usar-clase="${c.num}">Usar la clase ${c.num}</button>
+              </div>`).join('')}`);
+
+          nomOut.querySelectorAll<HTMLButtonElement>('[data-usar-clase]').forEach(b => {
+            b.addEventListener('click', () => {
+              const num = parseInt(b.dataset.usarClase!, 10);
+              estado = { clase: num, terminos: [] };
+              guardar();
+              // La clase alimenta los dos pasos que vienen: la búsqueda de
+              // antecedentes (4) y el listado de términos (5). Ese encadenado es
+              // el motivo de que la clase se elija primero.
+              marcarClase('rel', num);
+              const terC = document.querySelector<HTMLSelectElement>('[data-ter-clase]');
+              if (terC) terC.value = String(num);
+              document.getElementById('terminos')?.setAttribute('open', '');
+              document.querySelector<HTMLButtonElement>('[data-ter-cargar]')?.click();
+              const sig = document.getElementById('antecedentes');
+              sig?.setAttribute('open', '');
+              sig?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+          });
+        } catch (e: any) {
+          error(nomOut, e.message);
+        } finally {
+          ocupar(this, false);
+        }
+      });
+    }
+
+    // ── Paso 5 · Términos de la clase ──────────────────────────────────────
+    const terClase = document.querySelector<HTMLSelectElement>('[data-ter-clase]');
+    const terFiltro = document.querySelector<HTMLInputElement>('[data-ter-filtro]');
+    const terOut = document.querySelector<HTMLElement>('[data-ter-out]');
+    let terminosClase: { id: number; termino: string }[] = [];
+
+    function pintarTerminos() {
+      if (!terOut) return;
+      const q = (terFiltro?.value || '').trim().toLowerCase();
+      const vis = q ? terminosClase.filter(t => t.termino.toLowerCase().includes(q)) : terminosClase;
+      const tope = 60;
+      salida(terOut, `
+        <p class="g-tool-aviso g-tool-aviso--fila">
+          <span><strong>${estado.terminos.length}</strong> elegidos de ${terminosClase.length} términos de la clase ${estado.clase}.</span>
+          ${estado.terminos.length ? '<button type="button" class="g-btn g-btn--chico" data-ter-copiar>Copiar mi lista</button>' : ''}
+        </p>
+        <ul class="g-terlist">
+          ${vis.slice(0, tope).map(t => `
+            <li><label>
+              <input type="checkbox" data-ter="${esc(t.termino)}" ${estado.terminos.includes(t.termino) ? 'checked' : ''} />
+              <code>${esc(t.termino)}</code>
+            </label></li>`).join('')}
+        </ul>
+        ${vis.length > tope ? `<p class="g-tool-nota">Se muestran ${tope} de ${vis.length}. Usá el filtro para acotar.</p>` : ''}
+        ${!vis.length ? '<p class="g-tool-nota">Ningún término coincide con ese filtro.</p>' : ''}`);
+
+      terOut.querySelectorAll<HTMLInputElement>('[data-ter]').forEach(ch => {
+        ch.addEventListener('change', () => {
+          const t = ch.dataset.ter!;
+          estado.terminos = ch.checked
+            ? [...new Set([...estado.terminos, t])]
+            : estado.terminos.filter(x => x !== t);
+          guardar();
+          pintarTerminos();
+        });
+      });
+
+      terOut.querySelector<HTMLButtonElement>('[data-ter-copiar]')?.addEventListener('click', async function () {
+        try {
+          await navigator.clipboard.writeText(estado.terminos.join('\n'));
+          const antes = this.textContent;
+          this.textContent = 'Copiado';
+          setTimeout(() => { this.textContent = antes; }, 1600);
+        } catch {}
+      });
+    }
+
+    async function cargarClase(num: number) {
+      if (!terOut) return;
+      cargando(terOut, `Cargando los términos oficiales de la clase ${num}…`);
+      try {
+        const d = await pedir(`/api/nomenclador/clase/${num}`);
+        terminosClase = d.terminos || [];
+        if (estado.clase !== num) { estado = { clase: num, terminos: [] }; }
+        guardar();
+        if (terFiltro) terFiltro.disabled = false;
+        pintarTerminos();
+      } catch (e: any) {
+        error(terOut, e.message);
+      }
+    }
+
+    document.querySelector<HTMLButtonElement>('[data-ter-cargar]')?.addEventListener('click', () => {
+      const num = parseInt(terClase?.value || '', 10);
+      if (!(num >= 1 && num <= 45)) { if (terOut) error(terOut, 'Elegí una clase de la lista.'); return; }
+      cargarClase(num);
+    });
+    terFiltro?.addEventListener('input', pintarTerminos);
+
+    // ── Paso 9 · Repetir lo elegido, que es donde hay que cargarlo ──────────
+    function pintarElegidos() {
+      const el = document.querySelector<HTMLElement>('[data-elegidos]');
+      if (!el) return;
+      if (!estado.clase || !estado.terminos.length) { el.hidden = true; return; }
+      el.hidden = false;
+      el.innerHTML = `
+        <p class="g-elegidos-h">Lo que elegiste en los pasos 3 y 5</p>
+        <p class="g-elegidos-c">Clase <strong>${estado.clase}</strong> · ${estado.terminos.length} términos para tildar:</p>
+        <ul class="g-terminos">${estado.terminos.map(t => `<li><code>${esc(t)}</code></li>`).join('')}</ul>`;
+    }
+
+    // Al volver a entrar, se recupera lo elegido antes de cerrar la pestaña:
+    // la clase queda puesta en los tres lugares donde hace falta.
+    if (estado.clase) {
+      marcarClase('rel', estado.clase);
+      if (terClase) {
+        terClase.value = String(estado.clase);
+        cargarClase(estado.clase);
+      }
+    }
+    pintarElegidos();
+
+    // ── Paso 15 · Vigilancia del Boletín ───────────────────────────────────
+    const vigNombre = document.querySelector<HTMLInputElement>('[data-vig-nombre]');
+    const vigOut = document.querySelector<HTMLElement>('[data-vig-out]');
+    if (vigNombre && vigOut) {
+      document.querySelectorAll<HTMLButtonElement>('[data-vig-atajo]').forEach(b => {
+        b.addEventListener('click', () => { vigNombre.value = b.dataset.vigAtajo || ''; });
+      });
+
+      // Si ya eligió clase en el paso 3, viene tildada de entrada.
+      if (estado.clase) marcarClase('vig', estado.clase);
+
+      document.querySelector<HTMLButtonElement>('[data-vig-alta]')?.addEventListener('click', async function () {
+        const nombre = vigNombre.value.trim();
+        const email = (document.querySelector<HTMLInputElement>('[data-vig-email]')?.value || '').trim();
+        const clases = clasesDe('vig');
+
+        ocupar(this, true, 'Activando…');
+        cargando(vigOut, 'Dando de alta la vigilancia…');
+        try {
+          await pedir('/api/vigilancia/alta', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre, email, clases }),
+          });
+          salida(vigOut, `<p class="g-tool-ok">Listo. Vamos a avisarte a <strong>${esc(email)}</strong> cada vez que el INPI publique algo parecido a «${esc(nombre)}» en ${clases.length === 1 ? 'esa clase' : 'esas clases'}.</p>`);
+        } catch (e: any) {
+          error(vigOut, e.message);
+        } finally {
+          ocupar(this, false);
+        }
+      });
+    }
+
+    // ── Copiar los ejemplos ────────────────────────────────────────────────
+    document.querySelectorAll<HTMLButtonElement>('[data-copiar]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(btn.dataset.copiar || '');
+          const antes = btn.textContent;
+          btn.classList.add('g-copiado');
+          btn.textContent = 'Copiado';
+          setTimeout(() => { btn.classList.remove('g-copiado'); btn.textContent = antes; }, 1600);
+        } catch {}
+      });
+    });
+
+    // ── Abrir todo / cerrar todo ───────────────────────────────────────────
+    const pasos = Array.from(document.querySelectorAll<HTMLDetailsElement>('.g-paso'));
+    const btnTodo = document.querySelector<HTMLButtonElement>('[data-abrir-todo]');
+    btnTodo?.addEventListener('click', () => {
+      const abrir = pasos.some(p => !p.open);
+      pasos.forEach(p => { p.open = abrir; });
+      btnTodo.textContent = abrir ? 'Cerrar todos los pasos' : 'Abrir todos los pasos';
+    });
+
+    // ── Un click en el índice abre el paso antes de saltar ─────────────────
+    document.querySelectorAll<HTMLAnchorElement>('[data-idx]').forEach(a => {
+      a.addEventListener('click', () => {
+        const el = document.querySelector<HTMLDetailsElement>(a.getAttribute('href')!);
+        if (el) el.open = true;
+      });
+    });
+
+    // ── Scroll-spy ─────────────────────────────────────────────────────────
+    const spy = new IntersectionObserver(
+      entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            document.querySelectorAll('[data-idx]').forEach(x => x.classList.remove('g-idx--activo'));
+            document.querySelector(`[data-idx="${e.target.id}"]`)?.classList.add('g-idx--activo');
+          }
+        });
+      },
+      { rootMargin: '-20% 0px -70% 0px' }
+    );
+    pasos.forEach(p => spy.observe(p));
+  }
+</script>

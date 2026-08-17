@@ -1,0 +1,37 @@
+---
+// Selector múltiple de clases de Niza, compartido por las herramientas.
+//
+// Es un <details> nativo: abre y cierra sin JS, funciona con teclado y no se
+// rompe si el script falla. El resumen del disparador lo actualiza la página.
+import { NIZA_CLASSES } from '../../lib/checkout/nizaClasses';
+
+interface Props {
+  /** Prefijo de los data-* que usa la página para encontrar este selector. */
+  campo: string;
+  etiqueta: string;
+  /** Texto del disparador cuando no hay ninguna elegida. */
+  vacio: string;
+}
+const { campo, etiqueta, vacio } = Astro.props;
+---
+
+<div class="g-tool-campo">
+  <span>{etiqueta}</span>
+  <details class="g-multi" data-multi={campo}>
+    <summary>
+      <span data-multi-resumen={campo}>{vacio}</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </summary>
+    <div class="g-clist">
+      {NIZA_CLASSES.map(c => (
+        <label class="g-clist-item">
+          <input type="checkbox" value={c.num} data-multi-op={campo} />
+          <span><strong>{c.num}</strong> {c.nombre}</span>
+        </label>
+      ))}
+    </div>
+  </details>
+</div>

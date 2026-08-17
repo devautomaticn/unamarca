@@ -1,0 +1,52 @@
+---
+// Alta en la vigilancia gratuita del Boletín, sin salir de la guía.
+// Pega a /api/vigilancia/alta. Ver la advertencia de fragilidad en esa función.
+import ClasesSelect from './ClasesSelect.astro';
+
+interface Props {
+  /** Marcas del comprador, para llenar el nombre de un click. */
+  marcas: string[];
+  /** Mail del comprador: es el que ya usamos para contactarlo. */
+  email: string;
+}
+const { marcas, email } = Astro.props;
+---
+
+<div class="g-tool" data-tool="vigilancia">
+  <p class="g-tool-head"><span>Herramienta</span> Vigilancia de tu marca</p>
+  <p class="g-tool-hace">
+    Te avisamos por email cada vez que el INPI publique en el Boletín una
+    solicitud parecida a la tuya, en las clases que elijas. Es gratis y no tiene
+    vencimiento.
+  </p>
+
+  <div class="g-tool-form">
+    <div class="g-tool-fila">
+      <label class="g-tool-campo">
+        <span>Marca a vigilar</span>
+        <input type="text" data-vig-nombre placeholder="El nombre de tu marca" maxlength="120" />
+      </label>
+      <label class="g-tool-campo">
+        <span>Email para los avisos</span>
+        <input type="email" data-vig-email value={email} maxlength="160" />
+      </label>
+    </div>
+
+    {marcas.length > 0 && (
+      <p class="g-tool-atajos">
+        <span>Ejemplos de tus marcas:</span>
+        {marcas.map(m => (
+          <button type="button" class="g-chip" data-vig-atajo={m}>{m}</button>
+        ))}
+      </p>
+    )}
+
+    <ClasesSelect campo="vig" etiqueta="Clases a vigilar" vacio="Elegí las clases a vigilar" />
+
+    <div class="g-tool-acciones">
+      <button type="button" class="g-btn" data-vig-alta>Activar vigilancia</button>
+    </div>
+  </div>
+
+  <div class="g-tool-out" data-vig-out hidden></div>
+</div>

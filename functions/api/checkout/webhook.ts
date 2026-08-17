@@ -6,6 +6,8 @@ import {
   type CheckoutEnv, ensureSchema, json, hmacSha256Hex, marcasDesdePayload,
 } from '../../_lib/checkout';
 import { sendPaymentEmail } from '../../_lib/notify';
+import { asegurarTabla, marcarPagado, urlGuia } from '../../_lib/guia';
+import { sendGuiaEntrega } from '../../_lib/guiaMails';
 
 interface WebhookEnv extends CheckoutEnv {
   RESEND_API_KEY?: string;
@@ -30,7 +32,7 @@ function mapStatus(mpStatus: string): string {
   }
 }
 
-export const onRequestPost: PagesFunction<WebhookEnv> = async ({ env, request }) => {
+export const onRequestPost: PagesFunction<WebhookEnv> = async ({ env, request, waitUntil }) => {
   if (!env.DB || !env.MP_ACCESS_TOKEN || !env.MP_WEBHOOK_SECRET) {
     return json({ error: 'Checkout no configurado' }, 500);
   }
@@ -87,6 +89,14 @@ export const onRequestPost: PagesFunction<WebhookEnv> = async ({ env, request })
   const ref = payment.external_reference;
   if (!ref) return json({ ok: true, ignored: true });
 
+  // ── Guías DIY ────────────────────────────────────────────
+  // Comparten webhook con los pedidos de registro porque MP notifica a una sola
+  // URL por cuenta. Se distinguen por el prefijo de la referencia: las guías
+  // son GU-…, los pedidos UM-…. Sale por acá antes de tocar `orders`.
+  if (ref.startsWith('GU-')) {
+    return acreditarGuia(env, waitUntil, ref, payment, new URL(request.url).origin);
+  }
+
   await ensureSchema(env.DB);
   const row = await env.DB.prepare('SELECT ref, status, payload, completion FROM orders WHERE ref = ?')
     .bind(ref).first<{ ref: string; status: string; payload: string; completion: string | null }>();
@@ -127,3 +137,45 @@ export const onRequestPost: PagesFunction<WebhookEnv> = async ({ env, request })
 
   return json({ ok: true });
 };
+
+/**
+ * Acredita el pago de una guía DIY.
+ *
+ * Sólo `approved` activa el acceso. Un `pending` no alcanza: con los pagos en
+ * efectivo excluidos de la preferencia, un pendiente acá es una tarjeta en
+ * revisión, y no queremos abrir la guía para que después el pago se caiga.
+ *
+ * Es idempotente: `marcarPagado` no vuelve a escribir si ya estaba pagado, así
+ * que los reintentos de MP no duplican el mail de entrega.
+ */
+async function acreditarGuia(
+  env: WebhookEnv,
+  waitUntil: (p: Promise<unknown>) => void,
+  ref: string,
+  payment: MpPayment,
+  origin: string,
+): Promise<Response> {
+  if (payment.status !== 'approved') return json({ ok: true, guia: ref, estado: payment.status });
+
+  await asegurarTabla(env.DB);
+  const { fila, yaEstaba } = await marcarPagado(
+    env.DB, ref, 'mercadopago', `Pago ${payment.id} aprobado en Mercado Pago`,
+  );
+
+  // Un ref GU- que no está en la tabla no es un error nuestro: se responde 200
+  // para que MP no reintente para siempre.
+  if (!fila) return json({ ok: true, ignored: true });
+
+  if (!yaEstaba && env.RESEND_API_KEY) {
+    const apiKey = env.RESEND_API_KEY;
+    waitUntil(
+      sendGuiaEntrega(apiKey, {
+        email: fila.email,
+        ref: fila.ref,
+        guiaUrl: urlGuia(origin, fila.token),
+      }).catch(e => console.error('Webhook: falló el mail de entrega de la guía', e)),
+    );
+  }
+
+  return json({ ok: true, guia: ref, estado: 'pagado' });
+}

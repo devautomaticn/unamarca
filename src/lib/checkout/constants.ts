@@ -14,6 +14,10 @@ export const PRICING = {
   /** Precio de lista de la vigilancia anual (se muestra tachado → gratis).
    *  TODO: igualar al precio real standalone de vigilante.unamarca.com.ar */
   vigilanciaLista: 30_000,
+  /** Guía DIY (`/guia/<token>`). Precio único, no por clase ni por marca: es
+   *  el mismo trámite explicado, sin importar cuántas marcas registre después.
+   *  Se vende SOLO por WhatsApp, a leads que rebotaron por precio. */
+  guia: 25_000,
 } as const;
 
 /** Máximo de clases POR MARCA; más que esto se deriva a WhatsApp */

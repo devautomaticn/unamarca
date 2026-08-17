@@ -1,0 +1,49 @@
+---
+// Búsqueda de antecedentes contra la base del INPI.
+// Pega a /api/relevamiento/search (proxy same-origin a Vigilante).
+// La lógica vive en el <script> de la página, para compartir estado entre pasos.
+import ClasesSelect from './ClasesSelect.astro';
+
+interface Props {
+  /** Las marcas del comprador, para llenar el campo de un click. */
+  marcas: string[];
+}
+const { marcas } = Astro.props;
+---
+
+<div class="g-tool" data-tool="relevamiento">
+  <p class="g-tool-head"><span>Herramienta</span> Relevamiento de antecedentes</p>
+  <p class="g-tool-hace">
+    Busca la marca y sus variantes parecidas en la base del INPI. Es la misma
+    búsqueda que hace nuestro buscador público.
+  </p>
+
+  <div class="g-tool-form">
+    <div class="g-tool-fila">
+      <label class="g-tool-campo">
+        <span>Denominación</span>
+        <input type="text" data-rel-marca placeholder="El nombre a buscar" maxlength="80" />
+      </label>
+      <ClasesSelect campo="rel" etiqueta="Clases" vacio="Todas las clases" />
+    </div>
+
+    {marcas.length > 0 && (
+      <p class="g-tool-atajos">
+        <span>Ejemplos de tus marcas:</span>
+        {marcas.map(m => (
+          <button type="button" class="g-chip" data-rel-atajo={m}>{m}</button>
+        ))}
+      </p>
+    )}
+
+    <div class="g-tool-acciones">
+      <label class="g-tool-check">
+        <input type="checkbox" data-rel-vigentes checked />
+        <span>Sólo marcas vigentes</span>
+      </label>
+      <button type="button" class="g-btn" data-rel-buscar>Buscar</button>
+    </div>
+  </div>
+
+  <div class="g-tool-out" data-rel-out hidden></div>
+</div>

@@ -1,0 +1,16 @@
+---
+// Las trampas del portal del INPI: lo que no está en ningún instructivo oficial
+// y es la razón por la que alguien paga esta guía en vez de leer el PDF gratis.
+interface Props {
+  titulo: string;
+  /** `caro` = si caés acá perdés el arancel o el trámite. Se usa poco a propósito. */
+  nivel?: 'ojo' | 'caro';
+}
+
+const { titulo, nivel = 'ojo' } = Astro.props;
+---
+
+<aside class:list={['g-trampa', `g-trampa--${nivel}`]}>
+  <p class="g-trampa-head">{titulo}</p>
+  <div class="g-trampa-body"><slot /></div>
+</aside>

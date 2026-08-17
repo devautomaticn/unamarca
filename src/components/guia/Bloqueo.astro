@@ -1,0 +1,85 @@
+---
+// Lo que se ve en /guia/<token> cuando la guía todavía no se puede leer.
+//
+// La URL se le entrega al cliente ANTES de pagar, a propósito: así la tiene
+// guardada desde el primer mensaje y no depende del redirect de Mercado Pago
+// ni del mail. Hasta que se acredite el pago, cae acá.
+//
+// No filtra contenido: de la guía no se muestra ni un paso.
+import { PRICING, TRANSFERENCIA } from '../../lib/checkout/constants';
+import { waHref } from '../../lib/wa';
+
+interface Props {
+  motivo: 'pendiente' | 'revocado' | 'inexistente';
+  /** Link de pago de Mercado Pago del pedido, si lo hay. */
+  pagoUrl?: string | null;
+}
+const { motivo, pagoUrl } = Astro.props;
+
+const precio = PRICING.guia.toLocaleString('es-AR');
+---
+
+<div class="g-bloqueo">
+  {motivo === 'pendiente' && (
+    <>
+      <p class="g-bloqueo-kicker">Guía de registro de marca</p>
+      <h1>Tu guía se activa apenas se acredite el pago</h1>
+      <p class="g-bloqueo-sub">
+        Este link es tuyo y no cambia. Guardalo: cuando el pago entre, entrás
+        acá mismo y ya vas a ver la guía completa.
+      </p>
+
+      <div class="g-bloqueo-opciones">
+        <div class="g-bloqueo-op">
+          <p class="g-bloqueo-op-h">Con tarjeta</p>
+          <p>Se acredita al instante y la guía se abre sola.</p>
+          {pagoUrl && <a class="g-btn g-bloqueo-btn" href={pagoUrl}>Pagar ${precio}</a>}
+        </div>
+
+        <div class="g-bloqueo-op">
+          <p class="g-bloqueo-op-h">Por transferencia</p>
+          <dl>
+            <div><dt>Alias</dt><dd>{TRANSFERENCIA.alias}</dd></div>
+            <div><dt>Titular</dt><dd>{TRANSFERENCIA.titular}</dd></div>
+            <div><dt>Importe</dt><dd>${precio}</dd></div>
+          </dl>
+          <p class="g-bloqueo-nota">
+            Mandanos la captura del comprobante por WhatsApp y te activamos el acceso.
+          </p>
+        </div>
+      </div>
+
+      <p class="g-bloqueo-pie">
+        ¿Ya pagaste y seguís viendo esto? Escribinos y lo revisamos:
+        <a href={waHref('guia_pendiente')}>abrir WhatsApp</a>.
+      </p>
+    </>
+  )}
+
+  {motivo === 'revocado' && (
+    <>
+      <p class="g-bloqueo-kicker">Guía de registro de marca</p>
+      <h1>Este acceso está dado de baja</h1>
+      <p class="g-bloqueo-sub">
+        Si creés que es un error, escribinos y lo vemos.
+      </p>
+      <p class="g-bloqueo-pie">
+        <a class="g-btn g-bloqueo-btn" href={waHref('guia_pendiente')}>Escribirnos por WhatsApp</a>
+      </p>
+    </>
+  )}
+
+  {motivo === 'inexistente' && (
+    <>
+      <p class="g-bloqueo-kicker">Guía de registro de marca</p>
+      <h1>No encontramos esta guía</h1>
+      <p class="g-bloqueo-sub">
+        El link puede estar incompleto. Si lo copiaste de un mensaje, fijate que
+        no se haya cortado. Si no, escribinos y te lo reenviamos.
+      </p>
+      <p class="g-bloqueo-pie">
+        <a class="g-btn g-bloqueo-btn" href={waHref('guia_pendiente')}>Escribirnos por WhatsApp</a>
+      </p>
+    </>
+  )}
+</div>

@@ -1,0 +1,40 @@
+---
+import { NIZA_CLASSES } from '../../lib/checkout/nizaClasses';
+// Listado oficial de términos de una clase, para elegir los propios.
+// Pega a /api/nomenclador/clase/:num. Son listas largas (la clase 4 tiene 672),
+// así que se piden una vez y se filtran en el navegador.
+//
+// Lo elegido acá queda guardado y se muestra de nuevo en el paso 9, que es
+// donde hay que tildarlos en el portal del INPI.
+---
+
+<div class="g-tool" data-tool="terminos">
+  <p class="g-tool-head"><span>Herramienta</span> Términos de la clase</p>
+  <p class="g-tool-hace">
+    El listado oficial completo. Tildá los que apliquen a lo que vendés: esa es
+    la lista que después tenés que marcar en el portal.
+  </p>
+
+  <div class="g-tool-form">
+    <div class="g-tool-fila">
+      <label class="g-tool-campo">
+        <span>Clase</span>
+        <select data-ter-clase>
+          <option value="">Elegí una clase…</option>
+          {NIZA_CLASSES.map(c => (
+            <option value={c.num}>{c.num} · {c.nombre}</option>
+          ))}
+        </select>
+      </label>
+      <label class="g-tool-campo g-tool-campo--corto">
+        <span>Filtrar</span>
+        <input type="text" data-ter-filtro placeholder="Ej.: vela" disabled />
+      </label>
+    </div>
+    <div class="g-tool-acciones">
+      <button type="button" class="g-btn" data-ter-cargar>Cargar términos</button>
+    </div>
+  </div>
+
+  <div class="g-tool-out" data-ter-out hidden></div>
+</div>

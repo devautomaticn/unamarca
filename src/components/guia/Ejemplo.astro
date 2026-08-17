@@ -1,0 +1,53 @@
+---
+// Un campo del formulario del INPI, mostrado SIEMPRE como ejemplo.
+//
+// Nunca decimos "poné esto": mostramos qué espera el campo y damos un ejemplo.
+// Quien presenta la solicitud es el cliente y la decisión de qué escribir es
+// suya. Ver la nota de arriba de src/lib/guia/cliente.ts.
+//
+// Un ejemplo puede llevar `de`: de qué marca del cliente salió. Sirve cuando el
+// cliente tiene varias marcas y cada una lleva un valor distinto.
+interface Item {
+  valor: string;
+  de?: string;
+}
+
+interface Props {
+  /** Nombre del campo tal como figura en el portal del INPI. */
+  campo: string;
+  /** Qué espera ese campo, en una línea. */
+  espera?: string;
+  ejemplo: string | (string | Item)[];
+  /** Sólo para datos que el comprador ya nos dio. */
+  copiable?: boolean;
+  /** Los ejemplos no salen de sus datos: son ilustrativos. */
+  generico?: boolean;
+}
+
+const { campo, espera, ejemplo, copiable = false, generico = false } = Astro.props;
+
+const items: Item[] = (Array.isArray(ejemplo) ? ejemplo : [ejemplo]).map(e =>
+  typeof e === 'string' ? { valor: e } : e
+);
+---
+
+<div class="g-campo">
+  <p class="g-campo-nombre">{campo}</p>
+  {espera && <p class="g-campo-espera">{espera}</p>}
+  <ul class="g-campo-ejs">
+    {items.map(item => (
+      <li>
+        <span class="g-campo-eg">ej.</span>
+        <span class="g-campo-val">
+          <code>{item.valor}</code>
+          {item.de && <span class="g-campo-de">para {item.de}</span>}
+        </span>
+        {copiable && (
+          <button type="button" class="g-campo-btn" data-copiar={item.valor}
+                  aria-label={`Copiar ${item.valor}`}>Copiar</button>
+        )}
+      </li>
+    ))}
+  </ul>
+  {generico && <p class="g-campo-gen">Ejemplos ilustrativos: el valor que corresponda lo definís vos.</p>}
+</div>

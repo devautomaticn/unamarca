@@ -1,0 +1,38 @@
+---
+// Un paso de la guía. Es un <details> nativo: colapsa sin JS, es accesible con
+// teclado y se puede imprimir. El JS de la página sólo agrega scroll-spy,
+// "abrir todo" y los botones de copiar.
+interface Props {
+  /** Ancla del paso. Estable: se usa en el índice y en el scroll-spy. */
+  id: string;
+  /** Numeración visible. Va aparte del id para poder reordenar sin romper nada. */
+  n: string;
+  titulo: string;
+  /** Una línea que se lee con el paso cerrado. Tiene que dar sentido solo. */
+  resumen: string;
+  /** Abierto de entrada. Se usa sólo en el primero. */
+  abierto?: boolean;
+  /** Paso de lectura (aprender) vs de acción (hacer en el portal del INPI). */
+  tono?: 'leer' | 'hacer';
+}
+
+const { id, n, titulo, resumen, abierto = false, tono = 'leer' } = Astro.props;
+---
+
+<details class:list={['g-paso', `g-paso--${tono}`]} id={id} open={abierto}>
+  <summary class="g-paso-head">
+    <span class="g-paso-n" aria-hidden="true">{n}</span>
+    <span class="g-paso-txt">
+      <span class="g-paso-titulo">{titulo}</span>
+      <span class="g-paso-resumen">{resumen}</span>
+    </span>
+    <svg class="g-paso-chev" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </summary>
+
+  <div class="g-paso-body">
+    <slot />
+  </div>
+</details>

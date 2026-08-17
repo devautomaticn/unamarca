@@ -1,0 +1,14 @@
+---
+// La parte de "aprender": contexto que no hace falta para completar el campo,
+// pero sin el cual el cliente no entiende qué está firmando.
+interface Props {
+  titulo: string;
+}
+
+const { titulo } = Astro.props;
+---
+
+<aside class="g-dato">
+  <p class="g-dato-head">{titulo}</p>
+  <div class="g-dato-body"><slot /></div>
+</aside>

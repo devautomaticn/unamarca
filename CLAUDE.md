@@ -249,6 +249,40 @@ y **no fallan**, así que un typo se descubre solo leyendo el email de aviso.
 
 ---
 
+## Guía DIY (`/guia/<token>`) — producto privado
+
+Guía online del trámite del INPI, con las herramientas de Vigilante embebidas.
+**$25.000, se vende SOLO por WhatsApp** a leads que rebotaron por precio: no se
+linkea desde ningún lado, va con `noindex` y está fuera del sitemap.
+
+- **El token es la credencial.** No hay login. Un token por compra, revocable.
+  La URL se le entrega al cliente ANTES de pagar: hasta que se acredita muestra
+  la pantalla de `<Bloqueo>`, sin filtrar ni un paso del contenido.
+- El alta la hace el **agente de WhatsApp** (otro proyecto) contra cinco
+  endpoints en `functions/api/guia/`. Contrato completo en
+  `docs/spec_guia_agente.md` — **ese archivo es el que se comparte con el otro
+  proyecto**.
+- Los pagos de Mercado Pago se acreditan por la rama `GU-` del webhook que ya
+  existía. Las transferencias las acredita el agente mirando el comprobante, y
+  cada una dispara un mail a Mike para cruzar contra el banco.
+- **Todo valor del cliente se muestra como ejemplo, nunca como instrucción**
+  ("ej.: 4, 3 o 1", no "poné 4"). Quien presenta la solicitud es él. Ver la nota
+  de arriba de `src/lib/guia/cliente.ts`.
+- Las herramientas embebidas pegan a proxies en `functions/api/` porque las APIs
+  de Vigilante rechazan con 403 sin el header `X-Requested-With` y no mandan
+  CORS. `astro dev` NO corre las Pages Functions: para probarlas hay que usar
+  `npx wrangler pages dev dist`.
+
+### ⚠️ No agregar el adaptador de Cloudflare sin migrar `functions/`
+
+El adaptador emite `dist/_worker.js` y Cloudflare Pages en modo avanzado
+**ignora por completo `functions/`**: se caen el checkout, el webhook de MP, el
+proxy de relevamiento y el nomenclador. Verificado el 2026-08-17. Por eso la
+guía sigue siendo estática con tokens de demo y todavía no se puede vender.
+Salidas posibles en `docs/spec_guia_agente.md` §7.
+
+---
+
 ## ⚠️ SEO is the Top Priority
 
 This site depends on organic search traffic. Every change must preserve:

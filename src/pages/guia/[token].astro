@@ -1,0 +1,32 @@
+---
+// Guía DIY de registro de marca. NO es pública: no se linkea desde ningún lado,
+// va con noindex y está excluida del sitemap (ver astro.config.mjs).
+//
+// ⚠️ HOY ES ESTÁTICA, con los tokens de demo horneados en el build. Los tokens
+// reales nacen cuando alguien compra, así que para venderla falta que esta
+// página se renderice por request. Eso necesita el adaptador de Cloudflare, y
+// el adaptador rompe `functions/` (ver la nota en astro.config.mjs). El resto
+// del producto —endpoints del agente, webhook, emails, D1— ya está listo.
+//
+// EL TOKEN ES LA CREDENCIAL. No hay login. Esta página sólo decide si hay
+// acceso; el contenido vive en <Contenido>. Cuando pase a por-request, acá
+// entra <Bloqueo> para los tokens sin pagar o revocados.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Contenido from '../../components/guia/Contenido.astro';
+import { CLIENTES, getCliente } from '../../lib/guia/cliente';
+
+export function getStaticPaths() {
+  return CLIENTES.map(c => ({ params: { token: c.token } }));
+}
+
+const cliente = getCliente(Astro.params.token!)!;
+---
+
+<BaseLayout
+  title="Guía de registro de marca"
+  description="Guía privada de registro de marca."
+  noindex={true}
+  waContext="guia_float"
+>
+  <Contenido cliente={cliente} />
+</BaseLayout>

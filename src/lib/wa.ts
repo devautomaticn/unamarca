@@ -28,7 +28,7 @@
 //  ("Entré al blog de UnaMarca…") antes que una intención genérica.
 // ────────────────────────────────────────────────────────────────────────────
 
-export const CATALOG_VERSION = '1.2.0';
+export const CATALOG_VERSION = '1.4.0';
 
 /** Agente IA. Recibe todos los CTAs de conversión. */
 export const WA_AGENTE = '5491148999564';
@@ -44,6 +44,7 @@ export type WaSection =
   | 'Legal'
   | 'Ads'
   | 'Internacional'
+  | 'Guia'
   | 'Web';
 
 /** Probabilidad de que un humano escriba esta frase por su cuenta. */
@@ -247,6 +248,47 @@ export const WA_MESSAGES = {
       'trademark in Argentina.',
   },
 
+  // Guía DIY (privada, se vende por WhatsApp; ver /guia/[token])
+  guia_presentacion: {
+    number: WA_AGENTE,
+    section: 'Guia',
+    risk: 'nulo',
+    match: 'exact',
+    text:
+      'Hola! Compré la guía para registrar mi marca y no puedo dejar habilitado ' +
+      'el trámite en el INPI. Quería consultar por presentarla ustedes.',
+    note:
+      'Paso de clave fiscal de la guía DIY. Es el lead más caliente del producto: ' +
+      'ya pagó y se trabó antes de empezar.',
+  },
+  guia_ayuda: {
+    number: WA_AGENTE,
+    section: 'Guia',
+    risk: 'nulo',
+    match: 'exact',
+    text: 'Hola! Estoy siguiendo la guía para registrar mi marca y me trabé en un paso.',
+    note: 'Cierre de la guía DIY y paso "cuándo esto te queda grande".',
+  },
+  guia_pendiente: {
+    number: WA_AGENTE,
+    section: 'Guia',
+    risk: 'nulo',
+    match: 'exact',
+    text:
+      'Hola! Compré la guía para registrar mi marca y todavía no se me activa el acceso.',
+    note:
+      'Pantalla de pago pendiente / acceso dado de baja de la guía DIY. Puede ser ' +
+      'una transferencia esperando que el agente valide el comprobante.',
+  },
+  guia_float: {
+    number: WA_AGENTE,
+    section: 'Guia',
+    risk: 'nulo',
+    match: 'exact',
+    text: 'Hola! Tengo una consulta sobre la guía para registrar mi marca.',
+    note: 'Botón flotante dentro de la guía DIY.',
+  },
+
   // Fallback
   float_generic: {
     number: WA_AGENTE,
@@ -269,6 +311,7 @@ export type WaFloatContext =
   | 'registrar_float'
   | 'verificar_float'
   | 'float_en'
+  | 'guia_float'
   | 'float_generic';
 
 // ── Mensajes retirados ──────────────────────────────────────────────────────

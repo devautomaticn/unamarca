@@ -1,0 +1,24 @@
+---
+// Oferta discreta de que lo presentemos nosotros. Va donde el DIY se traba de
+// verdad, no como banner. Es el upsell del producto y tiene que leerse como
+// una salida, no como una venta.
+//
+// El texto del mensaje sale del catálogo (src/lib/wa.ts): nunca a mano, porque
+// el CRM matchea por el string exacto para atribuir de dónde vino el contacto.
+import { waHref } from '../../lib/wa';
+
+interface Props {
+  /** Clave del catálogo de WhatsApp. */
+  contexto: 'guia_presentacion' | 'guia_ayuda';
+  /** La frase completa. El link va al final. */
+  texto: string;
+  enlace: string;
+}
+
+const { contexto, texto, enlace } = Astro.props;
+---
+
+<p class="g-delegar">
+  {texto}{' '}
+  <a href={waHref(contexto)} target="_blank" rel="noopener">{enlace}</a>
+</p>
