@@ -18,10 +18,46 @@ interface Props {
 const { motivo, pagoUrl } = Astro.props;
 
 const precio = PRICING.guia.toLocaleString('es-AR');
+
+// Mercado Pago devuelve al cliente apenas aprueba, pero la acreditación entra
+// por el webhook, que llega unos segundos después. En esa ventana el cliente ya
+// pagó y vería "pendiente de pago", que es el peor momento posible para
+// desconfiar. Si la vuelta trae el pago aprobado, se muestra "confirmando" y la
+// página se recarga sola hasta que el webhook acredite.
+const params = Astro.url.searchParams;
+const volviendoDeMP =
+  params.get('status') === 'approved' || params.get('collection_status') === 'approved';
+const confirmando = motivo === 'pendiente' && volviendoDeMP;
 ---
 
 <div class="g-bloqueo">
-  {motivo === 'pendiente' && (
+  {confirmando && (
+    <>
+      <p class="g-bloqueo-kicker">Guía de registro de marca</p>
+      <h1>Estamos confirmando tu pago</h1>
+      <p class="g-bloqueo-sub">
+        Mercado Pago ya lo aprobó. Nos falta recibir la confirmación, que suele
+        tardar unos segundos. Esta página se actualiza sola.
+      </p>
+      <p class="g-bloqueo-espera"><span class="g-bloqueo-punto"></span> Esperando la confirmación…</p>
+      <p class="g-bloqueo-pie">
+        Si en un minuto seguís viendo esto, escribinos y lo destrabamos:
+        <a href={waHref('guia_pendiente')}>abrir WhatsApp</a>. Tu acceso no se pierde.
+      </p>
+      <script is:inline>
+        // Hasta 12 reintentos cada 5 s (un minuto). Después deja de insistir y
+        // queda el mensaje de WhatsApp, para no recargar para siempre.
+        (function () {
+          var n = parseInt(sessionStorage.getItem('um-guia-espera') || '0', 10);
+          if (n >= 12) return;
+          sessionStorage.setItem('um-guia-espera', String(n + 1));
+          setTimeout(function () { location.reload(); }, 5000);
+        })();
+      </script>
+    </>
+  )}
+
+  {motivo === 'pendiente' && !confirmando && (
     <>
       <p class="g-bloqueo-kicker">Guía de registro de marca</p>
       <h1>Tu guía se activa apenas se acredite el pago</h1>
