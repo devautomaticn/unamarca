@@ -1,0 +1,188 @@
+// POST /api/checkout/webhook — notificaciones de Mercado Pago.
+// Fuente de verdad del estado de pago. Valida x-signature (HMAC-SHA256),
+// consulta el pago a la API de MP y actualiza el pedido de forma idempotente.
+// Siempre responde 200 a notificaciones válidas (un no-200 dispara reintentos).
+import type { APIRoute } from 'astro';
+import { runtime } from '@/lib/server/runtime';
+
+// Ruta de servidor: se ejecuta por request, no se prerenderiza.
+export const prerender = false;
+
+import {
+  type CheckoutEnv, ensureSchema, json, hmacSha256Hex, marcasDesdePayload,
+} from '@/lib/server/checkout';
+import { sendPaymentEmail } from '@/lib/server/notify';
+import { asegurarTabla, marcarPagado, urlGuia } from '@/lib/server/guia';
+import { sendGuiaEntrega } from '@/lib/server/guiaMails';
+
+interface WebhookEnv extends CheckoutEnv {
+  RESEND_API_KEY?: string;
+}
+
+interface MpPayment {
+  id: number;
+  status: string; // approved | pending | in_process | rejected | cancelled | refunded | charged_back
+  external_reference?: string;
+}
+
+function mapStatus(mpStatus: string): string {
+  switch (mpStatus) {
+    case 'approved': return 'paid';
+    case 'pending':
+    case 'in_process': return 'payment_pending';
+    case 'rejected':
+    case 'cancelled': return 'rejected';
+    case 'refunded':
+    case 'charged_back': return 'refunded';
+    default: return 'payment_pending';
+  }
+}
+
+export const POST: APIRoute = async ({ request, locals }) => {
+  const { env, waitUntil } = runtime<WebhookEnv>(locals);
+  if (!env.DB || !env.MP_ACCESS_TOKEN || !env.MP_WEBHOOK_SECRET) {
+    return json({ error: 'Checkout no configurado' }, 500);
+  }
+
+  const url = new URL(request.url);
+  let dataId = url.searchParams.get('data.id') || '';
+  const type = url.searchParams.get('type') || url.searchParams.get('topic') || '';
+
+  // Fallback: algunos envíos traen el id solo en el body
+  if (!dataId) {
+    try {
+      const body = await request.clone().json<{ data?: { id?: string | number }; type?: string }>();
+      dataId = String(body?.data?.id ?? '');
+    } catch { /* body no-JSON: se ignora */ }
+  }
+
+  // ── Validación de firma ─────────────────────────────────
+  const xSignature = request.headers.get('x-signature') || '';
+  const xRequestId = request.headers.get('x-request-id') || '';
+  const parts = Object.fromEntries(
+    xSignature.split(',').map(p => p.trim().split('=', 2) as [string, string]),
+  );
+  const ts = parts['ts'];
+  const v1 = parts['v1'];
+  if (!ts || !v1) return json({ error: 'Firma ausente' }, 401);
+
+  // Manifest según docs MP: solo incluye las partes presentes; id en minúsculas
+  let manifest = '';
+  if (dataId) manifest += `id:${dataId.toLowerCase()};`;
+  if (xRequestId) manifest += `request-id:${xRequestId};`;
+  manifest += `ts:${ts};`;
+
+  const expected = await hmacSha256Hex(env.MP_WEBHOOK_SECRET, manifest);
+  if (expected !== v1.toLowerCase()) {
+    console.error('Webhook: firma inválida', { manifest });
+    return json({ error: 'Firma inválida' }, 401);
+  }
+
+  // Solo procesamos eventos de pago; el resto se confirma y descarta
+  if (type !== 'payment' || !dataId) return json({ ok: true, ignored: true });
+
+  // ── Consultar el pago (fuente de verdad) ────────────────
+  const payRes = await fetch(`https://api.mercadopago.com/v1/payments/${dataId}`, {
+    headers: { Authorization: `Bearer ${env.MP_ACCESS_TOKEN}` },
+  });
+  if (payRes.status === 404) return json({ ok: true, ignored: true });
+  if (!payRes.ok) {
+    console.error('Webhook: error consultando pago', payRes.status);
+    // 500 → MP reintenta más tarde
+    return json({ error: 'Error consultando el pago' }, 500);
+  }
+
+  const payment = await payRes.json<MpPayment>();
+  const ref = payment.external_reference;
+  if (!ref) return json({ ok: true, ignored: true });
+
+  // ── Guías DIY ────────────────────────────────────────────
+  // Comparten webhook con los pedidos de registro porque MP notifica a una sola
+  // URL por cuenta. Se distinguen por el prefijo de la referencia: las guías
+  // son GU-…, los pedidos UM-…. Sale por acá antes de tocar `orders`.
+  if (ref.startsWith('GU-')) {
+    return acreditarGuia(env, waitUntil, ref, payment, new URL(request.url).origin);
+  }
+
+  await ensureSchema(env.DB);
+  const row = await env.DB.prepare('SELECT ref, status, payload, completion FROM orders WHERE ref = ?')
+    .bind(ref).first<{ ref: string; status: string; payload: string; completion: string | null }>();
+  if (!row) return json({ ok: true, ignored: true });
+
+  const newStatus = mapStatus(payment.status);
+
+  // Idempotencia: nunca degradar un pedido ya pagado (salvo devolución real)
+  if (row.status === 'paid' && newStatus !== 'refunded') return json({ ok: true });
+
+  await env.DB.prepare(
+    `UPDATE orders SET status = ?, payment_id = ?, payment_status = ?, updated_at = ?
+     WHERE ref = ?`
+  ).bind(newStatus, String(payment.id), payment.status, new Date().toISOString(), ref).run();
+
+  // ── Aviso al admin de todo movimiento de pago ────────────
+  // Solo cuando el estado cambia (los reintentos de MP repiten el mismo estado
+  // y no deben duplicar emails). Un fallo acá no debe tirar el webhook: MP
+  // reintentaría y el pedido ya quedó actualizado.
+  if (newStatus !== row.status && env.RESEND_API_KEY) {
+    try {
+      const stored = JSON.parse(row.payload);
+      await sendPaymentEmail(env.RESEND_API_KEY, {
+        ref,
+        status: newStatus,
+        mpStatus: payment.status,
+        marcas: marcasDesdePayload(stored),
+        garantia: !!stored.garantia,
+        total: stored.pricing?.total ?? 0,
+        clientEmail: stored.contacto?.email || '',
+        whatsapp: stored.contacto?.whatsapp || '',
+        completed: row.completion !== null,
+      });
+    } catch (e) {
+      console.error('Webhook: error enviando email de pago:', e);
+    }
+  }
+
+  return json({ ok: true });
+};
+
+/**
+ * Acredita el pago de una guía DIY.
+ *
+ * Sólo `approved` activa el acceso. Un `pending` no alcanza: con los pagos en
+ * efectivo excluidos de la preferencia, un pendiente acá es una tarjeta en
+ * revisión, y no queremos abrir la guía para que después el pago se caiga.
+ *
+ * Es idempotente: `marcarPagado` no vuelve a escribir si ya estaba pagado, así
+ * que los reintentos de MP no duplican el mail de entrega.
+ */
+async function acreditarGuia(
+  env: WebhookEnv,
+  waitUntil: (p: Promise<unknown>) => void,
+  ref: string,
+  payment: MpPayment,
+  origin: string,
+): Promise<Response> {
+  if (payment.status !== 'approved') return json({ ok: true, guia: ref, estado: payment.status });
+
+  await asegurarTabla(env.DB);
+  const { fila, yaEstaba } = await marcarPagado(
+    env.DB, ref, 'mercadopago', `Pago ${payment.id} aprobado en Mercado Pago`,
+  );
+
+  // Un ref GU- que no está en la tabla no es un error nuestro: se responde 200
+  // para que MP no reintente para siempre.
+  if (!fila) return json({ ok: true, ignored: true });
+
+  if (!yaEstaba && env.RESEND_API_KEY) {
+    const apiKey = env.RESEND_API_KEY;
+    waitUntil(
+      sendGuiaEntrega(apiKey, {
+        email: fila.email,
+        ref: fila.ref,
+        guiaUrl: urlGuia(origin, fila.token),
+      }).catch(e => console.error('Webhook: falló el mail de entrega de la guía', e)),
+    );
+  }
+
+  return json({ ok: true, guia: ref, estado: 'pagado' });
+}

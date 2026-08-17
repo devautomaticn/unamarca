@@ -259,7 +259,7 @@ linkea desde ningún lado, va con `noindex` y está fuera del sitemap.
   La URL se le entrega al cliente ANTES de pagar: hasta que se acredita muestra
   la pantalla de `<Bloqueo>`, sin filtrar ni un paso del contenido.
 - El alta la hace el **agente de WhatsApp** (otro proyecto) contra cinco
-  endpoints en `functions/api/guia/`. Contrato completo en
+  endpoints en `src/pages/api/guia/`. Contrato completo en
   `docs/spec_guia_agente.md` — **ese archivo es el que se comparte con el otro
   proyecto**.
 - Los pagos de Mercado Pago se acreditan por la rama `GU-` del webhook que ya
@@ -268,18 +268,25 @@ linkea desde ningún lado, va con `noindex` y está fuera del sitemap.
 - **Todo valor del cliente se muestra como ejemplo, nunca como instrucción**
   ("ej.: 4, 3 o 1", no "poné 4"). Quien presenta la solicitud es él. Ver la nota
   de arriba de `src/lib/guia/cliente.ts`.
-- Las herramientas embebidas pegan a proxies en `functions/api/` porque las APIs
+- Las herramientas embebidas pegan a proxies en `src/pages/api/` porque las APIs
   de Vigilante rechazan con 403 sin el header `X-Requested-With` y no mandan
   CORS. `astro dev` NO corre las Pages Functions: para probarlas hay que usar
   `npx wrangler pages dev dist`.
 
-### ⚠️ No agregar el adaptador de Cloudflare sin migrar `functions/`
+### ⚠️ Ya no existe `functions/`
 
-El adaptador emite `dist/_worker.js` y Cloudflare Pages en modo avanzado
-**ignora por completo `functions/`**: se caen el checkout, el webhook de MP, el
-proxy de relevamiento y el nomenclador. Verificado el 2026-08-17. Por eso la
-guía sigue siendo estática con tokens de demo y todavía no se puede vender.
-Salidas posibles en `docs/spec_guia_agente.md` §7.
+Las Pages Functions se migraron a **rutas de Astro** (`src/pages/api/**`) el
+2026-08-17, porque el adaptador de Cloudflare emite `dist/_worker.js` y Pages en
+modo avanzado ignora por completo `functions/`. **No volver a crear ese
+directorio: no se ejecutaría.**
+
+- Cada ruta lleva `export const prerender = false` y saca los bindings con
+  `runtime(locals)` de `src/lib/server/runtime.ts`.
+- Las librerías compartidas viven en `src/lib/server/`.
+- `security.checkOrigin` está en `false` en `astro.config.mjs`: nuestras rutas
+  son APIs JSON llamadas por sistemas externos (webhook de MP, agente de
+  WhatsApp) con su propia autenticación. Con la protección activada, un webhook
+  sin `Content-Type: application/json` se comía un 403 antes de llegar al código.
 
 ---
 
