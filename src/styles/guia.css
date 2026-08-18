@@ -1166,3 +1166,128 @@
   .g-paso { break-inside: avoid; border-color: #ccc; }
   .g-paso-body { display: block !important; }
 }
+
+
+/* ============ PANTALLA DE BLOQUEO ============ */
+/* Lo que se ve en /guia/<token> cuando la guía todavía no se puede leer:
+   pago pendiente, acceso revocado o token inexistente. */
+
+.g-bloqueo {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 4rem 1.5rem 6rem;
+}
+
+.g-bloqueo-kicker {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-blue);
+  margin-bottom: 0.7rem;
+}
+
+.g-bloqueo h1 {
+  font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  margin-bottom: 0.8rem;
+}
+
+.g-bloqueo-sub {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--c-text-muted);
+  margin-bottom: 2rem;
+}
+
+.g-bloqueo-opciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.g-bloqueo-op {
+  padding: 1.2rem;
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  background: var(--c-bg);
+}
+
+.g-bloqueo-op-h {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-navy);
+  margin-bottom: 0.5rem;
+}
+
+.g-bloqueo-op p {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--c-text-muted);
+  margin-bottom: 0.9rem;
+}
+
+.g-bloqueo-op dl { margin: 0 0 0.9rem; }
+
+.g-bloqueo-op dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--c-border-light);
+  font-size: 0.88rem;
+}
+
+.g-bloqueo-op dl > div:last-child { border-bottom: none; }
+.g-bloqueo-op dt { color: var(--c-text-muted); }
+.g-bloqueo-op dd { margin: 0; font-weight: 700; color: var(--c-navy); text-align: right; }
+
+.g-bloqueo-nota {
+  font-size: 0.84rem !important;
+  margin-bottom: 0 !important;
+}
+
+.g-bloqueo-btn {
+  display: inline-block;
+  text-decoration: none;
+  text-align: center;
+}
+
+.g-bloqueo-pie {
+  font-size: 0.9rem;
+  color: var(--c-text-muted);
+  line-height: 1.7;
+}
+
+.g-bloqueo-pie a { color: var(--c-blue); }
+
+.g-bloqueo-espera {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.92rem;
+  color: var(--c-text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.g-bloqueo-punto {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--c-blue);
+  animation: g-latido 1.2s ease-in-out infinite;
+}
+
+@keyframes g-latido {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.35; transform: scale(0.75); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .g-bloqueo-punto { animation: none; }
+}

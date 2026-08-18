@@ -3,7 +3,7 @@
 Documento para compartir con el proyecto del agente. Describe qué vende la guía,
 qué endpoints tiene que llamar el agente y qué decisiones toma él.
 
-**Estado: implementado y probado, salvo un bloqueo.** Ver §7 antes de integrar.
+**Estado: implementado y probado de punta a punta.**
 
 ---
 
@@ -223,31 +223,7 @@ transfiere.
 
 Todos los errores vienen como `{ "error": "texto en castellano" }`.
 
-## 7. Pendiente antes de poder vender
-
-**La página de la guía todavía es estática**, con dos tokens de demo horneados
-en el build. Los tokens reales, los que crean estos endpoints, **todavía no
-resuelven**: hay que hacer que `/guia/[token]` se renderice por request.
-
-Eso necesita el adaptador de Cloudflare en Astro, y ahí está el problema:
-
-> El adaptador emite `dist/_worker.js`, y **Cloudflare Pages en modo avanzado
-> ignora por completo el directorio `functions/`**. Verificado el 2026-08-17: con
-> `_worker.js` presente, `/api/*` devuelve el HTML de la home. Se caerían el
-> checkout, el webhook de Mercado Pago, el proxy de relevamiento y el
-> nomenclador.
-
-Las dos salidas posibles:
-
-1. **Migrar `functions/` a rutas de Astro** (`src/pages/api/**`). Es el final
-   correcto y el cambio es mecánico (cambia la firma del handler y de dónde
-   salen los bindings), pero toca el código de pagos que ya está en producción.
-2. **Poner la guía en un proyecto de Pages aparte** (`guia.unamarca.com.ar`), con
-   adaptador propio. El sitio principal no se toca.
-
-Todo lo demás de este documento está implementado y probado.
-
-## 8. Configuración
+## 7. Configuración
 
 | Dónde | Qué | Estado |
 |---|---|---|
@@ -259,18 +235,18 @@ Todo lo demás de este documento está implementado y probado.
 La clave conviene que la generes vos (`openssl rand -hex 32`) y la cargues en
 los dos lados. No tiene que pasar por el repo ni por un chat.
 
-## 9. Dónde está cada cosa
+## 8. Dónde está cada cosa
 
 | Archivo | Qué hace |
 |---|---|
-| `functions/_lib/guia.ts` | Tabla, tokens, auth, estados |
-| `functions/_lib/guiaMails.ts` | Mail al cliente y aviso de transferencia (BCC a Mike) |
-| `functions/api/guia/pedido.ts` | Crear pedido + preferencia de MP |
-| `functions/api/guia/pedido/[ref].ts` | Estado |
-| `functions/api/guia/pedido/[ref]/pago-manual.ts` | Acreditar transferencia |
-| `functions/api/guia/pedido/[ref]/revocar.ts` | Baja y alta |
-| `functions/api/guia/por-email.ts` | Recuperación |
-| `functions/api/checkout/webhook.ts` | Rama `GU-` que acredita los pagos de MP |
+| `src/lib/server/guia.ts` | Tabla, tokens, auth, estados |
+| `src/lib/server/guiaMails.ts` | Mail al cliente y aviso de transferencia (BCC a Mike) |
+| `src/pages/api/guia/pedido.ts` | Crear pedido + preferencia de MP |
+| `src/pages/api/guia/pedido/[ref].ts` | Estado |
+| `src/pages/api/guia/pedido/[ref]/pago-manual.ts` | Acreditar transferencia |
+| `src/pages/api/guia/pedido/[ref]/revocar.ts` | Baja y alta |
+| `src/pages/api/guia/por-email.ts` | Recuperación |
+| `src/pages/api/checkout/webhook.ts` | Rama `GU-` que acredita los pagos de MP |
 | `src/pages/guia/[token].astro` | Control de acceso |
 | `src/components/guia/Contenido.astro` | La guía |
 | `src/components/guia/Bloqueo.astro` | Pantallas de pendiente / revocado / inexistente |

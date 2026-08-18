@@ -2,24 +2,27 @@
 // Guía DIY de registro de marca. NO es pública: no se linkea desde ningún lado,
 // va con noindex y está excluida del sitemap (ver astro.config.mjs).
 //
-// ⚠️ HOY ES ESTÁTICA, con los tokens de demo horneados en el build. Los tokens
-// reales nacen cuando alguien compra, así que para venderla falta que esta
-// página se renderice por request. Eso necesita el adaptador de Cloudflare, y
-// el adaptador rompe `functions/` (ver la nota en astro.config.mjs). El resto
-// del producto —endpoints del agente, webhook, emails, D1— ya está listo.
+// Se renderiza POR REQUEST (`prerender = false`): el token nace cuando alguien
+// compra, no cuando corre el build.
 //
 // EL TOKEN ES LA CREDENCIAL. No hay login. Esta página sólo decide si hay
-// acceso; el contenido vive en <Contenido>. Cuando pase a por-request, acá
-// entra <Bloqueo> para los tokens sin pagar o revocados.
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import Contenido from '../../components/guia/Contenido.astro';
-import { CLIENTES, getCliente } from '../../lib/guia/cliente';
+// acceso; el contenido vive en <Contenido>. Si el token no existe, no está
+// pagado o está revocado, no se renderiza NI UN PASO de la guía.
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Contenido from '@/components/guia/Contenido.astro';
+import Bloqueo from '@/components/guia/Bloqueo.astro';
+import { cargarGuia } from '@/lib/guia/cargar';
 
-export function getStaticPaths() {
-  return CLIENTES.map(c => ({ params: { token: c.token } }));
+export const prerender = false;
+
+const acceso = await cargarGuia(Astro.locals, Astro.params.token);
+
+// Un token inexistente es un 404 de verdad; uno sin pagar, un 402. Que el
+// status sea real importa: sin eso quedan cacheables y podrían indexarse como
+// si fueran páginas válidas.
+if (!acceso.ok) {
+  Astro.response.status = acceso.motivo === 'inexistente' ? 404 : 402;
 }
-
-const cliente = getCliente(Astro.params.token!)!;
 ---
 
 <BaseLayout
@@ -28,5 +31,7 @@ const cliente = getCliente(Astro.params.token!)!;
   noindex={true}
   waContext="guia_float"
 >
-  <Contenido cliente={cliente} />
+  {acceso.ok
+    ? <Contenido cliente={acceso.cliente} />
+    : <Bloqueo motivo={acceso.motivo} pagoUrl={acceso.pagoUrl} />}
 </BaseLayout>
