@@ -1168,6 +1168,16 @@
 }
 
 
+/* Los links dentro de un paso van subrayados: el color solo no alcanza para
+   distinguirlos del texto, que ya usa negritas para otras cosas. */
+.g-paso-body a {
+  color: var(--c-blue);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.g-paso-body a:hover { color: var(--c-blue-hover); }
+
 /* ============ PANTALLA DE BLOQUEO ============ */
 /* Lo que se ve en /guia/<token> cuando la guía todavía no se puede leer:
    pago pendiente, acceso revocado o token inexistente. */
