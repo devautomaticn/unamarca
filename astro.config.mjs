@@ -14,9 +14,12 @@ export default defineConfig({
     sitemap({
       // /guia/ es privada: se vende por WhatsApp, no se linkea desde ningún
       // lado y va con noindex. Fuera del sitemap.
+      // /carta-poder es lo mismo: una herramienta que se le manda por link a un
+      // cliente puntual para rehacer un poder, no una página del sitio.
       filter: (page) =>
         !page.includes('/whatsapp/') &&
         !page.includes('/wa-catalog.json') &&
+        !page.includes('/carta-poder') &&
         !page.includes('/guia/'),
     }),
   ],

@@ -1,0 +1,833 @@
+---
+// /carta-poder — carta poder suelta, para rehacer un poder ya emitido.
+//
+// El caso real: el poder que firmó el cliente salió con un dato mal (el tipo de
+// marca, una clase, el domicilio). En vez de hacerle repetir el checkout entero,
+// se le manda un link con TODOS los campos ya prellenados por query params: ve
+// el documento corregido, firma y lo envía.
+//
+// No toca el pedido en D1 ni el alta en Vigilante: lo único que produce es el
+// PDF firmado, que le llega al estudio por email (`/api/carta-poder`).
+//
+// El texto del documento sale del MISMO template que el checkout
+// (`src/lib/checkout/cartaPoder.ts`) y el PDF del mismo generador
+// (`cartaPoderPdf.ts`): los dos caminos no pueden divergir.
+//
+// Es una herramienta privada: `noindex` y fuera del sitemap (astro.config.mjs).
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { PROVINCIAS, TIPOS_MARCA, MAX_MARCAS, MAX_CLASES } from '../lib/checkout/constants';
+
+const TIPOS_DOC = ['DNI', 'Pasaporte', 'Libreta Cívica', 'Libreta de Enrolamiento'];
+---
+
+<BaseLayout
+  title="Carta poder | UnaMarca"
+  description="Revisá y firmá tu carta poder para el registro de marca ante el INPI."
+  noindex={true}
+>
+  <main class="cp">
+    <header class="cp-head">
+      <p class="cp-eyebrow">UnaMarca</p>
+      <h1>Revisá y firmá tu carta poder</h1>
+      <p class="cp-lead">
+        Este documento nos autoriza a presentar y gestionar tu solicitud ante el
+        INPI. Revisá que los datos sean correctos, corregí lo que haga falta en
+        el panel de la derecha y firmá al pie.
+      </p>
+      <div class="cp-motivo" id="cp-motivo" hidden>
+        <b>Por qué te pedimos que la firmes de nuevo</b>
+        <span id="cp-motivo-txt"></span>
+      </div>
+    </header>
+
+    <div class="cp-grid" id="cp-grid">
+      <!-- ══════ Documento ══════ -->
+      <section class="cp-doc" aria-label="Carta poder">
+        <div class="cp-paper" id="cp-preview"></div>
+      </section>
+
+      <!-- ══════ Campos ══════ -->
+      <aside class="cp-side" aria-label="Datos de la carta poder">
+        <div class="cp-side-inner">
+          <p class="cp-side-title">Tus datos</p>
+          <p class="cp-side-help">
+            Lo que edites acá se actualiza en el documento al instante.
+          </p>
+
+          <div class="cp-group">
+            <div class="cp-group-label">Titular</div>
+            <div class="cp-field">
+              <label for="cp-nombre">Nombre y apellido</label>
+              <input type="text" id="cp-nombre" autocomplete="name" />
+            </div>
+            <div class="cp-row">
+              <div class="cp-field">
+                <label for="cp-tipodoc">Documento</label>
+                <select id="cp-tipodoc">
+                  {TIPOS_DOC.map(t => <option value={t}>{t}</option>)}
+                </select>
+              </div>
+              <div class="cp-field">
+                <label for="cp-docnum">Número</label>
+                <input type="text" id="cp-docnum" inputmode="numeric" />
+              </div>
+            </div>
+            <div class="cp-field">
+              <label for="cp-cuit">CUIT / CUIL</label>
+              <input type="text" id="cp-cuit" inputmode="numeric" placeholder="20-12345678-9" />
+            </div>
+          </div>
+
+          <div class="cp-group">
+            <div class="cp-group-label">Domicilio</div>
+            <div class="cp-row cp-row--calle">
+              <div class="cp-field">
+                <label for="cp-calle">Calle</label>
+                <input type="text" id="cp-calle" autocomplete="address-line1" />
+              </div>
+              <div class="cp-field">
+                <label for="cp-numero">Número</label>
+                <input type="text" id="cp-numero" />
+              </div>
+            </div>
+            <div class="cp-row">
+              <div class="cp-field">
+                <label for="cp-piso">Piso <span>(opcional)</span></label>
+                <input type="text" id="cp-piso" />
+              </div>
+              <div class="cp-field">
+                <label for="cp-depto">Depto <span>(opcional)</span></label>
+                <input type="text" id="cp-depto" />
+              </div>
+            </div>
+            <div class="cp-row cp-row--cp">
+              <div class="cp-field">
+                <label for="cp-codpostal">Código postal</label>
+                <input type="text" id="cp-codpostal" autocomplete="postal-code" />
+              </div>
+              <div class="cp-field">
+                <label for="cp-localidad">Localidad</label>
+                <input type="text" id="cp-localidad" autocomplete="address-level2" />
+              </div>
+            </div>
+            <div class="cp-field">
+              <label for="cp-provincia">Provincia</label>
+              <select id="cp-provincia">
+                <option value="">Elegí una provincia</option>
+                {PROVINCIAS.map(p => <option value={p}>{p}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div class="cp-group">
+            <div class="cp-group-label">Marcas del poder</div>
+            <div id="cp-marcas"></div>
+            <button type="button" class="cp-link" id="cp-add-marca">+ Agregar otra marca</button>
+          </div>
+
+          <div class="cp-group">
+            <div class="cp-group-label">Otros datos</div>
+            <div class="cp-field">
+              <label for="cp-fecha">Fecha del poder</label>
+              <input type="date" id="cp-fecha" />
+            </div>
+            <div class="cp-field">
+              <label for="cp-email">Tu email <span>(opcional)</span></label>
+              <input type="email" id="cp-email" autocomplete="email" />
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ══════ Firma y envío ══════ -->
+      <section class="cp-sign" aria-label="Firma">
+        <div class="cp-card">
+          <div class="cp-group-label">Tu firma</div>
+          <p class="cp-side-help" style="margin-bottom:.75rem">
+            Firmá en el recuadro con el dedo (celular) o con el mouse, como lo
+            harías en papel.
+          </p>
+          <div class="cp-sig-box">
+            <canvas id="cp-sig"></canvas>
+            <span class="cp-sig-hint" id="cp-sig-hint">Firmá acá</span>
+          </div>
+          <div class="cp-sig-foot">
+            <button type="button" class="cp-link" id="cp-sig-undo" hidden>↶ Deshacer</button>
+            <button type="button" class="cp-link" id="cp-sig-clear">Borrar y firmar de nuevo</button>
+          </div>
+
+          <label class="cp-terms">
+            <input type="checkbox" id="cp-terms" />
+            <span>
+              Acepto los <a href="/terminos" target="_blank">términos del servicio</a>
+              y la <a href="/privacidad" target="_blank">política de privacidad</a>,
+              y autorizo el uso de mi firma en la carta poder.
+            </span>
+          </label>
+
+          <div class="cp-err" id="cp-err" hidden></div>
+
+          <button type="button" class="cp-btn" id="cp-submit">
+            <span id="cp-submit-label">Enviar carta poder firmada</span>
+            <svg id="cp-submit-spin" width="16" height="16" viewBox="0 0 16 16" fill="none" style="display:none">
+              <circle cx="8" cy="8" r="6" stroke="rgba(255,255,255,.3)" stroke-width="2"/>
+              <path d="M8 2a6 6 0 0 1 6 6" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- ══════ Confirmación ══════ -->
+    <section class="cp-done" id="cp-done" hidden>
+      <div class="cp-card cp-card--done">
+        <svg width="52" height="52" viewBox="0 0 52 52" fill="none" aria-hidden="true">
+          <circle cx="26" cy="26" r="25" fill="#22c55e" fill-opacity=".12"/>
+          <path d="M16 26.5l7 7 13-14" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h2>¡Listo! Recibimos tu carta poder firmada.</h2>
+        <p>
+          Ya la tenemos de nuestro lado. Si hace falta algo más para presentar tu
+          solicitud, te escribimos por email o WhatsApp.
+        </p>
+        <a class="cp-btn cp-btn--ghost" id="cp-download" href="#" download>Descargar mi copia en PDF</a>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<script>
+  import { cartaPoderHTML, type CartaPoderData } from '../lib/checkout/cartaPoder';
+  import {
+    MAX_CLASES, MAX_MARCAS, TIPOS_MARCA, normalizeTipoMarca, tieneDenominacion,
+    type TipoMarca,
+  } from '../lib/checkout/constants';
+
+  const $ = (id: string) => document.getElementById(id)!;
+  const input = (id: string) => document.getElementById(id) as HTMLInputElement;
+  const select = (id: string) => document.getElementById(id) as HTMLSelectElement;
+
+  interface MarcaUI { nombre: string; tipo: TipoMarca; clases: number[] }
+
+  let marcas: MarcaUI[] = [];
+  /** Ref del pedido original y motivo del reenvío: vienen del link, no se editan */
+  let ref = '';
+  let motivo = '';
+
+  // ── Prellenado por query params ─────────────────────────
+  // Mismo contrato de repetibles que /registrar: `marca`, `clase` y `tipo` se
+  // aparean por posición. Ver CLAUDE.md.
+  function sinAcentos(s: string): string {
+    // ̀-ͯ = los diacríticos que NFD separa de la letra base
+    return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+  }
+
+  /** "9,25" / "9 y 25" → [9, 25]. Descarta lo que no sea una clase de NIZA. */
+  function parseClases(raw: string): number[] {
+    const nums = (raw.match(/\d+/g) ?? [])
+      .map(Number)
+      .filter(n => Number.isInteger(n) && n >= 1 && n <= 45);
+    return [...new Set(nums)].slice(0, MAX_CLASES);
+  }
+
+  function aplicarParams() {
+    const q = new URLSearchParams(location.search);
+    const one = (k: string, max = 120) => (q.get(k) ?? '').trim().slice(0, max);
+
+    const nombre = [one('nombre', 80), one('apellido', 80)].filter(Boolean).join(' ');
+    if (nombre) input('cp-nombre').value = nombre;
+
+    const doc = one('doctipo', 40) || one('tipodoc', 40);
+    if (doc) {
+      const opt = [...select('cp-tipodoc').options]
+        .find(o => sinAcentos(o.value) === sinAcentos(doc));
+      if (opt) select('cp-tipodoc').value = opt.value;
+    }
+    const docnum = one('doc', 30) || one('dni', 30) || one('docnum', 30);
+    if (docnum) input('cp-docnum').value = docnum;
+    if (one('cuit', 20)) input('cp-cuit').value = one('cuit', 20);
+
+    if (one('calle', 80)) input('cp-calle').value = one('calle', 80);
+    if (one('numero', 20)) input('cp-numero').value = one('numero', 20);
+    if (one('piso', 20)) input('cp-piso').value = one('piso', 20);
+    if (one('depto', 20)) input('cp-depto').value = one('depto', 20);
+    const cp = one('cp', 20) || one('codigopostal', 20) || one('codpostal', 20);
+    if (cp) input('cp-codpostal').value = cp;
+    if (one('localidad', 80)) input('cp-localidad').value = one('localidad', 80);
+
+    const prov = one('provincia', 60);
+    if (prov) {
+      // CABA llega escrita de cinco maneras distintas y no es una provincia más:
+      // si no se reconoce, el poder dice "Provincia de <lo que sea>".
+      const p = sinAcentos(prov);
+      const caba = ['caba', 'capital federal', 'ciudad de buenos aires', 'ciudad autonoma de buenos aires'];
+      const buscado = caba.includes(p) ? 'ciudad autonoma de buenos aires' : p;
+      const opt = [...select('cp-provincia').options]
+        .find(o => sinAcentos(o.value) === buscado);
+      if (opt) select('cp-provincia').value = opt.value;
+    }
+
+    if (one('email', 120)) input('cp-email').value = one('email', 120);
+    ref = one('ref', 40) || one('order', 40) || one('pedido', 40);
+    motivo = one('motivo', 300);
+    if (motivo) {
+      $('cp-motivo').hidden = false;
+      $('cp-motivo-txt').textContent = motivo;
+    }
+
+    // Fecha: ISO (YYYY-MM-DD). Sin param, hoy en Buenos Aires — el poder lleva
+    // la fecha en que se firma, y los visitantes no siempre están en AR.
+    const fecha = one('fecha', 10);
+    input('cp-fecha').value = /^\d{4}-\d{2}-\d{2}$/.test(fecha) ? fecha : hoyISO();
+
+    // Marcas: repetibles y apareadas por posición.
+    const nombres = q.getAll('marca');
+    const clases = q.getAll('clase');
+    const tipos = q.getAll('tipo');
+    const total = Math.min(Math.max(nombres.length, clases.length, tipos.length), MAX_MARCAS);
+    for (let i = 0; i < total; i++) {
+      const tipo = normalizeTipoMarca(tipos[i]);
+      marcas.push({
+        // En una figurativa no hay denominación ante el INPI: el nombre que
+        // venga es referencia interna y el documento no lo nombra.
+        nombre: (nombres[i] ?? '').trim().slice(0, 80),
+        tipo,
+        clases: parseClases(clases[i] ?? ''),
+      });
+    }
+    if (marcas.length === 0) marcas.push({ nombre: '', tipo: 'denominativa', clases: [] });
+  }
+
+  /** Hoy en Buenos Aires, en formato YYYY-MM-DD */
+  function hoyISO(): string {
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Argentina/Buenos_Aires',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+    }).format(new Date());
+  }
+
+  // ── Marcas (lista editable) ─────────────────────────────
+  const marcasBox = $('cp-marcas');
+
+  function renderMarcas() {
+    marcasBox.innerHTML = marcas.map((m, i) => {
+      const opciones = TIPOS_MARCA.map(t =>
+        `<option value="${t.value}"${t.value === m.tipo ? ' selected' : ''}>${t.label}</option>`
+      ).join('');
+      const figurativa = !tieneDenominacion(m.tipo);
+      return `<div class="cp-marca" data-i="${i}">
+        <div class="cp-marca-head">
+          <span>Marca ${i + 1}</span>
+          ${marcas.length > 1 ? `<button type="button" class="cp-link cp-del" data-del="${i}">Quitar</button>` : ''}
+        </div>
+        <div class="cp-field">
+          <label>${figurativa ? 'Referencia interna' : 'Nombre de la marca'}</label>
+          <input type="text" data-f="nombre" value="${escAttr(m.nombre)}" maxlength="80" />
+          ${figurativa ? '<p class="cp-hint">La marca figurativa no lleva denominación ante el INPI: este nombre no aparece en el poder.</p>' : ''}
+        </div>
+        <div class="cp-row">
+          <div class="cp-field">
+            <label>Tipo</label>
+            <select data-f="tipo">${opciones}</select>
+          </div>
+          <div class="cp-field">
+            <label>Clases</label>
+            <input type="text" data-f="clases" value="${escAttr(m.clases.join(', '))}"
+                   inputmode="numeric" placeholder="9, 25" />
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    $('cp-add-marca').hidden = marcas.length >= MAX_MARCAS;
+  }
+
+  function escAttr(s: string): string {
+    return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  }
+
+  marcasBox.addEventListener('input', (e) => {
+    const el = e.target as HTMLInputElement | HTMLSelectElement;
+    const campo = el.dataset.f;
+    const fila = el.closest('.cp-marca') as HTMLElement | null;
+    if (!campo || !fila) return;
+    const m = marcas[Number(fila.dataset.i)];
+    if (!m) return;
+    if (campo === 'nombre') m.nombre = el.value;
+    else if (campo === 'clases') m.clases = parseClases(el.value);
+    render();
+  });
+
+  // El tipo cambia el rótulo del campo del nombre, así que redibuja la lista.
+  marcasBox.addEventListener('change', (e) => {
+    const el = e.target as HTMLSelectElement;
+    if (el.dataset.f !== 'tipo') return;
+    const fila = el.closest('.cp-marca') as HTMLElement | null;
+    if (!fila) return;
+    const m = marcas[Number(fila.dataset.i)];
+    if (!m) return;
+    m.tipo = normalizeTipoMarca(el.value);
+    renderMarcas();
+    render();
+  });
+
+  marcasBox.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('[data-del]') as HTMLElement | null;
+    if (!btn) return;
+    marcas.splice(Number(btn.dataset.del), 1);
+    renderMarcas();
+    render();
+  });
+
+  $('cp-add-marca').addEventListener('click', () => {
+    if (marcas.length >= MAX_MARCAS) return;
+    marcas.push({ nombre: '', tipo: 'denominativa', clases: [] });
+    renderMarcas();
+    render();
+  });
+
+  // ── Documento ───────────────────────────────────────────
+  function cpData(): CartaPoderData {
+    const [anio, mes, dia] = (input('cp-fecha').value || hoyISO()).split('-').map(Number);
+    return {
+      nombreApellido: input('cp-nombre').value.trim(),
+      docTipo: select('cp-tipodoc').value || 'DNI',
+      docNumero: input('cp-docnum').value.trim(),
+      cuit: input('cp-cuit').value.trim(),
+      calle: input('cp-calle').value.trim(),
+      numero: input('cp-numero').value.trim(),
+      piso: input('cp-piso').value.trim() || undefined,
+      depto: input('cp-depto').value.trim() || undefined,
+      codigoPostal: input('cp-codpostal').value.trim(),
+      localidad: input('cp-localidad').value.trim(),
+      provincia: select('cp-provincia').value,
+      marcas: marcas.map(m => ({ nombre: m.nombre.trim(), tipo: m.tipo, clases: [...m.clases] })),
+      // El <input type="date"> ya da la fecha local; MESES es 0-indexado.
+      fecha: { dia, mes: mes - 1, anio },
+    };
+  }
+
+  function render() {
+    $('cp-preview').innerHTML = cartaPoderHTML(cpData(), firmaDataUrl());
+  }
+
+  // Cualquier campo del panel redibuja el documento.
+  for (const id of [
+    'cp-nombre', 'cp-tipodoc', 'cp-docnum', 'cp-cuit', 'cp-calle', 'cp-numero',
+    'cp-piso', 'cp-depto', 'cp-codpostal', 'cp-localidad', 'cp-provincia', 'cp-fecha',
+  ]) {
+    $(id).addEventListener('input', render);
+    $(id).addEventListener('change', render);
+  }
+
+  // ── Firma (canvas) ──────────────────────────────────────
+  const canvas = document.getElementById('cp-sig') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
+  const SIG_H = 200;
+  let strokes: { x: number; y: number }[][] = [];
+  let drawing = false;
+
+  function sizeCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.parentElement!.getBoundingClientRect().width;
+    if (w === 0) return;
+    canvas.width = w * dpr;
+    canvas.height = SIG_H * dpr;
+    canvas.style.width = `${w}px`;
+    canvas.style.height = `${SIG_H}px`;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    redraw();
+  }
+
+  function estilo(c: CanvasRenderingContext2D) {
+    c.strokeStyle = '#0f172a';
+    c.lineWidth = 2;
+    c.lineJoin = 'round';
+    c.lineCap = 'round';
+  }
+
+  function redraw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    estilo(ctx);
+    strokes.forEach(stroke => {
+      ctx.beginPath();
+      stroke.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
+      ctx.stroke();
+    });
+  }
+
+  function sigPos(e: PointerEvent) {
+    const r = canvas.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+
+  canvas.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    canvas.setPointerCapture(e.pointerId);
+    drawing = true;
+    strokes.push([sigPos(e)]);
+    $('cp-sig-hint').hidden = true;
+  });
+  canvas.addEventListener('pointermove', (e) => {
+    if (!drawing) return;
+    const stroke = strokes[strokes.length - 1];
+    stroke.push(sigPos(e));
+    const [a, b] = [stroke[stroke.length - 2], stroke[stroke.length - 1]];
+    estilo(ctx);
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+  });
+  const endStroke = () => { if (!drawing) return; drawing = false; syncSigUI(); };
+  canvas.addEventListener('pointerup', endStroke);
+  canvas.addEventListener('pointercancel', endStroke);
+  window.addEventListener('resize', sizeCanvas);
+
+  function syncSigUI() {
+    $('cp-sig-undo').hidden = strokes.length === 0;
+    $('cp-sig-hint').hidden = strokes.length > 0;
+    render(); // la firma se ve en el documento apenas se levanta el dedo
+  }
+
+  $('cp-sig-undo').addEventListener('click', () => { strokes.pop(); redraw(); syncSigUI(); });
+  $('cp-sig-clear').addEventListener('click', () => { strokes = []; redraw(); syncSigUI(); });
+
+  /** PNG de la firma recortado a su caja: el canvas es mucho más ancho que el
+   *  trazo, y sin recortar la firma entra diminuta en el PDF (que la escala por
+   *  alto). Se dibuja de nuevo desde los trazos, así que no hay que leer píxeles. */
+  function firmaDataUrl(): string | undefined {
+    if (strokes.length === 0) return undefined;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const stroke of strokes) {
+      for (const p of stroke) {
+        if (p.x < minX) minX = p.x;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.y > maxY) maxY = p.y;
+      }
+    }
+    const pad = 10;
+    minX -= pad; minY -= pad; maxX += pad; maxY += pad;
+    const w = Math.max(maxX - minX, 1);
+    const h = Math.max(maxY - minY, 1);
+    const S = 2; // el PDF escala la imagen por alto: el doble de píxeles evita el borde pixelado
+    const off = document.createElement('canvas');
+    off.width = Math.round(w * S);
+    off.height = Math.round(h * S);
+    const c = off.getContext('2d')!;
+    c.setTransform(S, 0, 0, S, -minX * S, -minY * S);
+    estilo(c);
+    strokes.forEach(stroke => {
+      c.beginPath();
+      stroke.forEach((p, i) => (i === 0 ? c.moveTo(p.x, p.y) : c.lineTo(p.x, p.y)));
+      c.stroke();
+    });
+    return off.toDataURL('image/png');
+  }
+
+  // ── Envío ───────────────────────────────────────────────
+  const submitBtn = $('cp-submit') as HTMLButtonElement;
+  const errBox = $('cp-err');
+
+  function faltantes(): string[] {
+    const d = cpData();
+    const falta: string[] = [];
+    if (!d.nombreApellido) falta.push('tu nombre y apellido');
+    if (!d.docNumero) falta.push('tu número de documento');
+    if (!d.cuit) falta.push('tu CUIT o CUIL');
+    if (!d.calle || !d.numero) falta.push('la calle y el número de tu domicilio');
+    if (!d.codigoPostal) falta.push('el código postal');
+    if (!d.localidad) falta.push('la localidad');
+    if (!d.provincia) falta.push('la provincia');
+    if (marcas.some(m => m.clases.length === 0)) falta.push('las clases de cada marca');
+    if (marcas.some(m => tieneDenominacion(m.tipo) && !m.nombre.trim())) {
+      falta.push('el nombre de cada marca');
+    }
+    if (strokes.length === 0) falta.push('tu firma');
+    if (!input('cp-terms').checked) falta.push('la aceptación de los términos');
+    return falta;
+  }
+
+  function mostrarError(msg: string) {
+    errBox.textContent = msg;
+    errBox.hidden = false;
+  }
+
+  submitBtn.addEventListener('click', async () => {
+    const falta = faltantes();
+    if (falta.length) {
+      mostrarError(`Antes de enviar falta: ${falta.join(', ')}.`);
+      return;
+    }
+    errBox.hidden = true;
+    submitBtn.disabled = true;
+    $('cp-submit-label').textContent = 'Enviando…';
+    $('cp-submit-spin').style.display = '';
+
+    const d = cpData();
+    // El PDF se genera EN EL NAVEGADOR, igual que en el checkout: el plan free
+    // de Pages no tiene CPU para pdf-lib (error 1102).
+    let pdfBytes: Uint8Array | null = null;
+    let pdfBase64: string | null = null;
+    try {
+      const { buildCartaPoderPdf } = await import('../lib/checkout/cartaPoderPdf');
+      pdfBytes = await buildCartaPoderPdf(d, firmaDataUrl());
+      let binary = '';
+      const chunk = 0x8000;
+      for (let i = 0; i < pdfBytes.length; i += chunk) {
+        binary += String.fromCharCode(...pdfBytes.subarray(i, i + chunk));
+      }
+      pdfBase64 = btoa(binary);
+    } catch (e) {
+      // Se envía igual, sin adjunto: el email avisa que hay que rehacer el PDF.
+      console.error('[carta-poder] error generando el PDF:', e);
+    }
+
+    try {
+      const res = await fetch('/api/carta-poder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pdfBase64,
+          ref,
+          motivo,
+          email: input('cp-email').value.trim(),
+          titular: {
+            nombreApellido: d.nombreApellido,
+            documento: `${d.docTipo} ${d.docNumero}`,
+            cuit: d.cuit,
+            domicilio: [
+              `${d.calle} ${d.numero}`,
+              d.piso && `piso ${d.piso}`,
+              d.depto && `depto ${d.depto}`,
+              `${d.localidad} (CP ${d.codigoPostal})`,
+              d.provincia,
+            ].filter(Boolean).join(', '),
+          },
+          marcas: d.marcas,
+          fecha: input('cp-fecha').value,
+        }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+    } catch (e) {
+      console.error('[carta-poder] error enviando:', e);
+      mostrarError('No pudimos enviar tu carta poder. Probá de nuevo en un minuto o escribinos por WhatsApp.');
+      submitBtn.disabled = false;
+      $('cp-submit-label').textContent = 'Enviar carta poder firmada';
+      $('cp-submit-spin').style.display = 'none';
+      return;
+    }
+
+    // Copia local para el cliente: es un documento que acaba de firmar.
+    if (pdfBytes) {
+      const url = URL.createObjectURL(new Blob([pdfBytes as BlobPart], { type: 'application/pdf' }));
+      const link = $('cp-download') as HTMLAnchorElement;
+      link.href = url;
+      link.setAttribute('download', `carta-poder${ref ? `-${ref}` : ''}.pdf`);
+    } else {
+      $('cp-download').hidden = true;
+    }
+
+    $('cp-grid').hidden = true;
+    $('cp-done').hidden = false;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ── Arranque ────────────────────────────────────────────
+  aplicarParams();
+  renderMarcas();
+  render();
+  sizeCanvas();
+</script>
+
+<style is:global>
+  /* Página privada de un solo uso: los estilos viven acá, no en global.css.
+     Van sin scope porque el documento se inyecta con innerHTML (las clases
+     ck-cp-* las emite src/lib/checkout/cartaPoder.ts). */
+  .cp {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 4rem;
+  }
+  .cp-head { max-width: 640px; margin-bottom: 2rem; }
+  .cp-eyebrow {
+    margin: 0 0 0.4rem; color: #2563eb; font-size: 0.7rem; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .cp-head h1 {
+    margin: 0 0 0.6rem; font-size: clamp(1.6rem, 3.6vw, 2.1rem);
+    font-weight: 800; color: #0b1d3a; letter-spacing: -0.02em;
+  }
+  .cp-lead { margin: 0; color: #475569; font-size: 0.95rem; line-height: 1.65; }
+  .cp-motivo {
+    margin-top: 1.25rem; padding: 0.9rem 1.1rem; border-radius: 10px;
+    background: #fffbeb; border: 1.5px solid #fde68a; color: #92400e;
+    font-size: 0.85rem; line-height: 1.6;
+  }
+  .cp-motivo[hidden] { display: none; }
+  .cp-motivo b { display: block; margin-bottom: 0.15rem; }
+
+  .cp-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 350px;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  .cp-grid[hidden] { display: none; }
+  .cp-doc { grid-column: 1; grid-row: 1; }
+  .cp-side { grid-column: 2; grid-row: 1 / span 2; position: sticky; top: 88px; }
+  .cp-sign { grid-column: 1; grid-row: 2; }
+
+  /* ─── Documento ─── */
+  /* Hoja: el mismo texto que el PDF, con aire de A4 para que se lea como el
+     papel que se está firmando. */
+  .cp-paper {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 14px;
+    padding: clamp(1.5rem, 4vw, 3.25rem);
+    font-size: 0.9rem; color: #1e293b; line-height: 1.8;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+  }
+  .cp-paper .ck-cp-dest { margin: 0 0 1.25rem; font-weight: 600; }
+  .cp-paper .ck-cp-p { margin: 0 0 1.25rem; }
+  .cp-paper .ck-cp-ul { margin: 0 0 1.25rem; padding-left: 1.4rem; }
+  .cp-paper .ck-cp-ul li { margin-bottom: 0.55rem; }
+  .cp-paper .ck-cp-firma { margin-top: 2.5rem; width: 240px; }
+  .cp-paper .ck-cp-firma-space { height: 64px; }
+  .cp-paper .ck-cp-firma-img {
+    height: 64px; display: block; object-fit: contain; object-position: left bottom;
+  }
+  .cp-paper .ck-cp-firma-linea { border-top: 1px solid #0f172a; }
+  .cp-paper .ck-cp-firma-acl { font-size: 0.78rem; margin: 0.35rem 0 0; line-height: 1.5; }
+
+  /* ─── Panel de campos ─── */
+  .cp-side-inner {
+    border: 1px solid #e2e8f0; border-radius: 14px;
+    padding: 1.35rem; max-height: calc(100vh - 110px); overflow-y: auto;
+    /* El panel es más alto que la pantalla y las marcas quedan abajo de todo:
+       sin esta sombra, que aparece sola cuando queda contenido, no hay nada que
+       avise que el panel sigue. */
+    background:
+      linear-gradient(#fff 30%, rgba(255,255,255,0)) top / 100% 26px no-repeat local,
+      linear-gradient(rgba(255,255,255,0), #fff 70%) bottom / 100% 26px no-repeat local,
+      radial-gradient(farthest-side at 50% 0, rgba(15,23,42,.14), rgba(15,23,42,0)) top / 100% 11px no-repeat scroll,
+      radial-gradient(farthest-side at 50% 100%, rgba(15,23,42,.14), rgba(15,23,42,0)) bottom / 100% 11px no-repeat scroll,
+      #fff;
+  }
+  .cp-side-title { margin: 0 0 0.2rem; font-size: 1rem; font-weight: 800; color: #0b1d3a; }
+  .cp-side-help { margin: 0 0 1.1rem; font-size: 0.78rem; color: #64748b; line-height: 1.55; }
+  .cp-group { padding-top: 1.1rem; margin-top: 1.1rem; border-top: 1px solid #f1f5f9; }
+  .cp-group:first-of-type { padding-top: 0; margin-top: 0; border-top: none; }
+  .cp-group-label {
+    font-size: 0.7rem; font-weight: 700; color: #94a3b8;
+    letter-spacing: 0.09em; text-transform: uppercase; margin-bottom: 0.75rem;
+  }
+  .cp-field { margin-bottom: 0.7rem; }
+  .cp-field label {
+    display: block; margin-bottom: 0.25rem;
+    font-size: 0.75rem; font-weight: 600; color: #334155;
+  }
+  .cp-field label span { color: #94a3b8; font-weight: 500; }
+  .cp-field input,
+  .cp-field select {
+    width: 100%; box-sizing: border-box;
+    padding: 0.55rem 0.7rem; border: 1px solid #cbd5e1; border-radius: 9px;
+    background: #fff; font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.875rem; color: #0f172a;
+  }
+  .cp-field input:focus,
+  .cp-field select:focus {
+    outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  }
+  .cp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .cp-row--calle { grid-template-columns: 2fr 1fr; }
+  .cp-row--cp { grid-template-columns: 1fr 1.4fr; }
+  .cp-hint { margin: 0.3rem 0 0; font-size: 0.72rem; color: #64748b; line-height: 1.5; }
+
+  .cp-marca {
+    border: 1px solid #e2e8f0; border-radius: 10px;
+    padding: 0.8rem 0.85rem 0.5rem; margin-bottom: 0.7rem; background: #f8fafc;
+  }
+  .cp-marca-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 0.5rem; font-size: 0.72rem; font-weight: 700;
+    color: #64748b; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .cp-marca-head .cp-link { margin: 0; font-size: 0.72rem; }
+
+  .cp-link {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    background: none; border: none; padding: 0; cursor: pointer;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.8rem; font-weight: 600; color: #2563eb;
+  }
+  .cp-link:hover { opacity: 0.7; }
+  .cp-link[hidden] { display: none; }
+
+  /* ─── Firma ─── */
+  .cp-card {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 14px;
+    padding: 1.5rem; margin-top: 1.5rem;
+  }
+  .cp-sig-box {
+    position: relative; border: 1.5px dashed #cbd5e1; border-radius: 12px;
+    background: #f8fafc; overflow: hidden;
+  }
+  .cp-sig-box canvas { display: block; touch-action: none; cursor: crosshair; }
+  .cp-sig-hint {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    color: #c0ccd8; font-size: 0.95rem; font-weight: 500; pointer-events: none;
+  }
+  .cp-sig-hint[hidden] { display: none; }
+  .cp-sig-foot { display: flex; justify-content: flex-end; gap: 1.25rem; margin-top: 0.5rem; }
+
+  .cp-terms {
+    display: flex; align-items: flex-start; gap: 0.6rem; cursor: pointer;
+    margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid #f1f5f9;
+  }
+  .cp-terms input {
+    flex-shrink: 0; margin-top: 2px; width: 15px; height: 15px;
+    accent-color: #2563eb; cursor: pointer;
+  }
+  .cp-terms span { font-size: 0.78rem; color: #64748b; line-height: 1.55; }
+  .cp-terms a { color: #2563eb; font-weight: 600; text-decoration: none; }
+  .cp-terms a:hover { text-decoration: underline; }
+
+  .cp-err {
+    margin-top: 1rem; padding: 0.75rem 1rem; border-radius: 10px;
+    background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c;
+    font-size: 0.82rem; line-height: 1.55;
+  }
+  .cp-err[hidden] { display: none; }
+
+  .cp-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    margin-top: 1.25rem; padding: 0.9rem 2rem;
+    background: #0b1d3a; color: #fff; border: none; border-radius: 100px;
+    font-family: 'Inter', system-ui, sans-serif; font-size: 0.95rem; font-weight: 600;
+    cursor: pointer; text-decoration: none;
+    transition: background .18s, transform .18s, box-shadow .18s;
+  }
+  .cp-btn:hover:not(:disabled) {
+    background: #2563eb; transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(37, 99, 235, .3);
+  }
+  .cp-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .cp-btn--ghost {
+    background: #fff; color: #2563eb; border: 1.5px solid #bfdbfe;
+  }
+  .cp-btn--ghost:hover { background: #eff6ff; color: #1d4ed8; box-shadow: none; }
+  .cp-btn--ghost[hidden] { display: none; }
+
+  /* ─── Confirmación ─── */
+  .cp-done[hidden] { display: none; }
+  .cp-card--done { text-align: center; max-width: 560px; margin: 0 auto; padding: 2.5rem 2rem; }
+  .cp-card--done h2 { margin: 1rem 0 0.5rem; font-size: 1.35rem; font-weight: 800; color: #0b1d3a; }
+  .cp-card--done p { margin: 0; color: #475569; font-size: 0.9rem; line-height: 1.65; }
+
+  @media (max-width: 900px) {
+    /* En una sola columna manda el orden del DOM: documento, campos, firma.
+       Los campos van antes de la firma a propósito: primero se corrige, después
+       se firma. */
+    .cp-grid { grid-template-columns: 1fr; }
+    .cp-doc, .cp-side, .cp-sign { grid-column: 1; grid-row: auto; }
+    .cp-side { position: static; }
+    .cp-side-inner { max-height: none; overflow: visible; margin-top: 1.5rem; }
+  }
+</style>

@@ -243,6 +243,54 @@ Reglas que hay que respetar al cambiar esto:
 
 ---
 
+## `/carta-poder` — rehacer un poder ya firmado
+
+Página privada (`noindex`, fuera del sitemap, no se linkea) para cuando el poder
+que firmó el cliente salió con un dato mal: el tipo de marca, una clase, el
+domicilio. En vez de hacerle repetir el checkout entero, se le manda un link con
+**todos los campos prellenados por query params**: ve el documento corregido, lo
+firma y lo envía.
+
+- El texto sale del mismo `src/lib/checkout/cartaPoder.ts` y el PDF del mismo
+  `cartaPoderPdf.ts` que usa el paso 7 del wizard. Los dos caminos no pueden
+  divergir, y el PDF que llega es idéntico al del checkout.
+- **No toca nada**: ni el pedido en D1, ni el alta en Vigilante, ni los emails
+  del checkout. Lo único que produce es el PDF firmado, que le llega al estudio
+  por `POST /api/carta-poder` (Resend → `mike@automaticnation.com`, con el PDF
+  adjunto). El cliente se descarga su copia en la pantalla de confirmación.
+- El PDF se genera **en el navegador**, por lo mismo que en el checkout: el plan
+  free de Pages no tiene CPU para pdf-lib (error 1102).
+- Si el navegador no pudo generar el PDF, el email sale igual con los datos y un
+  aviso de que hay que rehacerlo. Perder un poder que la persona ya firmó es
+  peor que mandar un aviso.
+- El endpoint es abierto (no hay pedido contra el cual autenticar). Lo único que
+  lo protege es que la URL no se publica en ningún lado, más un tope de 3 MB en
+  el cuerpo.
+
+| Param | Notas |
+|---|---|
+| `nombre`, `apellido` | Se concatenan en el nombre del poder. |
+| `doctipo` | `DNI` (default), `Pasaporte`, `Libreta Cívica`, `Libreta de Enrolamiento`. |
+| `doc` (alias `dni`, `docnum`) | Número de documento. |
+| `cuit` | CUIT/CUIL. |
+| `calle`, `numero`, `piso`, `depto` | Domicilio. `piso` y `depto` son opcionales. |
+| `cp` (alias `codigopostal`) , `localidad`, `provincia` | `provincia` se matchea sin acentos; `CABA` / `capital federal` caen en `Ciudad Autónoma de Buenos Aires`. |
+| `marca`, `clase`, `tipo` | **Repetibles y apareados por posición**, igual que en `/registrar`: hasta `MAX_MARCAS`, `clase` acepta `25,35`. |
+| `fecha` | `YYYY-MM-DD`. Sin el param, hoy en Buenos Aires. |
+| `email` | Va como `reply_to` del email al estudio. |
+| `ref` (alias `order`, `pedido`) | Ref del pedido original: entra en el asunto y en el nombre del PDF. |
+| `motivo` | Se muestra arriba de todo, en un banner: por qué se le pide firmar de nuevo. |
+
+```
+/carta-poder?nombre=Julio+Leonardo&apellido=Guerrero&doc=23971678
+  &cuit=20-23971678-5&calle=Alvarez+Condarco&numero=222&cp=M5504HCN
+  &localidad=Godoy+Cruz&provincia=Mendoza
+  &marca=Caminantes+de+la+Antigua+Senda&clase=41&tipo=mixta
+  &ref=UM-20260818-VB3FV7&motivo=La+anterior+dec%C3%ADa+figurativa
+```
+
+---
+
 ## Alta automática en el portal Vigilante
 
 Cuando un pedido se completa (el cliente firma y se envía la solicitud), además
