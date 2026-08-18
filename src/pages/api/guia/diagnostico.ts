@@ -45,10 +45,13 @@ export const GET: APIRoute = async (context) => {
       largo: secreto.length,
       huella: secreto ? await huella(secreto) : null,
     },
+    // OJO: el prefijo NO sirve para saber si son de prueba o productivas.
+    // Mercado Pago unificó el formato y las dos empiezan con APP_USR-. La única
+    // forma de saber cuál está cargada es comparar la huella contra el panel.
     mpAccessToken: {
       presente: !!token,
-      // TEST-… vs APP_USR-…: dice de una si el entorno es de prueba o productivo.
-      prefijo: token ? token.slice(0, 5) : null,
+      largo: token.length,
+      huella: token ? await huella(token) : null,
     },
     db: !!env.DB,
     resend: !!env.RESEND_API_KEY,
