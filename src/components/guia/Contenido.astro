@@ -17,6 +17,7 @@ import ToolNomenclador from './ToolNomenclador.astro';
 import ToolTerminos from './ToolTerminos.astro';
 import ToolVigilancia from './ToolVigilancia.astro';
 import Delegar from './Delegar.astro';
+import Captura from './Captura.astro';
 import { algunaConLogo, marcasEjemplo, MAX_EJEMPLOS } from '../../lib/guia/cliente';
 import { PRICING } from '../../lib/checkout/constants';
 import '../../styles/guia.css';
@@ -356,6 +357,12 @@ const paso = (id: PasoId) => ({ id, ...P[id] });
         </p>
 
         <p class="g-ruta"><span>MARCAS</span><span>TRÁMITES</span><span>SOLICITUD NUEVA</span></p>
+
+        <Captura
+          src="07-solicitud-nueva.png"
+          alt="Menú del portal del INPI con tres recuadros rojos que marcan el recorrido: MARCAS en la barra superior, Tramites en el primer desplegable y Solicitud Nueva en el submenú."
+          pie="El submenú aparece al pasar el mouse por MARCAS. Si no ves Trámites, el servicio del INPI no está habilitado en tu clave fiscal (paso 6)."
+        />
 
         {varias && (
           <p class="g-destacado">

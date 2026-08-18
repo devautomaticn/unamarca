@@ -1,0 +1,25 @@
+---
+// Una captura del portal del INPI dentro de un paso.
+//
+// Sobre los datos del portal: la barra superior muestra el nombre y el CUIT de
+// quien está logueado. Que se vean los del estudio está decidido y es
+// deliberado (el mismo CUIT ya figura en la carta poder que firma cada
+// cliente). Lo que NO puede aparecer nunca son datos de un cliente.
+//
+// Los archivos van en `public/guia/`. Se sirven tal cual, sin optimizar: son
+// pocas y pesan poco.
+interface Props {
+  /** Nombre del archivo dentro de public/guia/ */
+  src: string;
+  /** Qué se ve, para quien no puede ver la imagen. No es un epígrafe decorativo. */
+  alt: string;
+  /** Texto opcional debajo, para señalar dónde mirar. */
+  pie?: string;
+}
+const { src, alt, pie } = Astro.props;
+---
+
+<figure class="g-captura">
+  <img src={`/guia/${src}`} alt={alt} loading="lazy" decoding="async" />
+  {pie && <figcaption>{pie}</figcaption>}
+</figure>

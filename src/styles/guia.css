@@ -1178,6 +1178,28 @@
 
 .g-paso-body a:hover { color: var(--c-blue-hover); }
 
+/* ============ CAPTURAS DEL PORTAL ============ */
+
+.g-captura {
+  margin: 1.1rem 0 1.4rem;
+}
+
+.g-captura img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
+  background: var(--c-bg);
+}
+
+.g-captura figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--c-text-muted);
+}
+
 /* ============ PANTALLA DE BLOQUEO ============ */
 /* Lo que se ve en /guia/<token> cuando la guía todavía no se puede leer:
    pago pendiente, acceso revocado o token inexistente. */
