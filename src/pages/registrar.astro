@@ -545,11 +545,16 @@ const faqSchema = {
               <span class="ck-upsell-name">Sumá la Garantía de Devolución</span>
               <span class="ck-upsell-price" id="ck-upsell-price">+{formatARS(PRICING.garantia)}</span>
             </div>
+            <!-- Los dos importes los reescribe updateSummary(): en un pedido ya
+                 pagado son los precios congelados, no los de la lista de hoy. -->
             <p class="ck-upsell-desc">
               Si el INPI deniega el registro en alguna de tus clases, te devolvemos
-              los {formatARS(PRICING.honorarios)} de honorarios de esa clase.
-              Cuesta {formatARS(PRICING.garantia)} por clase.
+              los <span id="ck-upsell-hon">{formatARS(PRICING.honorarios)}</span> de honorarios de esa clase.
+              Cuesta <span id="ck-upsell-gar">{formatARS(PRICING.garantia)}</span> por clase.
             </p>
+            <!-- Con el pedido creado el upsell deja de ser una decisión: el
+                 texto lo pone updateSummary() según se haya contratado o no. -->
+            <p class="ck-upsell-lock" id="ck-upsell-lock" hidden></p>
           </div>
         </label>
 
@@ -872,7 +877,8 @@ const faqSchema = {
   import { NIZA_CLASSES } from '../lib/checkout/nizaClasses';
   import {
     PRICING, MAX_CLASES, MAX_MARCAS, TRANSFERENCIA,
-    computeOrderPricing, contarLineas, clasesTexto, lineasTexto, formatARS,
+    computeOrderPricing, pricingDesdeSnapshot, type OrderPricing,
+    contarLineas, clasesTexto, lineasTexto, formatARS,
     TIPOS_MARCA, LOGO_MAX_PX, LOGO_JPEG_QUALITY, LOGO_CM_MAX, LOGO_CM_LADO_MAYOR,
     formatCm, parseCm, medidasDesdePx, normalizeTipoMarca, requiereLogo,
     tieneDenominacion, tipoMarcaLabel, type TipoMarca,
@@ -930,6 +936,12 @@ const faqSchema = {
   /** Marcas y clases quedan congeladas una vez que existe el pedido: lo que se
    *  presenta ante el INPI tiene que ser exactamente lo que se pagó. */
   let pedidoBloqueado = false;
+
+  /** Precio congelado del pedido, desde que existe. Mientras es null el resumen
+   *  se calcula con la lista de precios de hoy; una vez seteado manda él.
+   *  Es lo que evita que alguien que vuelve a su pedido (?order=REF) después de
+   *  un aumento vea un total distinto del que pagó. */
+  let pricingPedido: OrderPricing | null = null;
 
   const FIELD_IDS = [
     'ck-nombre', 'ck-apellido', 'ck-tipodoc', 'ck-docnum',
@@ -1733,15 +1745,24 @@ const faqSchema = {
   function lineas(): number {
     return contarLineas(marcas);
   }
-  function pricing() {
-    return computeOrderPricing(lineas() || 1, garantia);
+  /** El precio del pedido ya creado gana siempre sobre el cálculo: entre que se
+   *  pagó y que el cliente vuelve a completar sus datos puede haber pasado un
+   *  aumento, y lo que tiene que ver es lo que pagó. */
+  function pricing(): OrderPricing {
+    return pricingPedido ?? computeOrderPricing(lineas() || 1, garantia);
+  }
+  /** Unitarios que rigen la pantalla: los congelados si el pedido ya existe,
+   *  los de la lista vigente mientras se arma. */
+  function unitPricing() {
+    return pricingPedido?.unit ?? PRICING;
   }
   function total(): number {
     return pricing().total;
   }
   /** Cuánto sale una marca sola, con sus clases (0 clases = $0) */
   function subtotalMarca(m: MarcaState): number {
-    const unidad = PRICING.honorarios + PRICING.arancelInpi + (garantia ? PRICING.garantia : 0);
+    const u = unitPricing();
+    const unidad = u.honorarios + u.arancelInpi + (garantia ? u.garantia : 0);
     return unidad * m.clases.length;
   }
 
@@ -1766,20 +1787,35 @@ const faqSchema = {
 
   function updateSummary() {
     const p = pricing();
+    const u = unitPricing();
     const nLabel = lineasTexto(p.lineas, marcas.length);
 
-    $('ck-upsell-price').textContent = `+${formatARS(PRICING.garantia * p.lineas)}`;
+    $('ck-upsell-price').textContent = `+${formatARS(u.garantia * p.lineas)}`;
+    $('ck-upsell-hon').textContent = formatARS(u.honorarios);
+    $('ck-upsell-gar').textContent = formatARS(u.garantia);
 
     const feat = $('ck-feat-garantia');
     feat.textContent = FEAT_GARANTIA;
     feat.hidden = !garantia;
+
+    // Con el pedido creado la garantía ya está pagada (o no): el checkbox queda
+    // muerto en bloquearPedido() y acá se explica por qué. Tocarlo no cobraba
+    // nada —el backend usa el snapshot del pedido, no lo que diga el cliente—,
+    // así que solo servía para mostrar un total que nadie iba a pagar.
+    const lock = $('ck-upsell-lock');
+    lock.hidden = !pedidoBloqueado;
+    if (pedidoBloqueado) {
+      lock.textContent = garantia
+        ? 'Incluida en tu pedido.'
+        : 'La garantía se contrata antes de pagar. ¿La querés sumar igual? Escribinos por WhatsApp.';
+    }
 
     renderSummaryMarcas();
     $('ck-sum-hon-label').textContent = `Honorarios — Registro de marca (${nLabel})`;
     $('ck-sum-hon').textContent = formatARS(p.honorarios);
     $('ck-sum-garantia-row').hidden = !garantia;
     $('ck-sum-gar-label').textContent = `Garantía de Devolución (${nLabel})`;
-    $('ck-sum-gar').textContent = formatARS(garantia ? p.garantia : PRICING.garantia * p.lineas);
+    $('ck-sum-gar').textContent = formatARS(garantia ? p.garantia : u.garantia * p.lineas);
     $('ck-sum-ara-label').innerHTML =
       `Arancel INPI (${nLabel}) <small>se paga al INPI · valor ${PRICING.arancelVigencia}</small>`;
     $('ck-sum-ara').textContent = formatARS(p.arancelInpi);
@@ -2261,6 +2297,11 @@ const faqSchema = {
     });
     const data = await res.json();
     if (!res.ok || !data.ref) throw new Error(data.error || 'error creando pedido');
+    // Congelado desde el momento cero: existe pedido ⇒ existe precio fijo.
+    // Se calcula con la lista vigente y NO con pricing(), que podría estar
+    // devolviendo el congelado de un pedido anterior: al reintentar un pago
+    // rechazado esto es un pedido nuevo, y el servidor ya lo cotizó a hoy.
+    pricingPedido = computeOrderPricing(lineas() || 1, garantia);
     bloquearPedido();
     return data;
   }
@@ -2277,6 +2318,8 @@ const faqSchema = {
       el.textContent = aviso;
       el.hidden = false;
     });
+    // La garantía es parte del importe ya fijado: se congela con el resto.
+    input('ck-garantia').disabled = true;
     renderMarcasStep1();
     renderClasesCards();
   }
@@ -2478,6 +2521,11 @@ const faqSchema = {
       if (p.contacto?.whatsapp) input('ck-whatsapp').value = p.contacto.whatsapp;
       garantia = !!p.garantia;
       input('ck-garantia').checked = garantia;
+      // El importe sale del snapshot del pedido, NO de la lista de precios de
+      // este build: si hubo un aumento entre el pago y esta visita, el cliente
+      // tiene que seguir viendo lo que pagó. Sin snapshot (pedido raro o muy
+      // viejo) se cae al cálculo normal, que es lo que hacíamos siempre.
+      pricingPedido = pricingDesdeSnapshot(p.pricing);
       updateSummary();
       // Nombre por estado (ck_pago_retorno_paid / _rejected / _pending_transfer…)
       // para que el desglose se vea en GA4 sin dimensiones personalizadas.
@@ -3261,6 +3309,16 @@ const faqSchema = {
 .ck-upsell-price { font-size: 1rem; font-weight: 800; color: #16a34a; white-space: nowrap; }
 .ck-upsell-desc { font-size: 0.8125rem; color: #475569; line-height: 1.5; margin: 0.3rem 0 0; }
 .ck-upsell-body { flex: 1; min-width: 0; }
+/* Pedido ya creado: el upsell queda informativo (ver bloquearPedido). Sin
+   hover verde cuando no se contrató, para no ofrecer lo que ya no se puede
+   agregar acá. Contratada sigue en verde: es parte de lo que compró. */
+.ck-upsell:has(input:disabled) { cursor: default; }
+.ck-upsell:has(input:disabled:not(:checked)):hover { border-color: #cbd5e1; }
+.ck-upsell input:disabled { cursor: default; }
+.ck-upsell-lock {
+  font-size: 0.8125rem; font-weight: 600; color: #475569;
+  margin: 0.45rem 0 0;
+}
 .ck-plan-feats { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
 .ck-plan-feats li {
   position: relative; padding-left: 1.35rem;

@@ -1,12 +1,18 @@
 // Config del self-checkout — precios, apoderado y contacto.
 // Un solo lugar para actualizar valores (inflación, UMAPI, cambios de domicilio).
+//
+// Subir un precio acá NO toca los pedidos ya creados: el importe de la
+// preferencia de Mercado Pago queda fijado al crearla, y el desglose viaja
+// congelado en `payload.pricing` (ver `pricingDesdeSnapshot()` más abajo). Lo
+// que sí cambia al instante es lo que ve un lead con un link viejo de
+// `/registrar`: la página es estática y se rebuildea con el precio nuevo.
 
 export const PRICING = {
   /** Honorarios del registro, POR CLASE */
-  honorarios: 40_000,
+  honorarios: 70_000,
   /** Upsell: Garantía de Devolución, POR CLASE (si el INPI deniega una clase,
    *  se devuelven los honorarios de esa clase) */
-  garantia: 7_000,
+  garantia: 15_000,
   /** Arancel INPI: solicitud de registro, POR CLASE (100 UMAPIS, agosto 2026) */
   arancelInpi: 39_735,
   /** Mes de referencia del valor UMAPI mostrado */
@@ -155,6 +161,14 @@ export function contarLineas(marcas: { clases?: number[] }[]): number {
   return marcas.reduce((n, m) => n + (m.clases?.length ?? 0), 0);
 }
 
+/** Precios por clase que rigen un pedido. En uno ya creado son los de aquel
+ *  día, no los de `PRICING`. */
+export interface UnitPricing {
+  honorarios: number;
+  garantia: number;
+  arancelInpi: number;
+}
+
 /** Totales del pedido para N líneas (marca × clase). Todos los conceptos
  *  escalan por línea, sin descuento por volumen. Con 0 líneas se muestra el
  *  precio de 1 (base del resumen antes de elegir clases). */
@@ -163,6 +177,13 @@ export function computeOrderPricing(lineas: number, garantia: boolean) {
   const honorarios = PRICING.honorarios * n;
   const garantiaMonto = garantia ? PRICING.garantia * n : 0;
   const arancelInpi = PRICING.arancelInpi * n;
+  // Tipado explícito: `PRICING` es `as const`, y sin esto los unitarios quedan
+  // como los literales de hoy y ningún precio viejo entra en `OrderPricing`.
+  const unit: UnitPricing = {
+    honorarios: PRICING.honorarios,
+    garantia: PRICING.garantia,
+    arancelInpi: PRICING.arancelInpi,
+  };
   return {
     lineas: n,
     /** Alias legado: pedidos v1 (una sola marca) guardaban acá el N° de clases */
@@ -171,6 +192,50 @@ export function computeOrderPricing(lineas: number, garantia: boolean) {
     garantia: garantiaMonto,
     arancelInpi,
     total: honorarios + garantiaMonto + arancelInpi,
+    /** Precios unitarios vigentes al calcular. Van al snapshot del pedido
+     *  (`payload.pricing`) para que al retomarlo se vea lo que se cobró y no la
+     *  lista de precios de hoy. Ver `pricingDesdeSnapshot()`. */
+    unit,
+  };
+}
+
+export type OrderPricing = ReturnType<typeof computeOrderPricing>;
+
+/** Rehidrata el pricing congelado de un pedido ya creado. Es la única forma
+ *  correcta de mostrarle un importe a alguien que vuelve a su pedido: los
+ *  precios de `PRICING` son los de HOY, y el cliente pagó los de aquel día.
+ *
+ *  Los snapshots anteriores a `unit` (todo pedido creado antes de agosto 2026)
+ *  no traen los unitarios: se deducen dividiendo por las líneas. El único que
+ *  no se puede deducir es la garantía cuando no se contrató —el monto es 0—, y
+ *  ahí queda el precio de hoy, que solo alimenta el texto del upsell.
+ *
+ *  Devuelve null si no hay snapshot utilizable (pedido sin `pricing`): el
+ *  llamador cae en el cálculo normal. */
+export function pricingDesdeSnapshot(raw: unknown): OrderPricing | null {
+  const s = raw as Record<string, unknown> | null | undefined;
+  const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+  const total = num(s?.total);
+  if (!s || total === null) return null;
+
+  const lineas = Math.max(1, Math.floor(num(s.lineas) ?? num(s.clases) ?? 1));
+  const honorarios = num(s.honorarios) ?? 0;
+  const garantia = num(s.garantia) ?? 0;
+  const arancelInpi = num(s.arancelInpi) ?? 0;
+  const unit = (s.unit ?? {}) as Record<string, unknown>;
+
+  return {
+    lineas,
+    clases: lineas,
+    honorarios,
+    garantia,
+    arancelInpi,
+    total,
+    unit: {
+      honorarios: num(unit.honorarios) ?? honorarios / lineas,
+      garantia: num(unit.garantia) ?? (garantia > 0 ? garantia / lineas : PRICING.garantia),
+      arancelInpi: num(unit.arancelInpi) ?? arancelInpi / lineas,
+    },
   };
 }
 

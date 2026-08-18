@@ -1,9 +1,15 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import cloudflare from '@astrojs/cloudflare';
+import { remarkPrecios } from './src/lib/remarkPrecios';
 
 export default defineConfig({
   site: 'https://unamarca.com.ar',
+  // Los posts escriben `{{HONORARIOS}}`, `{{TOTAL}}`, etc. y el plugin los
+  // resuelve contra PRICING al buildear, para que un aumento no deje un
+  // artículo cotizando el precio viejo. El frontmatter se resuelve aparte, en
+  // `src/content/config.ts`. Ver `src/lib/precios.ts`.
+  markdown: { remarkPlugins: [remarkPrecios] },
   integrations: [
     sitemap({
       // /guia/ es privada: se vende por WhatsApp, no se linkea desde ningún

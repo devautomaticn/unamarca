@@ -1,27 +1,27 @@
 ---
-title: "¿Cuánto sale registrar una marca en Argentina? Desde $79.700"
-description: 'Registrar una marca en Argentina cuesta desde $79.700: arancel del INPI (~$39.735) más $40.000 de honorarios. Mirá el precio real 2026 por clase y qué incluye.'
+title: "¿Cuánto sale registrar una marca en Argentina? Desde {{TOTAL}}"
+description: 'Registrar una marca en Argentina cuesta desde {{TOTAL}}: arancel del INPI (~{{ARANCEL}}) más {{HONORARIOS}} de honorarios. Mirá el precio real 2026 por clase y qué incluye.'
 pubDate: '2026-05-01'
-updatedDate: '2026-08-03'
+updatedDate: '2026-08-18'
 tags: []
 faqs:
   - question: "¿Cuánto sale registrar una marca en Argentina en 2026?"
-    answer: "Para una clase, el total ronda los $79.700: aproximadamente $39.735 de arancel del INPI más $40.000 de honorarios si lo hacés con UnaMarca. El arancel se actualiza todos los meses según el valor del UMAPI."
+    answer: "Para una clase, el total es de {{TOTAL}}: {{ARANCEL}} de arancel del INPI más {{HONORARIOS}} de honorarios si lo hacés con UnaMarca. El arancel se actualiza todos los meses según el valor del UMAPI."
   - question: "¿El arancel del INPI se devuelve si rechazan la marca?"
     answer: "No. El arancel del INPI no es reembolsable: si la solicitud recibe una oposición que no se resuelve o el INPI la rechaza por un problema formal, ese pago no se recupera. Por eso conviene hacer la búsqueda previa antes de pagar."
   - question: "¿Cuánto cuesta registrar una marca en dos clases?"
-    answer: "El arancel y el honorario se cobran por cada clase. Registrar en dos clases cuesta alrededor de $159.500 en total: dos veces el arancel del INPI más dos veces el honorario."
+    answer: "El arancel y el honorario se cobran por cada clase. Registrar en dos clases cuesta {{TOTAL_2}} en total: dos veces el arancel del INPI más dos veces el honorario."
   - question: "¿Registrar el logo cuesta más que registrar solo el nombre?"
-    answer: "No. Una marca mixta, que combina nombre y logo, tiene el mismo costo que una denominativa cuando se registra en una sola clase: alrededor de $79.700."
+    answer: "No. Una marca mixta, que combina nombre y logo, tiene el mismo costo que una denominativa cuando se registra en una sola clase: {{TOTAL}}."
   - question: "¿Por qué UnaMarca cobra menos que un abogado tradicional?"
-    answer: "Porque estandarizamos el caso más común en un trámite 100% online. El honorario es de $40.000, frente a los $200.000 a $300.000 que suele cobrar un estudio, sin resignar el seguimiento profesional del trámite."
+    answer: "Porque estandarizamos el caso más común en un trámite 100% online. El honorario es de {{HONORARIOS}} por clase, frente a los $200.000 a $300.000 que suele cobrar un estudio, sin resignar el seguimiento profesional del trámite."
 ---
 
-> **Actualizado agosto 2026:** El INPI cambió la forma en que calcula sus aranceles. Ya no son montos fijos en pesos sino que se actualizan mensualmente según la inflación. Te explicamos cómo funciona y cuánto sale el trámite hoy.
+> **Actualizado {{VIGENCIA}}:** El INPI cambió la forma en que calcula sus aranceles. Ya no son montos fijos en pesos sino que se actualizan mensualmente según la inflación. Te explicamos cómo funciona y cuánto sale el trámite hoy.
 
 Si querés proteger el nombre de tu negocio, tu logo o una frase que te identifica, una de las primeras preguntas es: **¿cuánto sale registrar una marca en Argentina?** La buena noticia es que no es un proceso imposible ni excesivamente caro. Eso sí, tiene costos que conviene conocer de antemano para no llevarse sorpresas.
 
-**Respuesta corta:** registrar una marca en Argentina cuesta alrededor de **$79.700** para una clase: aproximadamente **$39.735 de arancel del INPI** más **$40.000 de honorarios** si lo hacés con UnaMarca. El arancel se actualiza cada mes según el valor del UMAPI. Un abogado o estudio tradicional suele cobrar entre $200.000 y $300.000 solo de honorarios por el mismo trámite.
+**Respuesta corta:** registrar una marca en Argentina cuesta **{{TOTAL}}** para una clase: **{{ARANCEL}} de arancel del INPI** más **{{HONORARIOS}} de honorarios** si lo hacés con UnaMarca. El arancel se actualiza cada mes según el valor del UMAPI. Un abogado o estudio tradicional suele cobrar entre $200.000 y $300.000 solo de honorarios por el mismo trámite.
 
 ## Los dos costos principales
 
@@ -38,12 +38,12 @@ En la práctica esto significa que el costo siempre va a estar actualizado: no v
 
 **El costo base del trámite:**
 
-| Concepto | UMAPIS | Pesos aprox. (agosto 2026) |
+| Concepto | UMAPIS | Pesos aprox. ({{VIGENCIA}}) |
 |---|---|---|
-| Solicitud de registro — hasta 20 posiciones | 100 UMAPIS | $39.735 |
+| Solicitud de registro — hasta 20 posiciones | 100 UMAPIS | {{ARANCEL}} |
 | Cada posición adicional (más de 20) | 4 UMAPIS | $1.589 |
 
-*1 UMAPI = $397,35 (agosto 2026). El valor en pesos varía mensualmente. Consultá el valor actualizado en [Aranceles INPI](https://portaltramites.inpi.gob.ar/InfoPortal/Aranceles) antes de presentar.*
+*1 UMAPI = $397,35 ({{VIGENCIA}}). El valor en pesos varía mensualmente. Consultá el valor actualizado en [Aranceles INPI](https://portaltramites.inpi.gob.ar/InfoPortal/Aranceles) antes de presentar.*
 
 El arancel se cobra **por clase**. Si querés registrar tu marca en dos rubros distintos — por ejemplo, ropa y accesorios — pagás dos veces el arancel base. Para entender qué es una clase y cuál te corresponde, leé: [clases de marcas para registrar en Argentina](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina).
 
@@ -58,28 +58,30 @@ Contratar un profesional no es obligatorio, pero sí recomendable. Un abogado o 
 
 Los honorarios varían según el estudio o profesional, pero como referencia general oscilan entre **$200.000 y $300.000 ARS** para un registro estándar en una clase. Contestar oposiciones de terceros o vistas del INPI puede tener costos adicionales.
 
-**En UnaMarca cobramos $40.000 de honorarios**, una fracción de ese valor de mercado. Lo podemos hacer porque estandarizamos el caso más común (marca denominativa, en una clase, a nombre de una persona) en un trámite 100% online: completás la solicitud en unos minutos, firmás la carta poder desde el celular y nosotros presentamos tu solicitud ante el INPI dentro de las 48 horas hábiles. Sin reuniones ni papeleo de por medio, el costo baja sin resignar el seguimiento profesional del trámite. Podés [registrar tu marca online](/registrar) directamente desde la web.
+**En UnaMarca cobramos {{HONORARIOS}} de honorarios por clase**, entre un tercio y un cuarto de ese valor de mercado. Lo podemos hacer porque estandarizamos el caso más común (marca denominativa, en una clase, a nombre de una persona) en un trámite 100% online: completás la solicitud en unos minutos, firmás la carta poder desde el celular y nosotros presentamos tu solicitud ante el INPI dentro de las 48 horas hábiles. Sin reuniones ni papeleo de por medio, el costo baja sin resignar el seguimiento profesional del trámite. Podés [registrar tu marca online](/registrar) directamente desde la web.
 
 ## ¿Cuánto sale en total?
 
 Para un registro típico en una clase con hasta 20 posiciones:
 
-- **Arancel INPI:** ~$39.735 ARS (varía mensualmente según UMAPI)
+- **Arancel INPI:** ~{{ARANCEL}} ARS (varía mensualmente según UMAPI)
 - **Honorarios profesionales:** $200.000–$300.000 ARS
 
-Con UnaMarca el total es bastante menor: **$40.000 de honorarios más $39.735 de arancel, unos $79.700 en total** (valores de agosto 2026), todo en un solo pago al [iniciar el registro online](/registrar).
+Con UnaMarca el total es bastante menor: **{{HONORARIOS}} de honorarios más {{ARANCEL}} de arancel, {{TOTAL}} en total** (valores de {{VIGENCIA}}), todo en un solo pago al [iniciar el registro online](/registrar).
 
 ### Cuánto sale según el caso (con UnaMarca)
 
-| Escenario | Arancel INPI | Honorarios UnaMarca | Total aprox. |
+| Escenario | Arancel INPI | Honorarios UnaMarca | Total |
 |---|---|---|---|
-| 1 clase — marca denominativa (nombre) | ~$39.735 | $40.000 | **~$79.700** |
-| 1 clase — marca mixta (nombre + logo) | ~$39.735 | $40.000 | **~$79.700** |
-| 2 clases | ~$79.470 | $80.000 | **~$159.500** |
+| 1 clase — marca denominativa (nombre) | ~{{ARANCEL}} | {{HONORARIOS}} | **{{TOTAL}}** |
+| 1 clase — marca mixta (nombre + logo) | ~{{ARANCEL}} | {{HONORARIOS}} | **{{TOTAL}}** |
+| 2 clases | ~{{ARANCEL_2}} | {{HONORARIOS_2}} | **{{TOTAL_2}}** |
 
-*Valores de agosto 2026. El arancel del INPI se ajusta cada mes según el valor del UMAPI, así que el total puede variar levemente mes a mes. El honorario de UnaMarca es fijo: **$40.000 por clase**, se registre solo el nombre o el nombre junto con el logo.*
+*Valores de {{VIGENCIA}}. El arancel del INPI se ajusta cada mes según el valor del UMAPI, así que el total puede variar levemente mes a mes. El honorario de UnaMarca es fijo: **{{HONORARIOS}} por clase**, se registre solo el nombre o el nombre junto con el logo.*
 
-El arancel representa una fracción del costo total. La mayor parte del gasto suele ser el honorario profesional, que es lo que te garantiza que el trámite se hace bien desde el inicio.
+Podés sumar además la **Garantía de Devolución** por {{GARANTIA}} por clase: si el INPI deniega el registro en una clase, te devolvemos los honorarios de esa clase. Es opcional y se elige antes de pagar.
+
+La mayor parte del gasto es el honorario profesional, que es lo que te garantiza que el trámite se hace bien desde el inicio.
 
 ## ¿Se recupera el arancel si la solicitud fracasa?
 

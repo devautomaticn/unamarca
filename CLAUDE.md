@@ -83,6 +83,30 @@ fully static site.
 - No spaces, no accented characters, no trailing slashes
 - The slug in the filename **is** the final URL — do not change it after publishing
 
+### Precios dentro de un post
+
+**Nunca escribas un precio nuestro a mano en un .md.** Usá los tokens, que se
+resuelven contra `PRICING` al buildear: así un aumento no deja un artículo
+cotizando el precio viejo (que fue exactamente lo que pasó en agosto 2026).
+
+| Token | Vale |
+|---|---|
+| `{{HONORARIOS}}` / `{{HONORARIOS_2}}` | honorarios por clase / por 2 clases |
+| `{{GARANTIA}}` | Garantía de Devolución por clase |
+| `{{ARANCEL}}` / `{{ARANCEL_2}}` | arancel del INPI |
+| `{{TOTAL}}` / `{{TOTAL_2}}` | lo que paga el cliente (honorarios + arancel) |
+| `{{VIGENCIA}}` | `"agosto 2026"`, el mes del valor UMAPI publicado |
+
+- Andan en el cuerpo **y** en el frontmatter (`title`, `description`, `faqs`),
+  así que también alcanzan a la meta description y al JSON-LD de `FAQPage`.
+- El catálogo está en `src/lib/precios.ts`. El cuerpo lo resuelve
+  `src/lib/remarkPrecios.ts` (plugin de remark) y el frontmatter, un
+  `.transform()` en `src/content/config.ts`.
+- **Un token mal escrito rompe el build a propósito.** Es preferible a publicar
+  `{{HONORARIOOS}}` en la página de precio y que lo indexe Google.
+- Un dato del INPI que no está en `PRICING` (el valor del UMAPI, la posición
+  adicional de más de 20) va a mano: no hay token para eso.
+
 ---
 
 ## Local Development
@@ -93,6 +117,12 @@ npm run dev       # http://localhost:4321
 npm run build     # Build to ./dist/
 npm run preview   # Preview the built site
 ```
+
+`build` corre con `--force` (limpia la caché de la content layer). No es un
+capricho: los posts resuelven precios desde `PRICING` al buildear, y la caché
+de `.astro/` sólo se invalida cuando cambia el .md — un cambio de precio en
+`constants.ts` dejaba los artículos con el importe viejo. El sitio buildea en
+dos segundos, así que la caché no compra nada.
 
 ---
 
