@@ -232,14 +232,49 @@ posición.**
 
 Reglas que hay que respetar al cambiar esto:
 
-- **En una figurativa el `marca` que venga se descarta.** No tiene denominación
-  ante el INPI: la referencia interna la asigna `renderMarcasStep1()`, igual que
-  cuando el tipo se elige a mano en el paso 1.
+- **En una figurativa el `marca` que venga se descarta**, pero *avisando*. No
+  tiene denominación ante el INPI: la referencia interna la asigna
+  `renderMarcasStep1()`, igual que cuando el tipo se elige a mano en el paso 1.
+  Lo que no puede volver a pasar es que el descarte sea invisible — el cliente
+  se enteraba de que había elegido mal el tipo cuando el trámite ya estaba
+  firmado. `pintarPorTipo()` guarda la denominación descartada y muestra el
+  aviso con un botón que pasa la marca a mixta conservando el nombre.
 - Un `tipo` desconocido cae en `denominativa` en silencio. Es el default seguro:
   es el único que no obliga al cliente a subir una imagen después.
 - **El deep link pisa el draft guardado en `localStorage`.** Si el usuario tenía
   un pedido a medias, las marcas del link reemplazan las suyas (y se pierden las
   descripciones que hubiera cargado).
+
+---
+
+## La figurativa con texto (y la única corrección post-pago)
+
+Una marca figurativa **no puede tener ni una letra en la imagen**: si la tiene,
+es mixta, y presentarla como figurativa es defectuoso. El formulario no puede
+mirar el archivo, y el cliente que se equivoca de tipo llega al paso 5
+convencido de que acertó. Se perdió un trámite así (agosto 2026): el logo tenía
+el nombre adentro, la carta poder salió con el tipo equivocado y hubo que
+reemitirla a mano.
+
+- El paso 5 pide una **declaración obligatoria** en toda figurativa: *"¿Tu imagen
+  tiene alguna letra o palabra?"*. Va en positivo y con las dos salidas a la
+  vista, no como una casilla en negativo — *"confirmo que NO tiene texto"* se
+  tilda de taquito y no frena a nadie.
+- Si contesta que **sí**, la marca se convierte en mixta ahí mismo y se le pide
+  la denominación. El tipo se elige antes de pagar y ahí queda congelado, pero
+  la imagen recién se sube después: mandarlo a rehacer el pedido por algo que
+  **no cambia el precio** (los honorarios son por clase, no por tipo) es peor.
+- El servidor arma el pedido con el snapshot del pago e **ignora el tipo y el
+  nombre que manda el cliente**. La excepción vive en `corregirTipoPostPago()`
+  (`src/lib/server/checkout.ts`) y es la única que existe: solo
+  figurativa → mixta, solo con `corregidaAMixta: true` y una denominación no
+  vacía. Sin eso la corrección se perdería en silencio, que es exactamente el
+  bug que vino a arreglar. La corrección también se persiste en
+  `orders.payload`, para que un `?order=REF` o un reenvío de emails no
+  reconstruya la marca sin corregir.
+- **Toda figurativa dispara un aviso en el email al estudio** para que alguien
+  mire la imagen antes de presentar. Es la última defensa: la declaración la
+  hace quien no conoce la diferencia.
 
 ---
 

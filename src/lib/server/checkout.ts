@@ -174,6 +174,36 @@ export function marcasDesdePayload(p: {
     : [];
 }
 
+/** La ÚNICA corrección de tipo que se acepta después del pago: figurativa →
+ *  mixta. El tipo se elige antes de pagar y ahí queda congelado, pero la imagen
+ *  recién se sube en el paso 5, y es al verla cuando se descubre que la
+ *  "figurativa" tenía texto — que ante el INPI es una presentación defectuosa.
+ *  No cambia el precio (los honorarios son por clase, no por tipo), así que se
+ *  corrige en vez de mandar al cliente a rehacer el pedido.
+ *
+ *  Sin denominación no se corrige nada: una mixta sin texto declarado es peor
+ *  que la figurativa que veníamos a arreglar. Ninguna otra combinación de tipos
+ *  pasa: es la única que el formulario ofrece y la única que no toca el precio.
+ *
+ *  @param guardada  la marca del snapshot del pago (la fuente de verdad)
+ *  @param delCliente  la misma marca según el paso 5, que puede venir corregida
+ */
+export function corregirTipoPostPago(
+  guardada: { nombre: string; tipo?: unknown },
+  delCliente: { nombre?: unknown; corregidaAMixta?: unknown } | null | undefined,
+): { nombre: string; tipo: MarcaPedido['tipo']; correccion: string | null } {
+  const tipo = normalizeTipoMarca(guardada.tipo);
+  const denominacion = String(delCliente?.nombre ?? '').trim().slice(0, 120);
+  if (tipo !== 'figurativa' || delCliente?.corregidaAMixta !== true || !denominacion) {
+    return { nombre: guardada.nombre, tipo, correccion: null };
+  }
+  return {
+    nombre: denominacion,
+    tipo: 'mixta',
+    correccion: `«${guardada.nombre}» pasó a MIXTA con la denominación «${denominacion}»`,
+  };
+}
+
 /** Precios calculados SIEMPRE en el servidor — nunca se confía en el cliente.
  *  Una línea = una marca en una clase. */
 export function computePricing(marcas: MarcaPedido[], garantia: boolean) {

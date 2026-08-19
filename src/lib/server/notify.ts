@@ -57,6 +57,10 @@ interface OrderEmailData {
   garantia: boolean;
   total: number;
   titularResumen: [string, string][];
+  /** Cambios de tipo que el cliente hizo después de pagar (figurativa → mixta,
+   *  la única que se acepta). Van al email porque el pedido ya no coincide con
+   *  el snapshot del pago y el estudio tiene que poder verlo. */
+  correcciones?: string[];
 }
 
 /** Bloque con los datos de la cuenta: solo para pedidos por transferencia, que
@@ -144,10 +148,24 @@ function marcasAdminHTML(marcas: MarcaEmail[]): string {
       ? `${esc(m.logoAdjunto)} (adjunto a este email)`
       : '⚠ NO SE PUDO RECUPERAR — pedírselo al cliente';
 
+    // Una figurativa con texto es una presentación defectuosa, y el formulario
+    // no puede verificar la imagen: solo puede preguntarle al cliente, que es
+    // justamente quien no sabe la diferencia. La última defensa es mirarla.
+    const avisoFigurativa = tipo === 'figurativa'
+      ? `<div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:8px;padding:10px 14px;margin:0 0 10px">
+        <p style="margin:0;color:#92400e;font-size:13px;line-height:1.55">
+          <b>⚠ MIRAR LA IMAGEN ANTES DE PRESENTAR.</b> Una figurativa no puede tener
+          ni una letra. Si el logo tiene texto, es <b>mixta</b>: hay que rehacer la
+          carta poder con el tipo corregido antes de ir al INPI.
+        </p>
+      </div>`
+      : '';
+
     return `<div style="border:1px solid #e2e8f0;border-left:3px solid #2563EB;border-radius:10px;padding:14px 18px;margin-bottom:12px">
       <p style="margin:0 0 2px;color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase">Solicitud ${i + 1} de ${marcas.length} · ${esc(tipoMarcaLabel(tipo))}</p>
       <p style="margin:0 0 2px;color:#0B1D3A;font-size:16px;font-weight:800">${titulo}</p>
       <p style="margin:0 0 10px;color:#2563EB;font-size:13px;font-weight:700">${esc(clasesLabel(m.clases))}</p>
+      ${avisoFigurativa}
       <table style="width:100%;border-collapse:collapse">
         ${conLogo ? `<tr><td style="padding:4px 0;color:#64748b;font-size:13px;width:34%;vertical-align:top">Logo (JPG)</td><td style="padding:4px 0;color:#0f172a;font-size:13px">${logo}</td></tr>
         <tr><td style="padding:4px 0;color:#64748b;font-size:13px;vertical-align:top">Medidas</td><td style="padding:4px 0;color:#0f172a;font-size:13px">${esc(medidas)}</td></tr>
@@ -188,6 +206,19 @@ function adminHTML(d: OrderEmailData): string {
       : `<p style="margin:0 0 16px;font-size:13px;font-weight:700;color:${d.status === 'paid' ? '#16a34a' : '#b45309'}">
       Estado de pago: ${esc(d.status)}
     </p>`}
+    ${d.correcciones?.length
+      ? `<div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;padding:14px 18px;margin-bottom:16px">
+      <p style="margin:0 0 4px;color:#1e40af;font-size:14px;font-weight:800">Corrección de tipo después del pago</p>
+      <p style="margin:0 0 6px;color:#1e40af;font-size:13px;line-height:1.6">
+        El cliente subió el logo y avisó que tenía texto, así que la marca se
+        presenta como mixta. El precio no cambia. La carta poder adjunta ya sale
+        con el tipo corregido.
+      </p>
+      <ul style="margin:0;padding-left:18px;color:#1e40af;font-size:13px;line-height:1.6">
+        ${d.correcciones.map(c => `<li>${esc(c)}</li>`).join('')}
+      </ul>
+    </div>`
+      : ''}
     ${marcasAdminHTML(d.marcas)}
     <p style="margin:18px 0 6px;color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase">Titular</p>
     <table style="width:100%;border-collapse:collapse">${rows}</table>

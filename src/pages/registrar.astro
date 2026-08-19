@@ -148,6 +148,12 @@ const faqSchema = {
             </div>
             <p class="ck-help ck-marca-nombre-help" hidden></p>
           </div>
+          <!-- Pasar a figurativa tira la denominación que el cliente ya vio en
+               pantalla. La regla es correcta (ante el INPI la figurativa no
+               lleva denominación), pero hacerlo en silencio lo deja sin manera
+               de notar que se equivocó de tipo: nos enteramos al ir a
+               presentar el trámite. -->
+          <p class="ck-marca-aviso" hidden></p>
         </div>
       </template>
 
@@ -207,6 +213,10 @@ const faqSchema = {
             <svg class="ck-fold-caret" width="12" height="8" viewBox="0 0 10 6" fill="none" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </summary>
           <div class="ck-fold-body">
+          <!-- Con dos errores a la vez el cliente arregla el que tiene cerca,
+               reintenta, y sigue sin avanzar: se lee como "el formulario está
+               roto". Cuando falta más de una cosa se listan todas acá arriba. -->
+          <p class="ck-card-errsum" hidden></p>
           <div class="ck-field">
             <label>
               <span class="ck-desc-label">Descripción de tu marca</span> <em>*</em>
@@ -228,6 +238,14 @@ const faqSchema = {
           <div class="ck-field">
             <label>Página web <span class="ck-field-opt">(opcional)</span></label>
             <input type="url" class="ck-sitio" placeholder="https://tumarca.com" autocomplete="url" inputmode="url" />
+            <!-- El campo es opcional, pero quien lee una pregunta la quiere
+                 contestar: sin esta casilla el cliente escribe "no tengo" o
+                 "en proceso" y la validación de formato lo frena sin decirle
+                 cuál era la salida. Pasó, y costó dos horas de WhatsApp. -->
+            <label class="ck-terms ck-sinweb-wrap">
+              <input type="checkbox" class="ck-sinweb" />
+              <span>Todavía no tengo página web</span>
+            </label>
             <p class="ck-err ck-sitio-err"></p>
           </div>
 
@@ -251,6 +269,48 @@ const faqSchema = {
               <div class="ck-logo-side">
                 <p class="ck-logo-meta"></p>
                 <button type="button" class="ck-link-btn ck-logo-otra">Cambiar imagen</button>
+              </div>
+            </div>
+
+            <!-- Solo figurativa. Es el único control posible sobre "esta
+                 imagen no puede tener ni una letra": el formulario no puede
+                 mirar el archivo, y el cliente que se equivocó de tipo llega
+                 hasta acá convencido de que acertó. Por eso la pregunta va en
+                 positivo y con las dos salidas a la vista, en vez de una
+                 casilla en negativo ("confirmo que NO tiene texto") que se
+                 tilda de taquito. -->
+            <div class="ck-figtxt" hidden>
+              <p class="ck-figtxt-q">¿Tu imagen tiene alguna letra o palabra? <em>*</em></p>
+              <label class="ck-terms">
+                <input type="radio" class="ck-figtxt-opt" value="no" />
+                <span>No, es solo un dibujo, un símbolo o una forma</span>
+              </label>
+              <label class="ck-terms">
+                <input type="radio" class="ck-figtxt-opt" value="si" />
+                <span>Sí, tiene texto (aunque sea solo el nombre de la marca)</span>
+              </label>
+              <p class="ck-err ck-figtxt-err"></p>
+            </div>
+
+            <!-- El tipo se elige en el paso 1 y ahí queda bloqueado por el
+                 pago, pero la imagen recién se sube acá: es al verla cuando se
+                 descubre que la figurativa era mixta. Como el precio no cambia
+                 (los honorarios son por clase, no por tipo), se corrige acá
+                 mismo en vez de mandar al cliente de vuelta. -->
+            <div class="ck-denomfix" hidden>
+              <p class="ck-denomfix-aviso">
+                <b>Entonces tu marca es Mixta, no Figurativa.</b> Una figurativa
+                se presenta sin ningún texto, así que si la presentáramos así
+                el INPI la observaría. Te la cambiamos: no cambia lo que pagaste.
+              </p>
+              <div class="ck-field">
+                <label class="ck-denom-label">Denominación de tu marca <em>*</em></label>
+                <input type="text" class="ck-denom" maxlength="120" autocomplete="off" />
+                <p class="ck-help">
+                  Escribí exactamente todo el texto que aparece en la imagen, en
+                  el mismo orden. Es lo que va a quedar registrado.
+                </p>
+                <p class="ck-err ck-denom-err"></p>
               </div>
             </div>
 
@@ -625,8 +685,10 @@ const faqSchema = {
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><ellipse cx="12" cy="12" rx="11" ry="8" stroke="currentColor" stroke-width="1.6"/><path d="M5 12c2-.8 3.4-2.4 4.6-2.4 1.3 0 1.8 1.2 2.9 1.2 1 0 1.7-.9 3-.9 1.5 0 2.4 1.3 3.5 2.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
             </span>
             <span class="ck-pm-title">Mercado Pago</span>
+            <!-- Sin "cuotas": no las ofrecemos, y prometerlas acá hace que el
+                 "no" llegue después de una expectativa que creamos nosotros. -->
             <span class="ck-pm-desc">
-              Tarjeta de crédito o débito, cuotas y dinero en cuenta.
+              Tarjeta de crédito o débito y dinero en cuenta.
               Se acredita al instante.
             </span>
             <span class="ck-pm-go" id="ck-mp-label">Pagar con Mercado Pago</span>
@@ -913,6 +975,15 @@ const faqSchema = {
     /** Solo mixta: el cliente confirma que la denominación transcribe todo el
      *  texto de la imagen (si no coincide, el INPI corrige de oficio). */
     confirmaTexto: boolean;
+    /** Solo figurativa: qué declaró el cliente sobre su imagen en el paso 5.
+     *  true = no tiene texto (es figurativa de verdad), null = todavía no
+     *  contestó. Un "sí, tiene texto" no se guarda: convierte la marca en
+     *  mixta en el acto, así que este campo vuelve a null. */
+    sinTexto: boolean | null;
+    /** La marca nació figurativa y el cliente la corrigió a mixta en el paso 5,
+     *  después de pagar. El servidor solo acepta ese cambio de tipo si viene
+     *  con denominación, y lo deja asentado en el email al estudio. */
+    corregidaAMixta?: boolean;
     /** Key en R2, la escribe el servidor al subir */
     logoKey: string | null;
     /** Transitorios: no van al draft (un JPG no entra en localStorage) */
@@ -923,7 +994,7 @@ const faqSchema = {
   }
   const nuevaMarca = (nombre = '', tipo: TipoMarca = 'denominativa'): MarcaState => ({
     nombre, tipo, clases: [], descripcion: '', sitioWeb: '',
-    colores: '', alto: null, ancho: null, confirmaTexto: false,
+    colores: '', alto: null, ancho: null, confirmaTexto: false, sinTexto: null,
     logoKey: null, logoBlob: null, logoUrl: null, logoNombre: '', logoPx: null,
   });
 
@@ -1063,6 +1134,8 @@ const faqSchema = {
         alto: typeof m?.alto === 'number' ? m.alto : null,
         ancho: typeof m?.ancho === 'number' ? m.ancho : null,
         confirmaTexto: m?.confirmaTexto === true,
+        sinTexto: m?.sinTexto === true ? true : null,
+        corregidaAMixta: m?.corregidaAMixta === true,
         logoKey: typeof m?.logoKey === 'string' ? m.logoKey : null,
       }));
     }
@@ -1269,48 +1342,83 @@ const faqSchema = {
     return ok;
   }
 
+  /** Enumeración en castellano: "la descripción, los colores y la imagen". */
+  function enumerar(xs: string[]): string {
+    if (xs.length <= 1) return xs[0] ?? '';
+    return `${xs.slice(0, -1).join(', ')} y ${xs[xs.length - 1]}`;
+  }
+
   /** Paso 5 (fase B, 1/3): lo que describe a la marca. Una tarjeta por marca. */
   function validateMarcaDetalle(): boolean {
     let ok = true;
-    let primerError: HTMLElement | null = null;
+    // Adónde mandamos al cliente: al campo cuando falta una sola cosa, al
+    // resumen de arriba cuando faltan varias (si lo dejamos en un campo del
+    // medio, el resumen que las lista queda fuera de pantalla).
+    let foco: HTMLElement | null = null;
+    let primerCard: HTMLElement | null = null;
     document.querySelectorAll<HTMLElement>('#ck-desc-cards .ck-dcard').forEach((card, i) => {
       const m = marcas[i];
       if (!m) return;
       const errDesc = card.querySelector<HTMLElement>('.ck-desc-err')!;
       const errSitio = card.querySelector<HTMLElement>('.ck-sitio-err')!;
+      const resumen = card.querySelector<HTMLElement>('.ck-card-errsum')!;
       setErrEl(errDesc, '');
       setErrEl(errSitio, '');
 
+      // Qué falta en esta tarjeta, con el campo al que hay que llevarlo
+      const faltan: { campo: HTMLElement; que: string }[] = [];
+      const fallo = (el: HTMLElement, msg: string, campo: HTMLElement, que: string) => {
+        setErrEl(el, msg);
+        faltan.push({ campo, que });
+        ok = false;
+      };
+
+      // Se llama una vez por tarjeta, después de correr todos los controles
+      function pintarResumen() {
+        const varios = faltan.length > 1;
+        resumen.textContent = varios
+          ? `Faltan ${faltan.length} cosas en esta marca: ${enumerar(faltan.map(f => f.que))}.`
+          : '';
+        resumen.hidden = !varios;
+        if (!faltan.length || primerCard) return;
+        primerCard = card;
+        foco = varios ? resumen : faltan[0].campo;
+      }
+
       const descripcion = m.descripcion.trim();
       if ((descripcion || !FIELDS_OPTIONAL) && descripcion.length < MIN_DESCRIPCION) {
-        setErrEl(errDesc, `Contanos un poco más: mínimo ${MIN_DESCRIPCION} caracteres (llevás ${descripcion.length}).`);
-        primerError = primerError || card;
-        ok = false;
+        fallo(
+          errDesc,
+          `Contanos un poco más: mínimo ${MIN_DESCRIPCION} caracteres (llevás ${descripcion.length}).`,
+          card.querySelector<HTMLElement>('.ck-desc')!,
+          'la descripción',
+        );
       }
 
       const sitioWeb = m.sitioWeb.trim();
       if (sitioWeb && !/^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/\S*)?$/i.test(sitioWeb)) {
-        setErrEl(errSitio, 'Ingresá una dirección web válida (ej: https://tumarca.com).');
-        primerError = primerError || card;
-        ok = false;
+        fallo(
+          errSitio,
+          'Esa no parece una dirección web. Si todavía no tenés, tildá “Todavía no tengo página web”.',
+          card.querySelector<HTMLElement>('.ck-sitio')!,
+          'la dirección web',
+        );
       }
 
       // Logo, medidas y colores: obligatorios en mixta y figurativa
-      if (!requiereLogo(m.tipo)) return;
+      if (!requiereLogo(m.tipo)) { pintarResumen(); return; }
       const errLogo = card.querySelector<HTMLElement>('.ck-logo-err')!;
       const errMedidas = card.querySelector<HTMLElement>('.ck-medidas-err')!;
       const errColores = card.querySelector<HTMLElement>('.ck-colores-err')!;
       const errConfirm = card.querySelector<HTMLElement>('.ck-confirm-err')!;
-      [errLogo, errMedidas, errColores, errConfirm].forEach(el => setErrEl(el, ''));
-      if (FIELDS_OPTIONAL) return;
+      const errFigtxt = card.querySelector<HTMLElement>('.ck-figtxt-err')!;
+      const errDenom = card.querySelector<HTMLElement>('.ck-denom-err')!;
+      [errLogo, errMedidas, errColores, errConfirm, errFigtxt, errDenom]
+        .forEach(el => setErrEl(el, ''));
+      if (FIELDS_OPTIONAL) { pintarResumen(); return; }
 
-      const fallo = (el: HTMLElement, msg: string) => {
-        setErrEl(el, msg);
-        primerError = primerError || card;
-        ok = false;
-      };
       if (!m.logoBlob && !m.logoKey) {
-        fallo(errLogo, 'Subí la imagen de tu marca.');
+        fallo(errLogo, 'Subí la imagen de tu marca.', card.querySelector<HTMLElement>('.ck-drop')!, 'la imagen');
       }
       // Las medidas no se muestran: las derivamos de la imagen. Si por lo que
       // sea faltan, se completan con el cuadrado por defecto en vez de frenar
@@ -1324,16 +1432,46 @@ const faqSchema = {
         saveDraft();
       }
       if (!m.colores.trim()) {
-        fallo(errColores, 'Escribí los colores de la imagen. Si es en blanco y negro, poné “Blanco y negro”.');
+        fallo(
+          errColores,
+          'Escribí los colores de la imagen. Si es en blanco y negro, poné “Blanco y negro”.',
+          card.querySelector<HTMLElement>('.ck-colores')!,
+          'los colores',
+        );
       }
-      if (m.tipo === 'mixta' && !m.confirmaTexto) {
-        fallo(errConfirm, 'Confirmá que la denominación coincide con el texto de la imagen.');
+      // Figurativa: sin la declaración no se avanza. Es lo único que puede
+      // frenar una figurativa con texto ANTES de que se firme la carta poder.
+      if (m.tipo === 'figurativa' && m.sinTexto !== true) {
+        fallo(
+          errFigtxt,
+          'Contestanos si la imagen tiene texto: de eso depende cómo se presenta.',
+          card.querySelector<HTMLElement>('.ck-figtxt')!,
+          'si la imagen tiene texto',
+        );
       }
+      // Mixta sin denominación = venía de una figurativa corregida acá
+      if (m.tipo === 'mixta' && !m.nombre.trim()) {
+        fallo(
+          errDenom,
+          'Escribí el texto que aparece en la imagen: es lo que se registra.',
+          card.querySelector<HTMLElement>('.ck-denom')!,
+          'la denominación',
+        );
+      }
+      if (m.tipo === 'mixta' && m.nombre.trim() && !m.confirmaTexto) {
+        fallo(
+          errConfirm,
+          'Confirmá que la denominación coincide con el texto de la imagen.',
+          card.querySelector<HTMLElement>('.ck-logo-ok')!,
+          'la confirmación del texto',
+        );
+      }
+      pintarResumen();
     });
-    if (primerError) {
+    if (primerCard) {
       // La tarjeta puede estar plegada: un error escondido no se puede corregir
-      (primerError as HTMLDetailsElement).open = true;
-      (primerError as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
+      (primerCard as HTMLDetailsElement).open = true;
+      (foco as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
     return ok;
   }
@@ -1480,6 +1618,47 @@ const faqSchema = {
       sel.id = `ck-tipo-marca-${i}`;
       tipoLabel.setAttribute('for', sel.id);
 
+      const aviso = row.querySelector<HTMLElement>('.ck-marca-aviso')!;
+      // La denominación que se descartó al pasar a figurativa. Se guarda para
+      // poder devolverla de un click: el error típico es haber elegido mal el
+      // tipo, no haber querido tirar el nombre.
+      let denomDescartada = '';
+
+      const pintarAviso = () => {
+        aviso.textContent = '';
+        // Con el pedido pagado el tipo ya no se toca acá: la corrección de la
+        // figurativa vive en el paso 5, al lado de la imagen.
+        aviso.hidden = !denomDescartada || pedidoBloqueado;
+        if (aviso.hidden) return;
+
+        const txt = document.createElement('span');
+        txt.append('Ojo: ');
+        const b = document.createElement('b');
+        b.textContent = denomDescartada.toUpperCase();
+        txt.append(b);
+        txt.append(
+          ' no va a quedar registrado. La marca figurativa se presenta sin ningún ' +
+          'texto, así que protege el dibujo pero no el nombre. Si querés proteger ' +
+          'los dos, la opción es Mixta.',
+        );
+        const fix = document.createElement('button');
+        fix.type = 'button';
+        fix.className = 'ck-link-btn ck-marca-aviso-fix';
+        fix.textContent = 'Cambiar a Mixta y conservar el nombre';
+        fix.addEventListener('click', () => {
+          m.tipo = 'mixta';
+          m.nombre = denomDescartada;
+          m.confirmaTexto = false;
+          denomDescartada = '';
+          sel.value = m.tipo;
+          inp.value = m.nombre;
+          pintarPorTipo();
+          setErr('marca', '');
+          saveDraft();
+        });
+        aviso.append(txt, fix);
+      };
+
       // El campo de nombre depende del tipo elegido: se repinta sin re-render
       // para no perder el foco mientras el usuario escribe.
       const pintarPorTipo = () => {
@@ -1495,9 +1674,18 @@ const faqSchema = {
         // Figurativa: el nombre lo ponemos nosotros y no se edita
         inp.readOnly = !conDenominacion;
         if (!conDenominacion) {
+          // Acá se descarta la denominación. Antes se hacía en silencio y el
+          // cliente no tenía cómo enterarse de que se había equivocado de
+          // tipo: se descubría al ir a presentar el trámite ante el INPI.
+          // Cubre los dos caminos, el selector y el deep link con ?tipo=.
+          const previo = m.nombre.trim();
+          if (previo && !esNombreFigurativaAuto(previo)) denomDescartada = previo;
           m.nombre = nombreFigurativa(i);
           inp.value = m.nombre;
+        } else {
+          denomDescartada = '';
         }
+        pintarAviso();
       };
 
       inp.maxLength = 120;
@@ -2108,6 +2296,24 @@ const faqSchema = {
         saveDraft();
       });
 
+      // "Todavía no tengo web" vacía el campo y lo apaga: le da dónde contestar
+      // que no tiene, en vez de escribirlo adentro y comerse un error de
+      // formato. No se persiste: al recargar queda destildado con el campo
+      // vacío, que es exactamente el mismo estado.
+      const sinWeb = card.querySelector<HTMLInputElement>('.ck-sinweb')!;
+      sinWeb.checked = false;
+      sinWeb.addEventListener('change', () => {
+        sitio.disabled = sinWeb.checked;
+        if (sinWeb.checked) {
+          sitio.value = '';
+          m.sitioWeb = '';
+          setErrEl(card.querySelector<HTMLElement>('.ck-sitio-err'), '');
+          saveDraft();
+        } else {
+          sitio.focus();
+        }
+      });
+
       updateHelp();
       montarLogo(card, m, i);
       cont.append(card);
@@ -2138,10 +2344,20 @@ const faqSchema = {
     const errColores = card.querySelector<HTMLElement>('.ck-colores-err')!;
     const errConfirm = card.querySelector<HTMLElement>('.ck-confirm-err')!;
 
+    const figtxt = card.querySelector<HTMLElement>('.ck-figtxt')!;
+    const figOpts = card.querySelectorAll<HTMLInputElement>('.ck-figtxt-opt');
+    const denomFix = card.querySelector<HTMLElement>('.ck-denomfix')!;
+    const denom = card.querySelector<HTMLInputElement>('.ck-denom')!;
+    const errFigtxt = card.querySelector<HTMLElement>('.ck-figtxt-err')!;
+    const errDenom = card.querySelector<HTMLElement>('.ck-denom-err')!;
+
     file.id = `ck-logo-${i}`;
     alto.id = `ck-logo-alto-${i}`;
     ancho.id = `ck-logo-ancho-${i}`;
     colores.id = `ck-colores-${i}`;
+    denom.id = `ck-denom-${i}`;
+    // Los radios de una tarjeta no pueden competir con los de otra marca
+    figOpts.forEach(r => { r.name = `ck-figtxt-${i}`; });
     bloque.querySelectorAll('label').forEach(l => {
       const campo = l.parentElement?.querySelector('input');
       if (campo?.id && !l.classList.contains('ck-terms')) l.setAttribute('for', campo.id);
@@ -2244,16 +2460,86 @@ const faqSchema = {
       saveDraft();
     });
 
+    // ── Figurativa: la declaración sobre el texto de la imagen ──
+    // La única barrera posible antes de que se firme la carta poder.
+    figtxt.hidden = m.tipo !== 'figurativa';
+    if (m.tipo === 'figurativa') {
+      figOpts.forEach(r => {
+        r.checked = r.value === 'no' && m.sinTexto === true;
+        r.addEventListener('change', () => {
+          if (!r.checked) return;
+          setErrEl(errFigtxt, '');
+          if (r.value === 'no') {
+            m.sinTexto = true;
+            saveDraft();
+            return;
+          }
+          // "Sí, tiene texto" → no es figurativa. Se corrige acá porque el
+          // selector del paso 1 ya está bloqueado por el pago, y mandarlo a
+          // rehacer el pedido por algo que no cambia el precio es peor.
+          m.tipo = 'mixta';
+          m.corregidaAMixta = true;
+          m.sinTexto = null;
+          m.confirmaTexto = false;
+          // El nombre que teníamos era la referencia interna que le pusimos
+          // nosotros, no una denominación: no sirve como texto de la marca.
+          if (esNombreFigurativaAuto(m.nombre)) m.nombre = '';
+          saveDraft();
+          renderDescCards();
+          renderMarcasStep1();
+          // El panel del pedido sigue mostrando la referencia interna que le
+          // habíamos puesto a la figurativa: sin esto la marca queda con dos
+          // nombres distintos en la misma pantalla.
+          updateSummary();
+          const nueva = document.querySelectorAll<HTMLElement>('#ck-desc-cards .ck-dcard')[i];
+          const campo = nueva?.querySelector<HTMLInputElement>('.ck-denom');
+          campo?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          campo?.focus();
+        });
+      });
+    }
+
+    // El campo de denominación solo existe en la mixta que se corrigió acá: la
+    // que viene bien del paso 1 ya tiene su nombre y no se toca después de
+    // pagar. Se queda a la vista aunque ya esté escrito (y aunque el cliente
+    // recargue), porque es el único lugar donde puede corregir un tipeo.
+    const faltaDenom = m.tipo === 'mixta' && (!m.nombre.trim() || m.corregidaAMixta === true);
+    denomFix.hidden = !faltaDenom;
+    if (faltaDenom) {
+      denom.value = m.nombre;
+      denom.disabled = false;
+      denom.addEventListener('input', () => {
+        m.nombre = denom.value;
+        setErrEl(errDenom, '');
+        // La confirmación de abajo cita la denominación: si cambia, el texto
+        // que se confirmó ya no es el mismo y hay que volver a tildarla.
+        m.confirmaTexto = false;
+        confirmChk.checked = false;
+        pintarConfirm();
+        // El panel del pedido y el título de la tarjeta muestran el nombre:
+        // hasta que se escribe acá, la marca no tiene ninguno.
+        updateSummary();
+        card.querySelector<HTMLElement>('.ck-dcard-name')!.textContent =
+          m.nombre.trim().toUpperCase() || `Marca ${i + 1}`;
+        saveDraft();
+      });
+    }
+
     // La confirmación es solo de la mixta: es el tipo donde la denominación
-    // tiene que transcribir todo el texto de la imagen.
+    // tiene que transcribir todo el texto de la imagen. El texto cita la
+    // denominación, así que se repinta cuando ésta se escribe acá mismo.
     const esMixta = m.tipo === 'mixta';
-    confirmWrap.hidden = !esMixta;
-    errConfirm.hidden = !esMixta;
-    if (esMixta) {
-      const denom = m.nombre.trim().toUpperCase();
-      confirmTxt.textContent = denom
-        ? `Confirmo que “${denom}” es exactamente todo el texto que aparece en la imagen.`
+    function pintarConfirm() {
+      confirmWrap.hidden = !esMixta;
+      errConfirm.hidden = !esMixta;
+      if (!esMixta) return;
+      const texto = m.nombre.trim().toUpperCase();
+      confirmTxt.textContent = texto
+        ? `Confirmo que “${texto}” es exactamente todo el texto que aparece en la imagen.`
         : 'Confirmo que la denominación es exactamente todo el texto que aparece en la imagen.';
+    }
+    pintarConfirm();
+    if (esMixta) {
       confirmChk.checked = m.confirmaTexto;
       confirmChk.addEventListener('change', () => {
         m.confirmaTexto = confirmChk.checked;
@@ -2701,6 +2987,9 @@ const faqSchema = {
         clases: m.clases,
         descripcion: m.descripcion.trim(),
         sitioWeb: m.sitioWeb.trim(),
+        // El servidor arma el pedido con el snapshot del pago, donde esta marca
+        // todavía es figurativa: sin esta bandera la corrección se perdería.
+        ...(m.corregidaAMixta ? { corregidaAMixta: true } : {}),
         ...(requiereLogo(m.tipo) ? {
           colores: m.colores.trim(),
           alto: m.alto,
@@ -3173,6 +3462,15 @@ const faqSchema = {
 }
 .ck-marca-row .ck-field { margin-bottom: 0; }
 @media (max-width: 580px) { .ck-marca-row { grid-template-columns: 1fr; gap: 0.75rem; } }
+/* Aviso de que pasar a figurativa descarta la denominación escrita */
+.ck-marca-aviso {
+  grid-column: 1 / -1; margin: 0.25rem 0 0;
+  background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 10px;
+  padding: 0.75rem 1rem;
+  font-size: 0.8125rem; color: #92400e; line-height: 1.6;
+}
+.ck-marca-aviso .ck-link-btn { display: flex; margin-top: 0.5rem; color: #b45309; }
+
 .ck-marca-input { display: flex; align-items: center; gap: 0.5rem; }
 .ck-marca-input input { flex: 1; min-width: 0; }
 .ck-marca-rm[hidden] { display: none; }
@@ -3283,6 +3581,39 @@ const faqSchema = {
 .ck-logo-side { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 0.2rem; }
 .ck-logo-meta { font-size: 0.78rem; color: #64748b; line-height: 1.5; word-break: break-word; margin: 0; }
 .ck-logo-confirm[hidden] { display: none; }
+
+/* Figurativa: la declaración de que la imagen no tiene texto. Va pegada a la
+   imagen porque es una pregunta sobre el archivo que acaba de subir. */
+.ck-figtxt {
+  margin-top: 1.25rem; padding: 1rem 1.125rem;
+  border: 1.5px solid #e2e8f0; border-radius: 12px; background: #f8fafc;
+}
+.ck-figtxt-q { margin: 0; font-size: 0.8125rem; font-weight: 700; color: #0b1d3a; }
+.ck-figtxt-q em { color: #dc2626; font-style: normal; }
+.ck-figtxt .ck-terms { margin-top: 0.625rem; padding-top: 0; border-top: none; }
+.ck-figtxt .ck-terms span { color: #334155; }
+.ck-figtxt .ck-err { margin-top: 0.625rem; }
+
+/* La figurativa que resultó ser mixta: se corrige acá, ya con el pedido pagado */
+.ck-denomfix {
+  margin-top: 1.25rem; padding: 1rem 1.125rem;
+  border: 1.5px solid #fde68a; border-radius: 12px; background: #fffbeb;
+}
+.ck-denomfix-aviso {
+  margin: 0 0 0.875rem; font-size: 0.8125rem; color: #92400e; line-height: 1.6;
+}
+.ck-denomfix .ck-field { margin-bottom: 0; }
+
+/* "Todavía no tengo página web": es la respuesta a un campo, no un
+   consentimiento, así que no lleva el separador de .ck-terms */
+.ck-sinweb-wrap { margin-top: 0.5rem; padding-top: 0; border-top: none; }
+
+/* Cuando falta más de una cosa en la misma marca, todas juntas y arriba */
+.ck-card-errsum {
+  background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 10px;
+  padding: 0.75rem 1rem; margin: 0 0 1.25rem;
+  font-size: 0.8125rem; font-weight: 600; color: #b91c1c; line-height: 1.55;
+}
 
 
 /* ─── Qué incluye + upsell de garantía ─── */

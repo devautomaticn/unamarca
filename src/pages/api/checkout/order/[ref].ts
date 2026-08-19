@@ -10,7 +10,7 @@ export const prerender = false;
 
 import {
   type CheckoutEnv, base64FromArrayBuffer, ensureSchema, ensureProgresoColumn,
-  ensureVigilanteColumn, json, marcasDesdePayload, sanitizeCm,
+  ensureVigilanteColumn, json, marcasDesdePayload, sanitizeCm, corregirTipoPostPago,
 } from '@/lib/server/checkout';
 import { sendOrderEmails, sendVigilanteAlert, type MarcaEmail } from '@/lib/server/notify';
 import { crearAltaVigilante, type VigilanteEnv } from '@/lib/server/vigilante';
@@ -116,6 +116,11 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
 
   const storedMarcas = marcasDesdePayload(stored);
 
+  // Correcciones de tipo que el cliente hizo en el paso 5, ya con el pedido
+  // pagado (ver corregirTipoPostPago). Van al email: el pedido dejó de
+  // coincidir con el snapshot del pago y el estudio tiene que poder verlo.
+  const correcciones: string[] = [];
+
   // El tipo y la key del logo salen del snapshot del servidor; la
   // enunciación de colores y las medidas las carga el cliente en el paso 5.
   const marcas: MarcaEmail[] = storedMarcas.map((m, i) => {
@@ -125,9 +130,10 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
         ? porIndice
         : porNombre[m.nombre.toLowerCase()] ?? porIndice
     ) ?? {};
-    const tipo = m.tipo ?? 'denominativa';
+    const { nombre, tipo, correccion } = corregirTipoPostPago(m, extra);
+    if (correccion) correcciones.push(correccion);
     return {
-      nombre: m.nombre,
+      nombre,
       clases: m.clases,
       tipo,
       descripcion: (extra.descripcion || '').trim(),
@@ -140,6 +146,31 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
       } : {}),
     };
   });
+
+  // El pedido guardado tiene que quedar igual a lo que se presenta: si no, el
+  // cliente que vuelve con ?order=REF ve otra vez la marca sin corregir, y un
+  // reenvío de emails la reconstruiría mal.
+  if (correcciones.length) {
+    console.warn(`[${ref}] corrección de tipo post-pago: ${correcciones.join(' · ')}`);
+    if (Array.isArray(stored.marcas)) {
+      marcas.forEach((mc, i) => {
+        if (stored.marcas[i]) {
+          stored.marcas[i].nombre = mc.nombre;
+          stored.marcas[i].tipo = mc.tipo;
+        }
+      });
+    } else if (stored.marca) {
+      stored.marca.nombre = marcas[0].nombre;
+      stored.marca.tipo = marcas[0].tipo;
+    }
+    try {
+      await env.DB.prepare('UPDATE orders SET payload = ?, updated_at = ? WHERE ref = ?')
+        .bind(JSON.stringify(stored), new Date().toISOString(), ref).run();
+    } catch (e) {
+      // No frena el checkout: los emails y el alta ya llevan el tipo corregido
+      console.error(`[${ref}] no se pudo persistir la corrección de tipo:`, e);
+    }
+  }
 
   // Los logos se leen UNA vez de R2 y los usan los dos consumidores: el email
   // del admin (en base64) y el alta en el portal (como parte multipart). Si el
@@ -174,6 +205,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
       ref,
       status: row.status,
       marcas,
+      correcciones,
       clientEmail: stored.contacto?.email || completion?.contacto?.email || '',
       garantia: !!stored.garantia,
       total: stored.pricing?.total ?? 0,
