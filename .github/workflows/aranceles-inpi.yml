@@ -1,0 +1,73 @@
+name: Aranceles INPI
+
+# Mantiene sincronizados los aranceles del INPI con lo que publica el portal.
+#
+# El INPI ajusta el valor de la UMAPI todos los meses por IPC, así que cualquier
+# importe escrito a mano queda viejo el día 1. Este workflow baja el valor
+# vigente, regenera `src/data/aranceles-inpi.json` y `src/data/arancel-vigente.ts`
+# y, si cambió algo, commitea. El push dispara el deploy de Cloudflare Pages y el
+# sitio entero (la página de aranceles, /registrar y los precios de los posts)
+# sale con el número nuevo sin que nadie toque nada.
+#
+# Corre todos los días porque el INPI no avisa cuándo actualiza: el valor nuevo
+# rige desde el día 1 y el aviso del mes siguiente aparece a mitad de mes, sin
+# fecha fija. Los días que no cambió nada el script no escribe y no hay commit.
+
+on:
+  schedule:
+    # 12:00 UTC = 09:00 en Buenos Aires. El portal ya está actualizado a esa hora.
+    - cron: '0 12 * * *'
+  workflow_dispatch:
+
+# Sin esto el push del bot rebota con 403.
+permissions:
+  contents: write
+
+# Dos corridas pisándose commitearían el mismo cambio dos veces.
+concurrency:
+  group: aranceles-inpi
+  cancel-in-progress: false
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Bajar aranceles del INPI
+        run: |
+          # El portal del INPI se cae seguido y devuelve 502 de a ratos. Tres
+          # intentos espaciados antes de dar la corrida por perdida: si falla de
+          # verdad queremos enterarnos, pero no por un hipo de dos minutos.
+          for intento in 1 2 3; do
+            if node scripts/actualizar-aranceles.mjs; then
+              exit 0
+            fi
+            echo "Intento $intento falló; reintento en 60s"
+            sleep 60
+          done
+          echo "::error::No pude leer los aranceles del INPI después de 3 intentos"
+          exit 1
+
+      - name: Commitear si cambió
+        run: |
+          if [ -z "$(git status --porcelain src/data)" ]; then
+            echo "Sin cambios en los aranceles."
+            exit 0
+          fi
+
+          umapi=$(node -p "require('./src/data/aranceles-inpi.json').umapi")
+          mes=$(node -p "require('./src/data/aranceles-inpi.json').vigenciaTexto")
+
+          git config user.name  'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/data/aranceles-inpi.json src/data/arancel-vigente.ts
+          git commit -m "Aranceles INPI: 1 UMAPI = \$$umapi ($mes)"
+          git push
+
+          echo "### Aranceles actualizados" >> "$GITHUB_STEP_SUMMARY"
+          echo "1 UMAPI = \$$umapi ($mes)" >> "$GITHUB_STEP_SUMMARY"
