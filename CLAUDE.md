@@ -95,6 +95,8 @@ cotizando el precio viejo (que fue exactamente lo que pasó en agosto 2026).
 | `{{GARANTIA}}` | Garantía de Devolución por clase |
 | `{{ARANCEL}}` / `{{ARANCEL_2}}` | arancel del INPI |
 | `{{TOTAL}}` / `{{TOTAL_2}}` | lo que paga el cliente (honorarios + arancel) |
+| `{{UMAPI}}` | valor de 1 UMAPI |
+| `{{ARANCEL_POSICION}}` | excedente por posición del nomenclador (>20) |
 | `{{VIGENCIA}}` | `"agosto 2026"`, el mes del valor UMAPI publicado |
 
 - Andan en el cuerpo **y** en el frontmatter (`title`, `description`, `faqs`),
@@ -104,8 +106,9 @@ cotizando el precio viejo (que fue exactamente lo que pasó en agosto 2026).
   `.transform()` en `src/content/config.ts`.
 - **Un token mal escrito rompe el build a propósito.** Es preferible a publicar
   `{{HONORARIOOS}}` en la página de precio y que lo indexe Google.
-- Un dato del INPI que no está en `PRICING` (el valor del UMAPI, la posición
-  adicional de más de 20) va a mano: no hay token para eso.
+- Los tres tokens del INPI (`{{ARANCEL}}`, `{{UMAPI}}`, `{{ARANCEL_POSICION}}`)
+  salen del snapshot que se baja del portal, no de `PRICING`. **Nunca escribas
+  un arancel a mano en un post**: se actualiza todos los meses. Ver más abajo.
 
 ---
 
@@ -205,6 +208,46 @@ The catalog is published at `/wa-catalog.json` (generated at build time from
 instead of hardcoding the strings. Do not remove that endpoint.
 
 ---
+
+---
+
+## Los aranceles del INPI se actualizan solos
+
+El INPI cobra en **UMAPI** (Res. 75/2026) y el valor en pesos de la UMAPI se
+ajusta **todos los meses** por IPC. Antes el número estaba escrito a mano en seis
+archivos y se actualizaba de memoria: cada mes que nos olvidábamos, la página de
+precio —la de más tráfico del sitio— cotizaba el arancel del mes pasado.
+
+Ahora no hay nada que hacer a mano. `.github/workflows/aranceles-inpi.yml` corre
+todos los días a las 9 de la mañana, `scripts/actualizar-aranceles.mjs` baja el
+valor vigente del portal del INPI y, si cambió, commitea. El push dispara el
+deploy y el sitio entero sale con el número nuevo.
+
+```
+portal del INPI ──► scripts/actualizar-aranceles.mjs
+                      ├─► src/data/aranceles-inpi.json   (tabla completa + histórico)
+                      │     └─► /aranceles-inpi          (la página)
+                      │     └─► {{UMAPI}}, {{ARANCEL_POSICION}}
+                      └─► src/data/arancel-vigente.ts    (dos números)
+                            └─► PRICING.arancelInpi      (/registrar, {{ARANCEL}}, {{TOTAL}})
+```
+
+- **Los dos archivos de `src/data/` son generados. No los edites**: la próxima
+  corrida los pisa. Para forzar una actualización, `npm run aranceles`.
+- Son dos y no uno porque `constants.ts` termina en el bundle del navegador del
+  checkout: de ahí solo puede colgar el módulo chico, no los 40 KB de la tabla.
+- **El script corta con error antes que escribir un dato dudoso.** Verifica que
+  el valor UMAPI del HTML por la cantidad de UMAPIs del trámite dé el importe
+  que manda el endpoint; si no cierra (pasa el día que el INPI actualiza a
+  medias), no escribe nada y reintenta al día siguiente.
+- El mes de vigencia **no sale del calendario** sino del aviso del propio INPI
+  ("a partir del 01/09/2026…"): el portal a veces tarda un par de días en dar
+  vuelta la página, y el reloj nos haría guardar el valor de agosto como si
+  fuera de septiembre.
+- **El histórico es lo único irrecuperable**: el portal publica el valor de hoy
+  y nada más. `historial[]` solo se agrega, nunca se reescribe. Si se pierde, los
+  meses viejos no se pueden volver a bajar (los de junio y julio 2026 salieron
+  de copias archivadas del portal).
 
 ---
 

@@ -47,6 +47,14 @@ const navLinks = [
   { href: '/blog', label: 'Blog' },
 ];
 
+// El pie lleva alguno más que el header, que ya está lleno. No es decoración:
+// una página sin enlaces internos no se indexa —le pasó a `boletin-de-marcas-inpi`,
+// que quedó en "Crawled, currently not indexed" cuatro meses.
+const footerLinks = [
+  ...navLinks,
+  { href: '/aranceles-inpi/', label: 'Aranceles del INPI' },
+];
+
 function isActive(href: string) {
   if (href === '/') return Astro.url.pathname === '/';
   return Astro.url.pathname.startsWith(href);
@@ -179,7 +187,7 @@ function isActive(href: string) {
           <p>Registro de marcas en Argentina · Trámites ante el INPI</p>
         </div>
         <nav aria-label="Navegación del pie de página">
-          {navLinks.map(link => (
+          {footerLinks.map(link => (
             <a href={link.href}>{link.label}</a>
           ))}
           <a href="/registrar">Registrá tu marca</a>

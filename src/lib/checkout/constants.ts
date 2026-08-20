@@ -1,5 +1,5 @@
 // Config del self-checkout — precios, apoderado y contacto.
-// Un solo lugar para actualizar valores (inflación, UMAPI, cambios de domicilio).
+// Un solo lugar para actualizar valores (inflación, cambios de domicilio).
 //
 // Subir un precio acá NO toca los pedidos ya creados: el importe de la
 // preferencia de Mercado Pago queda fijado al crearla, y el desglose viaja
@@ -7,16 +7,22 @@
 // que sí cambia al instante es lo que ve un lead con un link viejo de
 // `/registrar`: la página es estática y se rebuildea con el precio nuevo.
 
+import { ARANCEL_MARCA_NUEVA, ARANCEL_VIGENCIA } from '../../data/arancel-vigente';
+
 export const PRICING = {
   /** Honorarios del registro, POR CLASE */
   honorarios: 70_000,
   /** Upsell: Garantía de Devolución, POR CLASE (si el INPI deniega una clase,
    *  se devuelven los honorarios de esa clase) */
   garantia: 15_000,
-  /** Arancel INPI: solicitud de registro, POR CLASE (100 UMAPIS, agosto 2026) */
-  arancelInpi: 39_735,
-  /** Mes de referencia del valor UMAPI mostrado */
-  arancelVigencia: 'agosto 2026',
+  /** Arancel INPI: solicitud de registro, POR CLASE (100 UMAPIS).
+   *
+   *  NO se escribe a mano. El INPI ajusta la UMAPI todos los meses por IPC, y
+   *  este valor lo baja del portal `scripts/actualizar-aranceles.mjs` todos los
+   *  días desde GitHub Actions. Tocarlo acá lo pisa la próxima corrida. */
+  arancelInpi: ARANCEL_MARCA_NUEVA,
+  /** Mes de referencia del valor UMAPI mostrado (también automático) */
+  arancelVigencia: ARANCEL_VIGENCIA,
   /** Precio de lista de la vigilancia anual (se muestra tachado → gratis).
    *  TODO: igualar al precio real standalone de vigilante.unamarca.com.ar */
   vigilanciaLista: 30_000,

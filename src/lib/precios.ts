@@ -7,13 +7,28 @@
 //   · el cuerpo del markdown → `remarkPrecios.ts` (plugin de remark)
 //   · el frontmatter (title, description, faqs) → `src/content/config.ts`
 //
-// Los tokens son deliberadamente pocos: son para el precio que cobramos y los
-// totales que se derivan de él. Un dato del INPI que no está en PRICING (el
-// valor del UMAPI, la posición adicional) se escribe a mano en el post.
+// Además del precio que cobramos, hay tokens para los datos del INPI que antes
+// se escribían a mano en el post ({{UMAPI}}, {{ARANCEL_POSICION}}): salen del
+// snapshot que baja `scripts/actualizar-aranceles.mjs` del portal, así que un
+// aumento mensual del organismo tampoco deja un artículo con el número viejo.
 import { PRICING, formatARS } from './checkout/constants';
+import aranceles from '../data/aranceles-inpi.json';
 
 const hon = PRICING.honorarios;
 const arancel = PRICING.arancelInpi;
+
+/** Arancel del INPI, con los dos decimales que publica el portal cuando los
+ *  tiene: $39.735 pero $1.589,40. `formatARS` redondea y acá el dato es la
+ *  referencia, así que los centavos importan. */
+export function pesosInpi(n: number): string {
+  return '$' + n.toLocaleString('es-AR', {
+    minimumFractionDigits: Number.isInteger(n) ? 0 : 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+/** Excedente por cada posición del nomenclador más allá de la 20 */
+const posicionExtra = aranceles.tramites.find(t => t.codigo === 110100)!;
 
 export const PRECIO_TOKENS: Record<string, string> = {
   /** Honorarios por clase */
@@ -29,6 +44,10 @@ export const PRECIO_TOKENS: Record<string, string> = {
   TOTAL_2: formatARS((hon + arancel) * 2),
   /** "agosto 2026" — mes del valor UMAPI que estamos publicando */
   VIGENCIA: PRICING.arancelVigencia,
+  /** Valor de 1 UMAPI, la unidad en la que el INPI expresa sus aranceles */
+  UMAPI: pesosInpi(aranceles.umapi),
+  /** Arancel por cada posición del nomenclador después de la 20 */
+  ARANCEL_POSICION: pesosInpi(posicionExtra.importe),
 };
 
 const TOKEN_RE = /\{\{([A-Z0-9_]+)\}\}/g;

@@ -7,7 +7,9 @@
     "start": "astro dev",
     "build": "astro build --force",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "aranceles": "node scripts/actualizar-aranceles.mjs",
+    "aranceles:check": "node scripts/actualizar-aranceles.mjs --check"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.6.13",

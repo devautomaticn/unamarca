@@ -2,7 +2,7 @@
 title: "¿Cuánto sale registrar una marca en Argentina? Desde {{TOTAL}}"
 description: 'Registrar una marca en Argentina cuesta desde {{TOTAL}}: arancel del INPI (~{{ARANCEL}}) más {{HONORARIOS}} de honorarios. Mirá el precio real 2026 por clase y qué incluye.'
 pubDate: '2026-05-01'
-updatedDate: '2026-08-18'
+updatedDate: '2026-08-20'
 tags: []
 faqs:
   - question: "¿Cuánto sale registrar una marca en Argentina en 2026?"
@@ -41,9 +41,9 @@ En la práctica esto significa que el costo siempre va a estar actualizado: no v
 | Concepto | UMAPIS | Pesos aprox. ({{VIGENCIA}}) |
 |---|---|---|
 | Solicitud de registro — hasta 20 posiciones | 100 UMAPIS | {{ARANCEL}} |
-| Cada posición adicional (más de 20) | 4 UMAPIS | $1.589 |
+| Cada posición adicional (más de 20) | 4 UMAPIS | {{ARANCEL_POSICION}} |
 
-*1 UMAPI = $397,35 ({{VIGENCIA}}). El valor en pesos varía mensualmente. Consultá el valor actualizado en [Aranceles INPI](https://portaltramites.inpi.gob.ar/InfoPortal/Aranceles) antes de presentar.*
+*1 UMAPI = {{UMAPI}} ({{VIGENCIA}}). El valor en pesos varía mensualmente: en nuestra [tabla de aranceles del INPI](/aranceles-inpi/) están todos los trámites de marcas al día, con el valor de la UMAPI mes a mes y el próximo aumento ya anunciado.*
 
 El arancel se cobra **por clase**. Si querés registrar tu marca en dos rubros distintos — por ejemplo, ropa y accesorios — pagás dos veces el arancel base. Para entender qué es una clase y cuál te corresponde, leé: [clases de marcas para registrar en Argentina](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina).
 

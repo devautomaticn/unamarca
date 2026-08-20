@@ -1,0 +1,800 @@
+---
+// Tabla de aranceles del INPI para marcas + evolución del valor de la UMAPI.
+//
+// TODO lo que muestra sale de `src/data/aranceles-inpi.json`, que regenera
+// `scripts/actualizar-aranceles.mjs` desde el portal del INPI todos los días
+// (workflow `aranceles-inpi`). Acá no hay un solo número escrito a mano: si el
+// INPI actualiza la UMAPI, el commit del bot rebuildea el sitio y esta página
+// ya sale con los valores nuevos.
+//
+// El gráfico se dibuja al buildear, como SVG en el HTML: sin JS, sin librería y
+// sin request extra. Debajo va la misma serie como <table> — es lo que leen los
+// lectores de pantalla y lo que indexa Google, que del SVG no saca nada.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import crudo from '../data/aranceles-inpi.json';
+import { PRICING, formatARS } from '../lib/checkout/constants';
+import { pesosInpi as pesos } from '../lib/precios';
+
+// El JSON lo escribe un script, así que su forma se declara acá y no se infiere:
+// `proximo` es null los primeros días del mes, hasta que el INDEC publica el
+// IPC, y sin este tipo TypeScript lo daría por presente y rompería ese día.
+interface Aranceles {
+  actualizado: string;
+  fuente: string;
+  umapi: number;
+  vigencia: string;
+  vigenciaTexto: string;
+  proximo: { desde: string; umapi: number; variacionPct: number | null } | null;
+  tramites: { codigo: number; descripcion: string; umapis: number | null; importe: number }[];
+  historial: { mes: string; umapi: number }[];
+}
+const datos = crudo as Aranceles;
+
+const SITE_URL = 'https://unamarca.com.ar';
+const canonicalURL = `${SITE_URL}/aranceles-inpi/`;
+
+const COD_MARCA_NUEVA = 110001;
+const COD_POSICION_EXTRA = 110100;
+
+const marcaNueva = datos.tramites.find(t => t.codigo === COD_MARCA_NUEVA)!;
+const posicionExtra = datos.tramites.find(t => t.codigo === COD_POSICION_EXTRA)!;
+
+// ── Formato ───────────────────────────────────────────────
+// `pesos` viene de `precios.ts` (importado arriba como alias de `pesosInpi`):
+// es el mismo formato que usan los tokens {{UMAPI}} y {{ARANCEL_POSICION}} de
+// los posts, así que la tabla y el blog no pueden mostrar el mismo importe
+// escrito distinto.
+
+const MESES_CORTOS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+const MESES_LARGOS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
+const mesCorto = (iso: string) => {
+  const [a, m] = iso.split('-');
+  return `${MESES_CORTOS[Number(m) - 1]} '${a.slice(2)}`;
+};
+const mesLargo = (iso: string) => {
+  const [a, m] = iso.split('-');
+  return `${MESES_LARGOS[Number(m) - 1]} ${a}`;
+};
+
+/** "2026-09-01" sin hora se parsea como medianoche UTC, y al mostrarlo en
+ *  Buenos Aires (UTC-3) retrocede al día anterior: el aviso del INPI decía
+ *  "desde el 31 de agosto". Se ancla al mediodía para que ningún huso lo cruce. */
+const fechaLarga = (iso: string) =>
+  new Date(/^\d{4}-\d{2}-\d{2}$/.test(iso) ? `${iso}T12:00:00Z` : iso)
+    .toLocaleDateString('es-AR', {
+      timeZone: 'America/Argentina/Buenos_Aires',
+      day: 'numeric', month: 'long', year: 'numeric',
+    });
+
+const actualizado = fechaLarga(datos.actualizado);
+const actualizadoISO = datos.actualizado.slice(0, 10);
+
+// ── Serie del gráfico ─────────────────────────────────────
+
+type Punto = { mes: string; umapi: number; proyectado: boolean };
+
+const serie: Punto[] = [
+  ...datos.historial.map(h => ({ mes: h.mes, umapi: h.umapi, proyectado: false })),
+  ...(datos.proximo
+    ? [{ mes: datos.proximo.desde.slice(0, 7), umapi: datos.proximo.umapi, proyectado: true }]
+    : []),
+];
+
+// Variación de punta a punta, para el titular del gráfico.
+const primero = serie[0];
+const ultimoConfirmado = serie.filter(p => !p.proyectado).at(-1)!;
+const variacionTotal = ((ultimoConfirmado.umapi / primero.umapi) - 1) * 100;
+
+// Geometría. El SVG se escala solo por el viewBox, así que estas unidades no
+// son píxeles: son el sistema de coordenadas interno.
+const W = 760;
+const H = 300;
+const PAD = { top: 38, right: 22, bottom: 42, left: 64 };
+const anchoUtil = W - PAD.left - PAD.right;
+const altoUtil = H - PAD.top - PAD.bottom;
+
+/** Meses absolutos, para que un mes faltante en el histórico deje un hueco real
+ *  y no se dibuje como si fuera consecutivo. */
+const aIndice = (mes: string) => {
+  const [a, m] = mes.split('-').map(Number);
+  return a * 12 + m;
+};
+const base = aIndice(serie[0].mes);
+const tramo = Math.max(1, aIndice(serie[serie.length - 1].mes) - base);
+const px = (mes: string) => PAD.left + ((aIndice(mes) - base) / tramo) * anchoUtil;
+
+const valores = serie.map(p => p.umapi);
+const vMin = Math.min(...valores);
+const vMax = Math.max(...valores);
+// El eje no arranca en cero: la UMAPI se mueve pocos puntos por mes y desde
+// cero la línea sería plana. Se acota al rango real con aire arriba y abajo.
+const respiro = (vMax - vMin) * 0.45 || vMax * 0.05;
+const yMin = vMin - respiro;
+const yMax = vMax + respiro;
+const py = (v: number) => PAD.top + altoUtil - ((v - yMin) / (yMax - yMin)) * altoUtil;
+
+const TICKS = 4;
+const grillas = Array.from({ length: TICKS }, (_, i) => {
+  const v = yMin + ((yMax - yMin) * (i + 0.5)) / TICKS;
+  return { v, y: py(v) };
+});
+
+const confirmados = serie.filter(p => !p.proyectado);
+const linea = confirmados.map((p, i) => `${i === 0 ? 'M' : 'L'} ${px(p.mes).toFixed(1)} ${py(p.umapi).toFixed(1)}`).join(' ');
+const area =
+  `${linea} L ${px(ultimoConfirmado.mes).toFixed(1)} ${(PAD.top + altoUtil).toFixed(1)}` +
+  ` L ${px(primero.mes).toFixed(1)} ${(PAD.top + altoUtil).toFixed(1)} Z`;
+const proyeccion = datos.proximo
+  ? `M ${px(ultimoConfirmado.mes).toFixed(1)} ${py(ultimoConfirmado.umapi).toFixed(1)} ` +
+    `L ${px(serie[serie.length - 1].mes).toFixed(1)} ${py(serie[serie.length - 1].umapi).toFixed(1)}`
+  : null;
+
+// Con pocos meses entra el valor sobre cada punto; cuando la serie crezca, solo
+// las etiquetas del eje.
+const rotularPuntos = serie.length <= 9;
+// Y si el eje se llena, se saltean etiquetas de a una.
+const pasoEje = serie.length > 14 ? 2 : 1;
+
+/** Los puntos de las puntas van centrados sobre su valor como el resto, pero el
+ *  primero se metía encima de las etiquetas del eje Y y el último se salía del
+ *  viewBox. En los extremos el texto se ancla hacia adentro. */
+const anclaje = (i: number) =>
+  i === 0 ? 'start' : i === serie.length - 1 ? 'end' : 'middle';
+
+const resumenGrafico =
+  `Evolución del valor de 1 UMAPI: ${serie.map(p => `${mesLargo(p.mes)}, ${pesos(p.umapi)}`).join('; ')}.`;
+
+// ── Contenido ─────────────────────────────────────────────
+
+const destacados = [
+  { t: marcaNueva, etiqueta: 'Registro de una marca nueva', nota: 'Por clase, hasta 20 posiciones del nomenclador' },
+  { t: posicionExtra, etiqueta: 'Cada posición adicional', nota: 'A partir de la posición 21 dentro de la misma clase' },
+  ...[120001, 131000].map(c => ({
+    t: datos.tramites.find(x => x.codigo === c)!,
+    etiqueta: c === 120001 ? 'Renovación de una marca' : 'Oposición a una marca de un tercero',
+    nota: c === 120001 ? 'Cada 10 años, por clase' : 'Lo paga quien se opone, por clase',
+  })),
+];
+
+const faqs = [
+  {
+    q: `¿Cuánto cuesta el arancel del INPI para registrar una marca en ${datos.vigenciaTexto}?`,
+    a: `El arancel de una solicitud de marca nueva es de ${pesos(marcaNueva.importe)} por clase, con protección de hasta 20 posiciones del nomenclador. Equivale a ${marcaNueva.umapis} UMAPI, y la UMAPI vale ${pesos(datos.umapi)} en ${datos.vigenciaTexto}. Ese importe se lo paga al INPI: no incluye honorarios profesionales.`,
+  },
+  {
+    q: '¿Qué es la UMAPI?',
+    a: 'Es la Unidad de Medida Arancelaria de la Propiedad Industrial, creada por la Resolución INPI 75/2026. Desde mayo de 2026 los aranceles del INPI no se fijan en pesos sino en UMAPI, y el valor de la UMAPI se actualiza todos los meses según el índice de precios al consumidor (IPC) que publica el INDEC. Cada trámite tiene una cantidad fija de UMAPI: lo que cambia mes a mes es cuánto vale cada una.',
+  },
+  {
+    q: '¿Cómo calculo el arancel de un trámite?',
+    a: `Multiplicá la cantidad de UMAPI del trámite por el valor vigente de la UMAPI. Por ejemplo: una marca nueva son ${marcaNueva.umapis} UMAPI, y en ${datos.vigenciaTexto} la UMAPI vale ${pesos(datos.umapi)}, así que ${marcaNueva.umapis} × ${pesos(datos.umapi)} = ${pesos(marcaNueva.importe)}.`,
+  },
+  {
+    q: '¿Cada cuánto cambian los aranceles del INPI?',
+    a: 'Todos los meses. El valor de la UMAPI se ajusta por IPC y rige desde el primer día del mes siguiente a la publicación del índice. En la práctica, el arancel de un mismo trámite sube un poco cada mes, así que el importe que veas hoy puede no ser el de dentro de treinta días.',
+  },
+  {
+    q: '¿El arancel del INPI se devuelve si me rechazan la marca?',
+    a: 'No. El arancel no es reembolsable. Si la solicitud recibe una oposición que no se resuelve, o el INPI la rechaza por un problema formal o por una marca anterior parecida, ese pago no se recupera. Por eso conviene hacer la búsqueda de antecedentes antes de presentar y pagar.',
+  },
+  {
+    q: '¿El arancel es lo único que se paga para registrar una marca?',
+    a: `No. El arancel es la tasa oficial del INPI. A eso se le suman los honorarios de quien presenta y sigue el trámite. Con UnaMarca son ${formatARS(PRICING.honorarios)} por clase, así que el total por una clase queda en ${formatARS(PRICING.honorarios + PRICING.arancelInpi)}, todo incluido y en un solo pago.`,
+  },
+  {
+    q: '¿Se paga algo más durante los diez años de vigencia?',
+    a: 'Entre el quinto y el sexto año hay que presentar una declaración jurada de uso, que tiene su propio arancel. Y a los diez años, si querés conservar la marca, corresponde la renovación. Ambos figuran en la tabla de esta página.',
+  },
+];
+
+const structuredData = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Dataset',
+    name: `Aranceles del INPI para marcas — ${datos.vigenciaTexto}`,
+    description: `Tabla de aranceles vigentes del Instituto Nacional de la Propiedad Industrial (INPI) de Argentina para trámites de marcas, expresados en UMAPI y en pesos. Valor de 1 UMAPI en ${datos.vigenciaTexto}: ${pesos(datos.umapi)}.`,
+    url: canonicalURL,
+    inLanguage: 'es-AR',
+    dateModified: actualizadoISO,
+    isAccessibleForFree: true,
+    creator: { '@type': 'Organization', name: 'UnaMarca', url: SITE_URL },
+    spatialCoverage: { '@type': 'Country', name: 'Argentina' },
+    isBasedOn: datos.fuente,
+    variableMeasured: [
+      { '@type': 'PropertyValue', name: 'Valor de 1 UMAPI', value: datos.umapi, unitText: 'ARS' },
+      { '@type': 'PropertyValue', name: 'Arancel de solicitud de marca nueva', value: marcaNueva.importe, unitText: 'ARS' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Inicio', item: SITE_URL },
+      { '@type': 'ListItem', position: 2, name: 'Aranceles del INPI', item: canonicalURL },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map(f => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title={`Aranceles del INPI ${datos.vigenciaTexto.split(' ')[1]}: valor UMAPI y tabla de tasas`}
+  description={`Aranceles vigentes del INPI para marcas en ${datos.vigenciaTexto}: 1 UMAPI = ${pesos(datos.umapi)} y ${pesos(marcaNueva.importe)} por una solicitud de marca nueva. Tabla completa en UMAPI y en pesos, actualizada todos los meses.`}
+  canonicalURL={canonicalURL}
+  type="article"
+  updatedDate={actualizadoISO}
+  waContext="aranceles_float"
+  structuredData={structuredData}
+>
+  <!-- ===== Encabezado + valor vigente ===== -->
+  <section class="ar-hero">
+    <div class="container">
+      <span class="section-label">Aranceles oficiales</span>
+      <h1>Aranceles del INPI para marcas</h1>
+      <p class="ar-lead">
+        El INPI cobra sus trámites en <strong>UMAPI</strong>, una unidad que se actualiza
+        todos los meses por inflación. Acá está la tabla vigente en pesos, sincronizada
+        a diario con el portal del INPI.
+      </p>
+
+      <div class="ar-destacado">
+        <div class="ar-umapi">
+          <span class="ar-umapi-label">Valor de 1 UMAPI</span>
+          <strong class="ar-umapi-valor">{pesos(datos.umapi)}</strong>
+          <span class="ar-umapi-mes">{datos.vigenciaTexto}</span>
+        </div>
+        <div class="ar-umapi-sep" aria-hidden="true"></div>
+        <div class="ar-umapi">
+          <span class="ar-umapi-label">Registrar una marca nueva</span>
+          <strong class="ar-umapi-valor">{pesos(marcaNueva.importe)}</strong>
+          <span class="ar-umapi-mes">por clase · {marcaNueva.umapis} UMAPI</span>
+        </div>
+      </div>
+
+      {datos.proximo && (
+        <p class="ar-aviso">
+          <strong>Ya está anunciado el próximo valor:</strong> desde el
+          {' '}{fechaLarga(datos.proximo.desde)} la UMAPI pasa a {pesos(datos.proximo.umapi)}
+          {datos.proximo.variacionPct !== null && ` (${datos.proximo.variacionPct > 0 ? '+' : ''}${String(datos.proximo.variacionPct).replace('.', ',')}%)`},
+          y una marca nueva pasará a costar {pesos(Math.round(datos.proximo.umapi * marcaNueva.umapis * 100) / 100)} por clase.
+        </p>
+      )}
+
+      <p class="ar-fuente">
+        Fuente: <a href={datos.fuente} target="_blank" rel="noopener nofollow">portal de trámites del INPI</a>.
+        Última verificación: <time datetime={actualizadoISO}>{actualizado}</time>.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== Aranceles principales ===== -->
+  <section class="ar-seccion">
+    <div class="container">
+      <header class="section-header">
+        <h2>Los cuatro aranceles que más se pagan</h2>
+        <p class="section-subtitle">
+          Todos son por clase: una marca en dos clases paga dos veces.
+        </p>
+      </header>
+
+      <div class="ar-cards">
+        {destacados.map(d => (
+          <div class="ar-card">
+            <span class="ar-card-nombre">{d.etiqueta}</span>
+            <strong class="ar-card-precio">{pesos(d.t.importe)}</strong>
+            <span class="ar-card-umapi">{d.t.umapis} UMAPI</span>
+            <p class="ar-card-nota">{d.nota}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Gráfico ===== -->
+  <section class="ar-seccion ar-seccion-alt">
+    <div class="container">
+      <header class="section-header">
+        <h2>Cómo viene subiendo la UMAPI</h2>
+        <p class="section-subtitle">
+          Desde {mesLargo(primero.mes)} el valor subió un
+          {' '}{variacionTotal.toFixed(1).replace('.', ',')}%.
+          Cada punto es el valor que rigió ese mes.
+        </p>
+      </header>
+
+      <figure class="ar-grafico">
+        <svg
+          viewBox={`0 0 ${W} ${H}`}
+          class="ar-svg"
+          role="img"
+          aria-labelledby="graf-titulo graf-desc"
+          preserveAspectRatio="xMidYMid meet"
+        >
+          <title id="graf-titulo">Evolución del valor de la UMAPI en pesos</title>
+          <desc id="graf-desc">{resumenGrafico}</desc>
+
+          <defs>
+            <linearGradient id="ar-fill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#2563EB" stop-opacity="0.22" />
+              <stop offset="100%" stop-color="#2563EB" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+
+          {grillas.map(g => (
+            <g>
+              <line x1={PAD.left} y1={g.y} x2={W - PAD.right} y2={g.y} class="ar-grid" />
+              <text x={PAD.left - 10} y={g.y + 4} class="ar-eje-y">
+                ${Math.round(g.v).toLocaleString('es-AR')}
+              </text>
+            </g>
+          ))}
+
+          <path d={area} fill="url(#ar-fill)" />
+          <path d={linea} class="ar-linea" />
+          {proyeccion && <path d={proyeccion} class="ar-linea ar-linea-proy" />}
+
+          {serie.map((p, i) => (
+            <>
+              <circle
+                cx={px(p.mes)}
+                cy={py(p.umapi)}
+                r={p.proyectado ? 5 : 5.5}
+                class={p.proyectado ? 'ar-punto ar-punto-proy' : 'ar-punto'}
+              />
+              {rotularPuntos && (
+                <text x={px(p.mes)} y={py(p.umapi) - 15} class="ar-valor" text-anchor={anclaje(i)}>
+                  ${p.umapi.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                </text>
+              )}
+              {i % pasoEje === 0 && (
+                <text
+                  x={px(p.mes)}
+                  y={PAD.top + altoUtil + 26}
+                  class="ar-eje-x"
+                  text-anchor={anclaje(i)}
+                >
+                  {mesCorto(p.mes)}{p.proyectado ? '*' : ''}
+                </text>
+              )}
+            </>
+          ))}
+        </svg>
+
+        <figcaption>
+          Valor de 1 UMAPI, en pesos, mes a mes.
+          {datos.proximo && ' El último punto (*) es el valor ya anunciado por el INPI, que todavía no rige.'}
+        </figcaption>
+      </figure>
+
+      <!-- La misma serie en texto. El SVG es invisible para un lector de
+           pantalla y para el buscador; esta tabla es la que se lee y se indexa. -->
+      <div class="ar-tabla-wrap">
+        <table class="ar-tabla ar-tabla-serie">
+          <caption>Valor de la UMAPI y arancel de una marca nueva, por mes</caption>
+          <thead>
+            <tr>
+              <th scope="col">Mes</th>
+              <th scope="col">1 UMAPI</th>
+              <th scope="col">Marca nueva ({marcaNueva.umapis} UMAPI)</th>
+              <th scope="col">Variación</th>
+            </tr>
+          </thead>
+          <tbody>
+            {serie.map((p, i) => {
+              const prev = i > 0 ? serie[i - 1].umapi : null;
+              const delta = prev ? ((p.umapi / prev) - 1) * 100 : null;
+              return (
+                <tr class={p.proyectado ? 'ar-fila-proy' : undefined}>
+                  <th scope="row">
+                    {mesLargo(p.mes)}
+                    {p.proyectado && <span class="ar-chip">anunciado</span>}
+                  </th>
+                  <td>{pesos(p.umapi)}</td>
+                  <td>{pesos(Math.round(p.umapi * marcaNueva.umapis * 100) / 100)}</td>
+                  <td>{delta === null ? '—' : `+${delta.toFixed(1).replace('.', ',')}%`}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Tabla completa ===== -->
+  <section class="ar-seccion">
+    <div class="container">
+      <header class="section-header">
+        <h2>Tabla completa de aranceles de marcas</h2>
+        <p class="section-subtitle">
+          Los {datos.tramites.length} trámites de marcas con arancel, vigentes en {datos.vigenciaTexto}.
+          Los escritos sin arancel no figuran.
+        </p>
+      </header>
+
+      <div class="ar-tabla-wrap">
+        <table class="ar-tabla">
+          <caption>Aranceles del INPI para trámites de marcas — {datos.vigenciaTexto}</caption>
+          <thead>
+            <tr>
+              <th scope="col">Código</th>
+              <th scope="col">Trámite</th>
+              <th scope="col">UMAPI</th>
+              <th scope="col">Importe</th>
+            </tr>
+          </thead>
+          <tbody>
+            {datos.tramites.map(t => (
+              <tr class={t.codigo === COD_MARCA_NUEVA ? 'ar-fila-clave' : undefined}>
+                <td class="ar-cod">{t.codigo}</td>
+                <th scope="row" class="ar-desc">{t.descripcion}</th>
+                <td class="ar-num">{t.umapis ?? '—'}</td>
+                <td class="ar-num ar-importe">{pesos(t.importe)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Qué pagás en total ===== -->
+  <section class="ar-seccion ar-seccion-alt">
+    <div class="container">
+      <header class="section-header">
+        <h2>El arancel no es todo lo que cuesta registrar una marca</h2>
+        <p class="section-subtitle">
+          El arancel es la tasa que cobra el Estado. Aparte están los honorarios
+          de quien presenta y sigue el trámite durante los meses que dura.
+        </p>
+      </header>
+
+      <div class="ar-total">
+        <ul class="ar-total-lista">
+          <li>
+            <span>Arancel del INPI <small>lo cobra el Estado · {datos.vigenciaTexto}</small></span>
+            <strong>{pesos(marcaNueva.importe)}</strong>
+          </li>
+          <li>
+            <span>Honorarios UnaMarca <small>presentación y seguimiento completo</small></span>
+            <strong>{formatARS(PRICING.honorarios)}</strong>
+          </li>
+          <li class="ar-total-suma">
+            <span>Total por una clase</span>
+            <strong>{formatARS(PRICING.honorarios + PRICING.arancelInpi)}</strong>
+          </li>
+        </ul>
+        <div class="ar-total-cta">
+          <p>
+            Un solo pago, sin costos ocultos y con el arancel ya incluido.
+            Antes de pagar conviene
+            {' '}<a href="/verificar-marca/">verificar que la marca esté disponible</a>:
+            el arancel no se devuelve.
+          </p>
+          <a
+            href="/registrar"
+            class="btn btn-primary btn-glow"
+            onclick="gtag('event', 'registrar_click', {'source': 'aranceles'})"
+          >
+            Registrar mi marca
+          </a>
+          <p class="ar-total-link">
+            ¿Querés el desglose completo? Mirá
+            {' '}<a href="/blog/cuanto-sale-registrar-una-marca/">cuánto sale registrar una marca</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FAQ ===== -->
+  <section class="faq-section" aria-labelledby="faq-heading">
+    <div class="container">
+      <header class="section-header">
+        <span class="section-label">FAQ</span>
+        <h2 id="faq-heading">Preguntas frecuentes sobre los aranceles del INPI</h2>
+      </header>
+
+      <ul class="faq-list" role="list">
+        {faqs.map(f => (
+          <li>
+            <details class="faq-item">
+              <summary>{f.q}</summary>
+              <div class="faq-body"><p>{f.a}</p></div>
+            </details>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* ── Encabezado ── */
+  .ar-hero {
+    background: var(--grad-hero);
+    color: #fff;
+    padding-block: 4.5rem 3.5rem;
+  }
+  .ar-hero .section-label { color: #93B4FD; }
+  .ar-hero h1 {
+    font-size: clamp(2rem, 4.4vw, 3rem);
+    letter-spacing: -0.03em;
+    margin-bottom: 1rem;
+    color: #fff;
+  }
+  .ar-lead {
+    max-width: 58ch;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    margin-bottom: 2.25rem;
+  }
+  .ar-lead strong { color: #fff; font-weight: 600; }
+
+  .ar-destacado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2rem;
+    padding: 1.75rem 2rem;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: var(--r-lg);
+    backdrop-filter: blur(8px);
+  }
+  .ar-umapi { display: flex; flex-direction: column; gap: 0.2rem; }
+  .ar-umapi-label {
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    color: #93B4FD;
+  }
+  .ar-umapi-valor {
+    font-size: clamp(1.75rem, 3.6vw, 2.375rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+  .ar-umapi-mes { font-size: 0.875rem; color: rgba(255, 255, 255, 0.6); }
+  .ar-umapi-sep {
+    width: 1px;
+    align-self: stretch;
+    background: rgba(255, 255, 255, 0.16);
+  }
+
+  .ar-aviso {
+    margin-top: 1.25rem;
+    padding: 0.9rem 1.15rem;
+    border-radius: var(--r-md);
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    color: rgba(255, 255, 255, 0.86);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+  .ar-aviso strong { color: #FCD34D; }
+
+  .ar-fuente {
+    margin-top: 1.5rem;
+    font-size: 0.8125rem;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  .ar-fuente a { color: rgba(255, 255, 255, 0.75); }
+
+  /* ── Secciones ── */
+  .ar-seccion { padding-block: var(--sp-lg); }
+  .ar-seccion-alt { background: var(--c-bg-alt); }
+  .ar-seccion .section-header { margin-bottom: 2.5rem; }
+
+  /* ── Cards ── */
+  .ar-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1rem;
+  }
+  .ar-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 1.5rem;
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-lg);
+    background: var(--c-bg);
+  }
+  .ar-card-nombre {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--c-text-muted);
+    line-height: 1.4;
+  }
+  .ar-card-precio {
+    font-size: 1.625rem;
+    font-weight: 800;
+    color: var(--c-navy);
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .ar-card-umapi {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--c-blue);
+  }
+  .ar-card-nota {
+    margin: 0.35rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--c-text-muted);
+    line-height: 1.55;
+  }
+
+  /* ── Gráfico ── */
+  .ar-grafico { margin: 0 0 2.5rem; }
+  .ar-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    overflow: visible;
+  }
+  .ar-grid { stroke: var(--c-border); stroke-width: 1; stroke-dasharray: 3 4; }
+  .ar-linea {
+    fill: none;
+    stroke: var(--c-blue);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .ar-linea-proy { stroke-dasharray: 6 5; stroke: #93B4FD; }
+  .ar-punto { fill: #fff; stroke: var(--c-blue); stroke-width: 2.5; }
+  .ar-punto-proy { stroke: #93B4FD; stroke-dasharray: 2 2; }
+  .ar-eje-y, .ar-eje-x, .ar-valor {
+    font-family: var(--font);
+    font-variant-numeric: tabular-nums;
+  }
+  .ar-eje-y { font-size: 12px; fill: var(--c-text-muted); text-anchor: end; }
+  /* `text-anchor` no se declara acá: lo pone cada <text> con el atributo, que
+     una regla CSS le ganaría. Los puntos de las puntas se anclan hacia adentro
+     para no pisar el eje Y ni salirse del viewBox. */
+  .ar-eje-x { font-size: 12.5px; fill: var(--c-text-muted); }
+  .ar-valor { font-size: 12.5px; font-weight: 700; fill: var(--c-navy); }
+  figcaption {
+    margin-top: 0.85rem;
+    font-size: 0.8125rem;
+    color: var(--c-text-muted);
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  /* ── Tablas ── */
+  .ar-tabla-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-lg);
+    background: var(--c-bg);
+  }
+  .ar-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+    min-width: 560px;
+  }
+  .ar-tabla caption {
+    caption-side: top;
+    text-align: left;
+    padding: 1rem 1.25rem 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--c-text-muted);
+  }
+  .ar-tabla th, .ar-tabla td {
+    padding: 0.8rem 1.25rem;
+    text-align: left;
+    border-bottom: 1px solid var(--c-border-light);
+  }
+  .ar-tabla thead th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--c-text-muted);
+    background: var(--c-bg-alt);
+    border-bottom: 1px solid var(--c-border);
+    white-space: nowrap;
+  }
+  .ar-tabla tbody tr:last-child th,
+  .ar-tabla tbody tr:last-child td { border-bottom: none; }
+  .ar-tabla tbody th {
+    font-weight: 600;
+    color: var(--c-navy);
+    line-height: 1.45;
+  }
+  .ar-tabla td { color: var(--c-text-muted); font-variant-numeric: tabular-nums; }
+  .ar-tabla tbody tr:hover { background: var(--c-blue-light); }
+
+  .ar-cod { font-size: 0.8125rem; color: var(--c-text-muted); white-space: nowrap; }
+  .ar-desc { font-weight: 500 !important; min-width: 260px; }
+  .ar-num { text-align: right !important; white-space: nowrap; }
+  .ar-importe { font-weight: 700; color: var(--c-navy) !important; }
+  .ar-fila-clave { background: var(--c-blue-light); }
+  .ar-fila-clave .ar-importe { color: var(--c-blue) !important; }
+  .ar-fila-proy th, .ar-fila-proy td { color: var(--c-text-muted); font-style: italic; }
+  .ar-chip {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 100px;
+    background: var(--c-blue-light);
+    color: var(--c-blue);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    font-style: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .ar-tabla-serie { min-width: 460px; }
+
+  /* ── Total ── */
+  .ar-total {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 2.5rem;
+    align-items: center;
+    padding: 2.25rem;
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-xl);
+    background: var(--c-bg);
+  }
+  .ar-total-lista { list-style: none; margin: 0; padding: 0; }
+  .ar-total-lista li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1.5rem;
+    padding: 0.9rem 0;
+    border-bottom: 1px solid var(--c-border-light);
+  }
+  .ar-total-lista span { color: var(--c-text); font-weight: 500; }
+  .ar-total-lista small {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--c-text-muted);
+    margin-top: 0.15rem;
+  }
+  .ar-total-lista strong {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--c-navy);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .ar-total-suma {
+    border-bottom: none !important;
+    border-top: 2px solid var(--c-navy);
+    margin-top: 0.35rem;
+    padding-top: 1.1rem !important;
+  }
+  .ar-total-suma strong { font-size: 1.5rem; color: var(--c-blue); }
+  .ar-total-cta p {
+    color: var(--c-text-muted);
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    margin-bottom: 1.25rem;
+  }
+  .ar-total-link { margin: 1rem 0 0 !important; font-size: 0.875rem !important; }
+
+  @media (max-width: 860px) {
+    .ar-total { grid-template-columns: 1fr; gap: 1.75rem; padding: 1.75rem; }
+    .ar-umapi-sep { display: none; }
+    .ar-destacado { gap: 1.5rem; padding: 1.5rem; }
+  }
+</style>

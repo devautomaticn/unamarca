@@ -28,7 +28,7 @@
 //  ("Entré al blog de UnaMarca…") antes que una intención genérica.
 // ────────────────────────────────────────────────────────────────────────────
 
-export const CATALOG_VERSION = '1.4.0';
+export const CATALOG_VERSION = '1.5.0';
 
 /** Agente IA. Recibe todos los CTAs de conversión. */
 export const WA_AGENTE = '5491148999564';
@@ -289,6 +289,20 @@ export const WA_MESSAGES = {
     note: 'Botón flotante dentro de la guía DIY.',
   },
 
+  // Aranceles del INPI (/aranceles-inpi)
+  aranceles_float: {
+    number: WA_AGENTE,
+    section: 'Web',
+    risk: 'nulo',
+    match: 'exact',
+    text:
+      'Hola! Estaba viendo la tabla de aranceles del INPI y quería consultar por ' +
+      'el registro de mi marca.',
+    note:
+      'Botón flotante de /aranceles-inpi. El lead llega mirando el costo oficial ' +
+      'del trámite, así que ya sabe que el arancel va aparte de los honorarios.',
+  },
+
   // Fallback
   float_generic: {
     number: WA_AGENTE,
@@ -310,6 +324,7 @@ export type WaFloatContext =
   | 'blog_float'
   | 'registrar_float'
   | 'verificar_float'
+  | 'aranceles_float'
   | 'float_en'
   | 'guia_float'
   | 'float_generic';
