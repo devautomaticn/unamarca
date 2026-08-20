@@ -28,7 +28,7 @@
 //  ("Entré al blog de UnaMarca…") antes que una intención genérica.
 // ────────────────────────────────────────────────────────────────────────────
 
-export const CATALOG_VERSION = '1.5.0';
+export const CATALOG_VERSION = '1.6.0';
 
 /** Agente IA. Recibe todos los CTAs de conversión. */
 export const WA_AGENTE = '5491148999564';
@@ -224,6 +224,21 @@ export const WA_MESSAGES = {
       'Único mensaje que arranca con "Hola," (coma) en vez de "Hola!". Sirve de ' +
       'doble confirmación contra el referral de Meta.',
   },
+  ads_descuento_109: {
+    number: WA_AGENTE,
+    section: 'Ads',
+    risk: 'nulo',
+    match: 'prefix',
+    prefix: 'Quiero aprovechar el descuento, y registrar mi marca:',
+    template: 'Quiero aprovechar el descuento, y registrar mi marca:',
+    note:
+      'Plantilla "Descuento a 109" del anuncio de Meta (ad_id 52550424335435). ' +
+      'El sitio NO emite este mensaje: lo prellena Meta, así que no tiene link ni ' +
+      'helper acá — vive en el catálogo sólo para el parser del CRM. match ' +
+      '"prefix" porque el texto termina en ":" y el cliente escribe la marca a ' +
+      'continuación; con match exacto se pierden justo esos. Sólo entra en juego ' +
+      'si el referral de Meta no llegó: cuando llega, gana el referral.',
+  },
 
   // Internacional
   en_landing: {
@@ -359,6 +374,7 @@ function href(number: string, text: string): string {
 /** Contextos que arman el texto con datos: no sirven para waHref/waText. */
 type WaTemplateContext =
   | 'blog_post'
+  | 'ads_descuento_109'
   | 'registrar_multiclase'
   | 'registrar_multimarca'
   | 'registrar_comprobante'
