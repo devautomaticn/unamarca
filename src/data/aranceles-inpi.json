@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-08-20T11:10:30.502Z",
+  "actualizado": "2026-08-20T14:45:25.070Z",
   "fuente": "https://portaltramites.inpi.gob.ar/InfoPortal/Aranceles",
   "umapi": 397.35,
   "vigencia": "2026-08",
@@ -157,6 +157,10 @@
     {
       "mes": "2026-07",
       "umapi": 389.94
+    },
+    {
+      "mes": "2026-08",
+      "umapi": 397.35
     }
   ]
 }
