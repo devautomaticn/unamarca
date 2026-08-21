@@ -1,0 +1,930 @@
+---
+// /firmar/<token> — donde firma un cotitular que no completó el checkout.
+//
+// Una marca con varios dueños necesita la firma de TODOS en la carta poder,
+// pero el checkout lo completa una sola persona en su celular. A cada cotitular
+// le llega un email con su link propio: acá ve el MISMO documento —con las
+// firmas que ya están puestas— revisa sus datos y agrega la suya.
+//
+// EL TOKEN ES LA CREDENCIAL. No hay login, y no puede haberlo: quien firma
+// puede no haber entrado nunca al sitio. Un token abre un renglón de un pedido
+// y deja de aceptar firmas al usarse. Por eso la página va con `noindex` y
+// fuera del sitemap (ver astro.config.mjs).
+//
+// Se renderiza por request sólo porque la ruta es dinámica: todo lo demás pasa
+// en el navegador contra `/api/firma/<token>`. El texto del documento sale del
+// mismo `cartaPoder.ts` y el PDF del mismo `cartaPoderPdf.ts` que el checkout —
+// los dos caminos no pueden divergir.
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { PROVINCIAS } from '@/lib/checkout/constants';
+
+export const prerender = false;
+
+const token = String(Astro.params.token ?? '');
+---
+
+<BaseLayout
+  title="Firmar carta poder | UnaMarca"
+  description="Revisá y firmá la carta poder para el registro de la marca ante el INPI."
+  noindex={true}
+>
+  <main class="cp" data-token={token}>
+    <!-- Estado inicial: no se muestra NADA del documento hasta que el token
+         resuelve. Un link vencido no puede filtrar los datos del pedido. -->
+    <section class="cp-cargando" id="cp-cargando">
+      <p>Buscando tu carta poder…</p>
+    </section>
+
+    <section class="cp-fatal" id="cp-fatal" hidden>
+      <div class="cp-card cp-card--done">
+        <h2 id="cp-fatal-title">No pudimos abrir este link</h2>
+        <p id="cp-fatal-msg"></p>
+        <p class="cp-fatal-help">
+          Si te lo mandamos nosotros, respondé ese email y te mandamos uno nuevo.
+        </p>
+      </div>
+    </section>
+
+    <div id="cp-app" hidden>
+      <header class="cp-head">
+        <p class="cp-eyebrow">UnaMarca</p>
+        <h1 id="cp-title">Falta tu firma en la carta poder</h1>
+        <p class="cp-lead" id="cp-lead"></p>
+        <div class="cp-motivo" id="cp-estado" hidden></div>
+      </header>
+
+      <div class="cp-grid" id="cp-grid">
+        <section class="cp-doc" aria-label="Carta poder">
+          <div class="cp-paper" id="cp-preview"></div>
+        </section>
+
+        <!-- Tus datos, editables. Vienen VACÍOS: quien armó el pedido sólo
+             cargó el email y el porcentaje de cada cotitular, porque el DNI, el
+             CUIT y el domicilio del socio no los sabe. Los carga acá el propio
+             titular, que es quien los sabe.
+             Lo que NO se toca acá es el porcentaje ni las marcas: eso lo
+             acordaron entre todos y ya lo firmó el primero. -->
+        <aside class="cp-side" aria-label="Tus datos en el poder">
+          <div class="cp-side-inner">
+            <p class="cp-side-title">Tus datos</p>
+            <p class="cp-side-help" id="cp-side-help">
+              Lo que cargues acá se actualiza en el documento al instante.
+            </p>
+
+            <div class="cp-group">
+              <div class="cp-group-label">Identidad</div>
+              <div class="cp-row">
+                <div class="cp-field">
+                  <label for="f-nombre">Nombre</label>
+                  <input type="text" id="f-nombre" data-f="nombre" autocomplete="given-name" />
+                </div>
+                <div class="cp-field">
+                  <label for="f-apellido">Apellido</label>
+                  <input type="text" id="f-apellido" data-f="apellido" autocomplete="family-name" />
+                </div>
+              </div>
+              <div class="cp-row">
+                <div class="cp-field">
+                  <label for="f-tipodoc">Documento</label>
+                  <select id="f-tipodoc" data-f="tipodoc">
+                    <option value="DNI">DNI</option>
+                    <option value="Pasaporte">Pasaporte</option>
+                    <option value="Libreta Cívica">Libreta Cívica</option>
+                    <option value="Libreta de Enrolamiento">Libreta de Enrolamiento</option>
+                  </select>
+                </div>
+                <div class="cp-field">
+                  <label for="f-docnum">Número</label>
+                  <input type="text" id="f-docnum" data-f="docnum" inputmode="numeric" maxlength="20" />
+                </div>
+              </div>
+              <div class="cp-field">
+                <label for="f-cuit">CUIT / CUIL</label>
+                <input type="text" id="f-cuit" data-f="cuit" inputmode="numeric" maxlength="13" placeholder="20-12345678-9" />
+              </div>
+              <div class="cp-field">
+                <label for="f-email">Email</label>
+                <input type="email" id="f-email" data-f="email" autocomplete="email" />
+              </div>
+              <div class="cp-row">
+                <div class="cp-field">
+                  <label for="f-genero">Género</label>
+                  <select id="f-genero" data-f="genero">
+                    <option value="">Seleccionar…</option>
+                    <option>Masculino</option>
+                    <option>Femenino</option>
+                    <option>Otro</option>
+                  </select>
+                </div>
+                <div class="cp-field">
+                  <label for="f-estadocivil">Estado civil</label>
+                  <select id="f-estadocivil" data-f="estadocivil">
+                    <option value="">Seleccionar…</option>
+                    <option>Soltero/a</option>
+                    <option>Casado/a</option>
+                    <option>Viudo/a</option>
+                    <option>Divorciado/a</option>
+                  </select>
+                </div>
+              </div>
+              <div class="cp-field" id="f-conyuge-row" hidden>
+                <label for="f-conyuge">Nombre del cónyuge</label>
+                <input type="text" id="f-conyuge" data-f="conyuge" />
+              </div>
+            </div>
+
+            <div class="cp-group">
+              <div class="cp-group-label">Domicilio real</div>
+              <div class="cp-row cp-row--calle">
+                <div class="cp-field">
+                  <label for="f-calle">Calle</label>
+                  <input type="text" id="f-calle" data-f="calle" autocomplete="address-line1" />
+                </div>
+                <div class="cp-field">
+                  <label for="f-numero">Número</label>
+                  <input type="text" id="f-numero" data-f="numero" />
+                </div>
+              </div>
+              <div class="cp-row">
+                <div class="cp-field">
+                  <label for="f-piso">Piso <span>(opcional)</span></label>
+                  <input type="text" id="f-piso" data-f="piso" />
+                </div>
+                <div class="cp-field">
+                  <label for="f-depto">Depto <span>(opcional)</span></label>
+                  <input type="text" id="f-depto" data-f="depto" />
+                </div>
+              </div>
+              <div class="cp-row cp-row--cp">
+                <div class="cp-field">
+                  <label for="f-codpostal">Código postal</label>
+                  <input type="text" id="f-codpostal" data-f="codpostal" autocomplete="postal-code" />
+                </div>
+                <div class="cp-field">
+                  <label for="f-localidad">Localidad</label>
+                  <input type="text" id="f-localidad" data-f="localidad" autocomplete="address-level2" />
+                </div>
+              </div>
+              <div class="cp-field">
+                <label for="f-provincia">Provincia</label>
+                <select id="f-provincia" data-f="provincia">
+                  <option value="">Seleccionar…</option>
+                  {PROVINCIAS.map(p => <option value={p}>{p}</option>)}
+                </select>
+              </div>
+              <div class="cp-field" id="f-pais-row" hidden>
+                <label for="f-pais">País</label>
+                <input type="text" id="f-pais" data-f="pais" autocomplete="country-name" />
+              </div>
+              <button type="button" class="cp-link" id="f-pais-toggle">Vivo fuera de Argentina</button>
+            </div>
+
+            <!-- El porcentaje se muestra pero no se edita: es lo que acordaron
+                 los titulares entre ellos y ya está firmado por el primero. -->
+            <div class="cp-group">
+              <div class="cp-group-label">Titularidad</div>
+              <p class="cp-pct-fija" id="f-pct">—</p>
+              <p class="cp-hint">
+                Si el porcentaje no es el que acordaron, no firmes: respondé el
+                email con el que te llegó este link. Cambiarlo obliga a rehacer
+                el poder de todos.
+              </p>
+            </div>
+          </div>
+        </aside>
+
+        <section class="cp-sign" aria-label="Firma">
+          <div class="cp-card">
+            <div class="cp-group-label">Tu firma</div>
+            <p class="cp-side-help" style="margin-bottom:.75rem">
+              Firmá en el recuadro con el dedo (celular) o con el mouse, como lo
+              harías en papel.
+            </p>
+            <div class="cp-sig-box">
+              <canvas id="cp-sig"></canvas>
+              <span class="cp-sig-hint" id="cp-sig-hint">Firmá acá</span>
+            </div>
+            <div class="cp-sig-foot">
+              <button type="button" class="cp-link" id="cp-sig-undo" hidden>↶ Deshacer</button>
+              <button type="button" class="cp-link" id="cp-sig-clear">Borrar y firmar de nuevo</button>
+            </div>
+
+            <label class="cp-terms">
+              <input type="checkbox" id="cp-terms" />
+              <span>
+                Acepto los <a href="/terminos" target="_blank">términos del servicio</a>
+                y la <a href="/privacidad" target="_blank">política de privacidad</a>,
+                y autorizo el uso de mi firma en la carta poder.
+              </span>
+            </label>
+
+            <div class="cp-err" id="cp-err" hidden></div>
+
+            <button type="button" class="cp-btn" id="cp-submit">
+              <span id="cp-submit-label">Firmar carta poder</span>
+              <svg id="cp-submit-spin" width="16" height="16" viewBox="0 0 16 16" fill="none" style="display:none">
+                <circle cx="8" cy="8" r="6" stroke="rgba(255,255,255,.3)" stroke-width="2"/>
+                <path d="M8 2a6 6 0 0 1 6 6" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <section class="cp-done" id="cp-done" hidden>
+        <div class="cp-card cp-card--done">
+          <svg width="52" height="52" viewBox="0 0 52 52" fill="none" aria-hidden="true">
+            <circle cx="26" cy="26" r="25" fill="#22c55e" fill-opacity=".12"/>
+            <path d="M16 26.5l7 7 13-14" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <h2 id="cp-done-title">¡Listo! Recibimos tu firma.</h2>
+          <p id="cp-done-msg"></p>
+          <a class="cp-btn cp-btn--ghost" id="cp-download" href="#" download>Descargar mi copia en PDF</a>
+        </div>
+      </section>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  import { cartaPoderHTML, type CartaPoderData, type TitularPoder } from '@/lib/checkout/cartaPoder';
+  import { formatPorcentaje, type TipoMarca, type TitularPedido } from '@/lib/checkout/constants';
+  import { formatCuitInput, isValidCuit, cuitMatchesDni } from '@/lib/checkout/cuit';
+
+  const $ = (id: string) => document.getElementById(id)!;
+  const input = (id: string) => document.getElementById(id) as HTMLInputElement;
+
+  const token = (document.querySelector('main.cp') as HTMLElement)?.dataset.token ?? '';
+
+  interface Contexto {
+    ref: string;
+    idx: number;
+    nombre: string;
+    yaFirmado: boolean;
+    completo: boolean;
+    firmadas: number;
+    total: number;
+    fecha: { dia: number; mes: number; anio: number };
+    /** Todos los titulares del pedido, con el set completo de campos */
+    titulares: TitularPedido[];
+    marcas: { nombre: string; tipo?: TipoMarca; clases: number[] }[];
+    /** Apareadas por posición con `titulares`; null donde todavía falta */
+    firmas: (string | null)[];
+  }
+
+  let ctx: Contexto | null = null;
+
+  /** Los campos del panel. Es la lista que usan el prellenado, los listeners y
+   *  el armado del payload: agregar un input al HTML y no ponerlo acá lo deja
+   *  fuera del guardado. */
+  const CAMPOS = [
+    'nombre', 'apellido', 'tipodoc', 'docnum', 'cuit', 'email',
+    'genero', 'estadocivil', 'conyuge',
+    'pais', 'calle', 'numero', 'piso', 'depto', 'localidad', 'codpostal', 'provincia',
+  ] as const;
+  type Campo = typeof CAMPOS[number];
+
+  const campo = (c: Campo) => document.getElementById(`f-${c}`) as HTMLInputElement | HTMLSelectElement;
+  const valor = (c: Campo) => campo(c).value.trim();
+
+  /** Cómo entra un titular al documento. La figurativa y el resto de la lógica
+   *  del texto viven en cartaPoder.ts: acá sólo se mapea. */
+  function aPoder(t: TitularPedido): TitularPoder {
+    return {
+      nombreApellido: `${t.nombre ?? ''} ${t.apellido ?? ''}`.trim(),
+      docTipo: t.documento?.tipo || 'DNI',
+      docNumero: t.documento?.numero || '',
+      cuit: t.cuit ?? '',
+      calle: t.domicilio?.calle ?? '',
+      numero: t.domicilio?.numero ?? '',
+      piso: t.domicilio?.piso || undefined,
+      depto: t.domicilio?.depto || undefined,
+      codigoPostal: t.domicilio?.codigoPostal ?? '',
+      localidad: t.domicilio?.localidad ?? '',
+      provincia: t.domicilio?.provincia ?? '',
+      porcentaje: t.porcentaje,
+      // De un cotitular que todavía no cargó sus datos, el email es lo único
+      // que lo identifica en el documento.
+      email: t.email ?? '',
+    };
+  }
+
+  /** Lo que hay cargado en el panel, en el formato que guarda el servidor. */
+  function misDatos(): TitularPedido {
+    const t = ctx!.titulares[ctx!.idx];
+    return {
+      tipoPersona: 'Humana',
+      nombre: valor('nombre'),
+      apellido: valor('apellido'),
+      genero: valor('genero'),
+      estadoCivil: valor('estadocivil'),
+      nombreConyuge: valor('estadocivil') === 'Casado/a' ? valor('conyuge') : '',
+      documento: { tipo: valor('tipodoc') || 'DNI', numero: valor('docnum') },
+      cuit: valor('cuit'),
+      email: valor('email'),
+      domicilio: {
+        pais: valor('pais') || 'Argentina',
+        calle: valor('calle'),
+        numero: valor('numero'),
+        piso: valor('piso'),
+        depto: valor('depto'),
+        localidad: valor('localidad'),
+        codigoPostal: valor('codpostal'),
+        provincia: valor('provincia'),
+      },
+      // No se editan: el porcentaje es lo acordado entre todos y ya lo firmó
+      // el primero.
+      porcentaje: t.porcentaje,
+      firmaAqui: t.firmaAqui,
+    };
+  }
+
+  /** El documento con lo que hay cargado ahora mismo en el panel. */
+  function cpData(): CartaPoderData {
+    const titulares = ctx!.titulares.map((t, i) => aPoder(i === ctx!.idx ? misDatos() : t));
+    return { titulares, marcas: ctx!.marcas, fecha: ctx!.fecha };
+  }
+
+  /** El documento con TODAS las firmas: las que ya estaban y, en cuanto se
+   *  dibuja, la de quien está en esta página. Es el mismo render del checkout. */
+  function firmasParaRender(): (string | undefined)[] {
+    const firmas = ctx!.firmas.map(f => f ?? undefined);
+    const propia = firmaDataUrl();
+    if (propia) firmas[ctx!.idx] = propia;
+    return firmas;
+  }
+
+  function render() {
+    if (!ctx) return;
+    $('cp-preview').innerHTML = cartaPoderHTML(cpData(), firmasParaRender());
+  }
+
+  function fatal(titulo: string, msg: string) {
+    $('cp-cargando').hidden = true;
+    $('cp-app').hidden = true;
+    $('cp-fatal-title').textContent = titulo;
+    $('cp-fatal-msg').textContent = msg;
+    $('cp-fatal').hidden = false;
+  }
+
+  // ── Carga ───────────────────────────────────────────────
+  async function cargar() {
+    let data: any;
+    try {
+      const res = await fetch(`/api/firma/${encodeURIComponent(token)}`);
+      data = await res.json();
+      if (!res.ok) {
+        fatal('No pudimos abrir este link', data?.error || 'El link no es válido o ya venció.');
+        return;
+      }
+    } catch {
+      fatal('No pudimos abrir este link', 'Hubo un problema de conexión. Probá de nuevo en un minuto.');
+      return;
+    }
+
+    ctx = data as Contexto;
+    $('cp-cargando').hidden = true;
+    $('cp-app').hidden = false;
+
+    pintarDatos();
+    render();
+
+    // Ya firmó: se le muestra el documento y su copia, no el pad de firma.
+    if (ctx.yaFirmado) {
+      $('cp-title').textContent = 'Ya firmaste esta carta poder';
+      $('cp-lead').textContent = ctx.completo
+        ? 'Están todas las firmas. Ya podemos presentar la solicitud ante el INPI.'
+        : `Tu firma está registrada. Falta${ctx.total - ctx.firmadas === 1 ? '' : 'n'} ${ctx.total - ctx.firmadas} de los ${ctx.total} titulares.`;
+      document.querySelector('.cp-sign')?.setAttribute('hidden', '');
+      // Los datos dejan de ser editables: lo que firmó es lo que quedó.
+      CAMPOS.forEach(c => { campo(c).disabled = true; });
+      $('f-pais-toggle').hidden = true;
+      return;
+    }
+
+    const mio = ctx.titulares[ctx.idx];
+    const pct = mio && typeof mio.porcentaje === 'number' ? formatPorcentaje(mio.porcentaje) : '';
+    // Quien armó el pedido sólo cargó el email y el porcentaje del cotitular:
+    // el resto lo carga él acá. Un pedido viejo (o alguien que vuelve al link)
+    // puede llegar con los datos ya puestos, y ahí sólo hay que revisarlos.
+    const vacio = !mio?.nombre?.trim();
+    $('cp-title').textContent = vacio
+      ? 'Completá tus datos y firmá la carta poder'
+      : 'Falta tu firma en la carta poder';
+    $('cp-lead').innerHTML =
+      `Hola. Sos cotitular${pct ? ` del <b>${pct}%</b>` : ''} de ` +
+      `${ctx.marcas.length > 1 ? 'las marcas' : 'la marca'} de este pedido, así que ` +
+      'necesitamos tu firma en la carta poder: es el documento que nos autoriza a ' +
+      'hacer el trámite ante el INPI en nombre de todos los titulares. ' +
+      (vacio
+        ? '<b>Completá tus datos en el panel</b> — tu documento, tu CUIT y tu ' +
+          'domicilio los sabés vos, no quien hizo el pedido.'
+        : '<b>Revisá tus datos en el panel</b> y corregí lo que haga falta antes de firmar.');
+
+    $('cp-estado').innerHTML =
+      `<b>${ctx.firmadas} de ${ctx.total} firmas</b>` +
+      `<span>Sos ${ctx.firmadas + 1 === ctx.total ? 'el último que falta' : `uno de los ${ctx.total - ctx.firmadas} que faltan`}. ` +
+      `Presentamos la solicitud cuando estén todas.</span>`;
+    $('cp-estado').hidden = false;
+
+    sizeCanvas();
+  }
+
+  /** Carga el panel con lo que hay guardado. A partir de acá manda el panel:
+   *  el documento se dibuja siempre desde los campos. */
+  function pintarDatos() {
+    const t = ctx!.titulares[ctx!.idx];
+    if (!t) return;
+    const valores: Record<Campo, string> = {
+      nombre: t.nombre ?? '',
+      apellido: t.apellido ?? '',
+      tipodoc: t.documento?.tipo || 'DNI',
+      docnum: t.documento?.numero ?? '',
+      cuit: t.cuit ?? '',
+      email: t.email ?? '',
+      genero: t.genero ?? '',
+      estadocivil: t.estadoCivil ?? '',
+      conyuge: t.nombreConyuge ?? '',
+      pais: t.domicilio?.pais || 'Argentina',
+      calle: t.domicilio?.calle ?? '',
+      numero: t.domicilio?.numero ?? '',
+      piso: t.domicilio?.piso ?? '',
+      depto: t.domicilio?.depto ?? '',
+      localidad: t.domicilio?.localidad ?? '',
+      codpostal: t.domicilio?.codigoPostal ?? '',
+      provincia: t.domicilio?.provincia ?? '',
+    };
+    CAMPOS.forEach(c => { campo(c).value = valores[c]; });
+
+    $('cp-side-help').innerHTML = valores.nombre
+      ? 'Así figurás en el documento. <b>Revisalos y corregí lo que haga falta</b> antes de firmar.'
+      : 'Nadie los cargó por vos: <b>completalos acá</b>. Lo que escribas se actualiza en el documento al instante.';
+
+    $('f-pct').textContent = typeof t.porcentaje === 'number'
+      ? `${formatPorcentaje(t.porcentaje)}% de la marca`
+      : '—';
+
+    syncConyuge();
+    syncPais();
+  }
+
+  // Cónyuge: visible sólo si el estado civil es Casado/a
+  function syncConyuge() {
+    $('f-conyuge-row').hidden = valor('estadocivil') !== 'Casado/a';
+  }
+
+  // País: oculto mientras sea Argentina, que es el caso de casi todos.
+  function syncPais() {
+    const otro = valor('pais').toLowerCase() !== 'argentina';
+    $('f-pais-row').hidden = !otro;
+    $('f-pais-toggle').hidden = otro;
+  }
+
+  $('f-pais-toggle').addEventListener('click', () => {
+    $('f-pais-row').hidden = false;
+    $('f-pais-toggle').hidden = true;
+    (campo('pais') as HTMLInputElement).select();
+    campo('pais').focus();
+  });
+
+  // Cualquier campo del panel redibuja el documento: el cotitular tiene que ver
+  // en el papel lo que acaba de corregir, antes de firmarlo.
+  CAMPOS.forEach(c => {
+    const el = campo(c);
+    el.addEventListener('input', () => {
+      if (c === 'cuit') (el as HTMLInputElement).value = formatCuitInput(el.value);
+      if (c === 'docnum' && valor('tipodoc') === 'DNI') {
+        (el as HTMLInputElement).value = el.value.replace(/\D/g, '').slice(0, 8);
+      }
+      errBox.hidden = true;
+      render();
+    });
+    el.addEventListener('change', () => {
+      if (c === 'estadocivil') syncConyuge();
+      render();
+    });
+  });
+
+  // ── Firma (canvas) ──────────────────────────────────────
+  const canvas = document.getElementById('cp-sig') as HTMLCanvasElement;
+  const ctx2d = canvas.getContext('2d')!;
+  const SIG_H = 200;
+  let strokes: { x: number; y: number }[][] = [];
+  let drawing = false;
+
+  function sizeCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.parentElement!.getBoundingClientRect().width;
+    if (w === 0) return;
+    canvas.width = w * dpr;
+    canvas.height = SIG_H * dpr;
+    canvas.style.width = `${w}px`;
+    canvas.style.height = `${SIG_H}px`;
+    ctx2d.setTransform(dpr, 0, 0, dpr, 0, 0);
+    redraw();
+  }
+
+  function estilo(c: CanvasRenderingContext2D) {
+    c.strokeStyle = '#0f172a';
+    c.lineWidth = 2;
+    c.lineJoin = 'round';
+    c.lineCap = 'round';
+  }
+
+  function redraw() {
+    ctx2d.clearRect(0, 0, canvas.width, canvas.height);
+    estilo(ctx2d);
+    strokes.forEach(stroke => {
+      ctx2d.beginPath();
+      stroke.forEach((p, i) => (i === 0 ? ctx2d.moveTo(p.x, p.y) : ctx2d.lineTo(p.x, p.y)));
+      ctx2d.stroke();
+    });
+  }
+
+  function sigPos(e: PointerEvent) {
+    const r = canvas.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+
+  canvas.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    canvas.setPointerCapture(e.pointerId);
+    drawing = true;
+    strokes.push([sigPos(e)]);
+    $('cp-sig-hint').hidden = true;
+  });
+  canvas.addEventListener('pointermove', (e) => {
+    if (!drawing) return;
+    const stroke = strokes[strokes.length - 1];
+    stroke.push(sigPos(e));
+    const [a, b] = [stroke[stroke.length - 2], stroke[stroke.length - 1]];
+    estilo(ctx2d);
+    ctx2d.beginPath(); ctx2d.moveTo(a.x, a.y); ctx2d.lineTo(b.x, b.y); ctx2d.stroke();
+  });
+  const endStroke = () => { if (!drawing) return; drawing = false; syncSigUI(); };
+  canvas.addEventListener('pointerup', endStroke);
+  canvas.addEventListener('pointercancel', endStroke);
+  window.addEventListener('resize', sizeCanvas);
+
+  function syncSigUI() {
+    $('cp-sig-undo').hidden = strokes.length === 0;
+    $('cp-sig-hint').hidden = strokes.length > 0;
+    render(); // la firma se ve en el documento apenas se levanta el dedo
+  }
+
+  $('cp-sig-undo').addEventListener('click', () => { strokes.pop(); redraw(); syncSigUI(); });
+  $('cp-sig-clear').addEventListener('click', () => { strokes = []; redraw(); syncSigUI(); });
+
+  /** PNG de la firma recortado a su caja: el canvas es mucho más ancho que el
+   *  trazo, y sin recortar la firma entra diminuta en el PDF (que la escala por
+   *  alto). Se dibuja de nuevo desde los trazos, así que no hay que leer píxeles. */
+  function firmaDataUrl(): string | undefined {
+    if (strokes.length === 0) return undefined;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const stroke of strokes) {
+      for (const p of stroke) {
+        if (p.x < minX) minX = p.x;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.y > maxY) maxY = p.y;
+      }
+    }
+    const pad = 10;
+    minX -= pad; minY -= pad; maxX += pad; maxY += pad;
+    const w = Math.max(maxX - minX, 1);
+    const h = Math.max(maxY - minY, 1);
+    const S = 2;
+    const off = document.createElement('canvas');
+    off.width = Math.round(w * S);
+    off.height = Math.round(h * S);
+    const c = off.getContext('2d')!;
+    c.setTransform(S, 0, 0, S, -minX * S, -minY * S);
+    estilo(c);
+    strokes.forEach(stroke => {
+      c.beginPath();
+      stroke.forEach((p, i) => (i === 0 ? c.moveTo(p.x, p.y) : c.lineTo(p.x, p.y)));
+      c.stroke();
+    });
+    return off.toDataURL('image/png');
+  }
+
+  // ── Envío ───────────────────────────────────────────────
+  const submitBtn = $('cp-submit') as HTMLButtonElement;
+  const errBox = $('cp-err');
+
+  function mostrarError(msg: string) {
+    errBox.textContent = msg;
+    errBox.hidden = false;
+  }
+
+  /** Mismas reglas que el paso 6 del checkout: lo que se firma acá va al INPI
+   *  igual que lo que se carga allá. Devuelve el primer problema, no una lista:
+   *  el panel es corto y con un mensaje alcanza para saber adónde ir. */
+  function problemaEnDatos(): string | null {
+    const d = misDatos();
+    if (!d.nombre) return 'Falta tu nombre.';
+    if (!d.apellido) return 'Falta tu apellido.';
+    if (!d.genero) return 'Falta seleccionar el género.';
+    if (!d.estadoCivil) return 'Falta seleccionar el estado civil.';
+    if (d.estadoCivil === 'Casado/a' && !d.nombreConyuge) return 'Falta el nombre del cónyuge.';
+
+    const doc = d.documento.numero;
+    if (d.documento.tipo === 'DNI') {
+      const digitos = doc.replace(/\D/g, '');
+      if (digitos.length < 7 || digitos.length > 8) return 'El DNI tiene que tener 7 u 8 dígitos.';
+    } else if (!doc) {
+      return 'Falta el número de documento.';
+    }
+
+    if (!isValidCuit(d.cuit)) return 'El CUIT/CUIL no es válido. Revisalo.';
+    if (d.documento.tipo === 'DNI' && doc && !cuitMatchesDni(d.cuit, doc)) {
+      return 'El CUIT/CUIL no coincide con el documento ingresado.';
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) return 'Ingresá un email válido.';
+
+    const dom = d.domicilio;
+    if (!dom.calle || !dom.numero) return 'Falta la calle y el número de tu domicilio.';
+    if (!dom.localidad) return 'Falta la localidad.';
+    if (!dom.codigoPostal) return 'Falta el código postal.';
+    if (!dom.provincia) return 'Falta seleccionar la provincia.';
+    return null;
+  }
+
+  submitBtn.addEventListener('click', async () => {
+    if (!ctx) return;
+    const problema = problemaEnDatos();
+    if (problema) {
+      mostrarError(`${problema} Revisá el panel de tus datos antes de firmar.`);
+      document.querySelector('.cp-side')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    const falta: string[] = [];
+    if (strokes.length === 0) falta.push('tu firma');
+    if (!input('cp-terms').checked) falta.push('la aceptación de los términos');
+    if (falta.length) {
+      mostrarError(`Antes de enviar falta: ${falta.join(' y ')}.`);
+      return;
+    }
+    errBox.hidden = true;
+    submitBtn.disabled = true;
+    $('cp-submit-label').textContent = 'Enviando…';
+    $('cp-submit-spin').style.display = '';
+
+    const firma = firmaDataUrl()!;
+
+    // El PDF se genera EN EL NAVEGADOR, igual que en el checkout: el plan free
+    // de Pages no tiene CPU para pdf-lib (error 1102). Lleva las firmas de
+    // todos, no sólo la de acá: si esta es la última, es el poder definitivo.
+    let pdfBytes: Uint8Array | null = null;
+    let pdfBase64: string | null = null;
+    try {
+      const { buildCartaPoderPdf } = await import('@/lib/checkout/cartaPoderPdf');
+      pdfBytes = await buildCartaPoderPdf(cpData(), firmasParaRender());
+      let binary = '';
+      const chunk = 0x8000;
+      for (let i = 0; i < pdfBytes.length; i += chunk) {
+        binary += String.fromCharCode(...pdfBytes.subarray(i, i + chunk));
+      }
+      pdfBase64 = btoa(binary);
+    } catch (e) {
+      // Se manda igual: la firma se guarda en el servidor, que es lo único
+      // irrecuperable. El email al estudio avisa que el PDF no salió.
+      console.error('[firmar] error generando el PDF:', e);
+    }
+
+    let resultado: any;
+    try {
+      const res = await fetch(`/api/firma/${encodeURIComponent(token)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // `titular` va siempre: el servidor compara contra lo guardado y sólo
+        // registra un cambio si de verdad corrigió algo.
+        body: JSON.stringify({ firma, titular: misDatos(), cartaPdfBase64: pdfBase64 }),
+      });
+      resultado = await res.json();
+      if (!res.ok) throw new Error(resultado?.error || String(res.status));
+    } catch (e) {
+      console.error('[firmar] error enviando la firma:', e);
+      mostrarError('No pudimos guardar tu firma. Probá de nuevo en un minuto o respondé el email con el que te llegó este link.');
+      submitBtn.disabled = false;
+      $('cp-submit-label').textContent = 'Firmar carta poder';
+      $('cp-submit-spin').style.display = 'none';
+      return;
+    }
+
+    // Copia local: es un documento que la persona acaba de firmar.
+    if (pdfBytes) {
+      const url = URL.createObjectURL(new Blob([pdfBytes as BlobPart], { type: 'application/pdf' }));
+      const link = $('cp-download') as HTMLAnchorElement;
+      link.href = url;
+      link.setAttribute('download', `carta-poder-${ctx.ref}.pdf`);
+    } else {
+      $('cp-download').hidden = true;
+    }
+
+    const faltan = Math.max(0, (resultado?.total ?? ctx.total) - (resultado?.firmadas ?? ctx.firmadas + 1));
+    $('cp-done-msg').textContent = resultado?.completo
+      ? 'Ya están las firmas de todos los titulares. Presentamos la solicitud ante el INPI dentro de las próximas 48 horas hábiles y te avisamos por email.'
+      : `Falta${faltan === 1 ? '' : 'n'} ${faltan} ${faltan === 1 ? 'firma' : 'firmas'} más. Cuando estén todas presentamos la solicitud y te avisamos por email.`;
+
+    $('cp-grid').hidden = true;
+    $('cp-done').hidden = false;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  void cargar();
+</script>
+
+<style is:global>
+  /* Página privada de un solo uso, como /carta-poder: los estilos viven acá.
+     Van sin scope porque el documento se inyecta con innerHTML (las clases
+     ck-cp-* las emite src/lib/checkout/cartaPoder.ts). */
+  .cp {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 4rem;
+  }
+  .cp-cargando { padding: 4rem 0; text-align: center; color: #64748b; font-size: 0.95rem; }
+  .cp-cargando[hidden], .cp-fatal[hidden], #cp-app[hidden] { display: none; }
+  .cp-fatal-help { margin-top: 0.75rem !important; color: #94a3b8 !important; font-size: 0.82rem !important; }
+
+  .cp-head { max-width: 640px; margin-bottom: 2rem; }
+  .cp-eyebrow {
+    margin: 0 0 0.4rem; color: #2563eb; font-size: 0.7rem; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .cp-head h1 {
+    margin: 0 0 0.6rem; font-size: clamp(1.6rem, 3.6vw, 2.1rem);
+    font-weight: 800; color: #0b1d3a; letter-spacing: -0.02em;
+  }
+  .cp-lead { margin: 0; color: #475569; font-size: 0.95rem; line-height: 1.65; }
+  .cp-motivo {
+    margin-top: 1.25rem; padding: 0.9rem 1.1rem; border-radius: 10px;
+    background: #eff6ff; border: 1.5px solid #bfdbfe; color: #1e40af;
+    font-size: 0.85rem; line-height: 1.6;
+  }
+  .cp-motivo[hidden] { display: none; }
+  .cp-motivo b { display: block; margin-bottom: 0.15rem; }
+
+  .cp-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 350px;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  .cp-grid[hidden] { display: none; }
+  .cp-doc { grid-column: 1; grid-row: 1; }
+  .cp-side { grid-column: 2; grid-row: 1 / span 2; position: sticky; top: 88px; }
+  .cp-sign { grid-column: 1; grid-row: 2; }
+  .cp-sign[hidden] { display: none; }
+
+  /* ─── Documento ─── */
+  .cp-paper {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 14px;
+    padding: clamp(1.5rem, 4vw, 3.25rem);
+    font-size: 0.9rem; color: #1e293b; line-height: 1.8;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+  }
+  .cp-paper .ck-cp-dest { margin: 0 0 1.25rem; font-weight: 600; }
+  .cp-paper .ck-cp-p { margin: 0 0 1.25rem; }
+  .cp-paper .ck-cp-ul { margin: 0 0 1.25rem; padding-left: 1.4rem; }
+  .cp-paper .ck-cp-ul li { margin-bottom: 0.55rem; }
+  /* Los pies de firma van uno al lado del otro mientras entren: un poder con
+     tres titulares apilados verticalmente parecen tres documentos. */
+  .cp-paper .ck-cp-firmas {
+    display: flex; flex-wrap: wrap; gap: 2.5rem 3rem; margin-top: 2.5rem;
+  }
+  .cp-paper .ck-cp-firma { width: 240px; }
+  .cp-paper .ck-cp-firma-space { height: 64px; }
+  .cp-paper .ck-cp-firma-img {
+    height: 64px; display: block; object-fit: contain; object-position: left bottom;
+  }
+  .cp-paper .ck-cp-firma-linea { border-top: 1px solid #0f172a; }
+  .cp-paper .ck-cp-firma-acl { font-size: 0.78rem; margin: 0.35rem 0 0; line-height: 1.5; }
+
+  /* ─── Panel de datos (editable) ─── */
+  .cp-side-inner {
+    border: 1px solid #e2e8f0; border-radius: 14px; background: #fff;
+    padding: 1.35rem; max-height: calc(100vh - 110px); overflow-y: auto;
+    /* El panel es más alto que la pantalla: la sombra aparece sola cuando queda
+       contenido abajo, que es lo único que avisa que el panel sigue. */
+    background:
+      linear-gradient(#fff 30%, rgba(255,255,255,0)) top / 100% 26px no-repeat local,
+      linear-gradient(rgba(255,255,255,0), #fff 70%) bottom / 100% 26px no-repeat local,
+      radial-gradient(farthest-side at 50% 0, rgba(15,23,42,.14), rgba(15,23,42,0)) top / 100% 11px no-repeat scroll,
+      radial-gradient(farthest-side at 50% 100%, rgba(15,23,42,.14), rgba(15,23,42,0)) bottom / 100% 11px no-repeat scroll,
+      #fff;
+  }
+  .cp-side-title { margin: 0 0 0.2rem; font-size: 1rem; font-weight: 800; color: #0b1d3a; }
+  .cp-side-help { margin: 0 0 1.1rem; font-size: 0.78rem; color: #64748b; line-height: 1.55; }
+  .cp-side-help b { color: #334155; }
+
+  .cp-group { padding-top: 1.1rem; margin-top: 1.1rem; border-top: 1px solid #f1f5f9; }
+  .cp-group:first-of-type { padding-top: 0; margin-top: 0; border-top: none; }
+  .cp-field { margin-bottom: 0.7rem; }
+  .cp-field label {
+    display: block; margin-bottom: 0.25rem;
+    font-size: 0.75rem; font-weight: 600; color: #334155;
+  }
+  .cp-field label span { color: #94a3b8; font-weight: 500; }
+  .cp-field input,
+  .cp-field select {
+    width: 100%; box-sizing: border-box;
+    padding: 0.55rem 0.7rem; border: 1px solid #cbd5e1; border-radius: 9px;
+    background: #fff; font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.875rem; color: #0f172a;
+  }
+  .cp-field input:focus,
+  .cp-field select:focus {
+    outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  }
+  .cp-field[hidden] { display: none; }
+  .cp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .cp-row--calle { grid-template-columns: 2fr 1fr; }
+  .cp-row--cp { grid-template-columns: 1fr 1.4fr; }
+  .cp-hint { margin: 0.3rem 0 0; font-size: 0.72rem; color: #64748b; line-height: 1.5; }
+  .cp-pct-fija {
+    margin: 0 0 0.4rem; padding: 0.55rem 0.7rem; border-radius: 9px;
+    background: #f8fafc; border: 1px solid #e2e8f0;
+    font-size: 0.9rem; font-weight: 700; color: #0b1d3a;
+  }
+
+  .cp-group-label {
+    font-size: 0.7rem; font-weight: 700; color: #94a3b8;
+    letter-spacing: 0.09em; text-transform: uppercase; margin-bottom: 0.75rem;
+  }
+  .cp-link {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    background: none; border: none; padding: 0; cursor: pointer;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.8rem; font-weight: 600; color: #2563eb;
+  }
+  .cp-link:hover { opacity: 0.7; }
+  .cp-link[hidden] { display: none; }
+
+  /* ─── Firma ─── */
+  .cp-card {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 14px;
+    padding: 1.5rem; margin-top: 1.5rem;
+  }
+  .cp-sig-box {
+    position: relative; border: 1.5px dashed #cbd5e1; border-radius: 12px;
+    background: #f8fafc; overflow: hidden;
+  }
+  .cp-sig-box canvas { display: block; touch-action: none; cursor: crosshair; }
+  .cp-sig-hint {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    color: #c0ccd8; font-size: 0.95rem; font-weight: 500; pointer-events: none;
+  }
+  .cp-sig-hint[hidden] { display: none; }
+  .cp-sig-foot { display: flex; justify-content: flex-end; gap: 1.25rem; margin-top: 0.5rem; }
+
+  .cp-terms {
+    display: flex; align-items: flex-start; gap: 0.6rem; cursor: pointer;
+    margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid #f1f5f9;
+  }
+  .cp-terms input {
+    flex-shrink: 0; margin-top: 2px; width: 15px; height: 15px;
+    accent-color: #2563eb; cursor: pointer;
+  }
+  .cp-terms span { font-size: 0.78rem; color: #64748b; line-height: 1.55; }
+  .cp-terms a { color: #2563eb; font-weight: 600; text-decoration: none; }
+  .cp-terms a:hover { text-decoration: underline; }
+
+  .cp-err {
+    margin-top: 1rem; padding: 0.75rem 1rem; border-radius: 10px;
+    background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c;
+    font-size: 0.82rem; line-height: 1.55;
+  }
+  .cp-err[hidden] { display: none; }
+
+  .cp-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    margin-top: 1.25rem; padding: 0.9rem 2rem;
+    background: #0b1d3a; color: #fff; border: none; border-radius: 100px;
+    font-family: 'Inter', system-ui, sans-serif; font-size: 0.95rem; font-weight: 600;
+    cursor: pointer; text-decoration: none;
+    transition: background .18s, transform .18s, box-shadow .18s;
+  }
+  .cp-btn:hover:not(:disabled) {
+    background: #2563eb; transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(37, 99, 235, .3);
+  }
+  .cp-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .cp-btn--ghost { background: #fff; color: #2563eb; border: 1.5px solid #bfdbfe; }
+  .cp-btn--ghost:hover { background: #eff6ff; color: #1d4ed8; box-shadow: none; }
+  .cp-btn--ghost[hidden] { display: none; }
+
+  /* ─── Confirmación ─── */
+  .cp-done[hidden] { display: none; }
+  .cp-card--done { text-align: center; max-width: 560px; margin: 0 auto; padding: 2.5rem 2rem; }
+  .cp-card--done h2 { margin: 1rem 0 0.5rem; font-size: 1.35rem; font-weight: 800; color: #0b1d3a; }
+  .cp-card--done p { margin: 0; color: #475569; font-size: 0.9rem; line-height: 1.65; }
+
+  @media (max-width: 900px) {
+    .cp-grid { grid-template-columns: 1fr; }
+    .cp-doc, .cp-side, .cp-sign { grid-column: 1; grid-row: auto; }
+    .cp-side { position: static; }
+    .cp-side-inner { max-height: none; overflow: visible; margin-top: 1.5rem; }
+  }
+</style>

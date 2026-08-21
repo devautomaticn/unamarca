@@ -16,10 +16,13 @@ export default defineConfig({
       // lado y va con noindex. Fuera del sitemap.
       // /carta-poder es lo mismo: una herramienta que se le manda por link a un
       // cliente puntual para rehacer un poder, no una página del sitio.
+      // /firmar/<token> también: el link se lo mandamos por email a un cotitular
+      // para que firme, y el token es la credencial.
       filter: (page) =>
         !page.includes('/whatsapp/') &&
         !page.includes('/wa-catalog.json') &&
         !page.includes('/carta-poder') &&
+        !page.includes('/firmar/') &&
         !page.includes('/guia/'),
     }),
   ],

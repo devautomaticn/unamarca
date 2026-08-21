@@ -4,7 +4,7 @@
 // TODO wiring: POST /api/checkout/submit (PDF + emails).
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { NIZA_CLASSES } from '../lib/checkout/nizaClasses';
-import { PRICING, MAX_CLASES, MAX_MARCAS, PROVINCIAS, TRANSFERENCIA, TIPOS_MARCA, LOGO_ACCEPT, LOGO_CM_MAX, formatARS } from '../lib/checkout/constants';
+import { PRICING, MAX_CLASES, MAX_MARCAS, MAX_TITULARES, PROVINCIAS, TRANSFERENCIA, TIPOS_MARCA, LOGO_ACCEPT, LOGO_CM_MAX, formatARS } from '../lib/checkout/constants';
 import { waHref, waHrefMulticlase, waHrefMultimarca } from '../lib/wa';
 
 const SITE_URL = 'https://unamarca.com.ar';
@@ -356,163 +356,249 @@ const faqSchema = {
       </div>
     </section>
 
-    <!-- ══════════ PASO 6 · DATOS DEL TITULAR (post-pago, fase B) ══════════ -->
+    <!-- ══════════ PASO 6 · DATOS DEL TITULAR (post-pago, fase B) ══════════
+         Una marca puede tener hasta MAX_TITULARES dueños. Cada uno lleva el set
+         completo de datos (el INPI los pide de todos) más su porcentaje de
+         titularidad, y la suma tiene que dar exactamente 100.
+         Las tarjetas las pinta renderTitulares() desde #ck-titular-tpl. -->
     <section class="ck-step" data-step="6" hidden>
-      <details class="ck-card ck-fold" open>
-        <summary class="ck-fold-head">
-          <span class="ck-fold-title">
-            <span class="ck-section-label">Datos del titular</span>
-            <span class="ck-fold-sub" id="ck-fold-sub-titular">Quién es el dueño de la marca</span>
-          </span>
-          <svg class="ck-fold-caret" width="12" height="8" viewBox="0 0 10 6" fill="none" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </summary>
-        <div class="ck-fold-body">
-        <p class="ck-help" style="margin-bottom: 1rem">
+      <div class="ck-card">
+        <div class="ck-section-label">Datos del titular</div>
+        <p class="ck-help">
           Estos datos van en la carta poder y en la solicitud que presentamos
           ante el INPI. Son los del titular de la marca.
         </p>
+        <p class="ck-help ck-tit-nota" id="ck-tit-nota" hidden>
+          De los cotitulares sólo necesitamos <b>su email y su porcentaje</b>:
+          el resto de sus datos los carga cada uno cuando entra a firmar la
+          carta poder, con el link que le mandamos a ese email. Vos completás
+          los tuyos y firmás acá.
+        </p>
+      </div>
 
-        <div class="ck-grid ck-g2">
-          <div class="ck-field">
-            <label for="ck-nombre">Nombre <em>*</em></label>
-            <input type="text" id="ck-nombre" placeholder="Nombre" autocomplete="given-name" />
-            <p class="ck-help">Tal como figura en tu documento.</p>
-            <p class="ck-err" data-err="nombre"></p>
+      <div id="ck-titulares"></div>
+
+      <div class="ck-card ck-tit-extra">
+        <button type="button" class="ck-add" id="ck-add-titular">
+          <span aria-hidden="true">+</span> Agregar otro titular
+        </button>
+        <p class="ck-help" id="ck-tit-help">
+          ¿La marca es de más de una persona? Agregá a cada cotitular con su
+          porcentaje.
+        </p>
+        <p class="ck-help" id="ck-tit-max" hidden>
+          Se pueden cargar hasta {MAX_TITULARES} titulares por acá.
+          ¿Necesitás más? <a href={waEmpresa} target="_blank" rel="noopener noreferrer" onclick="gtag('event', 'whatsapp_click', {'source': 'registrar_empresa'})">Escribinos por WhatsApp</a>
+        </p>
+
+        <!-- Suma de porcentajes: sólo existe cuando hay más de un titular.
+             Con uno solo es 100 y no hay nada que decidir. -->
+        <div class="ck-pct" id="ck-pct-box" hidden>
+          <div class="ck-pct-row">
+            <span class="ck-pct-k">Total de titularidad</span>
+            <b class="ck-pct-v" id="ck-pct-total">100%</b>
           </div>
-          <div class="ck-field">
-            <label for="ck-apellido">Apellido <em>*</em></label>
-            <input type="text" id="ck-apellido" placeholder="Apellido" autocomplete="family-name" />
-            <p class="ck-err" data-err="apellido"></p>
-          </div>
+          <div class="ck-pct-bar"><div class="ck-pct-fill" id="ck-pct-fill"></div></div>
+          <button type="button" class="ck-link-btn" id="ck-pct-repartir">Repartir en partes iguales</button>
+          <p class="ck-err" data-err="porcentajes"></p>
         </div>
+      </div>
 
-        <div class="ck-grid ck-g2">
-          <div class="ck-field">
-            <label for="ck-tipodoc">Tipo de documento <em>*</em></label>
-            <div class="ck-sel">
-              <select id="ck-tipodoc">
-                <option value="DNI" selected>DNI</option>
-                <option value="Pasaporte">Pasaporte</option>
-                <option value="Libreta Cívica">Libreta Cívica</option>
-                <option value="Libreta de Enrolamiento">Libreta de Enrolamiento</option>
-              </select>
+      <!-- Molde de tarjeta de titular. Los campos se identifican por `data-f`,
+           no por id: hay hasta MAX_TITULARES copias en la misma pantalla y los
+           ids se asignan al clonar (ver renderTitulares). -->
+      <template id="ck-titular-tpl">
+        <details class="ck-card ck-fold ck-tit" open>
+          <summary class="ck-fold-head">
+            <span class="ck-fold-title">
+              <span class="ck-section-label ck-tit-titulo">Titular</span>
+              <span class="ck-fold-sub ck-tit-sub">Quién es el dueño de la marca</span>
+            </span>
+            <svg class="ck-fold-caret" width="12" height="8" viewBox="0 0 10 6" fill="none" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </summary>
+          <div class="ck-fold-body">
+            <!-- Quién firma acá y quién recibe el link. Sólo se ve con más de
+                 un titular: con uno, firma el que está completando y punto. -->
+            <div class="ck-tit-firma" data-firma-row hidden>
+              <label class="ck-tit-yo">
+                <input type="radio" name="ck-tit-firmante" data-f="firmaAqui" />
+                <span>
+                  <b>Este soy yo</b>
+                  <em>Firmo la carta poder en el próximo paso.</em>
+                </span>
+              </label>
+              <p class="ck-help ck-tit-firma-nota" data-firma-nota hidden></p>
             </div>
-          </div>
-          <div class="ck-field">
-            <label for="ck-docnum">Número de documento <em>*</em></label>
-            <input type="text" id="ck-docnum" placeholder="28765432" autocomplete="off" maxlength="20" />
-            <p class="ck-err" data-err="docnum"></p>
-          </div>
-        </div>
 
-        <div class="ck-field">
-          <label for="ck-cuit">CUIT / CUIL <em>*</em></label>
-          <input type="text" id="ck-cuit" placeholder="27-22730331-5" inputmode="numeric" autocomplete="off" maxlength="13" />
-          <p class="ck-err" data-err="cuit"></p>
-        </div>
+            <!-- Identidad completa: SÓLO del que está completando el pedido.
+                 De un cotitular no se piden estos datos —los carga él mismo al
+                 firmar— porque quien arma el pedido no los sabe: el DNI del
+                 socio, su domicilio, su estado civil. Los cargaba de memoria y
+                 después había que corregirlos. -->
+            <div data-solo-firmante>
+              <div class="ck-grid ck-g2">
+                <div class="ck-field">
+                  <label>Nombre <em>*</em></label>
+                  <input type="text" data-f="nombre" placeholder="Nombre" autocomplete="given-name" />
+                  <p class="ck-help">Tal como figura en el documento.</p>
+                  <p class="ck-err" data-err="nombre"></p>
+                </div>
+                <div class="ck-field">
+                  <label>Apellido <em>*</em></label>
+                  <input type="text" data-f="apellido" placeholder="Apellido" autocomplete="family-name" />
+                  <p class="ck-err" data-err="apellido"></p>
+                </div>
+              </div>
 
-        <div class="ck-grid ck-g2">
-          <div class="ck-field">
-            <label for="ck-genero">Género <em>*</em></label>
-            <div class="ck-sel">
-              <select id="ck-genero">
-                <option value="">Seleccionar…</option>
-                <option>Masculino</option>
-                <option>Femenino</option>
-                <option>Otro</option>
-              </select>
-            </div>
-            <p class="ck-err" data-err="genero"></p>
-          </div>
-          <div class="ck-field">
-            <label for="ck-estadocivil">Estado civil <em>*</em></label>
-            <div class="ck-sel">
-              <select id="ck-estadocivil">
-                <option value="">Seleccionar…</option>
-                <option>Soltero/a</option>
-                <option>Casado/a</option>
-                <option>Viudo/a</option>
-                <option>Divorciado/a</option>
-              </select>
-            </div>
-            <p class="ck-err" data-err="estadocivil"></p>
-          </div>
-        </div>
+              <div class="ck-grid ck-g2">
+                <div class="ck-field">
+                  <label>Tipo de documento <em>*</em></label>
+                  <div class="ck-sel">
+                    <select data-f="tipodoc">
+                      <option value="DNI" selected>DNI</option>
+                      <option value="Pasaporte">Pasaporte</option>
+                      <option value="Libreta Cívica">Libreta Cívica</option>
+                      <option value="Libreta de Enrolamiento">Libreta de Enrolamiento</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="ck-field">
+                  <label>Número de documento <em>*</em></label>
+                  <input type="text" data-f="docnum" placeholder="28765432" autocomplete="off" maxlength="20" />
+                  <p class="ck-err" data-err="docnum"></p>
+                </div>
+              </div>
 
-        <div class="ck-field" id="ck-conyuge-row" hidden>
-          <label for="ck-conyuge">Nombre del cónyuge <em>*</em></label>
-          <input type="text" id="ck-conyuge" placeholder="Nombre completo del cónyuge" autocomplete="off" />
-          <p class="ck-err" data-err="conyuge"></p>
-        </div>
+              <div class="ck-field">
+                <label>CUIT / CUIL <em>*</em></label>
+                <input type="text" data-f="cuit" placeholder="27-22730331-5" inputmode="numeric" autocomplete="off" maxlength="13" />
+                <p class="ck-err" data-err="cuit"></p>
+              </div>
+            </div>
 
-        </div>
-      </details>
+            <!-- Lo único que se pide de un cotitular. Va siempre visible: en el
+                 firmante son dos campos más de los suyos; en un cotitular, los
+                 dos únicos que hay. -->
+            <div class="ck-grid ck-g2">
+              <div class="ck-field">
+                <label>Email <em>*</em></label>
+                <input type="email" data-f="email" placeholder="correo@ejemplo.com" autocomplete="email" />
+                <p class="ck-help ck-tit-email-help" data-email-help hidden>
+                  Acá le mandamos el link para que complete sus datos y firme.
+                </p>
+                <p class="ck-err" data-err="email"></p>
+              </div>
+              <!-- El porcentaje aparece recién con dos titulares. -->
+              <div class="ck-field ck-tit-pct" data-pct-row hidden>
+                <label>Titularidad <em>*</em></label>
+                <div class="ck-pct-input">
+                  <input type="text" data-f="porcentaje" inputmode="decimal" placeholder="50" maxlength="6" />
+                  <span aria-hidden="true">%</span>
+                </div>
+                <p class="ck-err" data-err="porcentaje"></p>
+              </div>
+            </div>
 
-      <details class="ck-card ck-fold" open>
-        <summary class="ck-fold-head">
-          <span class="ck-fold-title">
-            <span class="ck-section-label">Domicilio real</span>
-            <span class="ck-fold-sub">Dónde vive el titular</span>
-          </span>
-          <svg class="ck-fold-caret" width="12" height="8" viewBox="0 0 10 6" fill="none" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </summary>
-        <div class="ck-fold-body">
-          <div class="ck-grid ck-g2">
-            <div class="ck-field">
-              <label for="ck-calle">Calle <em>*</em></label>
-              <input type="text" id="ck-calle" placeholder="Av. Corrientes" autocomplete="address-line1" />
-              <p class="ck-err" data-err="calle"></p>
-            </div>
-            <div class="ck-field">
-              <label for="ck-numero">Número <em>*</em></label>
-              <input type="text" id="ck-numero" placeholder="1234" autocomplete="off" />
-              <p class="ck-err" data-err="numero"></p>
-            </div>
-          </div>
-          <div class="ck-grid ck-g2">
-            <div class="ck-field">
-              <label for="ck-piso">Piso</label>
-              <input type="text" id="ck-piso" placeholder="3" autocomplete="off" />
-            </div>
-            <div class="ck-field">
-              <label for="ck-depto">Depto</label>
-              <input type="text" id="ck-depto" placeholder="A" autocomplete="off" />
-            </div>
-          </div>
-          <div class="ck-grid ck-g2">
-            <div class="ck-field">
-              <label for="ck-localidad">Localidad <em>*</em></label>
-              <input type="text" id="ck-localidad" placeholder="La Plata" autocomplete="address-level2" />
-              <p class="ck-err" data-err="localidad"></p>
-            </div>
-            <div class="ck-field">
-              <label for="ck-codpostal">Código postal <em>*</em></label>
-              <input type="text" id="ck-codpostal" placeholder="1900" autocomplete="postal-code" />
-              <p class="ck-err" data-err="codpostal"></p>
-            </div>
-          </div>
-          <div class="ck-field">
-            <label for="ck-provincia">Provincia <em>*</em></label>
-            <div class="ck-sel">
-              <select id="ck-provincia">
-                <option value="">Seleccionar…</option>
-                {PROVINCIAS.map(p => <option value={p}>{p}</option>)}
-              </select>
-            </div>
-            <p class="ck-err" data-err="provincia"></p>
-          </div>
+            <div data-solo-firmante>
+              <div class="ck-grid ck-g2">
+                <div class="ck-field">
+                  <label>Género <em>*</em></label>
+                  <div class="ck-sel">
+                    <select data-f="genero">
+                      <option value="">Seleccionar…</option>
+                      <option>Masculino</option>
+                      <option>Femenino</option>
+                      <option>Otro</option>
+                    </select>
+                  </div>
+                  <p class="ck-err" data-err="genero"></p>
+                </div>
+                <div class="ck-field">
+                  <label>Estado civil <em>*</em></label>
+                  <div class="ck-sel">
+                    <select data-f="estadocivil">
+                      <option value="">Seleccionar…</option>
+                      <option>Soltero/a</option>
+                      <option>Casado/a</option>
+                      <option>Viudo/a</option>
+                      <option>Divorciado/a</option>
+                    </select>
+                  </div>
+                  <p class="ck-err" data-err="estadocivil"></p>
+                </div>
+              </div>
 
-          <!-- Casi todos los titulares viven en Argentina: el campo está, pero
-               no ocupa lugar hasta que hace falta. -->
-          <div class="ck-field ck-pais-row" id="ck-pais-row" hidden>
-            <label for="ck-pais">País <em>*</em></label>
-            <input type="text" id="ck-pais" value="Argentina" autocomplete="country-name" />
+              <div class="ck-field" data-conyuge-row hidden>
+                <label>Nombre del cónyuge <em>*</em></label>
+                <input type="text" data-f="conyuge" placeholder="Nombre completo del cónyuge" autocomplete="off" />
+                <p class="ck-err" data-err="conyuge"></p>
+              </div>
+            </div>
+
+            <div class="ck-tit-dom" data-solo-firmante>
+              <div class="ck-section-label">Domicilio real</div>
+              <p class="ck-help ck-tit-dom-sub">Dónde vive este titular.</p>
+
+              <div class="ck-grid ck-g2">
+                <div class="ck-field">
+                  <label>Calle <em>*</em></label>
+                  <input type="text" data-f="calle" placeholder="Av. Corrientes" autocomplete="address-line1" />
+                  <p class="ck-err" data-err="calle"></p>
+                </div>
+                <div class="ck-field">
+                  <label>Número <em>*</em></label>
+                  <input type="text" data-f="numero" placeholder="1234" autocomplete="off" />
+                  <p class="ck-err" data-err="numero"></p>
+                </div>
+              </div>
+              <div class="ck-grid ck-g2">
+                <div class="ck-field">
+                  <label>Piso</label>
+                  <input type="text" data-f="piso" placeholder="3" autocomplete="off" />
+                </div>
+                <div class="ck-field">
+                  <label>Depto</label>
+                  <input type="text" data-f="depto" placeholder="A" autocomplete="off" />
+                </div>
+              </div>
+              <div class="ck-grid ck-g2">
+                <div class="ck-field">
+                  <label>Localidad <em>*</em></label>
+                  <input type="text" data-f="localidad" placeholder="La Plata" autocomplete="address-level2" />
+                  <p class="ck-err" data-err="localidad"></p>
+                </div>
+                <div class="ck-field">
+                  <label>Código postal <em>*</em></label>
+                  <input type="text" data-f="codpostal" placeholder="1900" autocomplete="postal-code" />
+                  <p class="ck-err" data-err="codpostal"></p>
+                </div>
+              </div>
+              <div class="ck-field">
+                <label>Provincia <em>*</em></label>
+                <div class="ck-sel">
+                  <select data-f="provincia">
+                    <option value="">Seleccionar…</option>
+                    {PROVINCIAS.map(p => <option value={p}>{p}</option>)}
+                  </select>
+                </div>
+                <p class="ck-err" data-err="provincia"></p>
+              </div>
+
+              <!-- Casi todos los titulares viven en Argentina: el campo está,
+                   pero no ocupa lugar hasta que hace falta. -->
+              <div class="ck-field ck-pais-row" data-pais-row hidden>
+                <label>País <em>*</em></label>
+                <input type="text" data-f="pais" value="Argentina" autocomplete="country-name" />
+              </div>
+              <button type="button" class="ck-link-btn ck-pais-toggle" data-pais-toggle>
+                Este titular vive fuera de Argentina
+              </button>
+            </div>
+
+            <button type="button" class="ck-link-btn ck-tit-rm" data-rm hidden>Quitar este titular</button>
           </div>
-          <button type="button" class="ck-link-btn ck-pais-toggle" id="ck-pais-toggle">
-            El titular vive fuera de Argentina
-          </button>
-        </div>
-      </details>
+        </details>
+      </template>
 
       <div class="ck-nav">
         <button type="button" class="ck-back" data-back="5">← Volver</button>
@@ -798,6 +884,10 @@ const faqSchema = {
 
       <div class="ck-card">
         <div class="ck-section-label">Tu firma</div>
+        <!-- Con cotitulares, a quién le va a llegar el link. Va ANTES del pad:
+             es parte de lo que se está por aceptar, no una consecuencia que se
+             descubre en la pantalla de confirmación. -->
+        <div class="ck-firmas-pend" id="ck-firmas-pend" hidden></div>
         <p class="ck-help" style="margin-bottom: 0.75rem">
           Firmá en el recuadro con el dedo (celular) o con el mouse, como lo harías en papel.
         </p>
@@ -865,8 +955,21 @@ const faqSchema = {
         </p>
       </div>
 
-      <!-- Solo se muestra si hay algo pendiente (transferencia o imagen) -->
+      <!-- Solo se muestra si hay algo pendiente (firmas, transferencia o imagen) -->
       <div class="ck-card ck-done ck-done-extra" id="ck-done-extra" hidden>
+
+        <!-- Firmas de los cotitulares: lo primero, porque sin el poder completo
+             no se presenta nada y depende de que el cliente les avise. -->
+        <div class="ck-done-transfer" id="ck-done-firmas" hidden>
+          <p class="ck-done-transfer-title" id="ck-done-firmas-t"></p>
+          <p>
+            Le mandamos un email a cada cotitular con su link para completar sus
+            datos y firmar la carta poder. Avisales que lo busquen (puede caer
+            en spam):
+          </p>
+          <ul class="ck-done-firmas-lista" id="ck-done-firmas-lista"></ul>
+          <p>Presentamos la solicitud ante el INPI cuando estén todas las firmas.</p>
+        </div>
 
         <!-- Solo si la imagen no llegó al servidor: el pedido se envía igual -->
         <div class="ck-done-transfer" id="ck-done-logo" hidden>
@@ -938,12 +1041,13 @@ const faqSchema = {
 <script>
   import { NIZA_CLASSES } from '../lib/checkout/nizaClasses';
   import {
-    PRICING, MAX_CLASES, MAX_MARCAS, TRANSFERENCIA,
+    PRICING, MAX_CLASES, MAX_MARCAS, MAX_TITULARES, TRANSFERENCIA,
     computeOrderPricing, pricingDesdeSnapshot, type OrderPricing,
     contarLineas, clasesTexto, lineasTexto, formatARS,
     TIPOS_MARCA, LOGO_MAX_PX, LOGO_JPEG_QUALITY, LOGO_CM_MAX, LOGO_CM_LADO_MAYOR,
     formatCm, parseCm, medidasDesdePx, normalizeTipoMarca, requiereLogo,
     tieneDenominacion, tipoMarcaLabel, type TipoMarca,
+    formatPorcentaje, parsePorcentaje, repartirPorcentajes, sumaPorcentajes,
   } from '../lib/checkout/constants';
   import { formatCuitInput, isValidCuit, cuitMatchesDni } from '../lib/checkout/cuit';
   import { cartaPoderHTML, type CartaPoderData } from '../lib/checkout/cartaPoder';
@@ -1014,13 +1118,46 @@ const faqSchema = {
    *  un aumento vea un total distinto del que pagó. */
   let pricingPedido: OrderPricing | null = null;
 
-  const FIELD_IDS = [
-    'ck-nombre', 'ck-apellido', 'ck-tipodoc', 'ck-docnum',
-    'ck-cuit', 'ck-genero', 'ck-estadocivil', 'ck-conyuge',
-    'ck-pais', 'ck-calle', 'ck-numero', 'ck-piso', 'ck-depto',
-    'ck-localidad', 'ck-codpostal', 'ck-provincia',
-    'ck-email', 'ck-whatsapp',
-  ];
+  /** Campos sueltos del checkout (paso 2). Los del titular ya no viven acá:
+   *  son 1..MAX_TITULARES tarjetas repetidas y viajan en `titulares[]`. */
+  const FIELD_IDS = ['ck-email', 'ck-whatsapp'];
+
+  // ── Titulares ───────────────────────────────────────────
+  // El INPI pide el set completo de datos de CADA dueño más su porcentaje, y la
+  // suma tiene que dar exactamente 100. Ver renderTitulares().
+
+  /** Los campos de texto de una tarjeta, en el orden del formulario. Es la
+   *  lista que usan el render, el draft y los listeners: agregar un campo al
+   *  molde y olvidarse de esto lo dejaría fuera del guardado. */
+  const TITULAR_FIELDS = [
+    'nombre', 'apellido', 'tipodoc', 'docnum', 'cuit', 'email',
+    'genero', 'estadocivil', 'conyuge',
+    'pais', 'calle', 'numero', 'piso', 'depto', 'localidad', 'codpostal', 'provincia',
+  ] as const;
+  type TitularField = typeof TITULAR_FIELDS[number];
+
+  type TitularState = Record<TitularField, string> & {
+    /** 0–100 con hasta dos decimales; entre todos suman 100 */
+    porcentaje: number;
+    /** El que está completando el formulario: firma en el paso 7. Al resto le
+     *  llega un email con su link (ver src/lib/server/firmas.ts). */
+    firmaAqui: boolean;
+  };
+
+  function nuevoTitular(porcentaje = 100, firmaAqui = false): TitularState {
+    const base = Object.fromEntries(TITULAR_FIELDS.map(f => [f, ''])) as Record<TitularField, string>;
+    return { ...base, tipodoc: 'DNI', pais: 'Argentina', porcentaje, firmaAqui };
+  }
+
+  let titulares: TitularState[] = [nuevoTitular(100, true)];
+
+  /** El que firma en el wizard. Siempre hay uno: al quitar una tarjeta, si el
+   *  firmante era ese, pasa al primero. */
+  const titularFirmante = () => titulares.find(t => t.firmaAqui) ?? titulares[0];
+
+  /** A quién le mandó el servidor el link para firmar. Lo devuelve el PATCH del
+   *  pedido; sin él, la confirmación cae en la lista local de cotitulares. */
+  let firmasPendientes: { nombre: string; email: string }[] = [];
 
   /** El draft guarda todo menos la imagen: un JPG en base64 no entra en la
    *  cuota de localStorage. Si el cliente recarga antes de enviar, vuelve a
@@ -1035,7 +1172,13 @@ const faqSchema = {
     FIELD_IDS.forEach(id => { values[id] = input(id).value; });
     // `at` viaja a las dos copias (local y servidor) para poder decidir cuál es
     // más nueva al retomar el pedido desde otro dispositivo.
-    return { values, marcas: marcas.map(marcaParaDraft), garantia, at: new Date().toISOString() };
+    return {
+      values,
+      titulares: titulares.map(t => ({ ...t })),
+      marcas: marcas.map(marcaParaDraft),
+      garantia,
+      at: new Date().toISOString(),
+    };
   }
 
   function saveDraft() {
@@ -1110,8 +1253,7 @@ const faqSchema = {
       const draft = leerDraft();
       if (!draft) return;
       FIELD_IDS.forEach(id => { if (draft.values?.[id]) input(id).value = draft.values[id]; });
-      syncConyuge();
-      syncPais();
+      setTitulares(titularesDesdeDraft(draft), false);
       setMarcas(marcasDesdeDraft(draft), false);
       if (typeof draft.garantia === 'boolean') {
         garantia = draft.garantia;
@@ -1119,6 +1261,49 @@ const faqSchema = {
         updateSummary();
       }
     } catch { /* draft corrupto: ignorar */ }
+  }
+
+  /** Titulares guardados. Los drafts anteriores al multi-titular tienen los
+   *  campos sueltos en `values` (`ck-nombre`, `ck-calle`, …): entran como un
+   *  único titular al 100%. Un cliente que dejó el pedido a medias antes de
+   *  esto no puede perder lo que ya había cargado. */
+  function titularesDesdeDraft(draft: any): TitularState[] {
+    if (Array.isArray(draft?.titulares) && draft.titulares.length) {
+      const lista: TitularState[] = draft.titulares
+        .slice(0, MAX_TITULARES)
+        .map((t: any) => {
+          const base = nuevoTitular();
+          TITULAR_FIELDS.forEach(f => { base[f] = String(t?.[f] ?? base[f] ?? ''); });
+          base.porcentaje = typeof t?.porcentaje === 'number' ? t.porcentaje : 0;
+          base.firmaAqui = t?.firmaAqui === true;
+          return base;
+        });
+      normalizarTitulares(lista);
+      return lista;
+    }
+
+    const v = draft?.values ?? {};
+    const viejo = nuevoTitular(100, true);
+    let algo = false;
+    TITULAR_FIELDS.forEach(f => {
+      const val = String(v[`ck-${f}`] ?? '').trim();
+      if (val) { viejo[f] = val; algo = true; }
+    });
+    // El email del titular no existía: el único que había es el de contacto.
+    if (algo && !viejo.email) viejo.email = String(v['ck-email'] ?? '').trim();
+    return algo ? [viejo] : [];
+  }
+
+  /** Deja la lista en un estado consistente: exactamente un firmante y
+   *  porcentajes que sumen 100. Se llama después de agregar, quitar o cargar. */
+  function normalizarTitulares(lista: TitularState[]) {
+    if (!lista.length) return;
+    if (!lista.some(t => t.firmaAqui)) lista[0].firmaAqui = true;
+    // Un solo titular es dueño del 100%: no hay nada que repartir ni preguntar.
+    if (lista.length === 1) { lista[0].porcentaje = 100; return; }
+    if (sumaPorcentajes(lista) !== 100) {
+      repartirPorcentajes(lista.length).forEach((p, i) => { lista[i].porcentaje = p; });
+    }
   }
 
   /** Drafts v1: una sola marca en values['ck-marca'] + clases/clase sueltas,
@@ -1263,6 +1448,13 @@ const faqSchema = {
     if (step === '3') renderClasesCards();
     if (step === '4') updatePaySummary();
     if (step === '5') renderDescCards();
+    if (step === '6') {
+      // El email de contacto ya lo cargó en el paso 2: quien completa el pedido
+      // no lo tiene que escribir dos veces.
+      const yo = titularFirmante();
+      const contacto = input('ck-email').value.trim();
+      if (yo && !yo.email.trim() && contacto) { yo.email = contacto; renderTitulares(); saveDraft(); }
+    }
     if (step === '7') { renderPreview(); sizeCanvas(); }
     renderRail(step);
     if (STEP_EVENTS[step]) {
@@ -1476,48 +1668,116 @@ const faqSchema = {
     return ok;
   }
 
-  /** Paso 6 (fase B, 2/3): identidad y domicilio del titular. */
+  /** Paso 6 (fase B, 2/3): identidad y domicilio de CADA titular, más el
+   *  reparto de la titularidad. Los errores van dentro de su tarjeta: con tres
+   *  copias del mismo formulario en pantalla, un error suelto arriba no dice
+   *  de quién es. */
   function validateTitular(): boolean {
-    const keys = ['nombre', 'apellido', 'docnum', 'cuit', 'genero', 'estadocivil', 'conyuge', 'calle', 'numero', 'localidad', 'codpostal', 'provincia'];
-    clearErrs(keys);
     let ok = true;
+    setErr('porcentajes', '');
 
-    const req = (id: string, key: string, msg: string) => {
-      if (!FIELDS_OPTIONAL && !input(id).value.trim()) { setErr(key, msg); ok = false; }
-    };
-    req('ck-nombre', 'nombre', 'Ingresá tu nombre.');
-    req('ck-apellido', 'apellido', 'Ingresá tu apellido.');
-    req('ck-genero', 'genero', 'Seleccioná el género.');
-    req('ck-estadocivil', 'estadocivil', 'Seleccioná el estado civil.');
-    if (input('ck-estadocivil').value === 'Casado/a') {
-      req('ck-conyuge', 'conyuge', 'Ingresá el nombre del cónyuge.');
-    }
+    const filas = Array.from(
+      document.querySelectorAll<HTMLElement>('#ck-titulares .ck-tit')
+    );
 
-    const tipoDoc = input('ck-tipodoc').value;
-    const doc = input('ck-docnum').value.trim();
-    if (tipoDoc === 'DNI') {
-      const digits = doc.replace(/\D/g, '');
-      if (doc || !FIELDS_OPTIONAL) {
-        if (digits.length < 7 || digits.length > 8) { setErr('docnum', 'Ingresá un DNI válido (7 u 8 dígitos).'); ok = false; }
+    // El mismo email dos veces es la marca de que se duplicó una tarjeta. Es
+    // el único dato que tenemos de un cotitular y el que le lleva su link: dos
+    // titulares que lo compartan no pueden firmar los dos.
+    const emailsVistos = new Map<string, number>();
+
+    filas.forEach((fila, i) => {
+      const t = titulares[i];
+      if (!t) return;
+      const err = (key: string, msg: string) =>
+        setErrEl(fila.querySelector<HTMLElement>(`[data-err="${key}"]`), msg);
+      const claves = ['nombre', 'apellido', 'docnum', 'cuit', 'email', 'genero',
+        'estadocivil', 'conyuge', 'porcentaje', 'calle', 'numero', 'localidad',
+        'codpostal', 'provincia'];
+      claves.forEach(k => err(k, ''));
+
+      // El email es obligatorio en TODOS: del cotitular es lo único que
+      // tenemos, y es adonde va el link con el que completa sus datos y firma.
+      // Sin él, ese renglón del poder no se puede completar nunca.
+      const email = t.email.trim();
+      if (email || !FIELDS_OPTIONAL) {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          err('email', t.firmaAqui
+            ? 'Ingresá un email válido.'
+            : 'Ingresá un email válido: ahí le mandamos el link para que complete sus datos y firme.');
+          ok = false;
+        }
       }
-    } else {
-      req('ck-docnum', 'docnum', 'Ingresá el número de documento.');
-    }
+      // Dos titulares con el mismo email compartirían el link de firma: el
+      // segundo nunca llegaría a firmar el suyo.
+      if (email) {
+        const antes = emailsVistos.get(email.toLowerCase());
+        if (antes !== undefined) {
+          err('email', `Este email ya lo cargaste en el titular ${antes + 1}.`); ok = false;
+        } else {
+          emailsVistos.set(email.toLowerCase(), i);
+        }
+      }
 
-    const cuit = input('ck-cuit').value;
-    if (cuit || !FIELDS_OPTIONAL) {
-      if (!isValidCuit(cuit)) {
-        setErr('cuit', 'El CUIT/CUIL no es válido. Revisalo.'); ok = false;
-      } else if (tipoDoc === 'DNI' && doc && !cuitMatchesDni(cuit, doc)) {
-        setErr('cuit', 'El CUIT/CUIL no coincide con el DNI ingresado.'); ok = false;
+      if (titulares.length > 1 && !FIELDS_OPTIONAL) {
+        if (!(t.porcentaje > 0)) {
+          err('porcentaje', 'El porcentaje tiene que ser mayor que 0.'); ok = false;
+        }
+      }
+
+      // De un cotitular no se pide nada más: sus datos los carga él cuando
+      // entra a firmar, que es quien de verdad los sabe.
+      if (titulares.length > 1 && !t.firmaAqui) return;
+
+      const req = (campo: TitularField, key: string, msg: string) => {
+        if (!FIELDS_OPTIONAL && !t[campo].trim()) { err(key, msg); ok = false; }
+      };
+      req('nombre', 'nombre', 'Ingresá tu nombre.');
+      req('apellido', 'apellido', 'Ingresá tu apellido.');
+      req('genero', 'genero', 'Seleccioná el género.');
+      req('estadocivil', 'estadocivil', 'Seleccioná el estado civil.');
+      if (t.estadocivil === 'Casado/a') {
+        req('conyuge', 'conyuge', 'Ingresá el nombre del cónyuge.');
+      }
+
+      const doc = t.docnum.trim();
+      if (t.tipodoc === 'DNI') {
+        const digits = doc.replace(/\D/g, '');
+        if (doc || !FIELDS_OPTIONAL) {
+          if (digits.length < 7 || digits.length > 8) {
+            err('docnum', 'Ingresá un DNI válido (7 u 8 dígitos).'); ok = false;
+          }
+        }
+      } else {
+        req('docnum', 'docnum', 'Ingresá el número de documento.');
+      }
+
+      const cuit = t.cuit;
+      if (cuit || !FIELDS_OPTIONAL) {
+        if (!isValidCuit(cuit)) {
+          err('cuit', 'El CUIT/CUIL no es válido. Revisalo.'); ok = false;
+        } else if (t.tipodoc === 'DNI' && doc && !cuitMatchesDni(cuit, doc)) {
+          err('cuit', 'El CUIT/CUIL no coincide con el documento ingresado.'); ok = false;
+        }
+      }
+
+      req('calle', 'calle', 'Ingresá la calle.');
+      req('numero', 'numero', 'Ingresá el número.');
+      req('localidad', 'localidad', 'Ingresá la localidad.');
+      req('codpostal', 'codpostal', 'Ingresá el código postal.');
+      req('provincia', 'provincia', 'Seleccioná la provincia.');
+    });
+
+    // La suma tiene que dar 100 exacto: es lo que se carga en TITULARIDAD del
+    // portal del INPI y lo que queda escrito en la carta poder.
+    if (titulares.length > 1 && !FIELDS_OPTIONAL) {
+      const suma = sumaPorcentajes(titulares);
+      if (suma !== 100) {
+        setErr('porcentajes', suma > 100
+          ? `Los porcentajes suman ${formatPorcentaje(suma)}%: hay ${formatPorcentaje(suma - 100)}% de más.`
+          : `Los porcentajes suman ${formatPorcentaje(suma)}%: falta repartir ${formatPorcentaje(100 - suma)}%.`);
+        ok = false;
       }
     }
-
-    req('ck-calle', 'calle', 'Ingresá la calle.');
-    req('ck-numero', 'numero', 'Ingresá el número.');
-    req('ck-localidad', 'localidad', 'Ingresá la localidad.');
-    req('ck-codpostal', 'codpostal', 'Ingresá el código postal.');
-    req('ck-provincia', 'provincia', 'Seleccioná la provincia.');
 
     return ok;
   }
@@ -1535,24 +1795,240 @@ const faqSchema = {
     (err.closest('.ck-field') ?? err).scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
-  // Cónyuge: visible solo si el estado civil es Casado/a
-  function syncConyuge() {
-    $('ck-conyuge-row').hidden = input('ck-estadocivil').value !== 'Casado/a';
-  }
-  input('ck-estadocivil').addEventListener('change', syncConyuge);
+  // ── Paso 6: tarjetas de titular ─────────────────────────
 
-  // País: oculto mientras sea Argentina, que es el caso de casi todos. Si un
-  // draft trae otro país, el campo aparece solo.
-  function syncPais() {
-    const otro = input('ck-pais').value.trim().toLowerCase() !== 'argentina';
-    $('ck-pais-row').hidden = !otro;
-    $('ck-pais-toggle').hidden = otro;
+  /** Normaliza el estado y repinta el paso 6 entero. */
+  function setTitulares(lista: TitularState[], save = true) {
+    titulares = lista.length ? lista.slice(0, MAX_TITULARES) : [nuevoTitular(100, true)];
+    normalizarTitulares(titulares);
+    renderTitulares();
+    if (save) saveDraft();
   }
-  $('ck-pais-toggle').addEventListener('click', () => {
-    $('ck-pais-row').hidden = false;
-    $('ck-pais-toggle').hidden = true;
-    input('ck-pais').select();
-    input('ck-pais').focus();
+
+  /** Nombre con el que se identifica una tarjeta en su encabezado. De un
+   *  cotitular no tenemos el nombre —lo carga él al firmar—, así que lo
+   *  identifica su email, que es lo único que sabemos de esa persona. */
+  function subtituloTitular(t: TitularState, i: number): string {
+    if (titulares.length > 1 && !t.firmaAqui) {
+      return t.email.trim() || 'Sólo su email y su porcentaje';
+    }
+    const nombre = `${t.nombre.trim()} ${t.apellido.trim()}`.trim();
+    if (nombre) return nombre;
+    return i === 0 ? 'Quién es el dueño de la marca' : 'Tus datos';
+  }
+
+  /** Qué le pasa a un cotitular después de enviar el pedido. */
+  function notaCotitular(t: TitularState): string {
+    const mail = t.email.trim();
+    return mail
+      ? `A ${mail} le llega un link para completar sus datos y firmar la carta poder.`
+      : 'Le va a llegar un link a su email para completar sus datos y firmar la carta poder.';
+  }
+
+  const titularesBox = () => $('ck-titulares');
+
+  function renderTitulares() {
+    const molde = tpl('ck-titular-tpl');
+    const caja = titularesBox();
+    const varios = titulares.length > 1;
+    // Qué tarjetas estaban plegadas: repintar no puede volver a abrirlas todas
+    // encima de alguien que ya cerró las que terminó.
+    const abiertas = Array.from(caja.querySelectorAll<HTMLDetailsElement>('.ck-tit'))
+      .map(d => d.open);
+    caja.innerHTML = '';
+
+    titulares.forEach((t, i) => {
+      const fila = molde.content.firstElementChild!.cloneNode(true) as HTMLDetailsElement;
+      fila.open = abiertas[i] ?? true;
+      fila.dataset.i = String(i);
+
+      // Ids únicos por tarjeta: hay hasta MAX_TITULARES copias del mismo molde
+      // y el `for` de cada label tiene que apuntar a SU campo.
+      fila.querySelectorAll<HTMLElement>('[data-f]').forEach(el => {
+        const campo = el.dataset.f!;
+        el.id = `ck-t${i}-${campo}`;
+        const label = el.closest('.ck-field')?.querySelector('label');
+        if (label && !label.classList.contains('ck-tit-yo')) label.setAttribute('for', el.id);
+      });
+
+      const q = <T extends HTMLElement>(sel: string) => fila.querySelector<T>(sel)!;
+      q('.ck-tit-titulo').textContent = varios ? `Titular ${i + 1} de ${titulares.length}` : 'Titular';
+      q('.ck-tit-sub').textContent = subtituloTitular(t, i);
+
+      TITULAR_FIELDS.forEach(campo => {
+        const el = fila.querySelector<HTMLInputElement | HTMLSelectElement>(`[data-f="${campo}"]`);
+        if (el) el.value = t[campo];
+      });
+
+      // Porcentaje: sólo con más de un titular. Con uno es 100 y preguntarlo
+      // es pedirle al cliente que confirme una obviedad.
+      const pctRow = q<HTMLElement>('[data-pct-row]');
+      pctRow.hidden = !varios;
+      if (varios) {
+        (fila.querySelector<HTMLInputElement>('[data-f="porcentaje"]')!).value =
+          formatPorcentaje(t.porcentaje);
+      }
+
+      // Quién firma acá y quién recibe el link por email.
+      const firmaRow = q<HTMLElement>('[data-firma-row]');
+      firmaRow.hidden = !varios;
+      const radio = fila.querySelector<HTMLInputElement>('[data-f="firmaAqui"]')!;
+      radio.checked = t.firmaAqui;
+      const nota = q<HTMLElement>('[data-firma-nota]');
+      nota.hidden = !varios || t.firmaAqui;
+      if (varios && !t.firmaAqui) nota.textContent = notaCotitular(t);
+      q<HTMLElement>('[data-email-help]').hidden = !varios || t.firmaAqui;
+
+      // De un cotitular sólo se piden email y porcentaje: el resto lo carga él
+      // mismo al firmar, que es quien de verdad lo sabe.
+      fila.querySelectorAll<HTMLElement>('[data-solo-firmante]')
+        .forEach(bloque => { bloque.hidden = varios && !t.firmaAqui; });
+
+      // Cónyuge: visible solo si el estado civil es Casado/a
+      q<HTMLElement>('[data-conyuge-row]').hidden = t.estadocivil !== 'Casado/a';
+
+      // País: oculto mientras sea Argentina, que es el caso de casi todos. Si
+      // un draft trae otro país, el campo aparece solo.
+      const otroPais = t.pais.trim().toLowerCase() !== 'argentina';
+      q<HTMLElement>('[data-pais-row]').hidden = !otroPais;
+      q<HTMLElement>('[data-pais-toggle]').hidden = otroPais;
+
+      const rm = q<HTMLButtonElement>('[data-rm]');
+      rm.hidden = !varios;
+
+      caja.appendChild(fila);
+    });
+
+    $('ck-tit-nota').hidden = !varios;
+    $('ck-add-titular').hidden = titulares.length >= MAX_TITULARES;
+    $('ck-tit-help').hidden = varios || titulares.length >= MAX_TITULARES;
+    $('ck-tit-max').hidden = titulares.length < MAX_TITULARES;
+    renderPorcentajes();
+  }
+
+  /** Barra de la suma. No bloquea nada por sí sola —eso lo hace
+   *  validateTitular()— pero muestra cuánto falta mientras se escribe. */
+  function renderPorcentajes() {
+    const varios = titulares.length > 1;
+    $('ck-pct-box').hidden = !varios;
+    if (!varios) return;
+    const suma = sumaPorcentajes(titulares);
+    const box = $('ck-pct-box');
+    $('ck-pct-total').textContent = `${formatPorcentaje(suma)}%`;
+    $('ck-pct-fill').style.width = `${Math.min(100, suma)}%`;
+    box.classList.toggle('ck-pct--ok', suma === 100);
+    box.classList.toggle('ck-pct--mal', suma !== 100);
+  }
+
+  /** Un cambio en cualquier campo del titular. `repintar` es para lo que cambia
+   *  la forma de la tarjeta (el cónyuge, el rótulo, la nota del firmante); el
+   *  resto sólo guarda, para no perder el foco mientras se escribe. */
+  function onTitularInput(fila: HTMLElement, campo: string, valor: string) {
+    const i = Number(fila.dataset.i);
+    const t = titulares[i];
+    if (!t) return;
+
+    if (campo === 'porcentaje') {
+      const n = parsePorcentaje(valor);
+      t.porcentaje = n ?? 0;
+      renderPorcentajes();
+      setErr('porcentajes', '');
+      saveDraft();
+      return;
+    }
+
+    t[campo as TitularField] = valor;
+    setErrEl(fila.querySelector<HTMLElement>(`[data-err="${campo}"]`), '');
+
+    if (campo === 'nombre' || campo === 'apellido' || campo === 'email') {
+      fila.querySelector('.ck-tit-sub')!.textContent = subtituloTitular(t, i);
+    }
+    if (campo === 'email') {
+      const nota = fila.querySelector<HTMLElement>('[data-firma-nota]')!;
+      if (!nota.hidden) nota.textContent = notaCotitular(t);
+    }
+    saveDraft();
+  }
+
+  titularesBox().addEventListener('input', (e) => {
+    const el = e.target as HTMLInputElement;
+    const campo = el.dataset.f;
+    const fila = el.closest<HTMLElement>('.ck-tit');
+    if (!campo || !fila || campo === 'firmaAqui') return;
+    // Formato al vuelo, igual que antes: el CUIT con guiones y el DNI sin letras.
+    if (campo === 'cuit') el.value = formatCuitInput(el.value);
+    if (campo === 'docnum') {
+      const tipo = fila.querySelector<HTMLSelectElement>('[data-f="tipodoc"]')!.value;
+      if (tipo === 'DNI') el.value = el.value.replace(/\D/g, '').slice(0, 8);
+    }
+    onTitularInput(fila, campo, el.value);
+  });
+
+  titularesBox().addEventListener('change', (e) => {
+    const el = e.target as HTMLInputElement | HTMLSelectElement;
+    const campo = el.dataset.f;
+    const fila = el.closest<HTMLElement>('.ck-tit');
+    if (!campo || !fila) return;
+    const i = Number(fila.dataset.i);
+
+    if (campo === 'firmaAqui') {
+      // Radio exclusivo: firma uno solo en el wizard y al resto le llega el link.
+      titulares.forEach((t, j) => { t.firmaAqui = j === i; });
+      renderTitulares();
+      saveDraft();
+      return;
+    }
+    onTitularInput(fila, campo, el.value);
+    // El cónyuge aparece y desaparece con el estado civil.
+    if (campo === 'estadocivil') {
+      fila.querySelector<HTMLElement>('[data-conyuge-row]')!.hidden = el.value !== 'Casado/a';
+    }
+  });
+
+  titularesBox().addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    const fila = target.closest<HTMLElement>('.ck-tit');
+    if (!fila) return;
+    const i = Number(fila.dataset.i);
+
+    if (target.closest('[data-pais-toggle]')) {
+      const row = fila.querySelector<HTMLElement>('[data-pais-row]')!;
+      const campo = fila.querySelector<HTMLInputElement>('[data-f="pais"]')!;
+      row.hidden = false;
+      fila.querySelector<HTMLElement>('[data-pais-toggle]')!.hidden = true;
+      campo.select();
+      campo.focus();
+      return;
+    }
+
+    if (target.closest('[data-rm]')) {
+      if (titulares.length <= 1) return;
+      titulares.splice(i, 1);
+      // Al quitar a alguien, la titularidad se vuelve a repartir en partes
+      // iguales: dejar el hueco del que se fue haría que la suma no cierre y el
+      // cliente tendría que hacer la cuenta a mano.
+      repartirPorcentajes(titulares.length).forEach((p, j) => { titulares[j].porcentaje = p; });
+      setTitulares(titulares);
+    }
+  });
+
+  $('ck-add-titular').addEventListener('click', () => {
+    if (titulares.length >= MAX_TITULARES) return;
+    titulares.push(nuevoTitular());
+    repartirPorcentajes(titulares.length).forEach((p, j) => { titulares[j].porcentaje = p; });
+    setTitulares(titulares);
+    // El foco va al primer campo del que se acaba de agregar: si no, con dos
+    // tarjetas abiertas no se ve que apareció una nueva más abajo.
+    const ultima = titularesBox().querySelector<HTMLElement>('.ck-tit:last-child');
+    ultima?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    ultima?.querySelector<HTMLInputElement>('[data-f="nombre"]')?.focus();
+  });
+
+  $('ck-pct-repartir').addEventListener('click', () => {
+    repartirPorcentajes(titulares.length).forEach((p, j) => { titulares[j].porcentaje = p; });
+    setErr('porcentajes', '');
+    renderTitulares();
+    saveDraft();
   });
 
   // ── Paso 1: filas de marca ──────────────────────────────
@@ -2771,15 +3247,17 @@ const faqSchema = {
         ? (draftLocal || o.progreso || null)
         : o.progreso;
 
-      // Titular y contacto: solo desde la fuente elegida y sin pisar con vacío
+      // Contacto: solo desde la fuente elegida y sin pisar con vacío
       if (fuente?.values) {
         FIELD_IDS.forEach(id => {
           const v = String(fuente.values[id] ?? '').trim();
           if (v) input(id).value = fuente.values[id];
         });
-        syncConyuge();
-        syncPais();
       }
+      // Los titulares vienen enteros (o del formato viejo, un solo titular con
+      // los campos sueltos en `values`).
+      const titularesPrevios = titularesDesdeDraft(fuente);
+      if (titularesPrevios.length) setTitulares(titularesPrevios, false);
 
       const draftPrevio = marcasDesdeDraft(fuente);
       const delPedido = marcasDelPedido(p);
@@ -2825,27 +3303,73 @@ const faqSchema = {
   }
 
   // ── Carta poder: preview ────────────────────────────────
+  /** La fecha del poder se calcula UNA vez, al llegar al paso 7, y viaja en el
+   *  payload: el documento es uno solo y los cotitulares lo firman después, a
+   *  veces al día siguiente. Sin esto, el poder que firma el segundo tendría
+   *  otra fecha que el que firmó el primero. */
+  let fechaPoder: { dia: number; mes: number; anio: number } | null = null;
+
   function cpData(): CartaPoderData {
-    const now = new Date();
+    if (!fechaPoder) {
+      const now = new Date();
+      fechaPoder = { dia: now.getDate(), mes: now.getMonth(), anio: now.getFullYear() };
+    }
     return {
-      nombreApellido: `${input('ck-nombre').value.trim()} ${input('ck-apellido').value.trim()}`.trim(),
-      docTipo: input('ck-tipodoc').value || 'DNI',
-      docNumero: input('ck-docnum').value.trim(),
-      cuit: input('ck-cuit').value.trim(),
-      calle: input('ck-calle').value.trim(),
-      numero: input('ck-numero').value.trim(),
-      piso: input('ck-piso').value.trim() || undefined,
-      depto: input('ck-depto').value.trim() || undefined,
-      codigoPostal: input('ck-codpostal').value.trim(),
-      localidad: input('ck-localidad').value.trim(),
-      provincia: input('ck-provincia').value,
+      titulares: titulares.map(t => ({
+        nombreApellido: `${t.nombre.trim()} ${t.apellido.trim()}`.trim(),
+        docTipo: t.tipodoc || 'DNI',
+        docNumero: t.docnum.trim(),
+        cuit: t.cuit.trim(),
+        calle: t.calle.trim(),
+        numero: t.numero.trim(),
+        piso: t.piso.trim() || undefined,
+        depto: t.depto.trim() || undefined,
+        codigoPostal: t.codpostal.trim(),
+        localidad: t.localidad.trim(),
+        provincia: t.provincia,
+        porcentaje: t.porcentaje,
+        // De un cotitular es lo único que se sabe hasta que entra a firmar: el
+        // documento lo identifica por ahí y deja el renglón a la vista.
+        email: t.email.trim(),
+      })),
       marcas: marcas.map(m => ({ nombre: m.nombre, tipo: m.tipo, clases: [...m.clases] })),
-      fecha: { dia: now.getDate(), mes: now.getMonth(), anio: now.getFullYear() },
+      fecha: fechaPoder,
     };
   }
 
+  /** Sólo se dibuja la firma del que está completando: los cotitulares firman
+   *  después, desde su propio link. Los renglones vacíos quedan a la vista —
+   *  es lo que muestra que el poder todavía no está completo. */
   function renderPreview() {
-    $('ck-cp-preview').innerHTML = cartaPoderHTML(cpData());
+    const firmas = titulares.map(t => (t.firmaAqui ? firmaDataUrl() : undefined));
+    $('ck-cp-preview').innerHTML = cartaPoderHTML(cpData(), firmas);
+    pintarPendientesFirma();
+  }
+
+  /** Aviso arriba de la firma: a quién le va a llegar el link. Se ve antes de
+   *  firmar, no después, porque es parte de lo que se está aceptando. */
+  function pintarPendientesFirma() {
+    const otros = titulares.filter(t => !t.firmaAqui);
+    const box = $('ck-firmas-pend');
+    if (!otros.length) { box.hidden = true; return; }
+    const lista = otros.map(t => {
+      const mail = t.email.trim();
+      const pct = `${formatPorcentaje(t.porcentaje)}%`;
+      return `<li><b>${escapar(mail || 'sin email')}</b> — ${pct}</li>`;
+    }).join('');
+    box.innerHTML =
+      `<p class="ck-firmas-pend-t">Falta${otros.length === 1 ? '' : 'n'} ${otros.length} firma${otros.length === 1 ? '' : 's'} más</p>
+       <p>Vos firmás acá. Apenas envíes la solicitud le mandamos un link a cada
+       cotitular para que <b>complete sus datos y firme</b>:</p>
+       <ul>${lista}</ul>
+       <p>Por eso en el documento esos renglones todavía están en blanco: los
+       completa cada uno al firmar. Presentamos ante el INPI cuando estén todas
+       las firmas.</p>`;
+    box.hidden = false;
+  }
+
+  function escapar(s: string): string {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
   $('ck-edit-datos').addEventListener('click', () => goTo('6'));
@@ -2916,6 +3440,47 @@ const faqSchema = {
     $('ck-sig-undo').hidden = strokes.length === 0;
     $('ck-sig-hint').hidden = strokes.length > 0;
     updateSubmitState();
+    // La firma se ve en el documento apenas se levanta el dedo: con varios
+    // titulares el preview muestra qué renglón se acaba de completar y cuáles
+    // siguen en blanco.
+    renderPreview();
+  }
+
+  /** PNG de la firma recortado a su caja: el canvas es mucho más ancho que el
+   *  trazo, y sin recortar la firma entra diminuta en el PDF (que la escala por
+   *  alto). Se dibuja de nuevo desde los trazos, así que no hay que leer
+   *  píxeles. Es el mismo recorte que hace /carta-poder y /firmar. */
+  function firmaDataUrl(): string | undefined {
+    if (strokes.length === 0) return undefined;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const stroke of strokes) {
+      for (const p of stroke) {
+        if (p.x < minX) minX = p.x;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.y > maxY) maxY = p.y;
+      }
+    }
+    const pad = 10;
+    minX -= pad; minY -= pad; maxX += pad; maxY += pad;
+    const w = Math.max(maxX - minX, 1);
+    const h = Math.max(maxY - minY, 1);
+    const S = 2; // el PDF escala por alto: el doble de píxeles evita el borde pixelado
+    const off = document.createElement('canvas');
+    off.width = Math.round(w * S);
+    off.height = Math.round(h * S);
+    const c = off.getContext('2d')!;
+    c.setTransform(S, 0, 0, S, -minX * S, -minY * S);
+    c.strokeStyle = '#0f172a';
+    c.lineWidth = 2;
+    c.lineJoin = 'round';
+    c.lineCap = 'round';
+    strokes.forEach(stroke => {
+      c.beginPath();
+      stroke.forEach((p, i) => (i === 0 ? c.moveTo(p.x, p.y) : c.lineTo(p.x, p.y)));
+      c.stroke();
+    });
+    return off.toDataURL('image/png');
   }
 
   $('ck-sig-undo').addEventListener('click', () => {
@@ -2963,6 +3528,33 @@ const faqSchema = {
     return pendiente;
   }
 
+  /** Un titular tal como lo guarda el servidor (`completion.titulares[]`). */
+  function titularPayload(t: TitularState) {
+    return {
+      tipoPersona: 'Humana',
+      nombre: t.nombre.trim(),
+      apellido: t.apellido.trim(),
+      genero: t.genero,
+      estadoCivil: t.estadocivil,
+      nombreConyuge: t.estadocivil === 'Casado/a' ? t.conyuge.trim() : '',
+      documento: { tipo: t.tipodoc || 'DNI', numero: t.docnum.trim() },
+      cuit: t.cuit.trim(),
+      email: t.email.trim(),
+      domicilio: {
+        pais: t.pais.trim() || 'Argentina',
+        calle: t.calle.trim(),
+        numero: t.numero.trim(),
+        piso: t.piso.trim(),
+        depto: t.depto.trim(),
+        localidad: t.localidad.trim(),
+        codigoPostal: t.codpostal.trim(),
+        provincia: t.provincia,
+      },
+      porcentaje: t.porcentaje,
+      firmaAqui: t.firmaAqui,
+    };
+  }
+
   const submitBtn = document.getElementById('ck-submit') as HTMLButtonElement;
   const termsCheck = input('ck-terms');
 
@@ -2996,30 +3588,11 @@ const faqSchema = {
           ancho: m.ancho,
         } : {}),
       })),
-      titular: {
-        tipoPersona: 'Humana',
-        nombre: input('ck-nombre').value.trim(),
-        apellido: input('ck-apellido').value.trim(),
-        genero: input('ck-genero').value,
-        estadoCivil: input('ck-estadocivil').value,
-        nombreConyuge: input('ck-estadocivil').value === 'Casado/a'
-          ? input('ck-conyuge').value.trim() : '',
-        documento: {
-          tipo: input('ck-tipodoc').value || 'DNI',
-          numero: input('ck-docnum').value.trim(),
-        },
-        cuit: input('ck-cuit').value.trim(),
-        domicilio: {
-          pais: input('ck-pais').value.trim() || 'Argentina',
-          calle: input('ck-calle').value.trim(),
-          numero: input('ck-numero').value.trim(),
-          piso: input('ck-piso').value.trim(),
-          depto: input('ck-depto').value.trim(),
-          localidad: input('ck-localidad').value.trim(),
-          codigoPostal: input('ck-codpostal').value.trim(),
-          provincia: input('ck-provincia').value,
-        },
-      },
+      // 1..MAX_TITULARES dueños, cada uno con su set completo y su porcentaje.
+      // `titular` (singular) sigue saliendo con el firmante: el parser del CRM
+      // y cualquier consumidor viejo del payload lo esperan ahí.
+      titulares: titulares.map(t => titularPayload(t)),
+      titular: titularPayload(titularFirmante()),
       contacto: {
         email: input('ck-email').value.trim(),
         whatsapp: input('ck-whatsapp').value.trim(),
@@ -3029,7 +3602,10 @@ const faqSchema = {
       // El estado real del pago vive en D1 (status del pedido); acá solo queda
       // registrado el medio que eligió el usuario.
       payment: { provider: metodoPago },
-      firma: canvas.toDataURL('image/png'),
+      firma: firmaDataUrl() ?? '',
+      // La fecha con la que se otorgó el poder: los cotitulares firman el mismo
+      // documento días después y no puede cambiarle la fecha.
+      fechaPoder: cpData().fecha,
     };
 
     // Con pedido: generar el PDF de la carta poder EN EL NAVEGADOR (el plan
@@ -3040,7 +3616,12 @@ const faqSchema = {
       let cartaPdfBase64: string | null = null;
       try {
         const { buildCartaPoderPdf } = await import('../lib/checkout/cartaPoderPdf');
-        const pdfBytes = await buildCartaPoderPdf(cpData(), payload.firma);
+        // Sólo la firma del que está completando: los renglones de los
+        // cotitulares van en blanco y se completan desde /firmar/<token>.
+        const pdfBytes = await buildCartaPoderPdf(
+          cpData(),
+          titulares.map(t => (t.firmaAqui ? payload.firma : undefined)),
+        );
         let binary = '';
         const chunk = 0x8000;
         for (let i = 0; i < pdfBytes.length; i += chunk) {
@@ -3058,6 +3639,12 @@ const faqSchema = {
           body: JSON.stringify({ ...payload, cartaPdfBase64 }),
         });
         if (!res.ok) throw new Error(String(res.status));
+        // A quién le salió el link para firmar: lo dice el servidor, que es el
+        // que abrió los renglones y mandó los emails.
+        try {
+          const data = await res.json();
+          if (Array.isArray(data?.firmasPendientes)) firmasPendientes = data.firmasPendientes;
+        } catch { /* la confirmación cae al listado local */ }
       } catch (e) {
         console.error('[um-checkout] error guardando la solicitud:', e);
         alert('No pudimos guardar tu solicitud. Probá de nuevo.');
@@ -3120,25 +3707,36 @@ const faqSchema = {
       $('ck-done-transfer').hidden = false;
     }
 
+    // Firmas que faltan: es lo único que puede frenar la presentación y de lo
+    // que el cliente tiene que hacerse cargo (avisarles a los cotitulares).
+    const pend = firmasPendientes.length
+      ? firmasPendientes
+      : titulares.filter(t => !t.firmaAqui).map((t, n) => ({
+          nombre: `Cotitular ${n + 2}`,
+          email: t.email.trim(),
+        }));
+    if (pend.length) {
+      $('ck-done-firmas-lista').innerHTML = pend.map(p =>
+        `<li>${escapar(p.email || p.nombre)}</li>`
+      ).join('');
+      $('ck-done-firmas-t').textContent =
+        `Falta${pend.length === 1 ? '' : 'n'} ${pend.length} firma${pend.length === 1 ? '' : 's'} en la carta poder`;
+      $('ck-done-firmas').hidden = false;
+      // Con firmas pendientes el reloj de las 48 horas no arranca todavía.
+      $('ck-tl-presenta').innerHTML = metodoPago === 'transferencia'
+        ? `Presentamos ${queCosa} dentro de las <b>48 horas hábiles</b> desde que se acredite tu transferencia y estén todas las firmas del poder.`
+        : `Presentamos ${queCosa} dentro de las <b>48 horas hábiles</b> desde que estén todas las firmas del poder. Te avisamos por email.`;
+    }
+
     $('ck-done-logo').hidden = !logosPendientes;
     // La tarjeta de pendientes solo existe si hay alguno
-    $('ck-done-extra').hidden = metodoPago !== 'transferencia' && !logosPendientes;
+    $('ck-done-extra').hidden = metodoPago !== 'transferencia' && !logosPendientes && !pend.length;
 
     localStorage.removeItem(DRAFT_KEY);
     goTo('done');
   });
 
   // ── Inputs: formato y draft ─────────────────────────────
-  input('ck-cuit').addEventListener('input', (e) => {
-    const el = e.target as HTMLInputElement;
-    el.value = formatCuitInput(el.value);
-  });
-  input('ck-docnum').addEventListener('input', (e) => {
-    const el = e.target as HTMLInputElement;
-    if (input('ck-tipodoc').value === 'DNI') {
-      el.value = el.value.replace(/\D/g, '').slice(0, 8);
-    }
-  });
   FIELD_IDS.forEach(id => input(id).addEventListener('input', () => {
     setErr(id.replace('ck-', ''), ''); // al corregir, el error desaparece
     saveDraft();
@@ -3167,7 +3765,9 @@ const faqSchema = {
 
   // ── Render inicial ──────────────────────────────────────
   // El paso 1 arranca vacío en el HTML: la primera fila la pinta el script.
+  // Lo mismo el paso 6: la tarjeta del primer titular la pinta renderTitulares().
   renderMarcasStep1();
+  renderTitulares();
   updateSummary();
 
   // ── Bootstrap: volver de Mercado Pago (?order=REF) o draft local ─────
@@ -3493,6 +4093,76 @@ const faqSchema = {
 .ck-add:hover { border-color: #2563eb; background: #eff6ff; }
 .ck-add[hidden] { display: none; }
 .ck-add span { font-size: 1rem; line-height: 1; }
+
+/* ─── Paso 6: titulares ─── */
+/* Cada dueño de la marca es una tarjeta plegable con el set completo de datos
+   que pide el INPI, más su porcentaje de titularidad. */
+.ck-tit { border-left: 3px solid #6366f1; }
+.ck-tit + .ck-tit { margin-top: 0.875rem; }
+.ck-tit-nota[hidden], .ck-tit-help[hidden], .ck-tit-max[hidden] { display: none; }
+.ck-tit-extra { padding-top: 1.25rem; padding-bottom: 1.25rem; }
+.ck-tit-extra .ck-add { margin-top: 0; }
+
+/* Quién firma en el wizard y quién recibe el link por email. */
+.ck-tit-firma {
+  margin-bottom: 1.25rem; padding: 0.75rem 0.9rem;
+  border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc;
+}
+.ck-tit-firma[hidden] { display: none; }
+.ck-tit-yo { display: flex; align-items: flex-start; gap: 0.6rem; cursor: pointer; margin: 0; }
+.ck-tit-yo input {
+  flex-shrink: 0; margin-top: 3px; width: 15px; height: 15px;
+  accent-color: #2563eb; cursor: pointer;
+}
+.ck-tit-yo span { display: block; }
+.ck-tit-yo b { display: block; font-size: 0.85rem; font-weight: 700; color: #0b1d3a; }
+.ck-tit-yo em {
+  display: block; font-style: normal; font-size: 0.78rem; color: #64748b;
+  line-height: 1.5; margin-top: 0.1rem;
+}
+.ck-tit-firma-nota { margin: 0.5rem 0 0 !important; }
+.ck-tit-firma-nota[hidden], .ck-tit-email-help[hidden] { display: none; }
+
+.ck-tit-pct[hidden] { display: none; }
+.ck-pct-input { position: relative; }
+.ck-pct-input input { padding-right: 2.1rem !important; }
+.ck-pct-input span {
+  position: absolute; right: 0.85rem; top: 50%; transform: translateY(-50%);
+  color: #94a3b8; font-size: 0.9rem; font-weight: 600; pointer-events: none;
+}
+
+.ck-tit-dom { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid #f1f5f9; }
+.ck-tit-dom-sub { margin-top: -0.25rem !important; margin-bottom: 1rem !important; }
+.ck-tit-rm { margin-top: 1.25rem; color: #dc2626 !important; }
+.ck-tit-rm[hidden] { display: none; }
+
+/* Suma de titularidad: mientras no dé 100 exacto, se ve en rojo. */
+.ck-pct { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid #f1f5f9; }
+.ck-pct[hidden] { display: none; }
+.ck-pct-row { display: flex; justify-content: space-between; align-items: baseline; }
+.ck-pct-k { font-size: 0.82rem; font-weight: 600; color: #475569; }
+.ck-pct-v { font-size: 1rem; font-weight: 800; color: #0b1d3a; }
+.ck-pct--ok .ck-pct-v { color: #16a34a; }
+.ck-pct--mal .ck-pct-v { color: #dc2626; }
+.ck-pct-bar {
+  margin: 0.5rem 0 0.6rem; height: 6px; border-radius: 100px;
+  background: #f1f5f9; overflow: hidden;
+}
+.ck-pct-fill { height: 100%; background: #dc2626; transition: width .2s, background .2s; }
+.ck-pct--ok .ck-pct-fill { background: #22c55e; }
+
+/* Aviso de firmas pendientes: paso 7 y pantalla de confirmación. */
+.ck-firmas-pend {
+  margin-bottom: 1.25rem; padding: 0.9rem 1.1rem; border-radius: 10px;
+  background: #fffbeb; border: 1.5px solid #fde68a; color: #92400e;
+  font-size: 0.82rem; line-height: 1.6;
+}
+.ck-firmas-pend[hidden] { display: none; }
+.ck-firmas-pend p { margin: 0 0 0.4rem; }
+.ck-firmas-pend p:last-child { margin-bottom: 0; }
+.ck-firmas-pend-t { font-weight: 800; font-size: 0.88rem; }
+.ck-firmas-pend ul { margin: 0 0 0.5rem; padding-left: 1.2rem; }
+.ck-done-firmas-lista { margin: 0.4rem 0 0.6rem; padding-left: 1.2rem; text-align: left; }
 
 /* Aviso de pedido congelado (marcas y clases ya cobradas) */
 .ck-lock {
@@ -3867,7 +4537,10 @@ const faqSchema = {
 .ck-cp-p { margin: 0 0 1.125rem; text-align: left; }
 .ck-cp-ul { margin: 0 0 1.125rem; padding-left: 1.4rem; }
 .ck-cp-ul li { margin-bottom: 0.5rem; text-align: left; }
-.ck-cp-firma { margin-top: 2.25rem; width: 230px; }
+/* Un pie de firma por titular, uno al lado del otro mientras entren: apilados
+   verticalmente, tres firmas parecen tres documentos distintos. */
+.ck-cp-firmas { display: flex; flex-wrap: wrap; gap: 2.25rem 2.5rem; margin-top: 2.25rem; }
+.ck-cp-firma { width: 230px; }
 .ck-cp-firma-space { height: 64px; }
 .ck-cp-firma-img { height: 64px; display: block; object-fit: contain; object-position: left bottom; }
 .ck-cp-firma-linea { border-top: 1px solid #0f172a; }

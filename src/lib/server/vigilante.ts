@@ -54,6 +54,13 @@ export interface ContactoAlta {
   notas?: string;
 }
 
+/** Quién es dueño de la marca y en qué proporción. `contacto` es el índice
+ *  dentro de `contactos[]` del mismo alta. La suma de los porcentajes da 100. */
+export interface TitularAlta {
+  contacto: number;
+  porcentaje: number;
+}
+
 export interface MarcaAlta {
   denominacion: string;
   /** Denominativa | Mixta | Figurativa (los tres que maneja el checkout) */
@@ -119,7 +126,16 @@ function limpio<T extends object>(obj: T): Partial<T> {
  */
 export async function crearAltaVigilante(
   env: VigilanteEnv,
-  pedido: { ref: string; contacto: ContactoAlta; marcas: MarcaAlta[] },
+  pedido: {
+    ref: string;
+    /** Un contacto por titular, en el orden del pedido. `titulares` los referencia
+     *  por índice. */
+    contactos: ContactoAlta[];
+    /** Titularidad de TODAS las marcas del pedido: el checkout no permite que
+     *  una marca del mismo pedido tenga dueños distintos. */
+    titulares: TitularAlta[];
+    marcas: MarcaAlta[];
+  },
 ): Promise<AltaResultado> {
   const apiKey = env.VIGILANTE_API_KEY;
   if (!apiKey) {
@@ -127,6 +143,9 @@ export async function crearAltaVigilante(
   }
   if (!pedido.marcas.length) {
     return { ok: false, omitido: true, error: 'El pedido no tiene marcas' };
+  }
+  if (!pedido.contactos.length) {
+    return { ok: false, omitido: true, error: 'El pedido no tiene titulares' };
   }
 
   const base = (env.VIGILANTE_API_BASE || BASE_POR_DEFECTO).replace(/\/+$/, '');
@@ -149,11 +168,11 @@ export async function crearAltaVigilante(
       logo_alto_cm: m.alto ?? undefined,
       logo_ancho_cm: m.ancho ?? undefined,
       // Nunca se manda `acta`/`actas`: nada de lo que sale de acá se presentó.
-      titulares: [{ contacto: 0, porcentaje: 100 }],
+      titulares: pedido.titulares,
     });
   });
 
-  const payload = { contactos: [limpio(pedido.contacto)], marcas };
+  const payload = { contactos: pedido.contactos.map(limpio), marcas };
 
   const headers: Record<string, string> = {
     Authorization: `Bearer ${apiKey}`,

@@ -38,6 +38,11 @@ export const MAX_CLASES = 5;
 /** Máximo de marcas por pedido online; más que esto se deriva a WhatsApp */
 export const MAX_MARCAS = 3;
 
+/** Máximo de cotitulares de una marca. El INPI no pone tope, nosotros sí: con
+ *  más que esto el paso 6 se vuelve interminable y la cadena de firmas, un
+ *  seguimiento a mano. Más titulares se derivan a WhatsApp. */
+export const MAX_TITULARES = 3;
+
 /** Techo duro de líneas del pedido (una línea = una marca en una clase) */
 export const MAX_LINEAS = MAX_MARCAS * MAX_CLASES;
 
@@ -106,6 +111,87 @@ export interface MarcaPedido {
   ancho?: number | null;
   /** Key del JPG en R2 (bucket de logos). Null hasta que se sube. */
   logoKey?: string | null;
+}
+
+// ── Titulares ─────────────────────────────────────────────
+// Una marca puede tener más de un dueño (socios de un emprendimiento, un
+// matrimonio). El INPI pide el set completo de datos de CADA uno más su
+// porcentaje de titularidad, y la suma tiene que dar exactamente 100.
+
+export interface DomicilioTitular {
+  pais: string;
+  calle: string;
+  numero: string;
+  piso?: string;
+  depto?: string;
+  localidad: string;
+  codigoPostal: string;
+  provincia: string;
+}
+
+/** Un titular del pedido, tal como se guarda en `completion.titulares`. */
+export interface TitularPedido {
+  /** El checkout todavía no acepta personas jurídicas */
+  tipoPersona: 'Humana';
+  nombre: string;
+  apellido: string;
+  genero: string;
+  estadoCivil: string;
+  nombreConyuge?: string;
+  documento: { tipo: string; numero: string };
+  cuit: string;
+  /** Adónde va el link para firmar la carta poder. Obligatorio en todos: es la
+   *  única forma de completar el poder cuando el que llena el formulario no es
+   *  el único dueño. */
+  email: string;
+  domicilio: DomicilioTitular;
+  /** 0–100 con hasta dos decimales. La suma de todos da exactamente 100. */
+  porcentaje: number;
+  /** true en el titular que está completando el checkout: es el único que firma
+   *  en el wizard. Al resto se le manda el link por email. */
+  firmaAqui?: boolean;
+}
+
+/** Dos decimales: 3 titulares en partes iguales no cierran con enteros
+ *  (33,34 + 33,33 + 33,33), y el INPI acepta el decimal. */
+const PCT_FACTOR = 100;
+
+export function redondearPorcentaje(n: number): number {
+  return Math.round(n * PCT_FACTOR) / PCT_FACTOR;
+}
+
+/** Acepta coma o punto (el teclado en es-AR da coma). null si no es un
+ *  porcentaje válido (fuera de 0–100 o no numérico). */
+export function parsePorcentaje(raw: string): number | null {
+  const n = parseFloat(String(raw ?? '').trim().replace('%', '').replace(',', '.'));
+  if (!Number.isFinite(n) || n < 0 || n > 100) return null;
+  return redondearPorcentaje(n);
+}
+
+/** "50" / "33,34" — sin decimales inútiles y con la coma de es-AR */
+export function formatPorcentaje(n: number): string {
+  return redondearPorcentaje(n).toLocaleString('es-AR', { maximumFractionDigits: 2 });
+}
+
+export function sumaPorcentajes(titulares: { porcentaje?: number }[]): number {
+  return redondearPorcentaje(titulares.reduce((s, t) => s + (t.porcentaje ?? 0), 0));
+}
+
+/** Reparto en partes iguales que SIEMPRE suma 100: el resto del redondeo se lo
+ *  come el primero. Es el valor por defecto al agregar o quitar un titular —
+ *  el caso real es "mitad y mitad" y así nadie tiene que hacer la cuenta. */
+export function repartirPorcentajes(n: number): number[] {
+  if (n <= 0) return [];
+  const base = Math.floor((100 / n) * PCT_FACTOR) / PCT_FACTOR;
+  const partes = Array<number>(n).fill(base);
+  partes[0] = redondearPorcentaje(100 - base * (n - 1));
+  return partes;
+}
+
+/** "Ana Pérez" — el nombre con el que se identifica a un titular en avisos,
+ *  emails y encabezados de tarjeta. */
+export function nombreTitular(t: { nombre?: string; apellido?: string }): string {
+  return `${String(t.nombre ?? '').trim()} ${String(t.apellido ?? '').trim()}`.trim();
 }
 
 // ── Logo: formato y medidas ───────────────────────────────

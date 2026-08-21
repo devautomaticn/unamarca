@@ -9,12 +9,17 @@ import { runtime } from '@/lib/server/runtime';
 export const prerender = false;
 
 import {
-  type CheckoutEnv, base64FromArrayBuffer, ensureSchema, ensureProgresoColumn,
-  ensureVigilanteColumn, json, marcasDesdePayload, sanitizeCm, corregirTipoPostPago,
+  type CheckoutEnv, base64FromArrayBuffer, consolidarMarcas, ensureSchema,
+  ensureProgresoColumn, ensureVigilanteColumn, json, titularesDesdeCompletion,
 } from '@/lib/server/checkout';
-import { sendOrderEmails, sendVigilanteAlert, type MarcaEmail } from '@/lib/server/notify';
-import { crearAltaVigilante, type VigilanteEnv } from '@/lib/server/vigilante';
-import { requiereLogo, tipoMarcaLabel } from '@/lib/checkout/constants';
+import {
+  sendFirmaInvite, sendOrderEmails,
+  type FirmaPendienteEmail, type TitularEmail,
+} from '@/lib/server/notify';
+import { abrirFirma, asegurarTablaFirmas, urlFirma } from '@/lib/server/firmas';
+import { darDeAltaEnVigilante } from '@/lib/server/altaPedido';
+import type { VigilanteEnv } from '@/lib/server/vigilante';
+import { formatPorcentaje, nombreTitular, type TitularPedido } from '@/lib/checkout/constants';
 
 interface OrderRow {
   ref: string;
@@ -99,53 +104,20 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
   // post-pago y solo existen en completion. Los usan tanto los emails como el
   // alta en el portal, así que se arman una sola vez.
   const stored = JSON.parse(row.payload);
-  const t = completion?.titular ?? {};
-  const dom = t?.domicilio ?? {};
 
-  // Las dos listas salen del mismo array ordenado del wizard: el índice es la
-  // clave fiable. El nombre queda de respaldo por si el cliente reordenó.
-  // (Legado v1: la descripción venía suelta en completion.marca.)
-  const completionMarcas: any[] = Array.isArray(completion?.marcas)
-    ? completion.marcas
-    : (completion?.marca ? [completion.marca] : []);
-  const porNombre: Record<string, any> = {};
-  for (const m of completionMarcas) {
-    const key = String(m?.nombre ?? '').trim().toLowerCase();
-    if (key) porNombre[key] = m;
-  }
+  // Una marca puede tener hasta MAX_TITULARES dueños, cada uno con su set
+  // completo de datos y su porcentaje. `titular` (singular) es el legado de
+  // cuando había uno solo: los pedidos viejos se releen para reenviar emails.
+  const titulares = titularesDesdeCompletion(completion);
+  // El que completó el checkout: es de quien salen el WhatsApp y el email de
+  // contacto del pedido, y quien firmó el poder en el paso 7.
+  const principal: TitularPedido | undefined = titulares.find(x => x.firmaAqui) ?? titulares[0];
 
-  const storedMarcas = marcasDesdePayload(stored);
-
-  // Correcciones de tipo que el cliente hizo en el paso 5, ya con el pedido
-  // pagado (ver corregirTipoPostPago). Van al email: el pedido dejó de
-  // coincidir con el snapshot del pago y el estudio tiene que poder verlo.
-  const correcciones: string[] = [];
-
-  // El tipo y la key del logo salen del snapshot del servidor; la
-  // enunciación de colores y las medidas las carga el cliente en el paso 5.
-  const marcas: MarcaEmail[] = storedMarcas.map((m, i) => {
-    const porIndice = completionMarcas[i];
-    const extra = (
-      String(porIndice?.nombre ?? '').trim().toLowerCase() === m.nombre.toLowerCase()
-        ? porIndice
-        : porNombre[m.nombre.toLowerCase()] ?? porIndice
-    ) ?? {};
-    const { nombre, tipo, correccion } = corregirTipoPostPago(m, extra);
-    if (correccion) correcciones.push(correccion);
-    return {
-      nombre,
-      clases: m.clases,
-      tipo,
-      descripcion: (extra.descripcion || '').trim(),
-      sitioWeb: (extra.sitioWeb || '').trim(),
-      ...(requiereLogo(tipo) ? {
-        colores: String(extra.colores || '').trim(),
-        alto: sanitizeCm(extra.alto),
-        ancho: sanitizeCm(extra.ancho),
-        logoAdjunto: null as string | null,
-      } : {}),
-    };
-  });
+  // Marcas del snapshot del pago + lo que el cliente cargó post-pago, y las
+  // correcciones de tipo que hizo en el paso 5 (ver corregirTipoPostPago). Van
+  // al email: el pedido dejó de coincidir con el snapshot del pago y el estudio
+  // tiene que poder verlo.
+  const { storedMarcas, marcas, correcciones } = consolidarMarcas(stored, completion);
 
   // El pedido guardado tiene que quedar igual a lo que se presenta: si no, el
   // cliente que vuelve con ?order=REF ve otra vez la marca sin corregir, y un
@@ -172,24 +144,80 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     }
   }
 
-  // Los logos se leen UNA vez de R2 y los usan los dos consumidores: el email
-  // del admin (en base64) y el alta en el portal (como parte multipart). Si el
-  // binding no está o el objeto no aparece, todo sigue sin el logo.
+  // Los logos van adjuntos al email del admin: es quien los sube al portal del
+  // INPI. Si el binding no está o el objeto no aparece, el email sale igual y
+  // avisa que hay que pedírselo al cliente.
   const logos: { filename: string; content: string }[] = [];
-  const logosBytes: (ArrayBuffer | null)[] = storedMarcas.map(() => null);
   for (let i = 0; i < marcas.length; i++) {
     const key = storedMarcas[i]?.logoKey;
     if (!key || !env.LOGOS) continue;
     try {
       const obj = await env.LOGOS.get(key);
       if (!obj) continue;
-      const bytes = await obj.arrayBuffer();
       const filename = `logo-${ref}-marca-${i + 1}.jpg`;
-      logosBytes[i] = bytes;
-      logos.push({ filename, content: base64FromArrayBuffer(bytes) });
+      logos.push({ filename, content: base64FromArrayBuffer(await obj.arrayBuffer()) });
       marcas[i].logoAdjunto = filename;
     } catch (e) {
       console.error(`No se pudo leer el logo ${key}:`, e);
+    }
+  }
+
+  // ── Cadena de firmas de la carta poder ──────────────────
+  // El poder es UNO solo con un pie de firma por titular. El que completó el
+  // checkout ya firmó (viene en `completion.firma`); al resto se le abre un
+  // renglón con su propio token y le sale el link por email.
+  //
+  // Esto va ANTES de los emails del pedido a propósito: el email al cliente y
+  // el del estudio tienen que decir qué firmas faltan, y eso recién se sabe
+  // cuando los renglones existen.
+  const origin = new URL(request.url).origin;
+  const contactoEmail = stored.contacto?.email || completion?.contacto?.email || '';
+  const firmaFirmante: string = typeof completion?.firma === 'string' ? completion.firma : '';
+  const pendientes: (FirmaPendienteEmail & { porcentaje: string })[] = [];
+
+  if (titulares.length > 1) {
+    try {
+      await asegurarTablaFirmas(env.DB);
+      for (let i = 0; i < titulares.length; i++) {
+        const titular = titulares[i];
+        const nombre = nombreTitular(titular) || `Titular ${i + 1}`;
+        // El firmante entra con su firma puesta: ya firmó en el paso 7 y no
+        // tiene que recibir ningún link.
+        const email = titular.email || (titular.firmaAqui ? contactoEmail : '');
+        const { fila, nueva } = await abrirFirma(env.DB, {
+          ref, idx: i, nombre, email,
+          firma: titular.firmaAqui ? (firmaFirmante || null) : null,
+        });
+        if (fila.firma) continue;
+        pendientes.push({
+          nombre, email: fila.email, url: urlFirma(origin, fila.token),
+          porcentaje: formatPorcentaje(titular.porcentaje),
+        });
+        // Un PATCH repetido no vuelve a mandar el mismo pedido de firma: el
+        // renglón ya estaba abierto y el email ya salió.
+        if (!nueva) continue;
+        if (!fila.email) {
+          console.error(`[${ref}] el cotitular ${i + 1} (${nombre}) no tiene email: hay que pedirle la firma a mano`);
+          continue;
+        }
+        if (!env.RESEND_API_KEY) continue;
+        try {
+          await sendFirmaInvite(env.RESEND_API_KEY, {
+            ref, nombre, email: fila.email,
+            url: urlFirma(origin, fila.token),
+            marcas,
+            completadoPor: nombreTitular(principal ?? {}) || 'El titular del pedido',
+            porcentaje: formatPorcentaje(titular.porcentaje),
+            responderA: contactoEmail || undefined,
+          });
+        } catch (e) {
+          // No frena nada: el pedido está pago y guardado, y el email al estudio
+          // lleva el link para reenviarlo a mano.
+          console.error(`[${ref}] no se pudo invitar a firmar a ${fila.email}:`, e);
+        }
+      }
+    } catch (e) {
+      console.error(`[${ref}] no se pudo abrir la cadena de firmas:`, e);
     }
   }
 
@@ -197,6 +225,44 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
   // El PDF llega generado desde el navegador (completion.cartaPdfBase64) —
   // generarlo acá excede el límite de CPU del plan free (error 1102).
   // El pedido queda guardado aunque esto falle: los emails se pueden reenviar.
+  const titularesEmail: TitularEmail[] = titulares.map((x, i) => {
+    const d = x.domicilio;
+    const pct = formatPorcentaje(x.porcentaje);
+    const email = x.email || (x.firmaAqui ? contactoEmail : '');
+
+    // De un cotitular sólo tenemos email y porcentaje hasta que entra a firmar:
+    // el resto lo carga él. Mandar la tabla entera en blanco haría pensar que
+    // el cliente se olvidó de completarla.
+    if (!nombreTitular(x)) {
+      return {
+        titulo: `Titular ${i + 1} de ${titulares.length} · ${pct}% · datos pendientes`,
+        filas: [
+          ['Email', email],
+          ['Titularidad', `${pct}%`],
+          ['Estado', 'Carga sus datos y firma desde su link. Llegan en el email "Firma N de M".'],
+        ],
+      };
+    }
+
+    return {
+      titulo: `Titular ${i + 1} de ${titulares.length} · ${pct}%`
+        + (x.firmaAqui ? ' · completó el pedido' : ''),
+      filas: [
+        ['Nombre', nombreTitular(x)],
+        ['Documento', `${x.documento?.tipo || ''} ${x.documento?.numero || ''}`.trim()],
+        ['CUIT/CUIL', x.cuit || ''],
+        ['Titularidad', `${pct}%`],
+        ['Género', x.genero || ''],
+        ['Estado civil', x.estadoCivil || ''],
+        ...(x.nombreConyuge ? [['Cónyuge', x.nombreConyuge] as [string, string]] : []),
+        ['Domicilio', [d.calle, d.numero, d.piso && `piso ${d.piso}`, d.depto && `depto ${d.depto}`].filter(Boolean).join(' ')],
+        ['Localidad', `${d.localidad || ''} (CP ${d.codigoPostal || '—'}), ${d.provincia || ''}, ${d.pais || 'Argentina'}`],
+        ['Email', email],
+        ...(x.firmaAqui ? [['WhatsApp', stored.contacto?.whatsapp || ''] as [string, string]] : []),
+      ],
+    };
+  });
+
   let emailSent = false;
   try {
     if (!env.RESEND_API_KEY) throw new Error('RESEND_API_KEY no configurada en este entorno');
@@ -206,21 +272,11 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
       status: row.status,
       marcas,
       correcciones,
-      clientEmail: stored.contacto?.email || completion?.contacto?.email || '',
+      clientEmail: contactoEmail,
       garantia: !!stored.garantia,
       total: stored.pricing?.total ?? 0,
-      titularResumen: [
-        ['Nombre', `${t.nombre || ''} ${t.apellido || ''}`.trim()],
-        ['Documento', `${t.documento?.tipo || ''} ${t.documento?.numero || ''}`.trim()],
-        ['CUIT/CUIL', t.cuit || ''],
-        ['Género', t.genero || ''],
-        ['Estado civil', t.estadoCivil || ''],
-        ...(t.nombreConyuge ? [['Cónyuge', t.nombreConyuge] as [string, string]] : []),
-        ['Domicilio', [dom.calle, dom.numero, dom.piso && `piso ${dom.piso}`, dom.depto && `depto ${dom.depto}`].filter(Boolean).join(' ')],
-        ['Localidad', `${dom.localidad || ''} (CP ${dom.codigoPostal || '—'}), ${dom.provincia || ''}, ${dom.pais || 'Argentina'}`],
-        ['Email', stored.contacto?.email || ''],
-        ['WhatsApp', stored.contacto?.whatsapp || ''],
-      ],
+      titulares: titularesEmail,
+      firmasPendientes: pendientes.map(({ nombre, email, url }) => ({ nombre, email, url })),
     }, completion?.cartaPdfBase64 || null, logos);
     emailSent = true;
   } catch (e) {
@@ -231,93 +287,31 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
   // Crea el contacto, la marca y un trámite POR CLASE. Va en waitUntil: el
   // pedido ya está guardado y los emails ya salieron, así que el cliente no
   // tiene por qué esperar a que responda el portal. Ni un portal caído ni una
-  // credencial vencida pueden voltear la confirmación. El resultado queda en la
-  // columna `vigilante` para saber desde dónde retomar si algo falló.
-  const altaEnVigilante = async () => {
-  const alta = await crearAltaVigilante(env, {
-    ref,
-    contacto: {
-      nombre: String(t.nombre || '').trim(),
-      apellido: String(t.apellido || '').trim(),
-      tipo: 'Humana', // el checkout todavía no acepta personas jurídicas
-      cuit: String(t.cuit || '').trim(),
-      email: stored.contacto?.email || completion?.contacto?.email || '',
-      telefono: stored.contacto?.whatsapp || completion?.contacto?.whatsapp || '',
-      tipo_doc: String(t.documento?.tipo || '').trim(),
-      documento: String(t.documento?.numero || '').trim(),
-      genero: String(t.genero || '').trim(),
-      estado_civil: String(t.estadoCivil || '').trim(),
-      conyuge: String(t.nombreConyuge || '').trim(),
-      pais: String(dom.pais || 'Argentina').trim(),
-      provincia: String(dom.provincia || '').trim(),
-      calle: String(dom.calle || '').trim(),
-      numero: String(dom.numero || '').trim(),
-      piso: String(dom.piso || '').trim(),
-      depto: String(dom.depto || '').trim(),
-      localidad: String(dom.localidad || '').trim(),
-      cp: String(dom.codigoPostal || '').trim(),
-      notas: `Alta automática desde el checkout web. Pedido ${ref}.`,
-    },
-    marcas: marcas.map((m, i) => ({
-      // En una figurativa el nombre es nuestra referencia interna, no una
-      // denominación ante el INPI: el `tipo` que va al lado ya lo aclara.
-      denominacion: m.nombre,
-      tipo: tipoMarcaLabel(m.tipo ?? 'denominativa'),
-      clases: m.clases,
-      descripcion: m.descripcion,
-      colores: m.colores,
-      alto: m.alto ?? null,
-      ancho: m.ancho ?? null,
-      logo: logosBytes[i]
-        ? { filename: `logo-${ref}-marca-${i + 1}.jpg`, bytes: logosBytes[i]! }
-        : null,
-    })),
-  });
-
-  if (alta.omitido) {
-    console.warn(`[vigilante] alta omitida para ${ref}: ${alta.error}`);
-  } else if (!alta.ok) {
-    console.error(`[vigilante] alta fallida para ${ref}:`, alta.status, alta.error, alta.detalles);
-  } else {
-    // Un 201 no significa que los datos estén bien: las advertencias son el
-    // único aviso de que el mapeo se rompió, porque no falla ningún pedido.
-    if (alta.advertencias?.length) {
-      console.warn(`[vigilante] advertencias en ${ref}:`, JSON.stringify(alta.advertencias));
-    }
-    console.log(`[vigilante] alta ok para ${ref}: trámites ${alta.tramites?.join(', ')}`);
-  }
-
-  try {
-    await ensureVigilanteColumn(env.DB);
-    await env.DB.prepare('UPDATE orders SET vigilante = ? WHERE ref = ?')
-      .bind(JSON.stringify({ ...alta, at: new Date().toISOString() }), ref).run();
-  } catch (e) {
-    console.error('No se pudo guardar el resultado del alta en Vigilante:', e);
-  }
-
-  // El portal avisa por email al estudio cuando devuelve 400, 403 o 500. Lo que
-  // NO ve nadie del otro lado son las advertencias de un 201 (el mapeo se
-  // rompió pero el pedido entró igual) y un timeout de red (la request nunca
-  // llegó). Eso lo avisamos nosotros.
-  // El caso "sin credencial" solo se avisa en producción: en los previews y en
-  // local es lo normal, y avisarlo sería un email por cada pedido de prueba.
+  // credencial vencida pueden voltear la confirmación.
+  //
+  // ⚠️ CON COTITULARES NO CORRE ACÁ. De un cotitular todavía no hay nada más
+  // que su email: sus datos los carga él mismo al firmar. Dar de alta un
+  // contacto sin nombre, sin CUIT y sin domicilio deja basura en el portal que
+  // después hay que limpiar a mano. El alta la dispara la última firma de la
+  // cadena (ver src/pages/api/firma/[token].ts), que es también el momento en
+  // que el pedido pasa a ser presentable.
   const esProduccion = new URL(request.url).hostname === 'unamarca.com.ar';
-  const necesitaAtencion = (alta.omitido && esProduccion)
-    || (!alta.ok && !alta.omitido && !alta.status)
-    || !!alta.advertencias?.length;
-  if (necesitaAtencion && env.RESEND_API_KEY) {
-    try {
-      await sendVigilanteAlert(env.RESEND_API_KEY, { ref, alta });
-    } catch (e) {
-      console.error('No se pudo avisar del alta en Vigilante:', e);
-    }
+  if (pendientes.length) {
+    console.log(`[vigilante] alta de ${ref} diferida: faltan ${pendientes.length} firmas`);
+  } else {
+    const alta = () => darDeAltaEnVigilante(env, { ref, esProduccion });
+    // waitUntil mantiene vivo el contexto después de responder. Si el entorno no
+    // lo expone (dev local), se espera nomás.
+    if (typeof waitUntil === 'function') waitUntil(alta());
+    else await alta();
   }
-  };
 
-  // waitUntil mantiene vivo el contexto después de responder. Si el entorno no
-  // lo expone (dev local), se espera nomás.
-  if (typeof waitUntil === 'function') waitUntil(altaEnVigilante());
-  else await altaEnVigilante();
-
-  return json({ ok: true, ref, emailSent });
+  // `firmasPendientes` vuelve al wizard: la pantalla de confirmación tiene que
+  // decirle al cliente a quién le pedimos la firma y adónde le llegó el link.
+  return json({
+    ok: true,
+    ref,
+    emailSent,
+    firmasPendientes: pendientes.map(({ nombre, email }) => ({ nombre, email })),
+  });
 };

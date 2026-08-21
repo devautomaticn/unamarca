@@ -386,20 +386,28 @@ const TIPOS_DOC = ['DNI', 'Pasaporte', 'Libreta Cívica', 'Libreta de Enrolamien
   });
 
   // ── Documento ───────────────────────────────────────────
+  // Un solo otorgante: esta página rehace el poder de UNA persona.
+  // ⚠️ Un pedido con cotitulares no se rehace desde acá — el poder de varios
+  // dueños lleva un pie de firma por cabeza y la cadena de firmas vive en
+  // `/firmar/<token>` (ver src/lib/server/firmas.ts). Rehacerlo con un solo
+  // otorgante emitiría un documento que dice "yo autorizo" donde el original
+  // decía "nosotros autorizamos".
   function cpData(): CartaPoderData {
     const [anio, mes, dia] = (input('cp-fecha').value || hoyISO()).split('-').map(Number);
     return {
-      nombreApellido: input('cp-nombre').value.trim(),
-      docTipo: select('cp-tipodoc').value || 'DNI',
-      docNumero: input('cp-docnum').value.trim(),
-      cuit: input('cp-cuit').value.trim(),
-      calle: input('cp-calle').value.trim(),
-      numero: input('cp-numero').value.trim(),
-      piso: input('cp-piso').value.trim() || undefined,
-      depto: input('cp-depto').value.trim() || undefined,
-      codigoPostal: input('cp-codpostal').value.trim(),
-      localidad: input('cp-localidad').value.trim(),
-      provincia: select('cp-provincia').value,
+      titulares: [{
+        nombreApellido: input('cp-nombre').value.trim(),
+        docTipo: select('cp-tipodoc').value || 'DNI',
+        docNumero: input('cp-docnum').value.trim(),
+        cuit: input('cp-cuit').value.trim(),
+        calle: input('cp-calle').value.trim(),
+        numero: input('cp-numero').value.trim(),
+        piso: input('cp-piso').value.trim() || undefined,
+        depto: input('cp-depto').value.trim() || undefined,
+        codigoPostal: input('cp-codpostal').value.trim(),
+        localidad: input('cp-localidad').value.trim(),
+        provincia: select('cp-provincia').value,
+      }],
       marcas: marcas.map(m => ({ nombre: m.nombre.trim(), tipo: m.tipo, clases: [...m.clases] })),
       // El <input type="date"> ya da la fecha local; MESES es 0-indexado.
       fecha: { dia, mes: mes - 1, anio },
@@ -407,7 +415,7 @@ const TIPOS_DOC = ['DNI', 'Pasaporte', 'Libreta Cívica', 'Libreta de Enrolamien
   }
 
   function render() {
-    $('cp-preview').innerHTML = cartaPoderHTML(cpData(), firmaDataUrl());
+    $('cp-preview').innerHTML = cartaPoderHTML(cpData(), [firmaDataUrl()]);
   }
 
   // Cualquier campo del panel redibuja el documento.
@@ -527,7 +535,7 @@ const TIPOS_DOC = ['DNI', 'Pasaporte', 'Libreta Cívica', 'Libreta de Enrolamien
   const errBox = $('cp-err');
 
   function faltantes(): string[] {
-    const d = cpData();
+    const d = cpData().titulares[0];
     const falta: string[] = [];
     if (!d.nombreApellido) falta.push('tu nombre y apellido');
     if (!d.docNumero) falta.push('tu número de documento');
@@ -561,14 +569,15 @@ const TIPOS_DOC = ['DNI', 'Pasaporte', 'Libreta Cívica', 'Libreta de Enrolamien
     $('cp-submit-label').textContent = 'Enviando…';
     $('cp-submit-spin').style.display = '';
 
-    const d = cpData();
+    const data = cpData();
+    const d = data.titulares[0];
     // El PDF se genera EN EL NAVEGADOR, igual que en el checkout: el plan free
     // de Pages no tiene CPU para pdf-lib (error 1102).
     let pdfBytes: Uint8Array | null = null;
     let pdfBase64: string | null = null;
     try {
       const { buildCartaPoderPdf } = await import('../lib/checkout/cartaPoderPdf');
-      pdfBytes = await buildCartaPoderPdf(d, firmaDataUrl());
+      pdfBytes = await buildCartaPoderPdf(data, [firmaDataUrl()]);
       let binary = '';
       const chunk = 0x8000;
       for (let i = 0; i < pdfBytes.length; i += chunk) {
@@ -601,7 +610,7 @@ const TIPOS_DOC = ['DNI', 'Pasaporte', 'Libreta Cívica', 'Libreta de Enrolamien
               d.provincia,
             ].filter(Boolean).join(', '),
           },
-          marcas: d.marcas,
+          marcas: data.marcas,
           fecha: input('cp-fecha').value,
         }),
       });
@@ -688,7 +697,10 @@ const TIPOS_DOC = ['DNI', 'Pasaporte', 'Libreta Cívica', 'Libreta de Enrolamien
   .cp-paper .ck-cp-p { margin: 0 0 1.25rem; }
   .cp-paper .ck-cp-ul { margin: 0 0 1.25rem; padding-left: 1.4rem; }
   .cp-paper .ck-cp-ul li { margin-bottom: 0.55rem; }
-  .cp-paper .ck-cp-firma { margin-top: 2.5rem; width: 240px; }
+  .cp-paper .ck-cp-firmas {
+    display: flex; flex-wrap: wrap; gap: 2.5rem 3rem; margin-top: 2.5rem;
+  }
+  .cp-paper .ck-cp-firma { width: 240px; }
   .cp-paper .ck-cp-firma-space { height: 64px; }
   .cp-paper .ck-cp-firma-img {
     height: 64px; display: block; object-fit: contain; object-position: left bottom;

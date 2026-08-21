@@ -321,6 +321,84 @@ reemitirla a mano.
 
 ---
 
+## Cotitulares y la cadena de firmas
+
+Una marca puede tener hasta `MAX_TITULARES` (3) dueños. **Cada uno carga sus
+propios datos**: el que arma el pedido completa los suyos y, de los cotitulares,
+sólo el **email** y el **porcentaje de titularidad**.
+
+Es a propósito. El DNI del socio, su CUIT, su estado civil y su domicilio no los
+sabe quien paga: los ponía de memoria y después había que corregirlos, con el
+poder ya firmado. Ahora los carga el propio titular cuando entra a firmar, que
+es el único que los sabe.
+
+- Los porcentajes tienen que sumar **exactamente 100**. Admiten dos decimales:
+  tres socios en partes iguales no cierran con enteros (33,34 + 33,33 + 33,33).
+  Agregar o quitar un titular reparte de nuevo en partes iguales, con el resto
+  del redondeo en el primero (`repartirPorcentajes()`).
+- **El email de cada titular es obligatorio y no se puede repetir**: es lo único
+  que tenemos de un cotitular, y es lo que le lleva su link. Dos titulares con
+  el mismo email compartirían el link y el segundo nunca podría firmar.
+- **El poder es UNO solo con un pie de firma por titular**, no un poder por
+  cabeza. El texto se conjuga en plural y el cierre lista las proporciones. Todo
+  eso vive en `src/lib/checkout/cartaPoder.ts`; el PDF pagina solo
+  (`cartaPoderPdf.ts`), porque con tres otorgantes ya no entra en una hoja.
+- **Un cotitular sin datos no se inventa ni se omite del documento.** El poder
+  dice `el cotitular que suscribe al pie (aviso enviado a juan@x.com), cuyos
+  datos personales completa al momento de su firma` y el pie va con
+  `Datos a completar por el cotitular`. El primero firma viendo exactamente
+  eso, y el paso 7 se lo dice arriba del pad de firma. Ver `esPendiente()`.
+
+### La cadena (`src/lib/server/firmas.ts`)
+
+```
+PATCH /api/checkout/order/:ref   →  tabla `firmas`: un renglón por titular
+   ├─ el que completó: nace ya firmado (viene en completion.firma)
+   └─ cada cotitular:  nace pendiente + email con su /firmar/<token>
+                          │
+/firmar/<token>  ─────────┘  COMPLETA sus datos y firma
+   └─ POST /api/firma/<token>  →  guarda los datos y la firma
+        ├─ falta alguno  → email al estudio: "Firma N de M" + PDF parcial
+        └─ firmó el último → "Carta poder completa" + PDF definitivo,
+                             copia a cada titular, y ALTA EN VIGILANTE
+```
+
+- **El token es la credencial**, igual que en `/guia/<token>`: no hay login y no
+  puede haberlo, porque quien firma puede no haber entrado nunca al sitio. Un
+  token abre un renglón de un pedido y deja de aceptar firmas al usarse.
+- `firmas(ref, idx)` es UNIQUE: un PATCH reintentado devuelve el token que ya
+  existía en vez de regenerarlo y mandar un segundo email.
+- **Una firma no se pisa nunca**, ni con la del mismo titular: el PDF que ya
+  salió por email quedaría desmentido por la base.
+- La **fecha del poder** viaja en `completion.fechaPoder`. Los cotitulares
+  firman días después y el documento no puede cambiar de fecha entre firma y
+  firma. Sin el campo (pedidos viejos) se reconstruye de `completed_at`.
+- **El PDF se arma en el navegador del que firma**, por lo mismo de siempre (el
+  plan free de Pages no tiene CPU para pdf-lib). Por eso el GET devuelve las
+  firmas ya cargadas: el último firmante es el único que puede generar el
+  documento completo. Si su navegador falla, el email avisa que no hay adjunto
+  — la firma igual quedó guardada en D1, que es lo único irrecuperable.
+- Lo que en `/firmar/<token>` **NO se toca es el porcentaje ni las marcas**: es
+  lo que acordaron entre todos y ya lo firmó el primero. Si un titular vuelve a
+  su link con los datos ya cargados puede corregirlos; el cambio se persiste en
+  `orders.completion` y se lista campo por campo en el email al estudio, porque
+  el poder que firmaron los anteriores decía otra cosa.
+- **El alta en Vigilante se difiere hasta la última firma**
+  (`src/lib/server/altaPedido.ts`). Hasta ese momento los cotitulares no tienen
+  datos, y un contacto sin nombre, sin CUIT y sin domicilio es basura en el
+  portal que después hay que limpiar a mano. No se pierde nada esperando: sin el
+  poder completo no se presenta nada. Un pedido de un solo titular sigue dando
+  el alta en el PATCH, como siempre. El alta manda un `contacto` por titular y
+  `titulares: [{contacto, porcentaje}]`; un trámite por clase, como siempre.
+- Un pedido de **un solo titular no abre ningún renglón de firma**: funciona
+  exactamente como antes, y `completion.titular` (singular) se sigue escribiendo
+  con el firmante para no romper a los consumidores viejos del payload.
+- `consolidarMarcas()` (en `src/lib/server/checkout.ts`) es la única forma de
+  armar las marcas del pedido: la usan el PATCH, el alta y la página de firma.
+  Las tres tienen que ver exactamente la misma marca.
+
+---
+
 ## `/carta-poder` — rehacer un poder ya firmado
 
 Página privada (`noindex`, fuera del sitemap, no se linkea) para cuando el poder
@@ -332,6 +410,10 @@ firma y lo envía.
 - El texto sale del mismo `src/lib/checkout/cartaPoder.ts` y el PDF del mismo
   `cartaPoderPdf.ts` que usa el paso 7 del wizard. Los dos caminos no pueden
   divergir, y el PDF que llega es idéntico al del checkout.
+- **Es de UN solo otorgante.** Un pedido con cotitulares no se rehace desde acá:
+  ese poder dice "nosotros autorizamos" y lleva un pie de firma por cabeza, y
+  rehacerlo con un titular emitiría un documento distinto del original. Para eso
+  está la cadena de firmas (ver arriba).
 - **No toca nada**: ni el pedido en D1, ni el alta en Vigilante, ni los emails
   del checkout. Lo único que produce es el PDF firmado, que le llega al estudio
   por `POST /api/carta-poder` (Resend → `mike@automaticnation.com`, con el PDF

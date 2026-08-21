@@ -133,7 +133,9 @@ async back-and-forth.
   swapped for MP Checkout Pro without changing the wizard structure)
 - Personas jurídicas (different carta poder wording, representante legal)
 - Multi-class discount (all clases cost the same)
-- Multiple titulares
+- ~~Multiple titulares~~ — implementado después de v1 (hasta `MAX_TITULARES`,
+  con porcentaje de titularidad y cadena de firmas por email). Ver CLAUDE.md,
+  "Cotitulares y la cadena de firmas".
 - Marcas mixtas / figurativas (logo)
 - Trademark search integrated into the funnel
 - Oposiciones gestión quoting flow (happens later, off-platform: all orders

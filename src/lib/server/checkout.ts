@@ -1,8 +1,9 @@
 // Helpers compartidos del checkout (carpeta _lib: no se publica como ruta).
 import {
-  MAX_CLASES, MAX_MARCAS, LOGO_CM_MAX, LOGO_CM_MIN,
-  computeOrderPricing, contarLineas, normalizeTipoMarca, requiereLogo,
-  type MarcaPedido,
+  MAX_CLASES, MAX_MARCAS, MAX_TITULARES, LOGO_CM_MAX, LOGO_CM_MIN,
+  computeOrderPricing, contarLineas, normalizeTipoMarca, redondearPorcentaje,
+  repartirPorcentajes, requiereLogo,
+  type MarcaPedido, type TitularPedido,
 } from '@/lib/checkout/constants';
 
 // Tipos mínimos de D1 (evitamos la dependencia @cloudflare/workers-types,
@@ -11,6 +12,7 @@ export interface D1Statement {
   bind(...values: unknown[]): D1Statement;
   run(): Promise<unknown>;
   first<T = Record<string, unknown>>(): Promise<T | null>;
+  all<T = Record<string, unknown>>(): Promise<{ results?: T[] }>;
 }
 export interface D1Database {
   prepare(query: string): D1Statement;
@@ -202,6 +204,145 @@ export function corregirTipoPostPago(
     tipo: 'mixta',
     correccion: `«${guardada.nombre}» pasó a MIXTA con la denominación «${denominacion}»`,
   };
+}
+
+/** Normaliza los titulares que llegan en `completion`.
+ *
+ *  Acepta las dos formas: `titulares[]` (multi-titular) y el `titular` suelto de
+ *  todo pedido anterior a esto, que entra como un único titular al 100%. El
+ *  legado NO se puede tirar: los pedidos viejos se releen para reenviar emails
+ *  y para el alta en el portal.
+ *
+ *  Los porcentajes no se validan acá, se saneen: el pedido ya está pago y el
+ *  poder firmado, así que un número raro no puede hacer fallar el PATCH. Lo que
+ *  se garantiza es que sean números y que sumen 100 — si no cierran (payload
+ *  armado a mano, bug del wizard) se reparte en partes iguales, que es la única
+ *  respuesta defendible cuando no sabemos qué quiso decir. */
+export function titularesDesdeCompletion(completion: unknown): TitularPedido[] {
+  const c = completion as Record<string, any> | null | undefined;
+  const crudos: any[] = Array.isArray(c?.titulares) && c.titulares.length
+    ? c.titulares
+    : (c?.titular ? [c.titular] : []);
+
+  const texto = (v: unknown, max = 120) => String(v ?? '').trim().slice(0, max);
+
+  const titulares: TitularPedido[] = crudos.slice(0, MAX_TITULARES).map((t: any) => ({
+    tipoPersona: 'Humana' as const,
+    nombre: texto(t?.nombre, 80),
+    apellido: texto(t?.apellido, 80),
+    genero: texto(t?.genero, 40),
+    estadoCivil: texto(t?.estadoCivil, 40),
+    nombreConyuge: texto(t?.nombreConyuge, 160),
+    documento: {
+      tipo: texto(t?.documento?.tipo, 40) || 'DNI',
+      numero: texto(t?.documento?.numero, 30),
+    },
+    cuit: texto(t?.cuit, 20),
+    email: texto(t?.email, 160).toLowerCase(),
+    domicilio: {
+      pais: texto(t?.domicilio?.pais, 60) || 'Argentina',
+      calle: texto(t?.domicilio?.calle, 120),
+      numero: texto(t?.domicilio?.numero, 20),
+      piso: texto(t?.domicilio?.piso, 20),
+      depto: texto(t?.domicilio?.depto, 20),
+      localidad: texto(t?.domicilio?.localidad, 120),
+      codigoPostal: texto(t?.domicilio?.codigoPostal, 20),
+      provincia: texto(t?.domicilio?.provincia, 60),
+    },
+    porcentaje: (() => {
+      const n = typeof t?.porcentaje === 'number'
+        ? t.porcentaje
+        : parseFloat(String(t?.porcentaje ?? '').replace(',', '.'));
+      return Number.isFinite(n) && n >= 0 && n <= 100 ? redondearPorcentaje(n) : NaN;
+    })(),
+    firmaAqui: t?.firmaAqui === true,
+  }));
+
+  if (!titulares.length) return [];
+
+  const suma = redondearPorcentaje(
+    titulares.reduce((s, t) => s + (Number.isFinite(t.porcentaje) ? t.porcentaje : 0), 0),
+  );
+  if (titulares.some(t => !Number.isFinite(t.porcentaje)) || suma !== 100) {
+    const partes = repartirPorcentajes(titulares.length);
+    titulares.forEach((t, i) => { t.porcentaje = partes[i]; });
+  }
+
+  // Alguien tiene que ser el que firma en el wizard. Sin la bandera (pedido
+  // legado, o payload armado a mano) es el primero: es el orden en que se
+  // cargaron y el primero es siempre quien está completando.
+  if (!titulares.some(t => t.firmaAqui)) titulares[0].firmaAqui = true;
+
+  return titulares;
+}
+
+/** Una marca del pedido, ya consolidada: lo que se pagó + lo que se cargó
+ *  después. Es la forma que consumen los emails y el alta en el portal. */
+export interface MarcaConsolidada extends MarcaPedido {
+  tipo: MarcaPedido['tipo'];
+  descripcion: string;
+  sitioWeb: string;
+  colores?: string;
+  alto?: number | null;
+  ancho?: number | null;
+  logoAdjunto?: string | null;
+}
+
+/** Junta el snapshot del pago con lo que el cliente cargó post-pago.
+ *
+ *  Marcas, clases y tipo salen SIEMPRE del snapshot: es lo que se pagó y lo que
+ *  se presenta. Descripción, sitio, colores y medidas sólo existen en
+ *  `completion`. Las dos listas salen del mismo array ordenado del wizard, así
+ *  que el índice es la clave fiable; el nombre queda de respaldo por si el
+ *  cliente reordenó.
+ *
+ *  Vive acá y no en la ruta porque lo necesitan tres caminos —el PATCH del
+ *  pedido, el alta en el portal y la página de firma de un cotitular— y las
+ *  tres tienen que ver exactamente la misma marca. */
+export function consolidarMarcas(stored: any, completion: any): {
+  storedMarcas: MarcaPedido[];
+  marcas: MarcaConsolidada[];
+  /** Correcciones de tipo post-pago (figurativa → mixta), en texto */
+  correcciones: string[];
+} {
+  const storedMarcas = marcasDesdePayload(stored);
+
+  // Legado v1: la descripción venía suelta en completion.marca.
+  const completionMarcas: any[] = Array.isArray(completion?.marcas)
+    ? completion.marcas
+    : (completion?.marca ? [completion.marca] : []);
+  const porNombre: Record<string, any> = {};
+  for (const m of completionMarcas) {
+    const key = String(m?.nombre ?? '').trim().toLowerCase();
+    if (key) porNombre[key] = m;
+  }
+
+  const correcciones: string[] = [];
+  const marcas: MarcaConsolidada[] = storedMarcas.map((m, i) => {
+    const porIndice = completionMarcas[i];
+    const extra = (
+      String(porIndice?.nombre ?? '').trim().toLowerCase() === m.nombre.toLowerCase()
+        ? porIndice
+        : porNombre[m.nombre.toLowerCase()] ?? porIndice
+    ) ?? {};
+    const { nombre, tipo, correccion } = corregirTipoPostPago(m, extra);
+    if (correccion) correcciones.push(correccion);
+    return {
+      nombre,
+      clases: m.clases,
+      tipo,
+      descripcion: String(extra.descripcion || '').trim(),
+      sitioWeb: String(extra.sitioWeb || '').trim(),
+      ...(requiereLogo(tipo ?? 'denominativa') ? {
+        colores: String(extra.colores || '').trim(),
+        alto: sanitizeCm(extra.alto),
+        ancho: sanitizeCm(extra.ancho),
+        logoAdjunto: null as string | null,
+      } : {}),
+    };
+  });
+
+  return { storedMarcas, marcas, correcciones };
 }
 
 /** Precios calculados SIEMPRE en el servidor — nunca se confía en el cliente.
