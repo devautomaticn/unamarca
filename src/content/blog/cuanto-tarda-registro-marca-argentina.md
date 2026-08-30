@@ -31,7 +31,7 @@ Esto es un cambio radical respecto al proceso anterior, que podía extenderse en
 
 Si un tercero presenta una oposición durante los 30 días de publicación, el plazo se extiende. La resolución de oposiciones puede llevar varios meses adicionales dependiendo de la complejidad del caso.
 
-Por eso la **búsqueda previa** sigue siendo el paso más importante antes de presentar tu solicitud. Si detectás marcas similares antes de presentar, podés ajustar tu estrategia y evitar oposiciones. Podés hacerla ahora en el [buscador de marcas del INPI](/verificar-marca/), o leer cómo hacerla en detalle acá: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
+Por eso la **búsqueda previa** sigue siendo el paso más importante antes de presentar tu solicitud. Si detectás marcas similares antes de presentar, podés ajustar tu estrategia y evitar oposiciones. Podés hacerla ahora en el [buscador de marcas del INPI](/verificar-marca/), o leer cómo hacerla en detalle acá: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente/).
 
 ## ¿Desde cuándo tengo protección?
 
@@ -70,7 +70,7 @@ El nuevo proceso es más rápido y predecible, pero requiere más preparación d
 
 La buena noticia: si hacés bien la búsqueda previa y presentás una marca distintiva, el camino al registro es más corto que nunca.
 
-Para entender el proceso completo de registro, leé nuestra guía: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso). Y si querés saber cuánto cuesta el trámite, te lo explicamos acá: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca).
+Para entender el proceso completo de registro, leé nuestra guía: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso/). Y si querés saber cuánto cuesta el trámite, te lo explicamos acá: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca/).
 
 ---
 

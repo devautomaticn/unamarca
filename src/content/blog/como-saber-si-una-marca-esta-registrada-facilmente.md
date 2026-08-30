@@ -24,11 +24,11 @@ Desde marzo de 2026, el INPI ya no filtra conflictos con marcas existentes duran
 
 ## Cómo verificar si una marca está registrada
 
-La forma más rápida es nuestro [verificador gratuito de marcas](/verificar-marca): ingresás el nombre y las clases de tu actividad, y en segundos te muestra los antecedentes en el archivo del INPI y si el camino está libre. No pide registro previo ni datos de contacto.
+La forma más rápida es nuestro [verificador gratuito de marcas](/verificar-marca/): ingresás el nombre y las clases de tu actividad, y en segundos te muestra los antecedentes en el archivo del INPI y si el camino está libre. No pide registro previo ni datos de contacto.
 
 También podés hacer la búsqueda en el buscador oficial del INPI, disponible en [portaltramites.inpi.gob.ar](https://portaltramites.inpi.gob.ar). Es gratuito y funciona desde cualquier dispositivo: ingresás el nombre que querés verificar, filtrás por "vigentes" (para ver marcas activas) y revisás los resultados. También conviene buscar marcas **en trámite**, porque una solicitud presentada antes que la tuya ya ocupa ese espacio aunque aún no tenga resolución.
 
-Para la guía detallada de cómo usar el buscador paso a paso, incluyendo cómo interpretar cada campo y los errores más frecuentes, leé: [buscador de marcas INPI: cómo verificar si tu nombre está disponible](/blog/inpi-buscador-de-marcas-guia-para-registrar-tu-marca-en-argentina).
+Para la guía detallada de cómo usar el buscador paso a paso, incluyendo cómo interpretar cada campo y los errores más frecuentes, leé: [buscador de marcas INPI: cómo verificar si tu nombre está disponible](/blog/inpi-buscador-de-marcas-guia-para-registrar-tu-marca-en-argentina/).
 
 ## ¿Qué significan los resultados?
 
@@ -68,11 +68,11 @@ Es recomendable cuando el nombre que querés registrar tiene un sonido parecido 
 
 ## Una vez verificada la disponibilidad
 
-Si tu marca está disponible, los próximos pasos son definir en qué clases registrarla y presentar la solicitud. Para entender las clases, leé: [clases de marcas para registrar en Argentina](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina). Para el proceso completo, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso). Y para saber cuánto cuesta, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca).
+Si tu marca está disponible, los próximos pasos son definir en qué clases registrarla y presentar la solicitud. Para entender las clases, leé: [clases de marcas para registrar en Argentina](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina/). Para el proceso completo, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso/). Y para saber cuánto cuesta, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca/).
 
 ## Después de registrar: vigilá el Boletín
 
-Verificar la disponibilidad es el primer paso. Pero una vez que tu marca está registrada, la protección requiere monitoreo activo: cada semana el INPI publica nuevas solicitudes, y si alguien intenta registrar algo similar tenés 30 días para oponerte. Para entender cómo funciona ese proceso, leé: [Boletín de Marcas del INPI: qué es y cómo vigilar tu marca](/blog/boletin-de-marcas-inpi).
+Verificar la disponibilidad es el primer paso. Pero una vez que tu marca está registrada, la protección requiere monitoreo activo: cada semana el INPI publica nuevas solicitudes, y si alguien intenta registrar algo similar tenés 30 días para oponerte. Para entender cómo funciona ese proceso, leé: [Boletín de Marcas del INPI: qué es y cómo vigilar tu marca](/blog/boletin-de-marcas-inpi/).
 
 ---
 

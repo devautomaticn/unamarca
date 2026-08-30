@@ -47,7 +47,7 @@ El INPI registra marcas por "clases" de actividad. Para artistas, las más relev
 - **Clase 25:** indumentaria (si vas a tener merchandising con ropa)
 - **Clase 16 o 9:** para publicaciones físicas o digitales, según el formato
 
-Podés leer más sobre cómo funciona el sistema de clases en nuestra guía: [clases de marcas para registrar en Argentina](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina).
+Podés leer más sobre cómo funciona el sistema de clases en nuestra guía: [clases de marcas para registrar en Argentina](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina/).
 
 ## ¿Cuál necesitás?
 
@@ -63,7 +63,7 @@ Depende de tu situación:
 
 Antes de presentar cualquier solicitud, lo primero es buscar en el sistema del INPI si ya existe una marca igual o parecida en las mismas clases. Desde 2026, el INPI ya no verifica conflictos de oficio — esa responsabilidad recae sobre los titulares de marcas existentes. Pero si presentás un nombre similar a uno ya registrado, el dueño puede oponerse y bloquear tu solicitud.
 
-Escribí tu nombre artístico en el [buscador de marcas gratis](/verificar-marca/) para ver los antecedentes al instante, o te explicamos cómo hacer esta búsqueda en detalle: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
+Escribí tu nombre artístico en el [buscador de marcas gratis](/verificar-marca/) para ver los antecedentes al instante, o te explicamos cómo hacer esta búsqueda en detalle: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente/).
 
 ## Cómo registrar tu nombre artístico como marca
 
@@ -77,13 +77,13 @@ El trámite se hace 100% online en el portal del INPI (portaltramites.inpi.gob.a
 
 Desde el momento de la presentación ya tenés **prioridad registral**: si alguien intenta registrar el mismo nombre después de vos, tu fecha de presentación te da ventaja.
 
-Para entender el proceso completo con todos los pasos y documentación necesaria, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso).
+Para entender el proceso completo con todos los pasos y documentación necesaria, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso/).
 
 ## ¿Cuánto cuesta?
 
 El costo del registro en el INPI varía según la cantidad de clases y posiciones (productos o servicios específicos) que incluyas en cada clase. El sistema de aranceles usa unidades llamadas UMAPI que se actualizan mensualmente.
 
-Para ver los valores actualizados y entender el costo total del trámite: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca).
+Para ver los valores actualizados y entender el costo total del trámite: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca/).
 
 ---
 

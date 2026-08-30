@@ -43,7 +43,7 @@ El arancel de renovación se expresa en UMAPIS (Unidades de Medida Arancelaria d
 
 El costo base es similar al de un registro nuevo por clase. Si renovás fuera del plazo ordinario (dentro del período de gracia de 6 meses posteriores al vencimiento), se aplica un recargo.
 
-Consultá el valor actualizado en nuestra [tabla de aranceles del INPI](/aranceles-inpi/), que se sincroniza a diario con el portal oficial. Para más contexto sobre el sistema de costos, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca).
+Consultá el valor actualizado en nuestra [tabla de aranceles del INPI](/aranceles-inpi/), que se sincroniza a diario con el portal oficial. Para más contexto sobre el sistema de costos, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca/).
 
 ## ¿Qué pasa si no renovás a tiempo?
 
@@ -53,7 +53,7 @@ Si no renovás dentro del período de gracia (6 meses posteriores al vencimiento
 - Cualquier tercero puede registrarla
 - Para recuperarla, tendrías que iniciar un registro nuevo — compitiendo con quien la haya solicitado mientras tanto
 
-Si llegaste tarde y la marca ya cayó, lo primero que tenés que hacer es verificar si alguien más ya la solicitó. Podés hacerlo al instante en el [buscador de marcas del INPI](/verificar-marca/) — y te explicamos cómo interpretar el resultado acá: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
+Si llegaste tarde y la marca ya cayó, lo primero que tenés que hacer es verificar si alguien más ya la solicitó. Podés hacerlo al instante en el [buscador de marcas del INPI](/verificar-marca/) — y te explicamos cómo interpretar el resultado acá: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente/).
 
 ## ¿Puedo cambiar algo al renovar?
 
@@ -82,7 +82,7 @@ En la práctica, lo más sencillo es anotar dos fechas al momento de recibir el 
 
 Si tenés una marca registrada, buscá la fecha de concesión en tu título y agendala. Poné un recordatorio 8 meses antes del vencimiento para tener tiempo de hacer el trámite sin apuro.
 
-Para entender el proceso completo de registro desde el inicio, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso).
+Para entender el proceso completo de registro desde el inicio, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso/).
 
 ---
 

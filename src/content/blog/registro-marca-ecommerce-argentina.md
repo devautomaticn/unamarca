@@ -44,7 +44,7 @@ Las marcas se registran por categorías de productos o servicios (clases). Para 
 
 La Clase 35 (servicios de publicidad y venta al por menor) es especialmente relevante para tiendas online porque protege la *actividad de vender*, no solo los productos. Es recomendable combinarla con la clase de tu producto principal.
 
-Para entender el sistema de clases en detalle, leé: [clases de marcas para registrar en Argentina](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina).
+Para entender el sistema de clases en detalle, leé: [clases de marcas para registrar en Argentina](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina/).
 
 ## ¿Registrar en MercadoLibre o Tienda Nube requiere marca registrada?
 
@@ -58,15 +58,15 @@ No es obligatorio para empezar a vender. Pero ambas plataformas tienen política
 
 El trámite es 100% online ante el INPI, y con el nuevo proceso vigente desde 2026 puede resolverse en aproximadamente **2 meses** si no hay oposiciones.
 
-Antes de presentar la solicitud, es fundamental hacer una búsqueda previa para confirmar que tu marca está disponible — algo especialmente importante si usás un nombre que ya circula online. Podés [consultar marcas registradas acá mismo](/verificar-marca/) o ver cómo hacerlo paso a paso: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
+Antes de presentar la solicitud, es fundamental hacer una búsqueda previa para confirmar que tu marca está disponible — algo especialmente importante si usás un nombre que ya circula online. Podés [consultar marcas registradas acá mismo](/verificar-marca/) o ver cómo hacerlo paso a paso: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente/).
 
-Para el paso a paso completo del trámite, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso).
+Para el paso a paso completo del trámite, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso/).
 
 ## ¿Cuánto cuesta?
 
 El arancel del INPI para registrar en una clase es de 100 UMAPIS (aproximadamente {{ARANCEL}} en {{VIGENCIA}}, actualizable mensualmente según inflación). Los honorarios profesionales para gestionar el trámite oscilan entre $200.000 y $300.000 ARS.
 
-Para un e-commerce que vende productos físicos, registrar en 2 clases — la de tu producto + Clase 35 — es lo más recomendable. Para más detalle sobre costos, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca).
+Para un e-commerce que vende productos físicos, registrar en 2 clases — la de tu producto + Clase 35 — es lo más recomendable. Para más detalle sobre costos, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca/).
 
 ## El momento ideal para registrar
 

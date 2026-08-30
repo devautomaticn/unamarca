@@ -45,7 +45,7 @@ En la práctica esto significa que el costo siempre va a estar actualizado: no v
 
 *1 UMAPI = {{UMAPI}} ({{VIGENCIA}}). El valor en pesos varía mensualmente: en nuestra [tabla de aranceles del INPI](/aranceles-inpi/) están todos los trámites de marcas al día, con el valor de la UMAPI mes a mes y el próximo aumento ya anunciado.*
 
-El arancel se cobra **por clase**. Si querés registrar tu marca en dos rubros distintos — por ejemplo, ropa y accesorios — pagás dos veces el arancel base. Para entender qué es una clase y cuál te corresponde, leé: [clases de marcas para registrar en Argentina](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina).
+El arancel se cobra **por clase**. Si querés registrar tu marca en dos rubros distintos — por ejemplo, ropa y accesorios — pagás dos veces el arancel base. Para entender qué es una clase y cuál te corresponde, leé: [clases de marcas para registrar en Argentina](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina/).
 
 ## ¿Cuánto salen los honorarios profesionales?
 
@@ -58,7 +58,7 @@ Contratar un profesional no es obligatorio, pero sí recomendable. Un abogado o 
 
 Los honorarios varían según el estudio o profesional, pero como referencia general oscilan entre **$200.000 y $300.000 ARS** para un registro estándar en una clase. Contestar oposiciones de terceros o vistas del INPI puede tener costos adicionales.
 
-**En UnaMarca cobramos {{HONORARIOS}} de honorarios por clase**, entre un tercio y un cuarto de ese valor de mercado. Lo podemos hacer porque estandarizamos el caso más común (marca denominativa, en una clase, a nombre de una persona) en un trámite 100% online: completás la solicitud en unos minutos, firmás la carta poder desde el celular y nosotros presentamos tu solicitud ante el INPI dentro de las 48 horas hábiles. Sin reuniones ni papeleo de por medio, el costo baja sin resignar el seguimiento profesional del trámite. Podés [registrar tu marca online](/registrar) directamente desde la web.
+**En UnaMarca cobramos {{HONORARIOS}} de honorarios por clase**, entre un tercio y un cuarto de ese valor de mercado. Lo podemos hacer porque estandarizamos el caso más común (marca denominativa, en una clase, a nombre de una persona) en un trámite 100% online: completás la solicitud en unos minutos, firmás la carta poder desde el celular y nosotros presentamos tu solicitud ante el INPI dentro de las 48 horas hábiles. Sin reuniones ni papeleo de por medio, el costo baja sin resignar el seguimiento profesional del trámite. Podés [registrar tu marca online](/registrar/) directamente desde la web.
 
 ## ¿Cuánto sale en total?
 
@@ -67,7 +67,7 @@ Para un registro típico en una clase con hasta 20 posiciones:
 - **Arancel INPI:** ~{{ARANCEL}} ARS (varía mensualmente según UMAPI)
 - **Honorarios profesionales:** $200.000–$300.000 ARS
 
-Con UnaMarca el total es bastante menor: **{{HONORARIOS}} de honorarios más {{ARANCEL}} de arancel, {{TOTAL}} en total** (valores de {{VIGENCIA}}), todo en un solo pago al [iniciar el registro online](/registrar).
+Con UnaMarca el total es bastante menor: **{{HONORARIOS}} de honorarios más {{ARANCEL}} de arancel, {{TOTAL}} en total** (valores de {{VIGENCIA}}), todo en un solo pago al [iniciar el registro online](/registrar/).
 
 ### Cuánto sale según el caso (con UnaMarca)
 
@@ -99,4 +99,4 @@ Visto así, el costo del registro es relativamente bajo comparado con lo que pro
 
 ---
 
-Si querés saber cuánto tarda el proceso además de cuánto cuesta, leé: [cuánto tarda registrar una marca en Argentina](/blog/cuanto-tarda-registro-marca-argentina). Y si preferís que alguien se encargue del trámite completo por vos, [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491148999564&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0) — te respondemos con un presupuesto sin compromiso.
+Si querés saber cuánto tarda el proceso además de cuánto cuesta, leé: [cuánto tarda registrar una marca en Argentina](/blog/cuanto-tarda-registro-marca-argentina/). Y si preferís que alguien se encargue del trámite completo por vos, [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491148999564&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0) — te respondemos con un presupuesto sin compromiso.

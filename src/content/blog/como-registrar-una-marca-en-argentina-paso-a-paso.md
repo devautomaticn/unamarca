@@ -25,13 +25,13 @@ Antes de arrancar, tenés que saber qué es exactamente lo que querés proteger:
 - **Figurativa:** solo el logo o imagen, sin texto
 - **Mixta:** nombre + logo combinados — la opción más común y recomendada
 
-Si tenés dudas sobre cuál elegir, podés leer [nuestra guía sobre cómo registrar marca y logo en Argentina](/blog/como-registrar-marca-y-logo-en-argentina).
+Si tenés dudas sobre cuál elegir, podés leer [nuestra guía sobre cómo registrar marca y logo en Argentina](/blog/como-registrar-marca-y-logo-en-argentina/).
 
 ## Paso 2 — Verificá que tu marca esté disponible
 
 Antes de presentar la solicitud, es fundamental hacer una búsqueda previa para confirmar que no existe una marca igual o similar ya registrada en el mismo rubro. Este paso es más importante que nunca: desde marzo de 2026, el INPI ya no verifica conflictos con marcas existentes durante el examen de fondo — esa responsabilidad recae sobre los titulares de marcas registradas, que deben presentar oposiciones. Esto significa que si presentás una marca similar a una existente y nadie se opone, podría aprobarse — pero también significa que podrías quedar expuesto si alguien registra algo similar a la tuya.
 
-Podés hacer la búsqueda gratis en nuestro [buscador de marcas del INPI](/verificar-marca/), que consulta por nombre y clase y también detecta marcas parecidas. Explicamos cómo hacerlo con el buscador oficial acá: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
+Podés hacer la búsqueda gratis en nuestro [buscador de marcas del INPI](/verificar-marca/), que consulta por nombre y clase y también detecta marcas parecidas. Explicamos cómo hacerlo con el buscador oficial acá: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente/).
 
 ## Paso 3 — Determiná en qué clases registrar tu marca
 
@@ -44,7 +44,7 @@ Ejemplos:
 - Servicios de software → Clase 42
 - Alimentos → Clases 29, 30 o 31 según el tipo
 
-Para entender cómo funciona el sistema completo, leé nuestra guía: [clases de marcas para registrar en Argentina](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina).
+Para entender cómo funciona el sistema completo, leé nuestra guía: [clases de marcas para registrar en Argentina](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina/).
 
 ## Paso 4 — Reuní la documentación necesaria
 
@@ -76,7 +76,7 @@ En la solicitud vas a completar:
 
 Una vez completada la solicitud, el sistema genera una boleta de pago que podés abonar por home banking, Pago Mis Cuentas, Rapipago o Red Link. El costo depende de cuántas clases registres y de la cantidad de posiciones (productos o servicios específicos) dentro de cada clase.
 
-Podés consultar los valores actualizados directamente en [Aranceles INPI](https://www.argentina.gob.ar/inpi/aranceles-inpi). Para una referencia más completa sobre los costos totales del trámite, incluidos honorarios profesionales, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca).
+Podés consultar los valores actualizados directamente en [Aranceles INPI](https://www.argentina.gob.ar/inpi/aranceles-inpi). Para una referencia más completa sobre los costos totales del trámite, incluidos honorarios profesionales, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca/).
 
 ## Paso 7 — Qué pasa después de presentar la solicitud
 

@@ -44,7 +44,7 @@ const ogImageAbsolute = ogImage.startsWith('http') ? ogImage : `${SITE_URL}${ogI
 const navLinks = [
   { href: '/', label: 'Inicio' },
   { href: '/verificar-marca/', label: 'Buscador de marcas' },
-  { href: '/blog', label: 'Blog' },
+  { href: '/blog/', label: 'Blog' },
 ];
 
 // El pie lleva alguno más que el header, que ya está lleno. No es decoración:
@@ -163,7 +163,7 @@ function isActive(href: string) {
               {link.label}
             </a>
           ))}
-          <a href="/registrar" class="nav-cta" onclick="gtag('event', 'registrar_click', {'source': 'header'})">Registrá tu marca</a>
+          <a href="/registrar/" class="nav-cta" onclick="gtag('event', 'registrar_click', {'source': 'header'})">Registrá tu marca</a>
         </nav>
       </div>
     </header>
@@ -190,7 +190,7 @@ function isActive(href: string) {
           {footerLinks.map(link => (
             <a href={link.href}>{link.label}</a>
           ))}
-          <a href="/registrar">Registrá tu marca</a>
+          <a href="/registrar/">Registrá tu marca</a>
         </nav>
       </div>
       <div class="footer-bottom">

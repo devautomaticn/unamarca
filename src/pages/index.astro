@@ -530,7 +530,7 @@ const structuredData = [
               Todo lo que necesitás saber sobre el proceso de registro de marcas en Argentina.
             </p>
           </div>
-          <a href="/blog" class="btn btn-primary" style="flex-shrink:0; white-space:nowrap">
+          <a href="/blog/" class="btn btn-primary" style="flex-shrink:0; white-space:nowrap">
             Ver todos los artículos
           </a>
         </header>
@@ -538,7 +538,7 @@ const structuredData = [
         <ul class="blog-grid" role="list">
           {recentPosts.map((post) => (
             <li>
-              <a href={`/blog/${post.id}`} class="blog-card" data-anim>
+              <a href={`/blog/${post.id}/`} class="blog-card" data-anim>
                 <time datetime={post.data.pubDate.toISOString()}>
                   {formatDate(post.data.pubDate)}
                 </time>

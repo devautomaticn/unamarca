@@ -45,7 +45,7 @@ La oposición detiene el trámite de la solicitud y abre un proceso en el que am
 - Identidad o similitud de las clases en que se solicita el registro
 - Notoriedad de la marca opositora
 
-Para entender mejor tus derechos como titular de una marca registrada, leé: [qué pasa si alguien usa tu marca sin registrarla](/blog/que-pasa-si-alguien-usa-mi-marca-sin-registrar).
+Para entender mejor tus derechos como titular de una marca registrada, leé: [qué pasa si alguien usa tu marca sin registrarla](/blog/que-pasa-si-alguien-usa-mi-marca-sin-registrar/).
 
 ## El problema de revisar el Boletín manualmente
 
@@ -76,7 +76,7 @@ La vigilancia de marcas tiene sentido para:
 - Emprendedores que ya solicitaron su registro y quieren monitorear si aparecen conflictos mientras el trámite está en curso
 - Negocios con presencia online donde la identidad de marca es un activo clave: e-commerce, servicios profesionales, productos propios
 
-Si estás en proceso de registrar tu marca y querés entender mejor el trámite, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso). Y si todavía no verificaste si tu marca está disponible antes de registrar, consultala en nuestro [buscador de marcas del INPI](/verificar-marca/) o leé [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
+Si estás en proceso de registrar tu marca y querés entender mejor el trámite, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso/). Y si todavía no verificaste si tu marca está disponible antes de registrar, consultala en nuestro [buscador de marcas del INPI](/verificar-marca/) o leé [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente/).
 
 ---
 

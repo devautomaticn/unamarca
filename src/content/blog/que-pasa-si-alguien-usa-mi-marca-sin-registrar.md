@@ -32,7 +32,7 @@ En casos excepcionales, los tribunales han reconocido derechos basados en uso pr
 
 **3. Registrar inmediatamente tu marca**
 
-Si todavía nadie registró tu marca, el momento de actuar es ahora. Comprobalo en el [buscador de marcas del INPI](/verificar-marca/): si el nombre sigue libre, con el nuevo proceso podés tener el registro en aproximadamente 2 meses. Mientras más esperás, más riesgo corrés de que alguien más lo haga primero. Entendé el proceso completo acá: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso).
+Si todavía nadie registró tu marca, el momento de actuar es ahora. Comprobalo en el [buscador de marcas del INPI](/verificar-marca/): si el nombre sigue libre, con el nuevo proceso podés tener el registro en aproximadamente 2 meses. Mientras más esperás, más riesgo corrés de que alguien más lo haga primero. Entendé el proceso completo acá: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso/).
 
 ## ¿Qué pasa si tu marca ya está registrada y alguien la usa sin permiso?
 
@@ -73,7 +73,7 @@ Registrar antes de que haya un conflicto cuesta mucho menos — en dinero, tiemp
 
 El arancel del INPI para una clase es de 100 UMAPIS (aproximadamente {{ARANCEL}} en {{VIGENCIA}}, actualizable mensualmente). Los honorarios profesionales para gestionar el trámite oscilan entre $200.000 y $300.000 ARS. Y con el nuevo proceso vigente desde 2026, el registro puede estar listo en aproximadamente 2 meses.
 
-Para más detalle sobre costos, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca). Y para entender los tiempos del proceso, leé: [cuánto tarda registrar una marca en Argentina](/blog/cuanto-tarda-registro-marca-argentina).
+Para más detalle sobre costos, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca/). Y para entender los tiempos del proceso, leé: [cuánto tarda registrar una marca en Argentina](/blog/cuanto-tarda-registro-marca-argentina/).
 
 ## Una vez registrada: monitorear es parte de la protección
 
@@ -81,7 +81,7 @@ Registrar la marca es el primer paso. El segundo es vigilar que nadie intente ap
 
 Cada semana el INPI publica nuevas solicitudes en el Boletín de Marcas. Si alguien presenta una solicitud similar a la tuya, tenés **30 días corridos** para presentar una oposición. Si no te enterás a tiempo, el plazo vence y la solicitud puede avanzar.
 
-El monitoreo manual del boletín es tedioso. Hay herramientas que lo automatizan — te notifican si aparece algo que coincide con tu marca para que puedas actuar dentro del plazo. Para entender cómo funciona ese proceso, leé: [Boletín de Marcas del INPI: qué es y cómo vigilar tu marca](/blog/boletin-de-marcas-inpi).
+El monitoreo manual del boletín es tedioso. Hay herramientas que lo automatizan — te notifican si aparece algo que coincide con tu marca para que puedas actuar dentro del plazo. Para entender cómo funciona ese proceso, leé: [Boletín de Marcas del INPI: qué es y cómo vigilar tu marca](/blog/boletin-de-marcas-inpi/).
 
 ---
 

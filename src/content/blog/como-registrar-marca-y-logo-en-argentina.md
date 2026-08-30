@@ -10,7 +10,7 @@ Si estás pensando en **registrar tu marca y logo en Argentina**, es normal que 
 
 ## Importancia de registrar tu marca y logo
 
-Registrar tu marca te da el **derecho exclusivo** de usarla en el rubro que registrás, por 10 años renovables. Sin registro, no tenés herramientas legales concretas si alguien más empieza a usar tu nombre o logo. Para entender qué derechos te da el registro y qué pasa si no lo hacés, leé: [qué pasa si alguien usa tu marca sin registrarla](/blog/que-pasa-si-alguien-usa-mi-marca-sin-registrar).
+Registrar tu marca te da el **derecho exclusivo** de usarla en el rubro que registrás, por 10 años renovables. Sin registro, no tenés herramientas legales concretas si alguien más empieza a usar tu nombre o logo. Para entender qué derechos te da el registro y qué pasa si no lo hacés, leé: [qué pasa si alguien usa tu marca sin registrarla](/blog/que-pasa-si-alguien-usa-mi-marca-sin-registrar/).
 
 ## Tipos de marcas que podés registrar en Argentina
 
@@ -38,13 +38,13 @@ Para la mayoría de los negocios, registrar la **marca denominativa primero** es
 
 ## ¿En qué clases registrar?
 
-Las marcas se registran por categorías de productos o servicios (clases). Tenés que definir en qué clase o clases aplica tu negocio antes de presentar la solicitud. Para entender el sistema de clases en detalle, leé: [clases de marcas para registrar en Argentina](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina).
+Las marcas se registran por categorías de productos o servicios (clases). Tenés que definir en qué clase o clases aplica tu negocio antes de presentar la solicitud. Para entender el sistema de clases en detalle, leé: [clases de marcas para registrar en Argentina](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina/).
 
 ## Proceso para registrar marca y logo en Argentina
 
 El trámite es **100% online** ante el INPI a través de [portaltramites.inpi.gob.ar](https://portaltramites.inpi.gob.ar). Con el proceso vigente desde la Resolución 583/25 (marzo de 2026), los pasos son:
 
-1. **Búsqueda previa:** verificá que tu marca esté disponible en las clases que te interesan. Hacela en el [buscador de marcas gratis](/verificar-marca/) o leé [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente)
+1. **Búsqueda previa:** verificá que tu marca esté disponible en las clases que te interesan. Hacela en el [buscador de marcas gratis](/verificar-marca/) o leé [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente/)
 2. **Definir las clases:** determiná en qué categorías de la Clasificación de Niza corresponde registrar
 3. **Presentar la solicitud online** con tu CUIT y Clave Fiscal nivel 2 o superior
 4. **Pagar el arancel:** se genera una boleta de pago al momento de la solicitud (100 UMAPIS por clase, aproximadamente {{ARANCEL}} en {{VIGENCIA}}, sujeto a actualización mensual)
@@ -52,15 +52,15 @@ El trámite es **100% online** ante el INPI a través de [portaltramites.inpi.go
 6. **Publicación en el Boletín de Marcas:** tu solicitud se publica durante 30 días corridos para que terceros puedan presentar oposiciones
 7. **Concesión:** si no hay oposiciones, la marca se concede y recibís el título de marca
 
-Para el detalle completo de cada paso, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso).
+Para el detalle completo de cada paso, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso/).
 
 ## ¿Cuánto tarda el trámite?
 
-Con el proceso vigente desde 2026, el registro puede resolverse en aproximadamente **2 meses** si no hay oposiciones. Es una mejora significativa respecto al proceso anterior, que podía demorar entre 18 y 24 meses. Para más detalle, leé: [cuánto tarda el registro de marca en Argentina](/blog/cuanto-tarda-registro-marca-argentina).
+Con el proceso vigente desde 2026, el registro puede resolverse en aproximadamente **2 meses** si no hay oposiciones. Es una mejora significativa respecto al proceso anterior, que podía demorar entre 18 y 24 meses. Para más detalle, leé: [cuánto tarda el registro de marca en Argentina](/blog/cuanto-tarda-registro-marca-argentina/).
 
 ## ¿Cuánto cuesta?
 
-El arancel del INPI es de 100 UMAPIS por clase. Si gestiona el trámite un profesional, se suman honorarios. Para el detalle actualizado de costos, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca).
+El arancel del INPI es de 100 UMAPIS por clase. Si gestiona el trámite un profesional, se suman honorarios. Para el detalle actualizado de costos, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca/).
 
 ---
 

@@ -30,7 +30,7 @@ Para proteger el nombre de tu emprendimiento, tenés que registrarlo como marca 
   * **No causar confusión.** No puede ser igual o muy similar a marcas ya registradas en la misma categoría.
   * **Ser lícito.** No debe ser engañoso ni ir contra el orden público.
 
-Por eso es fundamental hacer una búsqueda previa para evitar rechazos o inconvenientes legales. Escribí el nombre que estás pensando en el [buscador de marcas gratis](/verificar-marca/) y fijate si ya está tomado, o aprendé cómo hacer la búsqueda acá: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
+Por eso es fundamental hacer una búsqueda previa para evitar rechazos o inconvenientes legales. Escribí el nombre que estás pensando en el [buscador de marcas gratis](/verificar-marca/) y fijate si ya está tomado, o aprendé cómo hacer la búsqueda acá: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente/).
 
 ## Paso a paso para registrar el nombre de tu emprendimiento en el INPI
 
@@ -41,7 +41,7 @@ Por eso es fundamental hacer una búsqueda previa para evitar rechazos o inconve
   5. **Publicación en el Boletín de Marcas.** Permite que terceros presenten oposiciones en caso de conflicto.
   6. **Concesión del registro.** Si no hay oposiciones, la marca se concede y recibís el certificado que te protege legalmente.
 
-Con el nuevo proceso del INPI vigente desde 2026, el trámite puede resolverse en aproximadamente 2 meses si no hay oposiciones. Podés leer más acá: [cuánto tarda registrar una marca en Argentina](/blog/cuanto-tarda-registro-marca-argentina). Para el detalle completo del proceso paso a paso, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso).
+Con el nuevo proceso del INPI vigente desde 2026, el trámite puede resolverse en aproximadamente 2 meses si no hay oposiciones. Podés leer más acá: [cuánto tarda registrar una marca en Argentina](/blog/cuanto-tarda-registro-marca-argentina/). Para el detalle completo del proceso paso a paso, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso/).
 
 ## Elegí y registrá bien el nombre de tu emprendimiento
 

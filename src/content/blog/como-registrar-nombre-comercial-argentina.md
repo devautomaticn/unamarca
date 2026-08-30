@@ -24,7 +24,7 @@ Cuando registrás tu nombre comercial como marca obtenés:
 - Herramientas legales para impedir que otros lo usen o lo imiten
 - Protección por 10 años, renovable
 
-Para entender la diferencia entre nombre comercial y marca registrada en detalle, leé: [nombre comercial vs marca registrada en Argentina](/blog/nombre-comercial-vs-marca-registrada-argentina).
+Para entender la diferencia entre nombre comercial y marca registrada en detalle, leé: [nombre comercial vs marca registrada en Argentina](/blog/nombre-comercial-vs-marca-registrada-argentina/).
 
 ## Cómo registrar tu nombre comercial paso a paso
 
@@ -32,7 +32,7 @@ Para entender la diferencia entre nombre comercial y marca registrada en detalle
 
 Antes de presentar cualquier solicitud, revisá si ya existe una marca igual o similar registrada en tu rubro. Desde 2026, el INPI no verifica conflictos con marcas existentes durante el examen — esa responsabilidad recae sobre los propios titulares. Si presentás algo similar a una marca registrada y su titular presenta una oposición, tu solicitud puede caer.
 
-La búsqueda es gratuita: podés [consultar marcas registradas acá mismo](/verificar-marca/) o usar el buscador oficial del INPI. Explicamos cómo hacerlo en: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente).
+La búsqueda es gratuita: podés [consultar marcas registradas acá mismo](/verificar-marca/) o usar el buscador oficial del INPI. Explicamos cómo hacerlo en: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente/).
 
 ### Paso 2 — Determiná qué tipo de marca registrar
 
@@ -42,7 +42,7 @@ Si querés proteger solo el nombre de texto, registrás una **marca denominativa
 
 Las marcas en Argentina se registran por clases de la Clasificación Internacional de Niza. Hay 45 clases que cubren distintos productos y servicios. Registrás solo en las clases que correspondan a tu actividad — y la protección aplica solo dentro de esas clases.
 
-Elegir mal las clases es uno de los errores más comunes: si registrás en la clase equivocada, tu nombre puede estar desprotegido en tu rubro real. Para entender cómo funciona el sistema, leé: [clases de marcas en Argentina](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina).
+Elegir mal las clases es uno de los errores más comunes: si registrás en la clase equivocada, tu nombre puede estar desprotegido en tu rubro real. Para entender cómo funciona el sistema, leé: [clases de marcas en Argentina](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina/).
 
 ### Paso 4 — Presentá la solicitud ante el INPI
 
@@ -58,7 +58,7 @@ En la solicitud completás los datos del titular, el tipo de marca, las clases y
 
 ### Paso 5 — Pagá los aranceles y hacé el seguimiento
 
-Una vez completada la solicitud, el sistema genera una boleta de pago. El costo varía según la cantidad de clases y posiciones (productos o servicios específicos) que registrés. Para una referencia actualizada de los valores, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca).
+Una vez completada la solicitud, el sistema genera una boleta de pago. El costo varía según la cantidad de clases y posiciones (productos o servicios específicos) que registrés. Para una referencia actualizada de los valores, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca/).
 
 Después del pago, el proceso sigue estos pasos:
 
