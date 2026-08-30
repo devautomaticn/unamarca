@@ -1,7 +1,8 @@
 ---
-title: "Cómo renovar una marca registrada en Argentina (guía 2026)"
-description: "Tu marca registrada vence a los 10 años. Te explicamos cómo renovarla ante el INPI, cuándo hacerlo y qué pasa si se te vence el plazo."
+title: "Renovación de marca en el INPI: cuándo, cómo y cuánto cuesta"
+description: "Tu marca vence a los 10 años y la renovación tiene ventana propia. Cuándo se puede presentar, qué arancel paga y qué pasa si dejás vencer el plazo."
 pubDate: 2026-04-07
+updatedDate: 2026-08-30
 tags: []
 ---
 
@@ -42,7 +43,7 @@ El arancel de renovación se expresa en UMAPIS (Unidades de Medida Arancelaria d
 
 El costo base es similar al de un registro nuevo por clase. Si renovás fuera del plazo ordinario (dentro del período de gracia de 6 meses posteriores al vencimiento), se aplica un recargo.
 
-Consultá el valor actualizado en [Aranceles INPI](https://www.argentina.gob.ar/inpi/aranceles-inpi) antes de iniciar el trámite. Para más contexto sobre el sistema de costos, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca).
+Consultá el valor actualizado en nuestra [tabla de aranceles del INPI](/aranceles-inpi/), que se sincroniza a diario con el portal oficial. Para más contexto sobre el sistema de costos, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca).
 
 ## ¿Qué pasa si no renovás a tiempo?
 

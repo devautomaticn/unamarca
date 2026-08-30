@@ -1,7 +1,8 @@
 ---
-title: "Cómo registrar un nombre comercial en Argentina"
-description: "En Argentina no existe un registro de nombres comerciales que otorgue exclusividad. La única forma de proteger tu nombre es registrarlo como marca ante el INPI. Así se hace."
+title: "Nombre comercial en Argentina: la única forma de registrarlo"
+description: "En Argentina no hay un registro de nombres comerciales que dé exclusividad: la única vía es registrarlo como marca ante el INPI. Cómo se hace y qué protege."
 pubDate: 2026-04-13
+updatedDate: 2026-08-30
 tags: []
 ---
 

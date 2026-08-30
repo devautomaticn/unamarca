@@ -1,8 +1,8 @@
 ---
-title: "Buscador de marcas del INPI: cómo usarlo paso a paso"
-description: 'Guía 2026 para usar el buscador oficial de marcas del INPI: dónde entrar, cómo buscar por denominación y clase, y qué significa cada estado del resultado.'
+title: "Buscador de marcas del INPI: libre, en trámite o registrada"
+description: 'Cómo buscar en el buscador oficial del INPI y, sobre todo, cómo leer el resultado: qué significa cada estado y cuándo una marca parecida te bloquea.'
 pubDate: '2025-12-31'
-updatedDate: '2026-07-21'
+updatedDate: 2026-08-30
 tags: []
 faqs:
   - question: "¿El buscador de marcas del INPI es gratis?"

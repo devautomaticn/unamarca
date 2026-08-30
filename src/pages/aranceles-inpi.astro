@@ -227,8 +227,8 @@ const structuredData = [
 ---
 
 <BaseLayout
-  title={`Aranceles del INPI ${datos.vigenciaTexto.split(' ')[1]}: valor UMAPI y tabla de tasas`}
-  description={`Aranceles vigentes del INPI para marcas en ${datos.vigenciaTexto}: 1 UMAPI = ${pesos(datos.umapi)} y ${pesos(marcaNueva.importe)} por una solicitud de marca nueva. Tabla completa en UMAPI y en pesos, actualizada todos los meses.`}
+  title={`Aranceles del INPI ${datos.vigenciaTexto}: ${pesos(marcaNueva.importe)} por una marca nueva`}
+  description={`Una marca nueva paga ${pesos(marcaNueva.importe)} de arancel por clase en ${datos.vigenciaTexto} (1 UMAPI = ${pesos(datos.umapi)}). Tabla completa de tasas del INPI, actualizada todos los meses.`}
   canonicalURL={canonicalURL}
   type="article"
   updatedDate={actualizadoISO}

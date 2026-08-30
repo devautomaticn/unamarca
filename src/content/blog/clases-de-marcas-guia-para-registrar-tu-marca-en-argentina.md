@@ -1,7 +1,8 @@
 ---
-title: 'Clases de marcas: guía para registrar tu marca en Argentina'
-description: 'Qué son las clases de marcas en Argentina, cómo elegir la correcta y cuándo registrar en más de una. Tabla de referencia con los rubros más frecuentes.'
+title: 'Clases de marcas del INPI: cuál te corresponde según tu rubro'
+description: 'El nomenclador de Niza tiene 45 clases y registrás solo en las que usás. Tabla por rubro, cómo elegir la tuya y cuándo te conviene más de una.'
 pubDate: '2026-01-02'
+updatedDate: 2026-08-30
 tags: []
 ---
 
