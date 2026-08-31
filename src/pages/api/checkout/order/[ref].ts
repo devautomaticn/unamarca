@@ -277,6 +277,8 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
       total: stored.pricing?.total ?? 0,
       titulares: titularesEmail,
       firmasPendientes: pendientes.map(({ nombre, email, url }) => ({ nombre, email, url })),
+      // El PDF se archiva por cliente: Apellido_Marca_Fecha, no el ref.
+      archivo: { apellido: principal?.apellido, fechaPoder: completion?.fechaPoder },
     }, completion?.cartaPdfBase64 || null, logos);
     emailSent = true;
   } catch (e) {

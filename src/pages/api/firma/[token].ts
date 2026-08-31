@@ -267,11 +267,18 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
       return;
     }
     const origin = new URL(request.url).origin;
+    // El PDF se nombra igual en toda la cadena: el apellido es el del que armó
+    // el pedido, no el de quien acaba de firmar. Es un solo documento.
+    const archivo = {
+      apellido: (ctx.titulares.find(t => t.firmaAqui) ?? ctx.titulares[0])?.apellido,
+      fechaPoder: ctx.fecha,
+    };
     try {
       await sendFirmaRecibida(env.RESEND_API_KEY, {
         ref: ctx.fila.ref,
         nombre: ctx.fila.nombre,
         marcas: ctx.marcas,
+        archivo,
         firmadas: estado.firmadas,
         total: estado.total,
         completo: estado.completo,
@@ -291,6 +298,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
       await sendPoderCompletoClientes(env.RESEND_API_KEY, {
         ref: ctx.fila.ref,
         marcas: ctx.marcas,
+        archivo,
         emails: [
           ...filas.map(f => f.email),
           ctx.stored?.contacto?.email || '',

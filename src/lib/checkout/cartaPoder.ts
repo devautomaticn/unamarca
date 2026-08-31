@@ -242,3 +242,60 @@ export function cartaPoderHTML(
     <div class="ck-cp-firmas">${pies}</div>
   `;
 }
+
+// ── Nombre del archivo del PDF ────────────────────────────
+// El poder se archiva por cliente, no por pedido: `carta-poder-UM-20260831-X9F2Q1`
+// no dice nada cuando hay treinta en la misma carpeta. `Guerrero_Caminantes_2026-08-31`
+// se lee, se busca por apellido y ordena por fecha solo.
+
+/** Un tramo del nombre: sin acentos, sin puntuación y sin espacios, para que
+ *  sobreviva a cualquier sistema de archivos y a los clientes de correo. */
+function tramoArchivo(s: string | undefined | null, max = 40): string {
+  return String(s ?? '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Za-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, max)
+    .replace(/-+$/, '');
+}
+
+export interface ArchivoPoder {
+  /** Apellido del titular que firmó el pedido */
+  apellido?: string;
+  /** Denominación de la marca (la primera, si el pedido tiene varias) */
+  marca?: string;
+  fecha?: { dia: number; mes: number; anio: number } | null;
+  /** Se agrega al final: "parcial-1de3" */
+  sufijo?: string;
+  /** Último recurso: si no hay ni apellido ni marca, el nombre vuelve al ref */
+  ref?: string;
+}
+
+function hoyBuenosAires(): { dia: number; mes: number; anio: number } {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Argentina/Buenos_Aires',
+    year: 'numeric', month: 'numeric', day: 'numeric',
+  }).formatToParts(new Date());
+  const get = (t: string) => parseInt(parts.find(p => p.type === t)?.value || '0', 10);
+  return { dia: get('day'), mes: get('month') - 1, anio: get('year') };
+}
+
+/** `Apellido_Marca_2026-08-31.pdf`. Si falta el apellido o la marca se arma con
+ *  lo que haya; sin ninguno de los dos cae en el ref, que es lo que había antes
+ *  y siempre existe. */
+export function nombreArchivoPoder(d: ArchivoPoder): string {
+  const partes = [tramoArchivo(d.apellido), tramoArchivo(d.marca)].filter(Boolean);
+  if (!partes.length) partes.push(tramoArchivo(d.ref, 60) || 'carta-poder');
+
+  // ISO al final: ordena por fecha solo en cualquier carpeta. Sin la fecha del
+  // poder (pedidos viejos, que no la mandaban) se usa la de hoy: es un nombre
+  // de archivo, no el documento — la fecha que vale es la que está impresa.
+  const f = d.fecha && [d.fecha.dia, d.fecha.mes, d.fecha.anio].every(n => Number.isInteger(n))
+    ? d.fecha
+    : hoyBuenosAires();
+  const p2 = (n: number) => String(n).padStart(2, '0');
+  partes.push(`${f.anio}-${p2(f.mes + 1)}-${p2(f.dia)}`);
+  if (d.sufijo) partes.push(tramoArchivo(d.sufijo));
+
+  return `${partes.join('_')}.pdf`;
+}

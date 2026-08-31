@@ -4,6 +4,7 @@ import {
   TRANSFERENCIA, contarLineas, formatCm, normalizeTipoMarca, requiereLogo,
   tipoMarcaLabel, type TipoMarca,
 } from '@/lib/checkout/constants';
+import { nombreArchivoPoder } from '@/lib/checkout/cartaPoder';
 
 const FROM = 'UnaMarca <formulario@vigilante.unamarca.com.ar>';
 const ADMIN_EMAIL = 'mike@automaticnation.com';
@@ -63,6 +64,29 @@ export interface FirmaPendienteEmail {
   url: string;
 }
 
+/** Con qué se nombra el PDF del poder: el apellido del que firmó el pedido y
+ *  la fecha del documento. La marca sale de `marcas`, y el ref queda de
+ *  respaldo por si el pedido no tiene ninguno de los dos. */
+export interface ArchivoPoderEmail {
+  apellido?: string;
+  fechaPoder?: { dia: number; mes: number; anio: number } | null;
+}
+
+/** `Guerrero_Caminantes_2026-08-31.pdf`. El poder se archiva por cliente, no
+ *  por pedido: el ref no dice nada al abrir la carpeta. */
+function nombrePoder(
+  d: { ref: string; marcas: MarcaEmail[]; archivo?: ArchivoPoderEmail },
+  sufijo?: string,
+): string {
+  return nombreArchivoPoder({
+    apellido: d.archivo?.apellido,
+    marca: d.marcas[0]?.nombre,
+    fecha: d.archivo?.fechaPoder ?? null,
+    ref: d.ref,
+    sufijo,
+  });
+}
+
 interface OrderEmailData {
   ref: string;
   status: string;
@@ -78,6 +102,8 @@ interface OrderEmailData {
   /** Cotitulares a los que se les mandó el link para firmar. Mientras haya uno,
    *  la carta poder adjunta NO es la definitiva. */
   firmasPendientes?: FirmaPendienteEmail[];
+  /** Cómo se nombra el PDF adjunto (ver `nombrePoder`). */
+  archivo?: ArchivoPoderEmail;
 }
 
 /** Bloque con los datos de la cuenta: solo para pedidos por transferencia, que
@@ -185,6 +211,26 @@ function clientHTML(d: OrderEmailData): string {
 </body></html>`;
 }
 
+/** Las medidas declaradas del signo, en tres tamaños: el original y el mismo
+ *  con los dos lados multiplicados por 2 y por 3. La proporción es idéntica en
+ *  los tres — es lo único que tiene que ser cierto ante el INPI (ver
+ *  `medidasDesdePx`) — así que se elige el set que mejor quede al presentar,
+ *  sin tener que rehacer la cuenta cuando el original sale muy chico. */
+function medidasHTML(m: MarcaEmail): string {
+  if (![m.alto, m.ancho].every(v => typeof v === 'number')) {
+    return esc('⚠ FALTAN — cargarlas a mano');
+  }
+  const set = (k: number) =>
+    `${formatCm((m.alto as number) * k)} × ${formatCm((m.ancho as number) * k)} cm`;
+  const fila = (label: string, valor: string, fuerte: boolean) =>
+    `<div style="margin:0 0 2px">
+      <span style="display:inline-block;min-width:62px;color:#94a3b8;font-size:12px">${esc(label)}</span>
+      <span style="color:#0f172a;font-size:13px${fuerte ? ';font-weight:700' : ''}">${esc(valor)}</span>
+    </div>`;
+  return `${fila('Original', set(1), true)}${fila('× 2', set(2), false)}${fila('× 3', set(3), false)}
+    <div style="margin:2px 0 0;color:#94a3b8;font-size:11px;line-height:1.5">alto × ancho · los tres mantienen la proporción: se declara el set que se prefiera</div>`;
+}
+
 /** Bloque operativo del email al admin: una tarjeta por marca con sus clases,
  *  su descripción y su sitio. Es lo que se carga en el portal del INPI, donde
  *  cada marca es una solicitud distinta. */
@@ -196,9 +242,7 @@ function marcasAdminHTML(marcas: MarcaEmail[]): string {
     const titulo = tipo === 'figurativa'
       ? `Figurativa · ref. interna “${esc(m.nombre.toUpperCase())}”`
       : `“${esc(m.nombre.toUpperCase())}”`;
-    const medidas = [m.alto, m.ancho].every(v => typeof v === 'number')
-      ? `${formatCm(m.alto)} cm (alto) × ${formatCm(m.ancho)} cm (ancho)`
-      : '⚠ FALTAN — cargarlas a mano';
+    const medidas = medidasHTML(m);
     const logo = m.logoAdjunto
       ? `${esc(m.logoAdjunto)} (adjunto a este email)`
       : '⚠ NO SE PUDO RECUPERAR — pedírselo al cliente';
@@ -223,7 +267,7 @@ function marcasAdminHTML(marcas: MarcaEmail[]): string {
       ${avisoFigurativa}
       <table style="width:100%;border-collapse:collapse">
         ${conLogo ? `<tr><td style="padding:4px 0;color:#64748b;font-size:13px;width:34%;vertical-align:top">Logo (JPG)</td><td style="padding:4px 0;color:#0f172a;font-size:13px">${logo}</td></tr>
-        <tr><td style="padding:4px 0;color:#64748b;font-size:13px;vertical-align:top">Medidas</td><td style="padding:4px 0;color:#0f172a;font-size:13px">${esc(medidas)}</td></tr>
+        <tr><td style="padding:4px 0;color:#64748b;font-size:13px;vertical-align:top">Medidas</td><td style="padding:4px 0;color:#0f172a;font-size:13px">${medidas}</td></tr>
         <tr><td style="padding:4px 0;color:#64748b;font-size:13px;vertical-align:top">Colores</td><td style="padding:4px 0;color:#0f172a;font-size:13px">${esc(m.colores || '—')}</td></tr>` : ''}
         <tr><td style="padding:4px 0;color:#64748b;font-size:13px;width:34%;vertical-align:top">Descripción</td><td style="padding:4px 0;color:#0f172a;font-size:13px;line-height:1.55">${esc(m.descripcion || '—')}</td></tr>
         ${m.sitioWeb ? `<tr><td style="padding:4px 0;color:#64748b;font-size:13px;vertical-align:top">Página web</td><td style="padding:4px 0;color:#0f172a;font-size:13px">${esc(m.sitioWeb)}</td></tr>` : ''}
@@ -512,6 +556,8 @@ export interface FirmaRecibidaData {
    *  campo. No es un detalle: el poder que firmó el primero decía lo anterior,
    *  y el alta en el portal ya se hizo con eso. */
   cambios?: string[];
+  /** Cómo se nombra el PDF adjunto (ver `nombrePoder`). */
+  archivo?: ArchivoPoderEmail;
 }
 
 /** Aviso al estudio por cada firma de la cadena. El PDF adjunto es el poder con
@@ -583,7 +629,10 @@ export async function sendFirmaRecibida(
   </div>
 </body></html>`,
     attachments: pdfBase64
-      ? [{ filename: `carta-poder-${d.ref}${d.completo ? '' : `-parcial-${d.firmadas}de${d.total}`}.pdf`, content: pdfBase64 }]
+      ? [{
+        filename: nombrePoder(d, d.completo ? undefined : `parcial-${d.firmadas}de${d.total}`),
+        content: pdfBase64,
+      }]
       : undefined,
   });
 }
@@ -592,7 +641,7 @@ export async function sendFirmaRecibida(
  *  firma el último: antes de eso el documento no está terminado. */
 export async function sendPoderCompletoClientes(
   apiKey: string,
-  d: { ref: string; marcas: MarcaEmail[]; emails: string[] },
+  d: { ref: string; marcas: MarcaEmail[]; emails: string[]; archivo?: ArchivoPoderEmail },
   pdfBase64: string | null,
 ): Promise<void> {
   const destinos = [...new Set(d.emails.map(e => e.trim().toLowerCase()).filter(Boolean))];
@@ -620,7 +669,7 @@ export async function sendPoderCompletoClientes(
     </p>
   </div>
 </body></html>`,
-    attachments: [{ filename: `carta-poder-${d.ref}.pdf`, content: pdfBase64 }],
+    attachments: [{ filename: nombrePoder(d), content: pdfBase64 }],
   })));
 }
 
@@ -643,7 +692,7 @@ export async function sendOrderEmails(
 ): Promise<void> {
   // Sin PDF (falla en el navegador) los emails salen igual, sin adjunto
   const carta = pdfBase64
-    ? [{ filename: `carta-poder-${d.ref}.pdf`, content: pdfBase64 }]
+    ? [{ filename: nombrePoder(d), content: pdfBase64 }]
     : [];
   const adminAttachments = [...carta, ...logos];
 
