@@ -28,7 +28,7 @@
 //  ("Entré al blog de UnaMarca…") antes que una intención genérica.
 // ────────────────────────────────────────────────────────────────────────────
 
-export const CATALOG_VERSION = '1.6.0';
+export const CATALOG_VERSION = '1.7.0';
 
 /** Agente IA. Recibe todos los CTAs de conversión. */
 export const WA_AGENTE = '5491148999564';
@@ -238,6 +238,36 @@ export const WA_MESSAGES = {
       '"prefix" porque el texto termina en ":" y el cliente escribe la marca a ' +
       'continuación; con match exacto se pierden justo esos. Sólo entra en juego ' +
       'si el referral de Meta no llegó: cuando llega, gana el referral.',
+  },
+  ads_descuento_119: {
+    number: WA_AGENTE,
+    section: 'Ads',
+    risk: 'nulo',
+    match: 'prefix',
+    prefix: 'Quiero aprovechar el último descuento, y registrar mi marca:',
+    template: 'Quiero aprovechar el último descuento, y registrar mi marca:',
+    note:
+      'Plantilla "Descuento a 119.569" del anuncio de Meta que sucede al de 109. ' +
+      'Lo prellena Meta: el sitio no emite este mensaje. Ojo al editar: se ' +
+      'diferencia de ads_descuento_109 SÓLO por la palabra "último". Los dos ' +
+      'prefijos divergen recién en la cuarta palabra, así que un parser que use ' +
+      '"contains" en vez de "startsWith" los confunde y se pierde la comparación ' +
+      'entre anuncios. No unificar ni "prolijear" ninguno de los dos textos.',
+  },
+  ads_cupos_10: {
+    number: WA_AGENTE,
+    section: 'Ads',
+    risk: 'bajo',
+    match: 'exact',
+    text: 'Hola! Aún tienen cupos disponibles para registrar mi marca??',
+    note:
+      'Plantilla "Cupo de 10 a $119.569" del anuncio de Meta. Corre en paralelo ' +
+      'con ads_descuento_119 (mismo precio, con y sin escasez): son las dos patas ' +
+      'del test, así que la única forma de leerlo cuando el referral no llega es ' +
+      'que los textos sigan siendo distintos entre sí. risk "bajo" y no "nulo" ' +
+      'porque un humano podría tipear algo parecido — pero quien pregunta por ' +
+      '"cupos" vio el anuncio igual, así que el falso positivo cae en Ads, que ' +
+      'es donde corresponde.',
   },
 
   // Internacional
