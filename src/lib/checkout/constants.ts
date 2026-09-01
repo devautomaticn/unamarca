@@ -10,11 +10,26 @@
 import { ARANCEL_MARCA_NUEVA, ARANCEL_VIGENCIA } from '../../data/arancel-vigente';
 
 export const PRICING = {
-  /** Honorarios del registro, POR CLASE */
-  honorarios: 70_000,
+  /** Honorarios del registro, POR CLASE.
+   *
+   *  ⚠️ Es el RESTO de una cuenta, no un número elegido. Lo anclado es el
+   *  TOTAL: los anuncios de Meta prometen $119.569 (ver `ads_descuento_119` y
+   *  `ads_cupos_10` en `wa.ts`), así que
+   *
+   *      honorarios = 119.569 − arancel del INPI
+   *
+   *  A septiembre 2026: 119.569 − 40.569 = 79.000.
+   *
+   *  Como el arancel sube TODOS LOS MESES con la UMAPI, sostener el total
+   *  significa absorber el aumento acá. Esto NO se recalcula solo: el workflow
+   *  `aranceles-inpi` actualiza el arancel y el total se va por encima de lo
+   *  que promete el anuncio hasta que alguien baje esta línea a mano. Cada vez
+   *  que entre un commit de aranceles hay que rehacer la resta, o cambiar los
+   *  anuncios para que no prometan un total exacto. */
+  honorarios: 79_000,
   /** Upsell: Garantía de Devolución, POR CLASE (si el INPI deniega una clase,
    *  se devuelven los honorarios de esa clase) */
-  garantia: 15_000,
+  garantia: 20_000,
   /** Arancel INPI: solicitud de registro, POR CLASE (100 UMAPIS).
    *
    *  NO se escribe a mano. El INPI ajusta la UMAPI todos los meses por IPC, y
@@ -23,6 +38,12 @@ export const PRICING = {
   arancelInpi: ARANCEL_MARCA_NUEVA,
   /** Mes de referencia del valor UMAPI mostrado (también automático) */
   arancelVigencia: ARANCEL_VIGENCIA,
+  /** Precio tachado del "Precio especial" de la home. Es un ancla comercial,
+   *  no un importe calculado: no sale de `honorarios + arancelInpi` ni se
+   *  cobró nunca. Vive acá para que no vuelva a quedar escrito a mano en
+   *  `index.astro` y desincronizado del precio real (pasó entre abril y
+   *  agosto 2026: la home cotizaba $145.000 y el checkout cobraba $109.735). */
+  precioLista: 210_000,
   /** Precio de lista de la vigilancia anual (se muestra tachado → gratis).
    *  TODO: igualar al precio real standalone de vigilante.unamarca.com.ar */
   vigilanciaLista: 30_000,

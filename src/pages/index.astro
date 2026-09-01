@@ -2,8 +2,16 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { waHref } from '../lib/wa';
+import { PRICING, formatARS } from '../lib/checkout/constants';
 
 const SITE_URL = 'https://unamarca.com.ar';
+
+// Precio final por clase: honorarios + arancel del INPI, igual que el resumen
+// del checkout. NO se escribe a mano acá — entre abril y agosto 2026 la home
+// mostró $145.000 mientras `/registrar` cobraba $109.735.
+const precioClase = PRICING.honorarios + PRICING.arancelInpi;
+// Sin el "$": el markup de la tarjeta lo pone aparte, en su propio <span>.
+const precioClaseNum = precioClase.toLocaleString('es-AR');
 
 const allPosts = await getCollection('blog');
 const recentPosts = allPosts
@@ -32,7 +40,10 @@ const structuredData = [
       addressRegion: 'Buenos Aires',
       addressCountry: 'AR',
     },
-    priceRange: '$150.000 - $300.000',
+    // Indicativo, como pide schema.org: de una clase a dos, que es el pedido
+    // más grande que se arma solo. Sale de PRICING por lo mismo que la
+    // tarjeta de precio: escrito a mano quedaba por encima de lo que cobramos.
+    priceRange: `${formatARS(precioClase)} - ${formatARS(precioClase * 2)}`,
   },
   {
     '@context': 'https://schema.org',
@@ -473,10 +484,10 @@ const structuredData = [
         <div class="pricing-badge">Precio especial</div>
 
         <div class="pricing-price-block">
-          <span class="pricing-original">$210.000</span>
+          <span class="pricing-original">{formatARS(PRICING.precioLista)}</span>
           <div class="pricing-final">
             <span class="pricing-currency">$</span>
-            <span class="pricing-amount">145.000</span>
+            <span class="pricing-amount">{precioClaseNum}</span>
           </div>
           <span class="pricing-label">Precio Final por Clase</span>
         </div>

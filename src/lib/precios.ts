@@ -18,7 +18,7 @@ const hon = PRICING.honorarios;
 const arancel = PRICING.arancelInpi;
 
 /** Arancel del INPI, con los dos decimales que publica el portal cuando los
- *  tiene: $39.735 pero $1.589,40. `formatARS` redondea y acá el dato es la
+ *  tiene: $40.569 pero $1.622,76. `formatARS` redondea y acá el dato es la
  *  referencia, así que los centavos importan. */
 export function pesosInpi(n: number): string {
   return '$' + n.toLocaleString('es-AR', {
