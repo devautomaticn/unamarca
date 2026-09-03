@@ -1,12 +1,12 @@
 ---
-title: Cómo registrar marca y logo en Argentina
-description: 'Qué tipos de marcas podés registrar en Argentina, cómo es el proceso ante el INPI y qué conviene registrar primero: el nombre, el logo o ambos.'
+title: 'Nombre o logo: qué registrar primero en el INPI'
+description: '¿Conviene registrar el nombre, el logo o los dos por separado? Qué protege cada opción ante el INPI, cuánto cambia el costo y cuál te conviene según tu caso.'
 pubDate: '2026-01-21'
-updatedDate: 2026-08-03
+updatedDate: 2026-09-03
 tags: []
 ---
 
-Si estás pensando en **registrar tu marca y logo en Argentina**, es normal que tengas dudas sobre cómo funciona el trámite. ¿Registrás el nombre y el logo juntos o por separado? ¿Qué tipos de marcas acepta el INPI? ¿Cuánto tarda y cuánto cuesta? Acá te explicamos todo de forma práctica.
+La duda aparece siempre en el mismo momento: ya tenés el nombre y ya tenés el logo, y no sabés si **se registran juntos, por separado o si alcanza con uno**. La respuesta cambia lo que pagás y lo que quedás protegiendo, así que conviene resolverla antes de presentar.
 
 ## Importancia de registrar tu marca y logo
 
@@ -40,7 +40,7 @@ Para la mayoría de los negocios, registrar la **marca denominativa primero** es
 
 Las marcas se registran por categorías de productos o servicios (clases). Tenés que definir en qué clase o clases aplica tu negocio antes de presentar la solicitud. Para entender el sistema de clases en detalle, leé: [clases de marcas para registrar en Argentina](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina/).
 
-## Proceso para registrar marca y logo en Argentina
+## Cómo se presenta cada una
 
 El trámite es **100% online** ante el INPI a través de [portaltramites.inpi.gob.ar](https://portaltramites.inpi.gob.ar). Con el proceso vigente desde la Resolución 583/25 (marzo de 2026), los pasos son:
 
