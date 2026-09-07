@@ -472,6 +472,13 @@ poder.
 | `ref` (alias `order`, `pedido`) | Ref del pedido original: entra en el asunto y en el nombre del PDF. |
 | `motivo` | Se muestra arriba de todo, en un banner: por qué se le pide firmar de nuevo. |
 
+**El link se manda por WhatsApp como `/f/<slug>`, nunca crudo.** WhatsApp deja
+de subrayar un hipervínculo pasados ~190 caracteres y un `/carta-poder`
+prellenado pasa los 400: el cliente toca la parte subrayada, abre la URL cortada
+y firma un poder al que le faltan datos (pasó con `oliva-9k3q`, que se cortaba
+justo antes de `&provincia`). El slug se agrega en `public/_redirects` con un
+sufijo al azar y se puede borrar cuando el poder llega firmado.
+
 ```
 /carta-poder?nombre=Julio+Leonardo&apellido=Guerrero&doc=23971678
   &cuit=20-23971678-5&calle=Alvarez+Condarco&numero=222&cp=M5504HCN
