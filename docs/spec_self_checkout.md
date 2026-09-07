@@ -330,8 +330,8 @@ Ciudad Autónoma de Buenos Aires, para que en mi nombre y representación:
 
   → los bullets son FIJOS: el poder no nombra marcas ni clases.
   • Solicite ante el Instituto Nacional de la Propiedad Industrial (INPI) el
-    registro de las marcas que oportunamente se le indiquen, en las clases de
-    la Clasificación Internacional de Niza que en cada caso correspondan;
+    registro de marcas, en las clases de la Clasificación Internacional de Niza
+    que en cada caso correspondan;
   • Realice el seguimiento de los trámites;
   • Conteste vistas, observaciones y oposiciones;
   • Presente escritos, recursos y cualquier otra gestión necesaria hasta la

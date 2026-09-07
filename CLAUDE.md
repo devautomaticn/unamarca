@@ -325,9 +325,8 @@ INPI, que es lo que arregla la declaración del paso 5.)
 
 ## El poder es genérico: no nombra la marca ni las clases
 
-La carta poder autoriza a presentar *"las marcas que oportunamente se le
-indiquen, en las clases de la Clasificación Internacional de Niza que en cada
-caso correspondan"*. **No lleva la denominación ni el número de clase**, y no es
+La carta poder autoriza a presentar *"marcas, en las clases de la Clasificación
+Internacional de Niza que en cada caso correspondan"*. **No lleva la denominación ni el número de clase**, y no es
 un olvido.
 
 El poder se firma antes de presentar. Cualquier ajuste posterior —una clase que

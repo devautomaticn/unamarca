@@ -9,7 +9,7 @@
 // el INPI recibe un solo papel con todas las firmas.
 //
 // EL PODER ES GENÉRICO: no nombra la denominación de la marca ni las clases.
-// Autoriza a presentar "las marcas, en las clases que correspondan". Es a
+// Autoriza a presentar "marcas, en las clases que correspondan". Es a
 // propósito: el poder que se firma antes de presentar
 // quedaba desmentido por cualquier ajuste posterior —una clase que se agrega,
 // una figurativa que resulta mixta, un nombre que se corrige por una vista— y
@@ -151,7 +151,7 @@ export function cartaPoderTexto(d: CartaPoderData): CartaPoderTexto {
     // para cinco, y para las clases que terminen presentándose.
     bullets: [
       'Solicite ante el Instituto Nacional de la Propiedad Industrial (INPI) el ' +
-      'registro de las marcas, en las clases de la Clasificación Internacional de ' +
+      'registro de marcas, en las clases de la Clasificación Internacional de ' +
       'Niza que en cada caso correspondan;',
       'Realice el seguimiento de los trámites;',
       'Conteste vistas, observaciones y oposiciones;',
