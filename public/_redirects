@@ -20,3 +20,13 @@
 
 /que-nombre-le-puedo-dar-a-mi-emprendimiento /blog/que-nombre-le-puedo-dar-a-mi-emprendimiento/ 301
 /que-nombre-le-puedo-dar-a-mi-emprendimiento/ /blog/que-nombre-le-puedo-dar-a-mi-emprendimiento/ 301
+
+# ── Links de firma de un poder suelto (/carta-poder) ──────────────────────
+# WhatsApp deja de subrayar un hipervinculo pasados ~190 caracteres: el resto
+# queda como texto suelto y, al tocarlo, el cliente abre la URL cortada y firma
+# un poder con la mitad de sus datos. Un /carta-poder prellenado pasa los 400,
+# asi que el link que se le manda es SIEMPRE uno de estos.
+# El slug lleva un sufijo al azar: la URL no se publica, pero /f/apellido se
+# adivina, y detras hay DNI, CUIT y domicilio de una persona.
+# Se pueden borrar una vez que el poder llego firmado.
+/f/oliva-9k3q /carta-poder?nombre=Juan+Carlos&apellido=Oliva+Romero&doctipo=DNI&doc=23922051&cuit=20-23922051-8&calle=Laprida+este&numero=156&piso=2&depto=C&cp=5400&localidad=San+Juan&provincia=San+Juan&motivo=Actualizamos+el+modelo+de+la+carta+poder%3A+la+nueva+no+menciona+la+marca+ni+la+clase%2C+as%C3%AD+que+sirve+para+todo+el+tr%C3%A1mite+aunque+despu%C3%A9s+haya+que+ajustar+algo.+Es+el+mismo+poder+de+siempre%2C+solo+necesitamos+tu+firma+de+nuevo. 302
