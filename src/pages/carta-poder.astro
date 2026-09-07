@@ -119,8 +119,17 @@ const TIPOS_DOC = ['DNI', 'Pasaporte', 'Libreta Cívica', 'Libreta de Enrolamien
             </div>
           </div>
 
+          <!-- El poder es GENÉRICO: no nombra marcas ni clases (ver
+               src/lib/checkout/cartaPoder.ts). Estos campos no cambian el
+               documento — identifican el pedido en el email al estudio y en el
+               nombre del PDF. -->
           <div class="cp-group">
-            <div class="cp-group-label">Marcas del poder</div>
+            <div class="cp-group-label">Marcas del pedido</div>
+            <p class="cp-hint" style="margin: -0.25rem 0 0.75rem">
+              No aparecen en el documento: el poder es genérico y sirve para
+              cualquier marca y cualquier clase. Nos sirven para saber de qué
+              pedido es.
+            </p>
             <div id="cp-marcas"></div>
             <button type="button" class="cp-link" id="cp-add-marca">+ Agregar otra marca</button>
           </div>
@@ -323,7 +332,7 @@ const TIPOS_DOC = ['DNI', 'Pasaporte', 'Libreta Cívica', 'Libreta de Enrolamien
         <div class="cp-field">
           <label>${figurativa ? 'Referencia interna' : 'Nombre de la marca'}</label>
           <input type="text" data-f="nombre" value="${escAttr(m.nombre)}" maxlength="80" />
-          ${figurativa ? '<p class="cp-hint">La marca figurativa no lleva denominación ante el INPI: este nombre no aparece en el poder.</p>' : ''}
+          ${figurativa ? '<p class="cp-hint">La marca figurativa no lleva denominación ante el INPI: este nombre es sólo nuestro.</p>' : ''}
         </div>
         <div class="cp-row">
           <div class="cp-field">
@@ -534,6 +543,9 @@ const TIPOS_DOC = ['DNI', 'Pasaporte', 'Libreta Cívica', 'Libreta de Enrolamien
   const submitBtn = $('cp-submit') as HTMLButtonElement;
   const errBox = $('cp-err');
 
+  // Las marcas NO se validan: el poder es genérico y no las nombra (ver
+  // src/lib/checkout/cartaPoder.ts). Frenar el envío por el nombre o la clase
+  // de algo que no sale impreso dejaba trabada una firma que ya está hecha.
   function faltantes(): string[] {
     const d = cpData().titulares[0];
     const falta: string[] = [];
@@ -544,10 +556,6 @@ const TIPOS_DOC = ['DNI', 'Pasaporte', 'Libreta Cívica', 'Libreta de Enrolamien
     if (!d.codigoPostal) falta.push('el código postal');
     if (!d.localidad) falta.push('la localidad');
     if (!d.provincia) falta.push('la provincia');
-    if (marcas.some(m => m.clases.length === 0)) falta.push('las clases de cada marca');
-    if (marcas.some(m => tieneDenominacion(m.tipo) && !m.nombre.trim())) {
-      falta.push('el nombre de cada marca');
-    }
     if (strokes.length === 0) falta.push('tu firma');
     if (!input('cp-terms').checked) falta.push('la aceptación de los términos');
     return falta;

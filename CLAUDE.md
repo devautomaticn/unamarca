@@ -297,7 +297,9 @@ es mixta, y presentarla como figurativa es defectuoso. El formulario no puede
 mirar el archivo, y el cliente que se equivoca de tipo llega al paso 5
 convencido de que acertó. Se perdió un trámite así (agosto 2026): el logo tenía
 el nombre adentro, la carta poder salió con el tipo equivocado y hubo que
-reemitirla a mano.
+reemitirla a mano. (El poder ya no nombra el tipo ni la marca —ver arriba—, así
+que ese error no obliga a reemitirlo; sí sigue rompiendo la solicitud ante el
+INPI, que es lo que arregla la declaración del paso 5.)
 
 - El paso 5 pide una **declaración obligatoria** en toda figurativa: *"¿Tu imagen
   tiene alguna letra o palabra?"*. Va en positivo y con las dos salidas a la
@@ -318,6 +320,31 @@ reemitirla a mano.
 - **Toda figurativa dispara un aviso en el email al estudio** para que alguien
   mire la imagen antes de presentar. Es la última defensa: la declaración la
   hace quien no conoce la diferencia.
+
+---
+
+## El poder es genérico: no nombra la marca ni las clases
+
+La carta poder autoriza a presentar *"las marcas que oportunamente se le
+indiquen, en las clases de la Clasificación Internacional de Niza que en cada
+caso correspondan"*. **No lleva la denominación ni el número de clase**, y no es
+un olvido.
+
+El poder se firma antes de presentar. Cualquier ajuste posterior —una clase que
+se agrega, una figurativa que resulta mixta, un nombre que se corrige por una
+vista— dejaba desmentido un documento ya firmado, y había que reemitirlo y
+perseguir de nuevo la firma del cliente (con cotitulares, de todos). Un poder
+sin esos datos sigue siendo válido para todo el trámite; la marca y las clases
+concretas viven en el pedido, no en el papel.
+
+- El texto está en `src/lib/checkout/cartaPoder.ts`. Los bullets son **fijos**:
+  no se genera uno por marca. Lo único que varía es quiénes otorgan (conjugación
+  singular/plural y las proporciones del cierre).
+- `CartaPoderData.marcas` **sigue existiendo pero no se imprime**: los
+  llamadores arman con esa misma estructura el nombre del PDF
+  (`nombreArchivoPoder()`) y el email al estudio.
+- Si alguna vez hay que volver a nombrar la marca en el poder, hay que volver a
+  resolver esto: un documento firmado que cita datos que todavía pueden cambiar.
 
 ---
 
@@ -402,10 +429,15 @@ PATCH /api/checkout/order/:ref   →  tabla `firmas`: un renglón por titular
 ## `/carta-poder` — rehacer un poder ya firmado
 
 Página privada (`noindex`, fuera del sitemap, no se linkea) para cuando el poder
-que firmó el cliente salió con un dato mal: el tipo de marca, una clase, el
-domicilio. En vez de hacerle repetir el checkout entero, se le manda un link con
-**todos los campos prellenados por query params**: ve el documento corregido, lo
-firma y lo envía.
+que firmó el cliente salió con un dato mal: el nombre, el documento, el
+domicilio, la fecha. En vez de hacerle repetir el checkout entero, se le manda
+un link con **todos los campos prellenados por query params**: ve el documento
+corregido, lo firma y lo envía.
+
+Los params `marca`, `clase` y `tipo` **ya no cambian el documento** (el poder es
+genérico, ver arriba): identifican el pedido en el email al estudio y en el
+nombre del PDF. Un tipo o una clase mal cargados no son motivo para rehacer un
+poder.
 
 - El texto sale del mismo `src/lib/checkout/cartaPoder.ts` y el PDF del mismo
   `cartaPoderPdf.ts` que usa el paso 7 del wizard. Los dos caminos no pueden

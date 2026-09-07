@@ -328,17 +328,17 @@ Argentina, por la presente autorizo expresamente al Dr. Michael Alan Simmons,
 DNI 38.536.168, CUIT 20-38536168-9, con domicilio en Juan Francisco Seguí 4635,
 Ciudad Autónoma de Buenos Aires, para que en mi nombre y representación:
 
-  → un bullet por cada marca del pedido:
-  • Solicite el registro de la marca “{{marcaNombre}}” ante el Instituto
-    Nacional de la Propiedad Industrial (INPI) en {{la clase N | las clases
-    A, B y C}} de la Clasificación Internacional de NIZA;
-  • Realice el seguimiento {{del trámite | de los trámites}};
+  → los bullets son FIJOS: el poder no nombra marcas ni clases.
+  • Solicite ante el Instituto Nacional de la Propiedad Industrial (INPI) el
+    registro de las marcas que oportunamente se le indiquen, en las clases de
+    la Clasificación Internacional de Niza que en cada caso correspondan;
+  • Realice el seguimiento de los trámites;
   • Conteste vistas, observaciones y oposiciones;
   • Presente escritos, recursos y cualquier otra gestión necesaria hasta la
-    finalización {{del trámite | de los trámites}}.
+    finalización de los trámites.
 
-La presente autorización se otorga a los efectos de que {{la marca sea
-registrada | las marcas sean registradas}} a mi nombre.
+La presente autorización se otorga a los efectos de que las marcas sean
+registradas a mi nombre.
 
 {{firma — signature image}}
 _________________________
@@ -350,9 +350,12 @@ DNI {{dni}}
 
 - **Fecha** generated at signing time, day/year as numbers, month spelled out
   in Spanish ("A los 3 días del mes de julio de 2026").
-- **Marca** rendered in quotes, uppercase, exactly as entered (after trim).
-- **Clase:** template supports singular/plural ("en la clase 25" / "en las
-  clases 3 y 44") — used since the 2026-07-28 multi-class amendment.
+- **El poder es genérico** (2026-09-07): no nombra la denominación de la marca
+  ni las clases. Antes llevaba un bullet por marca con el nombre entre comillas
+  y sus clases, y cualquier ajuste posterior —una clase que se agrega, una
+  figurativa que resulta mixta, un nombre corregido por una vista— desmentía un
+  documento ya firmado y obligaba a reemitirlo. `d.marcas` sigue viajando en
+  `CartaPoderData`, pero sólo para el nombre del PDF y el email al estudio.
 - **Apoderado block** (name, DNI, CUIT, domicilio of Michael Alan Simmons):
   config constants, never inline in the template.
 - The "vistas, observaciones y oposiciones" clause stays verbatim — it means

@@ -7,10 +7,17 @@
 // Un poder, N otorgantes: cuando la marca tiene más de un titular todos otorgan
 // el MISMO documento y cada uno firma al pie. No se emite un poder por cabeza —
 // el INPI recibe un solo papel con todas las firmas.
+//
+// EL PODER ES GENÉRICO: no nombra la denominación de la marca ni las clases.
+// Autoriza a presentar "las marcas, en las clases que correspondan". Es a
+// propósito: el poder que se firma antes de presentar
+// quedaba desmentido por cualquier ajuste posterior —una clase que se agrega,
+// una figurativa que resulta mixta, un nombre que se corrige por una vista— y
+// había que reemitirlo y hacerlo firmar de nuevo. Un poder sin esos datos sigue
+// siendo válido para todo el trámite. La marca y las clases concretas viajan en
+// el pedido, no en el papel.
 
-import {
-  APODERADO, formatPorcentaje, normalizeTipoMarca, tieneDenominacion, type TipoMarca,
-} from './constants';
+import { APODERADO, formatPorcentaje, type TipoMarca } from './constants';
 
 /** Un otorgante del poder. `porcentaje` solo se nombra cuando hay más de uno:
  *  en un poder de un solo titular decir "100%" es ruido.
@@ -47,9 +54,9 @@ export function esPendiente(t: TitularPoder): boolean {
 export interface CartaPoderData {
   /** 1..MAX_TITULARES otorgantes, en el orden en que firman al pie. */
   titulares: TitularPoder[];
-  /** Un solo poder cubre todas las marcas del pedido: un bullet por marca.
-   *  Las figurativas no llevan denominación: el `nombre` es interno nuestro y
-   *  no se nombra en el poder. */
+  /** Las marcas del pedido. **No se imprimen en el documento** (ver arriba: el
+   *  poder es genérico); viajan acá porque los llamadores arman el nombre del
+   *  PDF y el email al estudio con la misma estructura. */
   marcas: { nombre: string; tipo?: TipoMarca; clases: number[] }[];
   fecha: { dia: number; mes: number; anio: number };
 }
@@ -67,24 +74,6 @@ function enumerarOtorgantes(xs: string[]): string {
   if (xs.length <= 1) return xs[0] ?? '';
   const resto = xs.slice(0, -1);
   return `${resto.join('; ')}; y ${xs[xs.length - 1]}`;
-}
-
-function joinClases(clases: number[]): string {
-  if (clases.length === 0) return 'la clase que corresponda';
-  if (clases.length === 1) return `la clase ${clases[0]}`;
-  const nums = [...clases].sort((a, b) => a - b);
-  const last = nums.pop();
-  return `las clases ${nums.join(', ')} y ${last}`;
-}
-
-/** Cómo se nombra cada marca en el bullet del poder.
- *  La figurativa no tiene denominación: se la identifica por su tipo y sus
- *  clases, nunca por el nombre de referencia interno (que el INPI no conoce). */
-function objetoMarca(m: { nombre: string; tipo?: TipoMarca }): string {
-  const tipo = normalizeTipoMarca(m.tipo);
-  if (!tieneDenominacion(tipo)) return 'la marca figurativa';
-  const nombre = `“${m.nombre.trim().toUpperCase()}”`;
-  return tipo === 'mixta' ? `la marca mixta ${nombre}` : `la marca ${nombre}`;
 }
 
 function domicilioLinea(d: TitularPoder): string {
@@ -137,12 +126,7 @@ export interface CartaPoderTexto {
 }
 
 export function cartaPoderTexto(d: CartaPoderData): CartaPoderTexto {
-  // Las figurativas entran aunque no tengan nombre: no llevan denominación.
-  const marcas = d.marcas.filter(
-    m => m.nombre.trim() || !tieneDenominacion(normalizeTipoMarca(m.tipo)),
-  );
-  const variasMarcas = marcas.length > 1;
-
+  // `d.marcas` NO entra en el texto: el poder es genérico (ver arriba).
   const titulares = d.titulares.length ? d.titulares : [vacio()];
   const variosTitulares = titulares.length > 1;
 
@@ -163,17 +147,17 @@ export function cartaPoderTexto(d: CartaPoderData): CartaPoderTexto {
       `por la presente ${verbo} expresamente al ` +
       `${APODERADO.tratamiento} ${APODERADO.nombre}, DNI ${APODERADO.dni}, CUIT ${APODERADO.cuit}, ` +
       `con domicilio en ${APODERADO.domicilio}, para que en ${posesivo} nombre y representación:`,
+    // Plural y sin nombres propios: el mismo documento sirve para una marca o
+    // para cinco, y para las clases que terminen presentándose.
     bullets: [
-      ...marcas.map(m =>
-        `Solicite el registro de ${objetoMarca(m)} ante el Instituto Nacional de la Propiedad Industrial (INPI) en ${joinClases(m.clases)} de la Clasificación Internacional de NIZA;`,
-      ),
-      variasMarcas ? 'Realice el seguimiento de los trámites;' : 'Realice el seguimiento del trámite;',
+      'Solicite ante el Instituto Nacional de la Propiedad Industrial (INPI) el ' +
+      'registro de las marcas, en las clases de la Clasificación Internacional de ' +
+      'Niza que en cada caso correspondan;',
+      'Realice el seguimiento de los trámites;',
       'Conteste vistas, observaciones y oposiciones;',
-      variasMarcas
-        ? 'Presente escritos, recursos y cualquier otra gestión necesaria hasta la finalización de los trámites.'
-        : 'Presente escritos, recursos y cualquier otra gestión necesaria hasta la finalización del trámite.',
+      'Presente escritos, recursos y cualquier otra gestión necesaria hasta la finalización de los trámites.',
     ],
-    cierre: cierreTexto(titulares, variasMarcas),
+    cierre: cierreTexto(titulares),
     firmas: titulares.map(t => ({
       // Sin datos cargados, el pie se identifica por el email: es lo único que
       // se sabe de esa persona hasta que entra a firmar.
@@ -189,8 +173,9 @@ export function cartaPoderTexto(d: CartaPoderData): CartaPoderTexto {
 /** Con un titular el poder dice "a mi nombre". Con varios hay que decir en qué
  *  proporción queda cada uno: es lo que el INPI carga en TITULARIDAD y lo único
  *  que después distingue quién es dueño de cuánto. */
-function cierreTexto(titulares: TitularPoder[], variasMarcas: boolean): string {
-  const cosa = variasMarcas ? 'las marcas sean registradas' : 'la marca sea registrada';
+function cierreTexto(titulares: TitularPoder[]): string {
+  // "las marcas", en plural y sin nombrarlas: el poder no dice cuáles son.
+  const cosa = 'las marcas sean registradas';
   if (titulares.length <= 1) {
     return `La presente autorización se otorga a los efectos de que ${cosa} a mi nombre.`;
   }
