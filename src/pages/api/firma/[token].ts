@@ -14,7 +14,8 @@ import { runtime } from '@/lib/server/runtime';
 export const prerender = false;
 
 import {
-  type CheckoutEnv, consolidarMarcas, ensureSchema, json, titularesDesdeCompletion,
+  type CheckoutEnv, consolidarMarcas, ensureSchema, guardarPoderFirmado, json,
+  titularesDesdeCompletion,
 } from '@/lib/server/checkout';
 import { darDeAltaEnVigilante } from '@/lib/server/altaPedido';
 import type { VigilanteEnv } from '@/lib/server/vigilante';
@@ -315,6 +316,9 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
   const alta = async () => {
     if (!estado.completo) return;
     try {
+      // Recién este PDF tiene las firmas de todos: los parciales de la cadena no
+      // se archivan (subir uno al portal parecería el documento definitivo).
+      await guardarPoderFirmado(env, ctx.fila.ref, pdfBase64);
       await darDeAltaEnVigilante(env, {
         ref: ctx.fila.ref,
         esProduccion: new URL(request.url).hostname === 'unamarca.com.ar',

@@ -16,6 +16,16 @@ const BASE_POR_DEFECTO = 'https://vigilante.unamarca.com.ar/api/ext/v1';
  *  y pesa muy por debajo, pero un archivo raro no puede voltear el alta entera. */
 const LOGO_MAX_BYTES = 5 * 1024 * 1024;
 
+/** Tope por poder que declara la API. El nuestro ronda los 100 KB. */
+const PODER_MAX_BYTES = 10 * 1024 * 1024;
+
+/** `%PDF-`. La API valida el poder por contenido, no por extensión ni por
+ *  Content-Type: mandar algo que no lo es sería tirar el adjunto a la basura. */
+function esPdf(bytes: ArrayBuffer): boolean {
+  const c = new Uint8Array(bytes.slice(0, 5));
+  return c[0] === 0x25 && c[1] === 0x50 && c[2] === 0x44 && c[3] === 0x46 && c[4] === 0x2d;
+}
+
 /** La API corta a los 30 s; cortamos antes para no quedarnos colgados con el
  *  cliente esperando la confirmación. */
 const TIMEOUT_MS = 20_000;
@@ -135,6 +145,17 @@ export async function crearAltaVigilante(
      *  una marca del mismo pedido tenga dueños distintos. */
     titulares: TitularAlta[];
     marcas: MarcaAlta[];
+    /** La carta poder firmada por TODOS los titulares. Es UNA sola para el
+     *  pedido —el poder es genérico, no nombra la marca ni las clases— y todas
+     *  las marcas la referencian: el portal la guarda una vez (el nombre sale
+     *  del hash del contenido) y le cuelga una copia a cada trámite.
+     *
+     *  Si no llega, el alta entra igual y el portal lo reporta en
+     *  `advertencias[]` como `poder_faltante`, una por marca. Nunca rechaza por
+     *  esto, así que esa advertencia es el único aviso de que hay que subirla a
+     *  mano: sin el poder el trámite no se puede presentar por el web service
+     *  del INPI (lo pide en base64 con idIndice=6). */
+    poder?: { filename: string; bytes: ArrayBuffer } | null;
   },
 ): Promise<AltaResultado> {
   const apiKey = env.VIGILANTE_API_KEY;
@@ -152,12 +173,36 @@ export async function crearAltaVigilante(
 
   // Un logo por marca, nombrado por posición. Si la misma imagen va en dos
   // clases da igual: la API arma un trámite por clase y comparten el archivo.
-  const adjuntos: { parte: string; bytes: ArrayBuffer; filename: string }[] = [];
+  const adjuntos: { parte: string; bytes: ArrayBuffer; filename: string; tipo: string }[] = [];
+
+  // La carta poder: UNA parte para todo el pedido, referenciada por todas las
+  // marcas. Repetir el archivo por marca no costaría nada del lado del portal
+  // (deduplica por hash), pero sí subirlo tres veces desde acá.
+  const poder = pedido.poder;
+  const usaPoder = !!poder && poder.bytes.byteLength > 0
+    && poder.bytes.byteLength <= PODER_MAX_BYTES && esPdf(poder.bytes);
+  if (poder && !usaPoder) {
+    // No frena el alta: un poder que no se adjunta es una advertencia del
+    // portal, no un pedido perdido.
+    console.error(
+      `[vigilante] la carta poder de ${pedido.ref} no se adjunta`
+      + ` (${poder.bytes.byteLength} bytes, ¿PDF?: ${esPdf(poder.bytes)})`,
+    );
+  }
+  if (usaPoder) {
+    adjuntos.push({
+      parte: 'poder_0', bytes: poder!.bytes, filename: poder!.filename, tipo: 'application/pdf',
+    });
+  }
 
   const marcas = pedido.marcas.map((m, i) => {
     const parte = `logo_${i}`;
     const usaLogo = !!m.logo && m.logo.bytes.byteLength > 0 && m.logo.bytes.byteLength <= LOGO_MAX_BYTES;
-    if (usaLogo) adjuntos.push({ parte, bytes: m.logo!.bytes, filename: m.logo!.filename });
+    if (usaLogo) {
+      adjuntos.push({
+        parte, bytes: m.logo!.bytes, filename: m.logo!.filename, tipo: 'image/jpeg',
+      });
+    }
     return limpio({
       denominacion: m.denominacion.slice(0, 120),
       tipo: m.tipo,
@@ -167,8 +212,15 @@ export async function crearAltaVigilante(
       logo: usaLogo ? parte : undefined,
       logo_alto_cm: m.alto ?? undefined,
       logo_ancho_cm: m.ancho ?? undefined,
-      // Nunca se manda `acta`/`actas`: nada de lo que sale de acá se presentó.
+      // La misma parte en todas las marcas: un pedido, un poder.
+      poder: usaPoder ? 'poder_0' : undefined,
+      // `limitaciones` (el mapa clase→lista de productos) NO se manda: lo que
+      // el cliente escribe en el paso 5 es prosa libre, no la lista en formato
+      // INPI, y derivarla de ahí achicaría el alcance del registro sin que
+      // nadie lo haya decidido. El alcance queda en NULL —"nadie lo dijo
+      // todavía"— hasta que el estudio lo decida en el portal.
       titulares: pedido.titulares,
+      // Nunca se manda `acta`/`actas`: nada de lo que sale de acá se presentó.
     });
   });
 
@@ -186,7 +238,7 @@ export async function crearAltaVigilante(
     const form = new FormData();
     form.append('payload', JSON.stringify(payload));
     for (const a of adjuntos) {
-      form.append(a.parte, new Blob([a.bytes], { type: 'image/jpeg' }), a.filename);
+      form.append(a.parte, new Blob([a.bytes], { type: a.tipo }), a.filename);
     }
     body = form; // sin Content-Type: lo pone fetch con el boundary
   } else {

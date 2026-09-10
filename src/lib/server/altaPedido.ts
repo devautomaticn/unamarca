@@ -14,8 +14,10 @@
 // primer intento en vez de duplicar.
 
 import {
-  type CheckoutEnv, consolidarMarcas, ensureVigilanteColumn, titularesDesdeCompletion,
+  type CheckoutEnv, consolidarMarcas, ensureVigilanteColumn, pdfDesdeBase64, poderKeyFor,
+  titularesDesdeCompletion,
 } from './checkout';
+import { nombreArchivoPoder } from '@/lib/checkout/cartaPoder';
 import { crearAltaVigilante, type AltaResultado, type VigilanteEnv } from './vigilante';
 import { sendVigilanteAlert } from './notify';
 import { formatPorcentaje, tipoMarcaLabel } from '@/lib/checkout/constants';
@@ -69,8 +71,47 @@ export async function darDeAltaEnVigilante(
     }
   }
 
+  // La carta poder firmada. En R2 sólo está la COMPLETA (con cotitulares la
+  // archiva la última firma), que es la única que se puede adjuntar: un poder a
+  // medio firmar subido al portal parecería el definitivo.
+  //
+  // El fallback a `completion` es para el pedido de un solo titular cuando el
+  // bucket no está habilitado: ahí el PDF ya viaja en el payload del PATCH y
+  // quedó guardado en D1. Sin R2 el checkout igual funciona (el logo se pide
+  // por WhatsApp), y el poder no tiene por qué perderse por eso.
+  let poderBytes: ArrayBuffer | null = null;
+  if (env.LOGOS) {
+    try {
+      const obj = await env.LOGOS.get(poderKeyFor(ref));
+      if (obj) poderBytes = await obj.arrayBuffer();
+    } catch (e) {
+      console.error(`[vigilante] no se pudo leer la carta poder de ${ref}:`, e);
+    }
+  }
+  if (!poderBytes && titulares.length === 1) {
+    poderBytes = pdfDesdeBase64(completion?.cartaPdfBase64);
+  }
+  if (!poderBytes) {
+    // El portal lo va a reportar como `poder_faltante` y el aviso al estudio
+    // sale por ahí. Esto es para poder ubicarlo en el log del pedido.
+    console.warn(`[vigilante] ${ref}: el alta va sin carta poder adjunta`);
+  }
+  const principal = titulares.find(t => t.firmaAqui) ?? titulares[0];
+
   const alta = await crearAltaVigilante(env, {
     ref,
+    poder: poderBytes
+      ? {
+        // El mismo nombre con el que se archiva por email: Apellido_Marca_Fecha.
+        filename: nombreArchivoPoder({
+          apellido: principal?.apellido,
+          marca: marcas[0]?.nombre,
+          fecha: completion?.fechaPoder ?? null,
+          ref,
+        }),
+        bytes: poderBytes,
+      }
+      : null,
     // Un contacto por titular. El portal deduplica por CUIT, así que un
     // cotitular que ya existe se reusa en vez de duplicarse.
     contactos: titulares.map((x, i) => {

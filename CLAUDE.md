@@ -404,6 +404,9 @@ PATCH /api/checkout/order/:ref   →  tabla `firmas`: un renglón por titular
   firmas ya cargadas: el último firmante es el único que puede generar el
   documento completo. Si su navegador falla, el email avisa que no hay adjunto
   — la firma igual quedó guardada en D1, que es lo único irrecuperable.
+- El PDF del último firmante **se archiva en R2 antes del alta**: es el que va
+  adjunto al trámite en Vigilante (ver más abajo). Los parciales de la cadena no
+  se guardan.
 - Lo que en `/firmar/<token>` **NO se toca es el porcentaje ni las marcas**: es
   lo que acordaron entre todos y ya lo firmó el primero. Si un titular vuelve a
   su link con los datos ya cargados puede corregirlos; el cambio se persiste en
@@ -509,6 +512,32 @@ clase** en `vigilante.unamarca.com.ar` vía su API externa v1.
   duplicado.
 - **Nunca se manda `acta`.** Nada de lo que sale del checkout se presentó
   todavía: el trámite nace `no_presentado` y el acta la carga el estudio a mano.
+- **La carta poder firmada va adjunta, y es UNA sola para el pedido.** El poder
+  es genérico (no nombra la marca ni las clases), así que todas las marcas
+  referencian la misma parte `poder_0` del multipart y se sube una vez. Sin el
+  poder el trámite no se puede presentar por el web service del INPI (lo pide en
+  base64 con `idIndice=6`), **y el alta es el único momento del flujo en que el
+  archivo existe**: se genera en el navegador de quien firma y hasta ahora vivía
+  sólo ahí y en el email.
+- Por eso el poder completo **se archiva en R2** (`poderes/<ref>/carta-poder.pdf`,
+  `guardarPoderFirmado()` en `src/lib/server/checkout.ts`) apenas llega, y el
+  alta lo lee de ahí. Con cotitulares lo archiva la última firma: **un poder
+  parcial no se guarda nunca**, porque subido al portal parecería el definitivo.
+  Si el bucket no está habilitado, un pedido de un solo titular cae al
+  `cartaPdfBase64` que ya quedó guardado en `orders.completion`.
+- Si el poder no llegó (el navegador no pudo generarlo), el alta entra igual y el
+  portal lo reporta como `poder_faltante`, una advertencia por marca. Se puede
+  subsanar después con `PUT /api/ext/v1/tramites/<id>/poder` — **por trámite, no
+  por marca**, y reemplaza en vez de acumular. Re-postear `/altas` no sirve: el
+  `Idempotency-Key` devuelve los ids del primer intento.
+- **`limitaciones` no se manda** (el mapa clase→lista de productos). Lo que el
+  cliente escribe en el paso 5 es prosa libre, no la lista en formato INPI, y
+  derivarla de ahí achicaría el alcance del registro sin que nadie lo haya
+  decidido. El trámite queda con el alcance en `NULL` —"nadie lo dijo todavía",
+  que no es lo mismo que "toda la clase"—. **Es un dato que falta, no uno
+  opcional**: sin la lista el trámite no se puede presentar por el web service
+  (`Observaciones` es obligatorio con `Tipo_Proteccion='S'`, el único válido
+  para marcas nuevas). Lo decide el estudio en el portal, no el checkout.
 - **Un 201 no significa que los datos estén bien.** El portal casi nunca rechaza:
   lo raro entra igual y viene en `advertencias[]`. Se loguean y disparan un email
   al estudio, porque es el único aviso de que el mapeo se rompió.

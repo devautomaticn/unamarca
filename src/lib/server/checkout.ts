@@ -19,7 +19,8 @@ export interface D1Database {
 }
 
 // Tipos mínimos de R2, en la misma línea que los de D1: el bucket guarda los
-// logos de las marcas mixtas y figurativas.
+// logos de las marcas mixtas y figurativas, y la carta poder firmada de cada
+// pedido (ver `guardarPoderFirmado`).
 export interface R2ObjectBody {
   arrayBuffer(): Promise<ArrayBuffer>;
   size: number;
@@ -46,6 +47,70 @@ export interface CheckoutEnv {
  *  marca en el pedido, que es la clave estable del wizard. */
 export function logoKeyFor(ref: string, indice: number): string {
   return `logos/${ref}/marca-${indice + 1}.jpg`;
+}
+
+/** Key de la carta poder firmada dentro del bucket. Una sola por pedido: el
+ *  poder es genérico —no nombra la marca ni las clases— y los titulares firman
+ *  todos sobre el mismo documento. */
+export function poderKeyFor(ref: string): string {
+  return `poderes/${ref}/carta-poder.pdf`;
+}
+
+/** Tope del poder que declara la API de Vigilante. El nuestro ronda los 100 KB;
+ *  esto es contra un archivo raro, no un límite de producto. */
+const PODER_MAX_BYTES = 10 * 1024 * 1024;
+
+/** Base64 (con o sin prefijo `data:`) → bytes, sólo si lo que llega es un PDF.
+ *  El archivo lo genera el navegador de quien firma y puede llegar cortado, o
+ *  no llegar: devolver null es un caso normal, no un error. */
+export function pdfDesdeBase64(b64: string | null | undefined): ArrayBuffer | null {
+  if (typeof b64 !== 'string' || !b64.trim()) return null;
+  try {
+    const limpio = (b64.includes(',') ? b64.slice(b64.indexOf(',') + 1) : b64).trim();
+    const binario = atob(limpio);
+    if (!binario.length || binario.length > PODER_MAX_BYTES) return null;
+    // `%PDF-`: que el navegador lo mande como PDF no alcanza, igual que con el
+    // JPG del logo.
+    if (!binario.startsWith('%PDF-')) return null;
+    const bytes = new Uint8Array(binario.length);
+    for (let i = 0; i < binario.length; i++) bytes[i] = binario.charCodeAt(i);
+    return bytes.buffer;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Archiva en R2 la carta poder firmada del pedido.
+ *
+ * ⚠️ SÓLO EL PODER COMPLETO. En una cadena de firmas cada firmante manda el PDF
+ * con las firmas que hay hasta ese momento; guardar uno parcial haría que el
+ * alta subiera al portal un documento a medio firmar que parece el definitivo.
+ * Los llamadores llaman a esto únicamente cuando no falta ninguna firma.
+ *
+ * Hasta acá el poder existía sólo en el navegador de quien firmó y en el email:
+ * esta es la copia que le permite al alta adjuntarlo. Nunca lanza —la firma ya
+ * está en D1, que es lo único irrecuperable—; devuelve la key si quedó guardado.
+ */
+export async function guardarPoderFirmado(
+  env: { LOGOS?: R2Bucket },
+  ref: string,
+  pdfBase64: string | null | undefined,
+): Promise<string | null> {
+  if (!env.LOGOS || !pdfBase64) return null;
+  const bytes = pdfDesdeBase64(pdfBase64);
+  if (!bytes) {
+    console.error(`[${ref}] lo que llegó como carta poder no es un PDF utilizable: no se archiva`);
+    return null;
+  }
+  try {
+    const key = poderKeyFor(ref);
+    await env.LOGOS.put(key, bytes, { httpMetadata: { contentType: 'application/pdf' } });
+    return key;
+  } catch (e) {
+    console.error(`[${ref}] no se pudo archivar la carta poder en R2:`, e);
+    return null;
+  }
 }
 
 export function base64FromArrayBuffer(buf: ArrayBuffer): string {

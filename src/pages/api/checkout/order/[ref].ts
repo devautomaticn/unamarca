@@ -9,7 +9,7 @@ import { runtime } from '@/lib/server/runtime';
 export const prerender = false;
 
 import {
-  type CheckoutEnv, base64FromArrayBuffer, consolidarMarcas, ensureSchema,
+  type CheckoutEnv, base64FromArrayBuffer, consolidarMarcas, ensureSchema, guardarPoderFirmado,
   ensureProgresoColumn, ensureVigilanteColumn, json, titularesDesdeCompletion,
 } from '@/lib/server/checkout';
 import {
@@ -301,7 +301,13 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
   if (pendientes.length) {
     console.log(`[vigilante] alta de ${ref} diferida: faltan ${pendientes.length} firmas`);
   } else {
-    const alta = () => darDeAltaEnVigilante(env, { ref, esProduccion });
+    // Sin firmas pendientes el poder está completo, así que se archiva en R2 y
+    // el alta lo adjunta al trámite. Es la única copia que queda del documento
+    // firmado: hasta acá vivía en el navegador del cliente y en el email.
+    const alta = async () => {
+      await guardarPoderFirmado(env, ref, completion?.cartaPdfBase64);
+      await darDeAltaEnVigilante(env, { ref, esProduccion });
+    };
     // waitUntil mantiene vivo el contexto después de responder. Si el entorno no
     // lo expone (dev local), se espera nomás.
     if (typeof waitUntil === 'function') waitUntil(alta());
