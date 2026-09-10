@@ -289,3 +289,82 @@ export async function crearAltaVigilante(
     advertencias: Array.isArray(data?.advertencias) ? data.advertencias : [],
   };
 }
+
+/** Resultado del reemplazo del poder de UN trámite. */
+export interface PoderResultado {
+  ok: boolean;
+  tramite: number;
+  status?: number;
+  error?: string;
+  advertencias?: Advertencia[];
+}
+
+/**
+ * Reemplaza la carta poder de un trámite ya creado.
+ *
+ * `PUT /tramites/<id>/poder`, permiso `actualizar`. Es POR TRÁMITE, no por
+ * marca: una marca en dos clases son dos llamadas con el mismo archivo (en el
+ * disco del portal sigue habiendo uno solo, el nombre sale del hash).
+ *
+ * Reemplaza, no acumula: un trámite tiene un poder. **Nunca se llama con el
+ * cuerpo vacío** —el portal responde 400 y no lo toma como una orden de
+ * desadjuntar, justamente para que un bug de este lado no deje trámites sin
+ * poder en silencio.
+ *
+ * Un 200 puede traer advertencias que importan: `poder_reemplazado` (pisó uno
+ * distinto que ya estaba) y `poder_cambiado_despues_de_ingresar` (el trámite ya
+ * se presentó ante el INPI, y el poder que el INPI tiene es el anterior:
+ * cambiarlo acá no lo cambia allá). Ninguna de las dos falla; las dos hay que
+ * mirarlas.
+ *
+ * Nunca lanza: esto corre después de que el poder firmado ya salió por email.
+ */
+export async function reemplazarPoderVigilante(
+  env: VigilanteEnv,
+  d: { tramite: number; filename: string; bytes: ArrayBuffer },
+): Promise<PoderResultado> {
+  const apiKey = env.VIGILANTE_API_KEY;
+  if (!apiKey) {
+    return { ok: false, tramite: d.tramite, error: 'VIGILANTE_API_KEY no configurada en este entorno' };
+  }
+  if (!d.bytes.byteLength || d.bytes.byteLength > PODER_MAX_BYTES || !esPdf(d.bytes)) {
+    return { ok: false, tramite: d.tramite, error: `El archivo no es un PDF adjuntable (${d.bytes.byteLength} bytes)` };
+  }
+
+  const base = (env.VIGILANTE_API_BASE || BASE_POR_DEFECTO).replace(/\/+$/, '');
+  const form = new FormData();
+  form.append('poder', new Blob([d.bytes], { type: 'application/pdf' }), d.filename);
+
+  let res: Response;
+  try {
+    res = await fetch(`${base}/tramites/${d.tramite}/poder`, {
+      method: 'PUT',
+      // Sin Content-Type: lo pone fetch con el boundary. Sin Idempotency-Key:
+      // el PUT ya es idempotente (reemplaza), y subir dos veces el mismo archivo
+      // no cuenta como reemplazo porque el hash es el mismo.
+      headers: { Authorization: `Bearer ${apiKey}` },
+      body: form,
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+  } catch (e) {
+    return { ok: false, tramite: d.tramite, error: `No se pudo contactar al portal: ${e}` };
+  }
+
+  let data: any = null;
+  try { data = await res.json(); } catch { /* respuesta sin JSON */ }
+
+  if (!res.ok) {
+    return {
+      ok: false,
+      tramite: d.tramite,
+      status: res.status,
+      error: data?.error || `El portal respondió ${res.status}`,
+    };
+  }
+  return {
+    ok: true,
+    tramite: d.tramite,
+    status: res.status,
+    advertencias: Array.isArray(data?.advertencias) ? data.advertencias : [],
+  };
+}

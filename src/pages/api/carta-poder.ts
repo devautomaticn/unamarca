@@ -3,13 +3,21 @@
 //
 // Es el camino corto para rehacer un poder mal emitido (tipo de marca
 // equivocado, un dato del titular con un error) sin que el cliente vuelva a
-// pasar por el checkout. No toca D1 ni el portal: el pedido ya existe, lo único
-// que falta es el papel firmado de nuevo.
+// pasar por el checkout.
+//
+// **Con `ref` reemplaza el poder de los trámites del pedido en Vigilante**, que
+// es el único lugar donde el poder sirve para presentar ante el INPI: dejarlo
+// sólo en un email significaba que el trámite se quedaba con el documento viejo.
+// Sin `ref` no toca nada, como siempre: no hay pedido contra el cual escribir.
+// El detalle está en src/lib/server/poderPedido.ts.
 //
 // El PDF llega generado desde el navegador, igual que en el checkout: el plan
 // free de Pages no tiene CPU para pdf-lib (error 1102).
 import type { APIRoute } from 'astro';
 import { runtime } from '@/lib/server/runtime';
+import {
+  reemplazarPoderDelPedido, type ReemplazoPoder, type ReemplazoPoderEnv,
+} from '@/lib/server/poderPedido';
 
 // Ruta de servidor: se ejecuta por request, no se prerenderiza.
 export const prerender = false;
@@ -67,7 +75,46 @@ function marcasHTML(marcas: NonNullable<Body['marcas']>): string {
   return `<ul style="margin:0 0 16px;padding-left:20px;font-size:14px;line-height:1.6">${filas}</ul>`;
 }
 
-function emailHTML(b: Body, adjunto: boolean): string {
+/** Qué pasó con el poder en el portal. Va en el mismo email que el PDF: el
+ *  estudio lee uno solo por poder rehecho, y una escritura sobre un trámite que
+ *  puede estar por presentarse tiene que verse ahí, no en un log. */
+function portalHTML(r: ReemplazoPoder | null): string {
+  if (!r) return '';
+  const caja = (fondo: string, borde: string, color: string, titulo: string, cuerpo: string) =>
+    `<div style="background:${fondo};border:1.5px solid ${borde};border-radius:10px;padding:14px 18px;margin:18px 0 0">
+      <p style="margin:0 0 4px;color:${color};font-size:13px;font-weight:800">${titulo}</p>
+      <div style="margin:0;color:${color};font-size:13px;line-height:1.6">${cuerpo}</div>
+    </div>`;
+
+  if (!r.intentado) {
+    return caja('#f8fafc', '#e2e8f0', '#475569', 'Portal Vigilante: sin cambios',
+      `${esc(r.motivo ?? '')} El PDF adjunto es el poder bueno: si el trámite ya está cargado, hay que subirlo a mano.`);
+  }
+
+  const partes: string[] = [];
+  if (r.hechos.length) {
+    partes.push(`<p style="margin:0 0 6px">Poder reemplazado en ${r.hechos.length === 1 ? 'el trámite' : 'los trámites'} <b>${r.hechos.join(', ')}</b>.</p>`);
+  }
+  if (r.advertencias.length) {
+    partes.push('<ul style="margin:0 0 6px;padding-left:18px">' + r.advertencias.map(a =>
+      `<li><b>${esc(a.codigo)}</b> — ${esc(a.mensaje)}${a.marca ? ` (${esc(a.marca)})` : ''}</li>`
+    ).join('') + '</ul>');
+  }
+  if (r.fallados.length) {
+    partes.push('<p style="margin:0 0 6px"><b>No se pudo reemplazar en:</b></p><ul style="margin:0 0 6px;padding-left:18px">'
+      + r.fallados.map(f => `<li>Trámite ${f.tramite}: ${esc(f.error)}</li>`).join('')
+      + '</ul><p style="margin:0">Ahí sigue el poder viejo: hay que subir el adjunto a mano.</p>');
+  }
+  if (!r.archivado) {
+    partes.push('<p style="margin:6px 0 0;font-size:12px">(La copia en R2 no se pudo actualizar. No frena nada: el poder que vale es el del portal.)</p>');
+  }
+
+  return r.fallados.length
+    ? caja('#fef2f2', '#fecaca', '#b91c1c', 'Portal Vigilante: reemplazo incompleto', partes.join(''))
+    : caja('#f0fdf4', '#bbf7d0', '#166534', 'Portal Vigilante: poder actualizado', partes.join(''));
+}
+
+function emailHTML(b: Body, adjunto: boolean, portal: ReemplazoPoder | null): string {
   const t = b.titular ?? {};
   const row = (k: string, v: unknown) =>
     `<tr><td style="padding:5px 0;color:#64748b;font-size:13px;width:34%;vertical-align:top">${esc(k)}</td><td style="padding:5px 0;color:#0f172a;font-size:13px;vertical-align:top">${esc(v || '—')}</td></tr>`;
@@ -102,12 +149,13 @@ function emailHTML(b: Body, adjunto: boolean): string {
         ? '📎 Carta poder firmada adjunta en PDF. Reemplaza a la que se hubiera emitido antes para este pedido.'
         : '⚠ El navegador no pudo generar el PDF: llegaron los datos pero NO el documento firmado. Hay que rehacerlo.'}
     </p>
+    ${portalHTML(portal)}
   </div>
 </body></html>`;
 }
 
 export const POST: APIRoute = async ({ request, locals }) => {
-  const { env } = runtime<{ RESEND_API_KEY?: string }>(locals);
+  const { env } = runtime<ReemplazoPoderEnv & { RESEND_API_KEY?: string }>(locals);
   if (!env.RESEND_API_KEY) return json({ error: 'Email no configurado en este entorno' }, 500);
 
   const raw = await request.text();
@@ -131,6 +179,23 @@ export const POST: APIRoute = async ({ request, locals }) => {
   // persona ya firmó es peor que mandar un aviso de que hay que rehacerlo.
   const nombreArchivo = `carta-poder-${(body.ref || nombre.replace(/\s+/g, '-')).slice(0, 60)}.pdf`;
 
+  // El reemplazo en el portal va ANTES del email, no después: así el estudio
+  // lee un solo email que dice qué pasó con el trámite. El email sale igual
+  // pase lo que pase acá — esto nunca lanza y está acotado por su timeout.
+  const ref = String(body.ref ?? '').trim();
+  let portal: ReemplazoPoder | null = null;
+  if (ref && pdf) {
+    try {
+      portal = await reemplazarPoderDelPedido(env, { ref, pdfBase64: pdf, filename: nombreArchivo });
+    } catch (e) {
+      console.error(`[${ref}] error inesperado reemplazando el poder en el portal:`, e);
+      portal = {
+        intentado: false, hechos: [], fallados: [], advertencias: [], archivado: false,
+        motivo: 'Error inesperado al hablar con el portal.',
+      };
+    }
+  }
+
   try {
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -143,7 +208,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         to: [ADMIN_EMAIL],
         reply_to: String(body.email ?? '').trim() || undefined,
         subject: `Carta poder firmada: ${marcas.map(m => String(m.nombre ?? '').toUpperCase()).filter(Boolean).join(' + ') || nombre}${body.ref ? ` (${body.ref})` : ''}`,
-        html: emailHTML(body, !!pdf),
+        html: emailHTML(body, !!pdf, portal),
         attachments: pdf ? [{ filename: nombreArchivo, content: pdf }] : undefined,
       }),
     });

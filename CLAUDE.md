@@ -448,10 +448,26 @@ poder.
   ese poder dice "nosotros autorizamos" y lleva un pie de firma por cabeza, y
   rehacerlo con un titular emitiría un documento distinto del original. Para eso
   está la cadena de firmas (ver arriba).
-- **No toca nada**: ni el pedido en D1, ni el alta en Vigilante, ni los emails
-  del checkout. Lo único que produce es el PDF firmado, que le llega al estudio
-  por `POST /api/carta-poder` (Resend → `mike@automaticnation.com`, con el PDF
+- **No toca el pedido**: ni D1 (fuera del archivo del poder), ni los emails del
+  checkout. Lo que produce es el PDF firmado, que le llega al estudio por
+  `POST /api/carta-poder` (Resend → `mike@automaticnation.com`, con el PDF
   adjunto). El cliente se descarga su copia en la pantalla de confirmación.
+- **Con `ref`, además reemplaza el poder de los trámites en Vigilante**
+  (`PUT /api/ext/v1/tramites/<id>/poder`, uno por trámite, ver
+  `src/lib/server/poderPedido.ts`). Sin eso el trámite se quedaba con el poder
+  viejo, que es el que se presenta ante el INPI: el email al estudio era un
+  archivo muerto. Sin `ref` no escribe nada, como antes.
+  - **Sólo pedidos de UN titular.** Si el pedido tiene cotitulares no se toca
+    nada y el email lo dice: ese poder lleva un pie de firma por cabeza y uno
+    de un solo otorgante sería un documento distinto.
+  - El portal avisa con `poder_reemplazado` cuando pisa un poder distinto que ya
+    estaba, y con `poder_cambiado_despues_de_ingresar` si el trámite ya se
+    presentó (el INPI se quedó con el anterior; cambiarlo acá no lo cambia
+    allá). **Las dos van en el mismo email del poder rehecho**, junto con qué
+    trámites se tocaron: es una escritura sobre un documento legal y tiene que
+    verse, no quedar en un log.
+  - Subir dos veces el mismo archivo no cuenta como reemplazo (el portal
+    deduplica por hash), así que un reintento no dispara ningún aviso.
 - El PDF se genera **en el navegador**, por lo mismo que en el checkout: el plan
   free de Pages no tiene CPU para pdf-lib (error 1102).
 - Si el navegador no pudo generar el PDF, el email sale igual con los datos y un
@@ -459,7 +475,9 @@ poder.
   peor que mandar un aviso.
 - El endpoint es abierto (no hay pedido contra el cual autenticar). Lo único que
   lo protege es que la URL no se publica en ningún lado, más un tope de 3 MB en
-  el cuerpo.
+  el cuerpo. Con `ref` eso alcanza a una escritura en el portal: el ref ya era
+  la llave de lectura del pedido entero, así que no es una llave nueva, pero la
+  escritura sí — de ahí que todo reemplazo quede contado en el email.
 
 | Param | Notas |
 |---|---|
