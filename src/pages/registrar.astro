@@ -227,12 +227,6 @@ const faqSchema = {
               Contá qué vendés o qué servicio prestás, a quién se lo ofrecés y por
               qué canales (local, ecommerce, redes).
             </p>
-            <div class="ck-desc-foot">
-              <!-- Arranque editable armado con las clases elegidas: el textarea
-                   en blanco con mínimo de 100 caracteres es donde más gente se
-                   traba del post-pago. -->
-              <button type="button" class="ck-link-btn ck-desc-sug">Partir de un ejemplo</button>
-            </div>
             <p class="ck-err ck-desc-err"></p>
           </div>
           <div class="ck-field">
@@ -2714,27 +2708,6 @@ const faqSchema = {
   // ── Descripción por marca (paso 5) ──────────────────────
   const MIN_DESCRIPCION = 100;
 
-  /** Arranque editable armado con las clases que el cliente eligió. No se
-   *  autocompleta: lo inserta él con "Partir de un ejemplo" y después lo edita.
-   *  Prellenar sin pedirlo mandaría al INPI la misma descripción genérica en
-   *  todos los pedidos, que es peor que un textarea vacío.
-   *
-   *  Es SOLO una afirmación cierta sobre la marca, nunca una instrucción al
-   *  cliente: lo que quede acá se guarda tal cual y termina en la solicitud. Una
-   *  versión anterior cerraba con "Detallá acá qué vendés…", que superaba el
-   *  mínimo de caracteres y entraba sin editar — se vio en el portal en la
-   *  primera prueba real. El coaching va en la ayuda del campo, no en el valor. */
-  function sugerenciaDescripcion(m: MarcaState): string {
-    const nombre = m.nombre.trim().toUpperCase() || 'La marca';
-    const rubros = m.clases
-      .map(n => NIZA_CLASSES.find(c => c.num === n)?.nombre.toLowerCase())
-      .filter(Boolean) as string[];
-    const lista = rubros.length > 1
-      ? `${rubros.slice(0, -1).join('; ')} y ${rubros[rubros.length - 1]}`
-      : (rubros[0] ?? 'los productos y servicios de la marca');
-    return `${nombre} ofrece productos y servicios de ${lista}.`;
-  }
-
   function renderDescCards() {
     const cont = $('ck-desc-cards');
     const molde = tpl('ck-desc-card-tpl');
@@ -2762,12 +2735,8 @@ const faqSchema = {
       card.querySelectorAll('label')[1].setAttribute('for', sitio.id);
       sitio.value = m.sitioWeb;
 
-      const sug = card.querySelector<HTMLButtonElement>('.ck-desc-sug')!;
-
       const updateHelp = () => {
         const len = area.value.trim().length;
-        // El atajo solo tiene sentido con el campo en blanco
-        sug.hidden = len > 0;
         if (len === 0) {
           help.textContent = `Mínimo ${MIN_DESCRIPCION} caracteres.`;
           help.style.color = '';
@@ -2787,13 +2756,6 @@ const faqSchema = {
         saveDraft();
       });
 
-      sug.addEventListener('click', () => {
-        area.value = sugerenciaDescripcion(m);
-        area.dispatchEvent(new Event('input'));
-        area.focus();
-        // El cursor al final, listo para editar
-        area.setSelectionRange(area.value.length, area.value.length);
-      });
       sitio.addEventListener('input', () => {
         m.sitioWeb = sitio.value;
         setErrEl(card.querySelector<HTMLElement>('.ck-sitio-err'), '');
@@ -4214,14 +4176,8 @@ const faqSchema = {
 
 /* ─── Multi-marca: una tarjeta colapsable por marca (paso 5) ─── */
 .ck-dcard .ck-dcard-name { color: #2563eb; }
-.ck-desc-foot {
-  display: flex; align-items: baseline; justify-content: space-between;
-  gap: 1rem; flex-wrap: wrap;
-}
 /* Bajo el label, antes del campo: se lee antes de empezar a escribir */
 .ck-desc-help, .ck-logo-help { margin: -0.15rem 0 0.5rem; }
-.ck-desc-sug { font-size: 0.75rem; }
-.ck-desc-sug[hidden] { display: none; }
 
 /* ─── Logo de la marca (mixta y figurativa, paso 5) ─── */
 .ck-logo {
