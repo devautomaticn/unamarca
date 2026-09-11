@@ -797,6 +797,12 @@ const faqSchema = {
 
         <p class="ck-help ck-pay-note" id="ck-pay-note">
           El precio es el mismo con las dos formas de pago.
+          <!-- Para el que ya pagó por fuera del wizard (el agente de WhatsApp le
+               pasó el alias): crea el pedido y va directo al post-pago. -->
+          <br />
+          <button type="button" class="ck-link-btn ck-ya-pague" id="ck-ya-pague">
+            Hacé click acá si ya realizaste el pago
+          </button>
         </p>
 
         <!-- Datos de la cuenta: se revela al elegir transferencia -->
@@ -829,15 +835,9 @@ const faqSchema = {
           </div>
 
           <p class="ck-transfer-note">
-            Podés transferir ahora o más tarde: <b>seguí completando tu solicitud
-            igual</b>. Presentamos ante el INPI dentro de las 48 horas hábiles
-            desde que se acredita la transferencia.
+            Presentamos ante el INPI dentro de las 48 horas hábiles desde que se
+            acredita la transferencia.
           </p>
-
-          <a class="ck-transfer-wa" id="ck-tr-wa" href="#" target="_blank" rel="noopener noreferrer">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.1.1-1.8-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5.1-4.5-.1-.2-1.2-1.5-1.2-2.9s.7-2 1-2.3c.2-.3.5-.4.7-.4h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.3 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.1.3.7 1.2 1.5 1.9 1 .9 1.8 1.2 2.1 1.3.3.1.4.1.6-.1l.9-1c.2-.2.4-.2.6-.1l2 .9c.2.1.4.2.4.3.1.1.1.6-.1 1.2z"/></svg>
-            Enviar comprobante por WhatsApp
-          </a>
 
           <p class="ck-transfer-resume">
             ¿Cerrás la página? Retomá tu solicitud en
@@ -845,7 +845,7 @@ const faqSchema = {
           </p>
 
           <button type="button" class="ck-btn ck-transfer-next" id="ck-tr-next">
-            Continuar y completar mis datos
+            Ya pagué. Continuar y completar mis datos
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
           <button type="button" class="ck-link-btn ck-transfer-otro" id="ck-tr-otro">← Elegir otra forma de pago</button>
@@ -955,7 +955,7 @@ const faqSchema = {
         </p>
       </div>
 
-      <!-- Solo se muestra si hay algo pendiente (firmas, transferencia o imagen) -->
+      <!-- Solo se muestra si hay algo pendiente (firmas o imagen) -->
       <div class="ck-card ck-done ck-done-extra" id="ck-done-extra" hidden>
 
         <!-- Firmas de los cotitulares: lo primero, porque sin el poder completo
@@ -978,20 +978,6 @@ const faqSchema = {
             No pudimos guardar el archivo del logo. Te lo vamos a pedir por
             WhatsApp para presentar la solicitud: tu pedido ya quedó registrado.
           </p>
-        </div>
-
-        <!-- Recordatorio de la transferencia: solo si eligió ese medio de pago -->
-        <div class="ck-done-transfer" id="ck-done-transfer" hidden>
-          <p class="ck-done-transfer-title">Falta tu transferencia</p>
-          <p>
-            Transferí <b id="ck-done-importe">–</b> a <b>{TRANSFERENCIA.alias}</b>
-            ({TRANSFERENCIA.titular}, {TRANSFERENCIA.banco}). Presentamos tu
-            solicitud cuando se acredite.
-          </p>
-          <a class="ck-transfer-wa" id="ck-done-wa" href="#" target="_blank" rel="noopener noreferrer">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.1.1-1.8-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5.1-4.5-.1-.2-1.2-1.5-1.2-2.9s.7-2 1-2.3c.2-.3.5-.4.7-.4h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.3 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.1.3.7 1.2 1.5 1.9 1 .9 1.8 1.2 2.1 1.3.3.1.4.1.6-.1l.9-1c.2-.2.4-.2.6-.1l2 .9c.2.1.4.2.4.3.1.1.1.6-.1 1.2z"/></svg>
-            Enviar comprobante por WhatsApp
-          </a>
         </div>
       </div>
     </section>
@@ -1051,7 +1037,6 @@ const faqSchema = {
   } from '../lib/checkout/constants';
   import { formatCuitInput, isValidCuit, cuitMatchesDni } from '../lib/checkout/cuit';
   import { cartaPoderHTML, type CartaPoderData } from '../lib/checkout/cartaPoder';
-  import { waHrefComprobante } from '../lib/wa';
 
   const DRAFT_KEY = 'um-checkout-draft';
   const $ = (id: string) => document.getElementById(id) as HTMLElement;
@@ -3113,8 +3098,6 @@ const faqSchema = {
   function showTransferPanel(ref: string, importe: number) {
     $('ck-tr-importe').textContent = formatARS(importe);
     $('ck-tr-ref').textContent = ref;
-    const wa = $('ck-tr-wa') as HTMLAnchorElement;
-    wa.href = waHrefComprobante(ref);
     const resume = $('ck-tr-resume') as HTMLAnchorElement;
     const resumeUrl = `${window.location.origin}/registrar?order=${encodeURIComponent(ref)}`;
     resume.href = resumeUrl;
@@ -3150,6 +3133,33 @@ const faqSchema = {
   $('ck-tr-next').addEventListener('click', () => {
     showPayBanner('pending_transfer');
     goTo('5');
+  });
+
+  // "Ya realicé el pago": pagó por fuera del wizard (casi siempre transferencia
+  // con el alias que le pasó el agente). El post-pago necesita un pedido, así
+  // que se crea como transferencia —sin Mercado Pago de por medio— y queda
+  // pending_transfer hasta que se concilia a mano, igual que cualquier otra.
+  const yaPagueBtn = $('ck-ya-pague') as HTMLButtonElement;
+  yaPagueBtn.addEventListener('click', async () => {
+    setErr('pago', '');
+    metodoPago = 'transferencia';
+    yaPagueBtn.disabled = true;
+    track('add_payment_info', { currency: 'ARS', value: total(), metodo: 'transferencia' });
+    track('ck_ya_pague', { currency: 'ARS', value: total() });
+    try {
+      const data = await createOrder();
+      orderRef = data.ref;
+      saveDraft();
+      showPayBanner('pending_transfer');
+      goTo('5');
+    } catch (e) {
+      console.error('[um-checkout] error creando pedido (ya pagué):', e);
+      track('ck_pago_error', { motivo: String(e).slice(0, 100) }, false);
+      setErr('pago', 'No pudimos generar tu pedido. Probá de nuevo en unos segundos.');
+      metodoPago = 'mercadopago';
+    } finally {
+      yaPagueBtn.disabled = false;
+    }
   });
 
   // Volver al selector: el pedido ya creado se reusa si vuelve a transferencia,
@@ -3207,11 +3217,13 @@ const faqSchema = {
     // La transferencia se paga desde el home banking, casi siempre después de
     // completar la solicitud: el alias tiene que volver a estar acá, no solo
     // en el paso 4 donde el usuario ya no vuelve.
+    // Tiene que servirle también al que dice que ya pagó ("Ya pagué", "ya
+    // realicé el pago"): no le afirma que falta, le deja los datos por si no.
     const transferMsg =
-      `<b>Falta tu transferencia de ${formatARS(total())}.</b> Alias ` +
-      `<b>${TRANSFERENCIA.alias}</b> (${TRANSFERENCIA.titular}, ${TRANSFERENCIA.banco}). ` +
-      `Pedido <b>${orderRef ?? ''}</b>. Seguí completando tus datos: presentamos ` +
-      `ante el INPI cuando se acredite.`;
+      `<b>Pedido ${orderRef ?? ''} · Transferencia de ${formatARS(total())}.</b> ` +
+      `Si todavía no transferiste: alias <b>${TRANSFERENCIA.alias}</b> ` +
+      `(${TRANSFERENCIA.titular}, ${TRANSFERENCIA.banco}). Completá tus datos: ` +
+      `presentamos ante el INPI cuando se acredite.`;
     const msg =
       status === 'pending_transfer'
         ? transferMsg
@@ -3699,14 +3711,6 @@ const faqSchema = {
       ? `Presentamos ${queCosa} dentro de las <b>48 horas hábiles</b> desde que se acredite tu transferencia.`
       : `Presentamos ${queCosa} dentro de las próximas <b>48 horas hábiles</b>. Te avisamos por email cuando esté ingresada.`;
 
-    // Transferencia: el pago casi nunca está hecho a esta altura. Último
-    // recordatorio con el alias y el link para mandar el comprobante.
-    if (metodoPago === 'transferencia') {
-      $('ck-done-importe').textContent = formatARS(payload.pricing.total);
-      ($('ck-done-wa') as HTMLAnchorElement).href = waHrefComprobante(ref);
-      $('ck-done-transfer').hidden = false;
-    }
-
     // Firmas que faltan: es lo único que puede frenar la presentación y de lo
     // que el cliente tiene que hacerse cargo (avisarles a los cotitulares).
     const pend = firmasPendientes.length
@@ -3730,7 +3734,7 @@ const faqSchema = {
 
     $('ck-done-logo').hidden = !logosPendientes;
     // La tarjeta de pendientes solo existe si hay alguno
-    $('ck-done-extra').hidden = metodoPago !== 'transferencia' && !logosPendientes && !pend.length;
+    $('ck-done-extra').hidden = !logosPendientes && !pend.length;
 
     localStorage.removeItem(DRAFT_KEY);
     goTo('done');
@@ -4394,6 +4398,8 @@ const faqSchema = {
 .ck-pay-total { font-size: 0.9375rem; color: #0b1d3a; margin-top: 0.6rem; }
 .ck-pay-note { margin-top: 0.875rem; text-align: center; }
 .ck-pay-note[hidden] { display: none; }
+.ck-ya-pague { margin-top: 0.4rem; font-weight: 500; font-size: 0.8125rem; text-decoration: underline; text-underline-offset: 2px; }
+.ck-ya-pague:disabled { opacity: 0.5; cursor: default; }
 
 /* ─── Formas de pago: dos opciones con el mismo peso ─── */
 .ck-pay-methods {
