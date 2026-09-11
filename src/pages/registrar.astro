@@ -221,13 +221,13 @@ const faqSchema = {
             <label>
               <span class="ck-desc-label">Descripción de tu marca</span> <em>*</em>
             </label>
+            <p class="ck-help ck-desc-help">Mínimo 100 caracteres.</p>
             <textarea class="ck-desc" rows="4" maxlength="1000" placeholder="Contanos qué productos o servicios vas a ofrecer con esta marca."></textarea>
             <p class="ck-help ck-desc-guia">
               Contá qué vendés o qué servicio prestás, a quién se lo ofrecés y por
               qué canales (local, ecommerce, redes).
             </p>
             <div class="ck-desc-foot">
-              <p class="ck-help ck-desc-help">Mínimo 100 caracteres.</p>
               <!-- Arranque editable armado con las clases elegidas: el textarea
                    en blanco con mínimo de 100 caracteres es donde más gente se
                    traba del post-pago. -->
@@ -238,14 +238,6 @@ const faqSchema = {
           <div class="ck-field">
             <label>Página web <span class="ck-field-opt">(opcional)</span></label>
             <input type="url" class="ck-sitio" placeholder="https://tumarca.com" autocomplete="url" inputmode="url" />
-            <!-- El campo es opcional, pero quien lee una pregunta la quiere
-                 contestar: sin esta casilla el cliente escribe "no tengo" o
-                 "en proceso" y la validación de formato lo frena sin decirle
-                 cuál era la salida. Pasó, y costó dos horas de WhatsApp. -->
-            <label class="ck-terms ck-sinweb-wrap">
-              <input type="checkbox" class="ck-sinweb" />
-              <span>Todavía no tengo página web</span>
-            </label>
             <p class="ck-err ck-sitio-err"></p>
           </div>
 
@@ -253,6 +245,10 @@ const faqSchema = {
           <div class="ck-logo" hidden>
             <div class="ck-field">
               <label class="ck-logo-label">Imagen de tu marca <em>*</em></label>
+              <p class="ck-help ck-logo-help">
+                Fondo blanco recomendado. El color del fondo formará parte de la
+                marca protegida.
+              </p>
               <!-- El input queda fuera de pantalla: el área clickeable y de
                    arrastre es el .ck-drop, no el "Choose File" del navegador. -->
               <input type="file" class="ck-logo-file ck-sr" accept={LOGO_ACCEPT} />
@@ -312,16 +308,6 @@ const faqSchema = {
                 </p>
                 <p class="ck-err ck-denom-err"></p>
               </div>
-            </div>
-
-            <div class="ck-field">
-              <label>Enunciación de colores <em>*</em></label>
-              <input type="text" class="ck-colores" maxlength="200" placeholder="Rojo, verde y azul" />
-              <p class="ck-help">
-                Los colores que aparecen en la imagen. Si es en blanco y negro, escribí
-                “Blanco y negro”. La protección queda limitada a los colores que declares.
-              </p>
-              <p class="ck-err ck-colores-err"></p>
             </div>
 
             <!-- El INPI pide ALTO y ANCHO del signo en cm. Los derivamos de la
@@ -1096,6 +1082,14 @@ const faqSchema = {
   /** Marcas y clases quedan congeladas una vez que existe el pedido: lo que se
    *  presenta ante el INPI tiene que ser exactamente lo que se pagó. */
   let pedidoBloqueado = false;
+  /** Estado del pedido en el servidor, si se lo consultó (retorno de pago o
+   *  al tocar la garantía). null = creado en esta sesión y nunca consultado. */
+  let orderStatus: string | null = null;
+  /** Llegó al post-pago (paso 5): desde ahí el importe ya no se toca. */
+  let enPostPago = false;
+  /** Pedidos que se pueden descartar si el cliente cambia la garantía: nadie
+   *  pagó nada. `pending`/`in_process` son pagos de MP en curso: no se sueltan. */
+  const ESTADOS_LIBERABLES = new Set(['pending_payment', 'pending_transfer', 'rejected', 'cancelled']);
 
   /** Precio congelado del pedido, desde que existe. Mientras es null el resumen
    *  se calcula con la lista de precios de hoy; una vez seteado manda él.
@@ -1432,7 +1426,7 @@ const faqSchema = {
     }
     if (step === '3') renderClasesCards();
     if (step === '4') updatePaySummary();
-    if (step === '5') renderDescCards();
+    if (step === '5') { enPostPago = true; renderDescCards(); }
     if (step === '6') {
       // El email de contacto ya lo cargó en el paso 2: quien completa el pedido
       // no lo tiene que escribir dos veces.
@@ -1576,21 +1570,21 @@ const faqSchema = {
       if (sitioWeb && !/^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/\S*)?$/i.test(sitioWeb)) {
         fallo(
           errSitio,
-          'Esa no parece una dirección web. Si todavía no tenés, tildá “Todavía no tengo página web”.',
+          'Esa no parece una dirección web. Si todavía no tenés, dejá el campo vacío.',
           card.querySelector<HTMLElement>('.ck-sitio')!,
           'la dirección web',
         );
       }
 
-      // Logo, medidas y colores: obligatorios en mixta y figurativa
+      // Logo y medidas: obligatorios en mixta y figurativa. Los colores ya no
+      // se le piden al cliente: los enuncia el estudio mirando la imagen.
       if (!requiereLogo(m.tipo)) { pintarResumen(); return; }
       const errLogo = card.querySelector<HTMLElement>('.ck-logo-err')!;
       const errMedidas = card.querySelector<HTMLElement>('.ck-medidas-err')!;
-      const errColores = card.querySelector<HTMLElement>('.ck-colores-err')!;
       const errConfirm = card.querySelector<HTMLElement>('.ck-confirm-err')!;
       const errFigtxt = card.querySelector<HTMLElement>('.ck-figtxt-err')!;
       const errDenom = card.querySelector<HTMLElement>('.ck-denom-err')!;
-      [errLogo, errMedidas, errColores, errConfirm, errFigtxt, errDenom]
+      [errLogo, errMedidas, errConfirm, errFigtxt, errDenom]
         .forEach(el => setErrEl(el, ''));
       if (FIELDS_OPTIONAL) { pintarResumen(); return; }
 
@@ -1607,14 +1601,6 @@ const faqSchema = {
         m.alto = med.alto;
         m.ancho = med.ancho;
         saveDraft();
-      }
-      if (!m.colores.trim()) {
-        fallo(
-          errColores,
-          'Escribí los colores de la imagen. Si es en blanco y negro, poné “Blanco y negro”.',
-          card.querySelector<HTMLElement>('.ck-colores')!,
-          'los colores',
-        );
       }
       // Figurativa: sin la declaración no se avanza. Es lo único que puede
       // frenar una figurativa con texto ANTES de que se firme la carta poder.
@@ -2447,13 +2433,15 @@ const faqSchema = {
     feat.textContent = FEAT_GARANTIA;
     feat.hidden = !garantia;
 
-    // Con el pedido creado la garantía ya está pagada (o no): el checkbox queda
-    // muerto en bloquearPedido() y acá se explica por qué. Tocarlo no cobraba
-    // nada —el backend usa el snapshot del pedido, no lo que diga el cliente—,
-    // así que solo servía para mostrar un total que nadie iba a pagar.
+    // Pagado o ya en el post-pago, la garantía está contratada (o no) y el
+    // checkbox queda muerto: tocarlo no cobraba nada —el backend usa el
+    // snapshot del pedido, no lo que diga el cliente—, así que solo mostraba
+    // un total que nadie iba a pagar. Antes de eso sí se puede cambiar.
+    const fija = pedidoBloqueado && garantiaCongelada();
+    input('ck-garantia').disabled = fija;
     const lock = $('ck-upsell-lock');
-    lock.hidden = !pedidoBloqueado;
-    if (pedidoBloqueado) {
+    lock.hidden = !fija;
+    if (fija) {
       lock.textContent = garantia
         ? 'Incluida en tu pedido.'
         : 'La garantía se contrata antes de pagar. ¿La querés sumar igual? Escribinos por WhatsApp.';
@@ -2472,8 +2460,63 @@ const faqSchema = {
     updateRail();
   }
 
-  input('ck-garantia').addEventListener('change', () => {
-    garantia = input('ck-garantia').checked;
+  function garantiaCongelada() {
+    return enPostPago || (orderStatus !== null && !ESTADOS_LIBERABLES.has(orderStatus));
+  }
+
+  /** Antes de soltar un pedido creado en esta sesión se le pregunta al
+   *  servidor: el cliente pudo haber pagado en Mercado Pago y volver con
+   *  "atrás" en vez de por el retorno. Sin red se decide con lo que sabemos. */
+  async function pedidoLiberable(): Promise<boolean> {
+    if (!garantiaCongelada() && orderRef) {
+      try {
+        const res = await fetch(`/api/checkout/order/${encodeURIComponent(orderRef)}`);
+        if (res.ok) orderStatus = (await res.json()).status ?? orderStatus;
+      } catch { /* sin red */ }
+    }
+    return !garantiaCongelada();
+  }
+
+  /** Cambió el importe de un pedido que nadie pagó: ese pedido ya no lo
+   *  refleja. Queda huérfano en D1 (igual que al pasar de transferencia a MP)
+   *  y al pagar se crea uno nuevo con la garantía que corresponda. */
+  function soltarPedido() {
+    track('ck_pedido_descartado', { motivo: 'garantia' }, false);
+    orderRef = null;
+    orderStatus = null;
+    pricingPedido = null;
+    pedidoBloqueado = false;
+    metodoPago = 'mercadopago';
+    [$('ck-lock-marcas'), $('ck-lock-clases')].forEach(el => { el.hidden = true; });
+    // El panel de transferencia mostraba el N° del pedido descartado
+    $('ck-transfer').hidden = true;
+    $('ck-pay-methods').hidden = false;
+    $('ck-pay-note').hidden = false;
+    // Si volvió de MP con "atrás", el botón quedó en "Redirigiendo…"
+    const mp = $('ck-mp-btn') as HTMLButtonElement;
+    mp.disabled = false;
+    $('ck-mp-label').textContent = 'Pagar con Mercado Pago';
+    renderMarcasStep1();
+    renderClasesCards();
+  }
+
+  const garantiaChk = input('ck-garantia');
+  garantiaChk.addEventListener('change', async () => {
+    if (pedidoBloqueado) {
+      const quiere = garantiaChk.checked;
+      garantiaChk.disabled = true;
+      const libre = await pedidoLiberable();
+      garantiaChk.disabled = false;
+      if (!libre) {
+        // Se pagó mientras tanto: vuelve a como estaba y queda fija
+        garantiaChk.checked = garantia;
+        updateSummary();
+        return;
+      }
+      soltarPedido();
+      garantiaChk.checked = quiere;
+    }
+    garantia = garantiaChk.checked;
     updateSummary();
     refreshCards(); // los subtotales por marca incluyen la garantía
     saveDraft();
@@ -2534,13 +2577,13 @@ const faqSchema = {
 
     // Con pedido creado el resumen deja de ser un precio a decidir y pasa a ser
     // el comprobante de lo que se compró.
+    // Solo con el pago confirmado por el servidor. Con transferencia no se
+    // muestra nada (llega acá tras "Ya pagué" y un "falta tu transferencia" le
+    // contradice lo que acaba de declarar), y un pedido de MP creado pero sin
+    // pagar —volvió con "atrás"— no puede decir "pago recibido".
     const nota = $('ck-rail-note');
-    nota.hidden = !orderRef;
-    if (orderRef) {
-      nota.textContent = metodoPago === 'transferencia'
-        ? `Pedido ${orderRef} · falta tu transferencia`
-        : `Pedido ${orderRef} · pago recibido`;
-    }
+    nota.hidden = !orderRef || orderStatus !== 'paid';
+    if (!nota.hidden) nota.textContent = `Pedido ${orderRef} · pago recibido`;
   }
 
   $('ck-rail-toggle').addEventListener('click', () => {
@@ -2757,24 +2800,6 @@ const faqSchema = {
         saveDraft();
       });
 
-      // "Todavía no tengo web" vacía el campo y lo apaga: le da dónde contestar
-      // que no tiene, en vez de escribirlo adentro y comerse un error de
-      // formato. No se persiste: al recargar queda destildado con el campo
-      // vacío, que es exactamente el mismo estado.
-      const sinWeb = card.querySelector<HTMLInputElement>('.ck-sinweb')!;
-      sinWeb.checked = false;
-      sinWeb.addEventListener('change', () => {
-        sitio.disabled = sinWeb.checked;
-        if (sinWeb.checked) {
-          sitio.value = '';
-          m.sitioWeb = '';
-          setErrEl(card.querySelector<HTMLElement>('.ck-sitio-err'), '');
-          saveDraft();
-        } else {
-          sitio.focus();
-        }
-      });
-
       updateHelp();
       montarLogo(card, m, i);
       cont.append(card);
@@ -2796,13 +2821,11 @@ const faqSchema = {
     const otra = card.querySelector<HTMLButtonElement>('.ck-logo-otra')!;
     const alto = card.querySelector<HTMLInputElement>('.ck-logo-alto')!;
     const ancho = card.querySelector<HTMLInputElement>('.ck-logo-ancho')!;
-    const colores = card.querySelector<HTMLInputElement>('.ck-colores')!;
     const confirmWrap = card.querySelector<HTMLElement>('.ck-logo-confirm')!;
     const confirmChk = card.querySelector<HTMLInputElement>('.ck-logo-ok')!;
     const confirmTxt = card.querySelector<HTMLElement>('.ck-logo-ok-txt')!;
     const errLogo = card.querySelector<HTMLElement>('.ck-logo-err')!;
     const errMedidas = card.querySelector<HTMLElement>('.ck-medidas-err')!;
-    const errColores = card.querySelector<HTMLElement>('.ck-colores-err')!;
     const errConfirm = card.querySelector<HTMLElement>('.ck-confirm-err')!;
 
     const figtxt = card.querySelector<HTMLElement>('.ck-figtxt')!;
@@ -2815,7 +2838,6 @@ const faqSchema = {
     file.id = `ck-logo-${i}`;
     alto.id = `ck-logo-alto-${i}`;
     ancho.id = `ck-logo-ancho-${i}`;
-    colores.id = `ck-colores-${i}`;
     denom.id = `ck-denom-${i}`;
     // Los radios de una tarjeta no pueden competir con los de otra marca
     figOpts.forEach(r => { r.name = `ck-figtxt-${i}`; });
@@ -2913,13 +2935,6 @@ const faqSchema = {
     };
     medida(alto, 'alto');
     medida(ancho, 'ancho');
-
-    colores.value = m.colores;
-    colores.addEventListener('input', () => {
-      m.colores = colores.value;
-      setErrEl(errColores, '');
-      saveDraft();
-    });
 
     // ── Figurativa: la declaración sobre el texto de la imagen ──
     // La única barrera posible antes de que se firme la carta poder.
@@ -3065,8 +3080,9 @@ const faqSchema = {
       el.textContent = aviso;
       el.hidden = false;
     });
-    // La garantía es parte del importe ya fijado: se congela con el resto.
-    input('ck-garantia').disabled = true;
+    // La garantía NO se congela acá: mientras el pedido no se pagó se puede
+    // cambiar, y el cambio descarta el pedido (ver soltarPedido). La decide
+    // updateSummary() con garantiaCongelada().
     renderMarcasStep1();
     renderClasesCards();
   }
@@ -3211,23 +3227,15 @@ const faqSchema = {
 
   function showPayBanner(status: string) {
     const banner = $('ck-pay-banner');
+    // Transferencia: sin banner. Al paso 5 se llega por "Ya pagué", así que
+    // recordarle el alias o que falta la transferencia le contradice lo que
+    // acaba de declarar. La acreditación se concilia a mano igual.
+    if (status === 'pending_transfer') { banner.hidden = true; return; }
     const kind =
       status === 'paid' ? 'ok' :
       status === 'rejected' ? 'err' : 'warn';
-    // La transferencia se paga desde el home banking, casi siempre después de
-    // completar la solicitud: el alias tiene que volver a estar acá, no solo
-    // en el paso 4 donde el usuario ya no vuelve.
-    // Tiene que servirle también al que dice que ya pagó ("Ya pagué", "ya
-    // realicé el pago"): no le afirma que falta, le deja los datos por si no.
-    const transferMsg =
-      `<b>Pedido ${orderRef ?? ''} · Transferencia de ${formatARS(total())}.</b> ` +
-      `Si todavía no transferiste: alias <b>${TRANSFERENCIA.alias}</b> ` +
-      `(${TRANSFERENCIA.titular}, ${TRANSFERENCIA.banco}). Completá tus datos: ` +
-      `presentamos ante el INPI cuando se acredite.`;
     const msg =
-      status === 'pending_transfer'
-        ? transferMsg
-        : status === 'paid'
+      status === 'paid'
           ? '<b>✓ Pago aprobado.</b> Recibimos tu pago. Completá los datos para terminar tu solicitud.'
           : status === 'rejected'
             ? '<b>El pago fue rechazado.</b> Podés <button type="button" class="ck-banner-link" id="ck-retry-pay">reintentar el pago</button> o continuar y lo coordinamos después.'
@@ -3244,6 +3252,7 @@ const faqSchema = {
       if (!res.ok) return false;
       const o = await res.json();
       orderRef = o.ref;
+      orderStatus = o.status ?? null;
       const p = o.payload || {};
       if (p.metodo === 'transferencia') metodoPago = 'transferencia';
 
@@ -4209,6 +4218,8 @@ const faqSchema = {
   display: flex; align-items: baseline; justify-content: space-between;
   gap: 1rem; flex-wrap: wrap;
 }
+/* Bajo el label, antes del campo: se lee antes de empezar a escribir */
+.ck-desc-help, .ck-logo-help { margin: -0.15rem 0 0.5rem; }
 .ck-desc-sug { font-size: 0.75rem; }
 .ck-desc-sug[hidden] { display: none; }
 
@@ -4280,7 +4291,6 @@ const faqSchema = {
 
 /* "Todavía no tengo página web": es la respuesta a un campo, no un
    consentimiento, así que no lleva el separador de .ck-terms */
-.ck-sinweb-wrap { margin-top: 0.5rem; padding-top: 0; border-top: none; }
 
 /* Cuando falta más de una cosa en la misma marca, todas juntas y arriba */
 .ck-card-errsum {
