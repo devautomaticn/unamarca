@@ -1,6 +1,9 @@
 ---
 // La parte de "aprender": contexto que no hace falta para completar el campo,
 // pero sin el cual el cliente no entiende qué está firmando.
+//
+// Va cerrado de entrada: el paso se lee de corrido con lo que hay que hacer, y
+// el contexto queda a un click. Abierto, cada paso era un choclo.
 interface Props {
   titulo: string;
 }
@@ -8,7 +11,7 @@ interface Props {
 const { titulo } = Astro.props;
 ---
 
-<aside class="g-dato">
-  <p class="g-dato-head">{titulo}</p>
+<details class="g-dato">
+  <summary class="g-dato-head">{titulo}</summary>
   <div class="g-dato-body"><slot /></div>
-</aside>
+</details>

@@ -18,6 +18,7 @@ import ToolTerminos from './ToolTerminos.astro';
 import ToolVigilancia from './ToolVigilancia.astro';
 import Delegar from './Delegar.astro';
 import Captura from './Captura.astro';
+import Clip from './Clip.astro';
 import { algunaConLogo, marcasEjemplo, MAX_EJEMPLOS } from '../../lib/guia/cliente';
 import { PRICING } from '../../lib/checkout/constants';
 import '../../styles/guia.css';
@@ -61,7 +62,7 @@ const P = {
   'datos-marca':     { n: '8',  titulo: 'Datos de la marca',                     resumen: 'Tipo de marca y denominación. Dos campos, varias trampas.' },
   'protecciones':    { n: '9',  titulo: 'Protecciones: clase y términos',        resumen: 'Acá es donde se rompe la mayoría de las solicitudes.' },
   'titularidad':     { n: '10', titulo: 'Titularidad',                           resumen: 'Quién queda como dueño de la marca.' },
-  'secciones-vacias':{ n: '11', titulo: 'Las cuatro secciones que dejás vacías', resumen: 'Media pantalla del formulario no aplica a tu caso.' },
+  'secciones-vacias':{ n: '11', titulo: 'Las secciones que dejás vacías',        resumen: 'Media pantalla del formulario no aplica a tu caso.' },
   'revisar':         { n: '12', titulo: 'Guardar borrador y revisar',            resumen: 'El último momento en que todo se puede corregir gratis.' },
   'firmar':          { n: '13', titulo: 'Firmar el trámite',                     resumen: 'Guardado no es presentado. Falta firmar.' },
   'pagar':           { n: '14', titulo: 'Pagar el arancel',                      resumen: 'Firmado tampoco es presentado. Falta el VEP.' },
@@ -421,14 +422,10 @@ const paso = (id: PasoId) => ({ id, ...P[id] });
           generico={!hayDatos}
         />
 
-        <Dato titulo="Por qué la denominativa protege más">
-          <p>
-            La denominativa protege el nombre escrito de cualquier forma, con cualquier
-            tipografía y color. La mixta protege el conjunto de nombre y logo: si mañana se
-            rediseña el logo, la protección queda vieja. Por eso, cuando hay que elegir una
-            sola, casi siempre conviene la denominativa.
-          </p>
-        </Dato>
+        <Clip
+          src="08-datos-marca.mp4"
+          alt="Se elige D- DENOMINATIVA en el tipo de marca y se escribe la denominación."
+        />
 
         {conLogo && (
           <>
@@ -440,18 +437,29 @@ const paso = (id: PasoId) => ({ id, ...P[id] });
                 de la que se pidió. Conviene transcribir todo el texto que aparece en la
                 imagen, sin omitir nada.
               </p>
+              <Captura
+                src="08-datos-marca-mixta.png"
+                alt="Tipo M- MIXTA: aparece un aviso rojo del INPI sobre transcribir todo el texto del logo, y los campos ALTO y ANCHO en centímetros."
+                pie="Con Mixta aparece este aviso: el INPI corrige la denominación si no coincide con lo que se lee en el logo."
+              />
             </Trampa>
 
             <div class="g-req">
               <p class="g-req-h">Requisitos de la imagen</p>
               <ul class="g-lista">
                 <li>Formato JPG, hasta 2 MB.</li>
-                <li>Encuadrada dentro del espacio que marca el formulario.</li>
+                <li>Encuadrada: después de <strong>ADJUNTAR</strong> aparece al lado el botón <strong>ENCUADRAR</strong>, que abre el marco dentro del cual tiene que quedar el logo.</li>
                 <li>Blanco y negro o color, según corresponda, e indicar si se reivindican colores.</li>
                 <li>Informar alto (máximo 27 cm) y ancho (máximo 18 cm).</li>
                 <li>El logo no se puede cambiar después. Si se rediseña, es una marca nueva.</li>
               </ul>
             </div>
+
+            <Captura
+              src="08-datos-marca-encuadre.png"
+              alt="Ventana de encuadre del logo: la imagen subida y, encima, un marco rojo del tamaño de las medidas declaradas."
+              pie="Lo que quede fuera del marco rojo no se registra. El marco sale de los centímetros que cargaste en ALTO y ANCHO."
+            />
           </>
         )}
 
@@ -459,12 +467,29 @@ const paso = (id: PasoId) => ({ id, ...P[id] });
 
       <Paso {...paso('protecciones')} tono="hacer">
         <p>
-          Sección <strong>PROTECCIONES</strong>. Al elegir la clase, el sistema tarda unos
-          segundos y carga la tabla con todos los términos de esa clase. Ahí se tildan los
-          que correspondan, usando el buscador de la tabla.
+          Sección <strong>PROTECCIONES</strong>. Al elegir la clase aparece la tabla con
+          todos los términos de esa clase. Escribí una palabra en <strong>Filtrar</strong>
+          para achicarla y tildá los que correspondan.
         </p>
 
+        <Clip
+          src="09-protecciones.mp4"
+          alt="Se elige la clase 4, se escribe VELAS en el filtro y se tildan dos términos."
+        />
+
         <div class="g-elegidos" data-elegidos hidden></div>
+
+        <Captura
+          src="09-protecciones-terminos.png"
+          alt="Tabla de términos filtrada con VELAS AROMÁTICAS y VELAS DE SOJA tildados, y abajo «Cantidad de términos seleccionados: 2»."
+          pie="El contador de abajo tiene que coincidir con lo que tildaste."
+        />
+
+        <Captura
+          src="09-protecciones-seleccion.png"
+          alt="Botón «Ver selección» abierto, que lista VELAS AROMÁTICAS ; VELAS DE SOJA."
+          pie="«Ver selección» muestra en una línea todo lo que quedó elegido, aunque el filtro lo esté ocultando."
+        />
 
         <Trampa titulo="No se puede pedir 'toda la clase'">
           <p>
@@ -492,18 +517,29 @@ const paso = (id: PasoId) => ({ id, ...P[id] });
             desactualizado. Lo más seguro es dejarlo en blanco y completar los campos de
             abajo a mano.
           </p>
+          <Captura
+            src="10-titularidad-buscar.png"
+            alt="Arriba de la sección TITULARIDAD, el campo CUIT y el botón Buscar recuadrados, con los datos del titular ya completos abajo."
+            pie="Este buscador es el que puede pisarte los datos. Dejalo en blanco."
+          />
         </Trampa>
+
+        <Clip
+          src="10-titularidad.mp4"
+          alt="El cursor pasa por el botón Buscar sin tocarlo, baja, aprieta Agregar y el titular aparece en «Titulares Cargados»."
+        />
 
         <div class="g-tabla-wrap">
           <table class="g-tabla">
             <thead><tr><th>Campo</th><th>Qué espera</th></tr></thead>
             <tbody>
               <tr><td>Tipo de persona</td><td>HUMANA si la marca va a tu nombre, JURÍDICA si va a nombre de una sociedad.</td></tr>
-              <tr><td>Nombre / Razón social</td><td>Como figura en el documento o en el estatuto.</td></tr>
+              <tr><td>Apellido y nombre</td><td>Como figura en el documento. Si es JURÍDICA, la razón social como figura en el estatuto.</td></tr>
+              <tr><td>Género, tipo y número de documento, estado civil y país emisor</td><td>Sólo aparecen con HUMANA. Los de tu DNI.</td></tr>
               <tr><td>Número CUIT/CUIL</td><td>El mismo con el que entraste al portal, si el titular sos vos.</td></tr>
               <tr><td>Porcentaje</td><td>100 si hay un solo titular. Con varios, la suma tiene que dar exactamente 100.</td></tr>
               <tr><td>Correo electrónico</td><td>Ahí llegan las notificaciones del expediente. Conviene uno que se revise.</td></tr>
-              <tr><td>Domicilio</td><td>País, provincia, localidad, calle, número y código postal.</td></tr>
+              <tr><td>Domicilio real</td><td>País, provincia, código postal, calle, número, piso y departamento. No hay campo de localidad.</td></tr>
             </tbody>
           </table>
         </div>
@@ -514,6 +550,11 @@ const paso = (id: PasoId) => ({ id, ...P[id] });
             el titular aparezca en la tabla "Titulares Cargados" de abajo. Si no aparece ahí,
             no está cargado, por más que los campos estén llenos.
           </p>
+          <Captura
+            src="10-titularidad-cargados.png"
+            alt="Después de apretar Agregar, los campos quedan vacíos y el titular aparece como fila en la tabla «Titulares Cargados»."
+            pie="Así se ve bien cargado: los campos se vacían y el titular pasa a la tabla."
+          />
         </Trampa>
 
         <Dato titulo="¿A nombre tuyo o de tu empresa?">
@@ -529,9 +570,14 @@ const paso = (id: PasoId) => ({ id, ...P[id] });
 
       <Paso {...paso('secciones-vacias')} tono="hacer">
         <p>
-          Cuatro de las secciones del formulario normalmente no aplican. Se dejan vacías y
+          Cinco de las secciones del formulario normalmente no aplican. Se dejan vacías y
           se sigue de largo.
         </p>
+
+        <Captura
+          src="11-secciones-vacias.png"
+          alt="Todas las secciones del formulario colapsadas, con PRIORIDADES, REPRESENTACIÓN, OBSERVACIONES y DOCUMENTACION RESPALDATORIA recuadradas."
+        />
 
         <div class="g-vacias">
           <div>
@@ -539,8 +585,12 @@ const paso = (id: PasoId) => ({ id, ...P[id] });
             <p>Sólo si la marca ya se pidió en otro país en los últimos 6 meses y hay certificado de prioridad.</p>
           </div>
           <div>
+            <p class="g-vacias-h">COMITÉ OLÍMPICO / QUIEBRA</p>
+            <p>Una sección opcional para casos muy puntuales. Para una marca común, en blanco.</p>
+          </div>
+          <div>
             <p class="g-vacias-h">REPRESENTACIÓN</p>
-            <p><strong>Esta es la clave de hacerlo vos.</strong> Se completa sólo cuando el trámite lo presenta un tercero. Si el CUIT con el que entraste es el mismo del titular, no hace falta completarla, y tampoco necesitás carta poder.</p>
+            <p><strong>Esta es la clave de hacerlo vos.</strong> Se completa sólo cuando el trámite lo presenta un tercero. Si la marca va a tu nombre y entraste con tu propio CUIT, no hace falta completarla, y tampoco necesitás carta poder.</p>
           </div>
           <div>
             <p class="g-vacias-h">OBSERVACIONES</p>
@@ -551,6 +601,11 @@ const paso = (id: PasoId) => ({ id, ...P[id] });
             <p>Estatuto, poder, ratificación o certificado de prioridad. Nada de eso aplica cuando una persona humana registra su propia marca.</p>
           </div>
         </div>
+
+        <p class="g-destacado">
+          Si la marca va a nombre de una sociedad, REPRESENTACIÓN y DOCUMENTACIÓN
+          RESPALDATORIA pueden aplicar. Es uno de los casos del <a href="#ayuda">paso 18</a>.
+        </p>
 
         <Dato titulo="Esto es lo que te ahorra presentarlo vos">
           <p>
@@ -566,6 +621,12 @@ const paso = (id: PasoId) => ({ id, ...P[id] });
           <strong>FINALIZAR</strong>. Conviene guardar el borrador y revisar con la cabeza
           fría antes de finalizar, porque finalizado no se corrige.
         </p>
+
+        <Captura
+          src="12-revisar-botones.png"
+          alt="Final del formulario, con los botones GUARDAR BORRADOR y FINALIZAR recuadrados."
+          pie="Guardá el borrador primero. Finalizado ya no se corrige."
+        />
 
         <div class="g-check">
           <p class="g-check-h">Antes de finalizar</p>
@@ -598,13 +659,29 @@ const paso = (id: PasoId) => ({ id, ...P[id] });
           un paso aparte que está en otra parte del menú.
         </p>
 
-        <p class="g-ruta"><span>MIS TRÁMITES</span><span>Consulta trámites cargados</span><span>Trámites para Firmar</span></p>
+        <p class="g-ruta"><span>MIS TRAMITES</span><span>Consulta Tramites Cargados</span></p>
+
+        <Captura
+          src="13-mis-tramites-menu.png"
+          alt="Menú MIS TRAMITES desplegado, con «Consulta Tramites Cargados» recuadrado."
+        />
+
+        <p>
+          Adentro hay cinco solapas: Trámites en Borrador, para Firmar, para Ingresar, en
+          Proceso de ingreso e Ingresados.
+        </p>
 
         <ol class="g-lista g-lista--num">
           <li>Buscá la solicitud en la solapa <strong>Trámites para Firmar</strong>.</li>
           <li>Tildala en la casilla de la izquierda.</li>
-          <li>Hacé clic en <strong>Firmar Trámite</strong>.</li>
+          <li>Hacé clic en <strong>FIRMAR TRAMITES</strong>.</li>
         </ol>
+
+        <Captura
+          src="14-firmar.png"
+          alt="Pantalla de Mis Trámites en la solapa «Trámites para Firmar», con el botón FIRMAR TRAMITES recuadrado."
+          pie="Tildá la solicitud en la casilla de la izquierda y después FIRMAR TRAMITES."
+        />
 
         <Trampa titulo="Acá se queda colgada la mitad de las solicitudes" nivel="caro">
           <p>
@@ -622,13 +699,18 @@ const paso = (id: PasoId) => ({ id, ...P[id] });
           cuando se paga el arancel</strong>.
         </p>
 
-        <p class="g-ruta"><span>MIS TRÁMITES</span><span>Consulta trámites cargados</span><span>Trámites para ingresar</span></p>
+        <p class="g-ruta"><span>MIS TRAMITES</span><span>Consulta Tramites Cargados</span></p>
 
         <ol class="g-lista g-lista--num">
-          <li>Seleccioná el trámite a abonar.</li>
-          <li>Generá el <strong>volante electrónico de pago (VEP)</strong>.</li>
+          <li>En la solapa <strong>Trámites para Ingresar</strong>, tildá el trámite a abonar.</li>
+          <li>Hacé clic en <strong>MEDIOS DE PAGO DISPONIBLES</strong>, al lado de "Total a Pagar", y generá el <strong>volante electrónico de pago (VEP)</strong>.</li>
           <li>Pagalo desde el home banking, en la sección de pagos VEP.</li>
         </ol>
+
+        <Captura
+          src="15-pagar.png"
+          alt="Solapa «Trámites para Ingresar», con «Total a Pagar» y el botón MEDIOS DE PAGO DISPONIBLES recuadrado."
+        />
 
         <p class="g-destacado">
           Arancel de solicitud: <strong>${arancel}</strong> por marca y por clase, valor de
@@ -759,7 +841,7 @@ const paso = (id: PasoId) => ({ id, ...P[id] });
           <li><strong>Opusieron la marca.</strong> Son 3 meses y una negociación por delante.</li>
           <li><strong>Aparece una marca parecida en tu clase</strong> y no está claro si frena o no.</li>
           <li><strong>Hay que registrar afuera del país.</strong> Cada país es su propio trámite y su propia oficina.</li>
-          <li><strong>La marca va a nombre de varios socios</strong> o hay que transferirla a una sociedad.</li>
+          <li><strong>La marca va a nombre de una sociedad o de varios socios</strong>, o hay que transferirla a una sociedad.</li>
         </ul>
 
         <Delegar
@@ -771,8 +853,8 @@ const paso = (id: PasoId) => ({ id, ...P[id] });
 
       <footer class="g-foot">
         <p>
-          Guía de {cliente.email}. Actualizada con el portal del INPI vigente a agosto de
-          2026. Cuando el INPI cambie algo, esta página se actualiza y tu link sigue siendo
+          Guía de {cliente.email}. Actualizada con el portal del INPI vigente a septiembre
+          de 2026. Cuando el INPI cambie algo, esta página se actualiza y tu link sigue siendo
           el mismo.
         </p>
         <p class="g-foot-legal">
@@ -1125,11 +1207,11 @@ const paso = (id: PasoId) => ({ id, ...P[id] });
       btnTodo.textContent = abrir ? 'Cerrar todos los pasos' : 'Abrir todos los pasos';
     });
 
-    // ── Un click en el índice abre el paso antes de saltar ─────────────────
-    document.querySelectorAll<HTMLAnchorElement>('[data-idx]').forEach(a => {
+    // ── Un link a un paso (índice o texto) lo abre antes de saltar ─────────
+    document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach(a => {
       a.addEventListener('click', () => {
-        const el = document.querySelector<HTMLDetailsElement>(a.getAttribute('href')!);
-        if (el) el.open = true;
+        const el = document.querySelector(a.getAttribute('href')!);
+        if (el instanceof HTMLDetailsElement) el.open = true;
       });
     });
 

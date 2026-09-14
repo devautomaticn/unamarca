@@ -1,0 +1,53 @@
+---
+// Un video corto del portal del INPI dentro de un paso. Hermano de
+// <Captura>: mismas props, mismas reglas sobre qué datos pueden aparecer.
+//
+// Los archivos van en `public/guia/`: `<nombre>.mp4` y `<nombre>-poster.jpg`
+// (el último fotograma, que se ve hasta que el video arranca).
+//
+// No lleva `autoplay`: los pasos son <details> cerrados y la guía tiene varios
+// videos. Arranca cuando entra en pantalla y se pausa al salir, así que abrir
+// la guía no baja ningún video. Con "reducir movimiento" no arranca solo y
+// muestra los controles.
+interface Props {
+  /** Nombre del .mp4 dentro de public/guia/ */
+  src: string;
+  /** Qué se ve, para quien no puede ver el video. */
+  alt: string;
+  /** Texto opcional debajo, para señalar dónde mirar. */
+  pie?: string;
+}
+const { src, alt, pie } = Astro.props;
+const base = src.replace(/\.mp4$/, '');
+---
+
+<figure class="g-captura">
+  <video
+    src={`/guia/${src}`}
+    poster={`/guia/${base}-poster.jpg`}
+    aria-label={alt}
+    muted
+    loop
+    playsinline
+    preload="none"
+    data-clip
+  ></video>
+  {pie && <figcaption>{pie}</figcaption>}
+</figure>
+
+<script>
+  const clips = document.querySelectorAll<HTMLVideoElement>('video[data-clip]');
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    clips.forEach(v => { v.controls = true; });
+  } else {
+    const obs = new IntersectionObserver(
+      entries => entries.forEach(e => {
+        const v = e.target as HTMLVideoElement;
+        if (e.isIntersecting) v.play().catch(() => { v.controls = true; });
+        else v.pause();
+      }),
+      { threshold: 0.5 }
+    );
+    clips.forEach(v => obs.observe(v));
+  }
+</script>

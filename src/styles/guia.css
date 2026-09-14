@@ -314,8 +314,7 @@
 .g-paso[open] .g-paso-chev { transform: rotate(180deg); }
 
 .g-paso-body {
-  padding: 0.25rem 1.15rem 1.15rem;
-  max-width: 46rem;
+  padding: 0.1rem 1.15rem 1.15rem;
 }
 
 .g-paso--hacer .g-paso-n {
@@ -326,8 +325,9 @@
 
 .g-paso-body > p {
   color: var(--c-text);
-  line-height: 1.7;
-  margin-bottom: 1rem;
+  font-size: 0.98rem;
+  line-height: 1.65;
+  margin-bottom: 0.85rem;
 }
 
 .g-sub {
@@ -341,21 +341,26 @@
 /* ============ LISTAS ============ */
 
 .g-lista {
-  margin: 0 0 1.1rem;
+  margin: 0 0 0.9rem;
   padding-left: 1.15rem;
-  line-height: 1.7;
+  font-size: 0.98rem;
+  line-height: 1.6;
 }
 
-.g-lista li { margin-bottom: 0.55rem; }
+.g-lista li { margin-bottom: 0.3rem; }
 .g-lista--num { list-style: decimal; }
 
 /* ============ TRAMPA ============ */
 
 .g-trampa {
-  padding: 0 0 0 1.1rem;
-  margin: 1.4rem 0;
+  padding: 0 0 0 1rem;
+  margin: 1.1rem 0;
   border-left: 2px solid var(--c-amber);
 }
+
+.g-trampa-body { font-size: 0.95rem; line-height: 1.6; }
+.g-trampa-body p { margin-bottom: 0.5rem; }
+.g-trampa-body p:last-child { margin-bottom: 0; }
 
 .g-trampa--caro { border-left-color: #DC2626; }
 
@@ -378,21 +383,41 @@
 /* ============ DATO ============ */
 
 .g-dato {
-  padding: 0 0 0 1.1rem;
-  margin: 1.4rem 0;
-  border-left: 2px solid var(--c-border);
+  margin: 0.9rem 0;
+  border-top: 1px solid var(--c-border-light);
+  border-bottom: 1px solid var(--c-border-light);
 }
 
+.g-dato + .g-dato { margin-top: -0.9rem; border-top: none; }
+
 .g-dato-head {
-  margin-bottom: 0.35rem;
-  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0;
+  font-weight: 600;
   font-size: 0.9rem;
   color: var(--c-navy);
   line-height: 1.4;
+  cursor: pointer;
+  list-style: none;
 }
 
+.g-dato-head::-webkit-details-marker { display: none; }
 
-.g-dato-body { font-size: 0.9rem; line-height: 1.7; color: var(--c-text-muted); }
+.g-dato-head::before {
+  content: '+';
+  flex-shrink: 0;
+  width: 1rem;
+  font-weight: 700;
+  color: var(--c-blue);
+  text-align: center;
+}
+
+.g-dato[open] .g-dato-head::before { content: '−'; }
+.g-dato-head:hover { color: var(--c-blue); }
+
+.g-dato-body { padding: 0 0 0.8rem 1.5rem; font-size: 0.9rem; line-height: 1.65; color: var(--c-text-muted); }
 .g-dato-body p { margin-bottom: 0.5rem; }
 .g-dato-body p:last-child { margin-bottom: 0; }
 .g-dato-body .g-lista { margin-bottom: 0; }
@@ -515,7 +540,7 @@
 /* ============ HERRAMIENTA (placeholder) ============ */
 
 .g-tool {
-  margin: 1.4rem 0;
+  margin: 1.1rem 0;
   padding: 0.95rem 1.05rem;
   border: 1px solid var(--c-border);
   border-radius: var(--r-md);
@@ -1132,6 +1157,26 @@
 
 /* ============ RESPONSIVE ============ */
 
+/* Ventana ancha: el índice se va contra el borde izquierdo y el centro gana el
+   espacio que antes quedaba en los márgenes. El cuerpo de cada paso sigue con
+   tope para que las líneas no se vuelvan ilegibles; las capturas lo aprovechan. */
+@media (min-width: 1400px) {
+  .g-wrap {
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 4rem;
+    max-width: none;
+    margin: 0;
+    padding-left: 2rem;
+    padding-right: 3rem;
+  }
+}
+
+/* La tarjeta mide lo mismo que el texto: una tarjeta más ancha que su
+   contenido deja un hueco a la derecha y se lee como desprolijo. */
+@media (min-width: 1001px) {
+  .g-main { width: 100%; max-width: 52rem; justify-self: center; }
+}
+
 @media (max-width: 1000px) {
   .g-wrap { grid-template-columns: 1fr; gap: 1.5rem; padding-top: 1.5rem; }
 
@@ -1164,7 +1209,7 @@
 @media print {
   .g-idx, .g-campo-btn { display: none; }
   .g-paso { break-inside: avoid; border-color: #ccc; }
-  .g-paso-body { display: block !important; }
+  .g-paso-body, .g-dato-body { display: block !important; }
 }
 
 
@@ -1184,7 +1229,8 @@
   margin: 1.1rem 0 1.4rem;
 }
 
-.g-captura img {
+.g-captura img,
+.g-captura video {
   display: block;
   width: 100%;
   height: auto;
