@@ -1,10 +1,14 @@
 {
-  "actualizado": "2026-09-01T13:15:06.747Z",
+  "actualizado": "2026-09-14T17:04:44.908Z",
   "fuente": "https://portaltramites.inpi.gob.ar/InfoPortal/Aranceles",
   "umapi": 405.69,
   "vigencia": "2026-09",
   "vigenciaTexto": "septiembre 2026",
-  "proximo": null,
+  "proximo": {
+    "desde": "2026-10-01",
+    "umapi": 412.59,
+    "variacionPct": 1.7
+  },
   "tramites": [
     {
       "codigo": 168000,
