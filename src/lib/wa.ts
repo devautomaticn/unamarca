@@ -28,7 +28,7 @@
 //  ("Entré al blog de UnaMarca…") antes que una intención genérica.
 // ────────────────────────────────────────────────────────────────────────────
 
-export const CATALOG_VERSION = '1.7.0';
+export const CATALOG_VERSION = '1.8.0';
 
 /** Agente IA. Recibe todos los CTAs de conversión. */
 export const WA_AGENTE = '5491148999564';
@@ -268,6 +268,22 @@ export const WA_MESSAGES = {
       'porque un humano podría tipear algo parecido — pero quien pregunta por ' +
       '"cupos" vio el anuncio igual, así que el falso positivo cae en Ads, que ' +
       'es donde corresponde.',
+  },
+  ads_disponibilidad: {
+    number: WA_AGENTE,
+    section: 'Ads',
+    risk: 'bajo',
+    match: 'prefix',
+    prefix: 'Quería saber si el siguiente nombre está disponible para registrar:',
+    template: 'Quería saber si el siguiente nombre está disponible para registrar:',
+    note:
+      'Plantilla del anuncio de Meta "A4_chat_p2609_v2_voz" (conjunto ' +
+      'A4_disponibilidad, lanzado el 15/09/2026): video de la conversación con ' +
+      'el agente, ángulo "disponibilidad". Lo prellena Meta: el sitio no emite ' +
+      'este mensaje. match "prefix" porque termina en ":" y el cliente escribe ' +
+      'el nombre a continuación. risk "bajo": alguien podría preguntar por ' +
+      'disponibilidad con sus palabras, pero "el siguiente nombre" no es como ' +
+      'escribe una persona. Es el único mensaje que arranca con "Quería".',
   },
 
   // Internacional
