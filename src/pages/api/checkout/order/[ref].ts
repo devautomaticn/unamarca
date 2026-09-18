@@ -19,7 +19,7 @@ import {
 import { abrirFirma, asegurarTablaFirmas, urlFirma } from '@/lib/server/firmas';
 import { darDeAltaEnVigilante } from '@/lib/server/altaPedido';
 import type { VigilanteEnv } from '@/lib/server/vigilante';
-import { formatPorcentaje, nombreTitular, type TitularPedido } from '@/lib/checkout/constants';
+import { apellidoArchivo, formatPorcentaje, nombreTitular, type TitularPedido } from '@/lib/checkout/constants';
 
 interface OrderRow {
   ref: string;
@@ -244,10 +244,31 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
       };
     }
 
-    return {
-      titulo: `Titular ${i + 1} de ${titulares.length} · ${pct}%`
-        + (x.firmaAqui ? ' · completó el pedido' : ''),
-      filas: [
+    const juridica = x.tipoPersona === 'Juridica';
+    const fila = (k: string, v: string): [string, string][] => (v ? [[k, v]] : []);
+
+    // Una sociedad no tiene documento, género ni estado civil: esas filas no
+    // van vacías, no van. En su lugar, su inscripción y —lo más importante—
+    // quién firmó el poder, que es el único lugar donde el estudio lo ve
+    // escrito: el portal no lo guarda en ningún campo (es un dato del acto).
+    const propias: [string, string][] = juridica
+      ? [
+        ['Razón social', x.nombre || ''],
+        ['CUIT', x.cuit || ''],
+        ['Titularidad', `${pct}%`],
+        ...fila('Inscripción', [
+          x.inscripcion?.registro && `ante ${x.inscripcion.registro}`,
+          x.inscripcion?.numero && `N° ${x.inscripcion.numero}`,
+          x.inscripcion?.fecha && `del ${x.inscripcion.fecha}`,
+        ].filter(Boolean).join(', ')),
+        ['Firma el poder', [
+          x.representante?.nombre,
+          x.representante?.documento && `DNI ${x.representante.documento}`,
+          x.representante?.caracter,
+        ].filter(Boolean).join(' · ') || '⚠ SIN REPRESENTANTE'],
+        ...fila('Poder del firmante', x.representante?.poder || ''),
+      ]
+      : [
         ['Nombre', nombreTitular(x)],
         ['Documento', `${x.documento?.tipo || ''} ${x.documento?.numero || ''}`.trim()],
         ['CUIT/CUIL', x.cuit || ''],
@@ -255,7 +276,15 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
         ['Género', x.genero || ''],
         ['Estado civil', x.estadoCivil || ''],
         ...(x.nombreConyuge ? [['Cónyuge', x.nombreConyuge] as [string, string]] : []),
-        ['Domicilio', [d.calle, d.numero, d.piso && `piso ${d.piso}`, d.depto && `depto ${d.depto}`].filter(Boolean).join(' ')],
+      ];
+
+    return {
+      titulo: `Titular ${i + 1} de ${titulares.length} · ${pct}%`
+        + (juridica ? ' · empresa' : '')
+        + (x.firmaAqui ? ' · completó el pedido' : ''),
+      filas: [
+        ...propias,
+        [juridica ? 'Domicilio legal' : 'Domicilio', [d.calle, d.numero, d.piso && `piso ${d.piso}`, d.depto && `depto ${d.depto}`].filter(Boolean).join(' ')],
         ['Localidad', `${d.localidad || ''} (CP ${d.codigoPostal || '—'}), ${d.provincia || ''}, ${d.pais || 'Argentina'}`],
         ['Email', email],
         ...(x.firmaAqui ? [['WhatsApp', stored.contacto?.whatsapp || ''] as [string, string]] : []),
@@ -278,7 +307,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
       titulares: titularesEmail,
       firmasPendientes: pendientes.map(({ nombre, email, url }) => ({ nombre, email, url })),
       // El PDF se archiva por cliente: Apellido_Marca_Fecha, no el ref.
-      archivo: { apellido: principal?.apellido, fechaPoder: completion?.fechaPoder },
+      archivo: { apellido: apellidoArchivo(principal), fechaPoder: completion?.fechaPoder },
     }, completion?.cartaPdfBase64 || null, logos);
     emailSent = true;
   } catch (e) {

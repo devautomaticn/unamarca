@@ -323,6 +323,49 @@ INPI, que es lo que arregla la declaración del paso 5.)
 
 ---
 
+## Personas jurídicas: es un titular más, no un checkout aparte
+
+Una marca puede quedar a nombre de una empresa. **El tipo se elige por titular,
+en el paso 6**, no por pedido: una marca puede ser de una persona humana y de una
+S.R.L. al 50/50, y eso sigue siendo un solo pedido y un solo poder. El precio no
+cambia (los honorarios son por clase), así que la elección va después de pagar,
+junto con el resto de los datos.
+
+- Una sociedad **no tiene apellido, ni documento, ni género, ni estado civil**.
+  `nombre` es la razón social; el resto va vacío. El DNI que se pide es el de
+  **quien firma por ella**, y vive en `representante`. Reusar el campo
+  `documento` del titular para ese DNI deja el poder diciendo que la S.R.L.
+  tiene DNI: es el error más fácil de cometer y el saneador del servidor lo
+  descarta explícitamente (`titularesDesdeCompletion`).
+- **`cuitMatchesDni()` no corre en una jurídica.** El CUIT de una sociedad no
+  deriva de ningún documento. En su lugar se mira el prefijo: 30/33/34 es
+  empresa, 20/23/24/27 es persona (`esCuitDeJuridica()`). El dígito verificador
+  de un CUIL es perfectamente válido, así que sin ese chequeo un tipo mal
+  elegido pasa entero y el poder sale mal.
+- **La inscripción registral es del CONTACTO** —estable, la misma en cada
+  trámite— y viaja al portal Vigilante en `inscripcion_registro`,
+  `inscripcion_numero` e `inscripcion_fecha`. Los tres son opcionales: una
+  sociedad extranjera o en formación no los tiene, y lo que falta se omite del
+  documento en vez de dejar un hueco.
+- **El representante es del ACTO y NO se manda al portal.** Quién firma cambia
+  de un poder al siguiente (hoy la presidenta, el año que viene un apoderado) y
+  es la misma sociedad: guardarlo en la ficha haría que el segundo poder saliera
+  con el firmante del primero. Vive en el pedido y en el PDF. En el portal queda
+  como una línea en `notas`, y en el email al estudio como su propia fila.
+- **Los campos de persona humana no se mandan en una jurídica.** El portal ahora
+  los descarta y avisa con `campos_del_otro_tipo`, pero antes los *guardaba*:
+  quedaban invisibles en la ficha (el formulario esconde esas filas para una
+  sociedad) y salían en cada consulta que leyera el contacto.
+- El **poder previo del firmante** sólo se pide y sólo se imprime si el carácter
+  dice que es apoderado (`esApoderado()`, que matchea la raíz `apoderad`). Un
+  presidente o un socio gerente son el órgano de la sociedad y sus facultades
+  salen del estatuto; citarles un poder afirmaría algo que el documento no sabe.
+  El wizard, el saneador del servidor y el template lo descartan los tres.
+- **De un cotitular no se sabe el tipo hasta que entra a firmar.** Quien arma el
+  pedido sólo carga su email y su porcentaje, así que el selector y los campos
+  de empresa están también en `/firmar/<token>`, y `aplicarCorreccion()` toma el
+  `tipoPersona` del formulario y no del pedido.
+
 ## El poder es genérico: no nombra la marca ni las clases
 
 La carta poder autoriza a presentar *"marcas, en las clases de la Clasificación
@@ -337,8 +380,20 @@ sin esos datos sigue siendo válido para todo el trámite; la marca y las clases
 concretas viven en el pedido, no en el papel.
 
 - El texto está en `src/lib/checkout/cartaPoder.ts`. Los bullets son **fijos**:
-  no se genera uno por marca. Lo único que varía es quiénes otorgan (conjugación
-  singular/plural y las proporciones del cierre).
+  no se genera uno por marca, y no los configura ningún llamador —un poder a la
+  carta es un poder que nadie revisó—. Son **siete** y amplias a propósito: el
+  poder se firma una vez y acompaña cada presentación durante años, así que lo
+  que no esté escrito hoy no se puede agregar después sin volver a perseguir la
+  firma de todos. Lo que deliberadamente NO está es **sustituir el poder**:
+  habilita a pasarle el mandato a un tercero que el cliente no eligió.
+- Lo único que varía es quiénes otorgan: la conjugación y las proporciones del
+  cierre. Son **tres** casos, no dos —una sociedad sola no dice "yo autorizo" ni
+  "nosotros autorizamos", sino "ACME S.R.L. … autoriza"—. Mientras TODOS los
+  otorgantes sean personas humanas el texto es idéntico al de siempre; la
+  variante aparece recién cuando hay una empresa en el pedido.
+- En una jurídica el pie de firma lleva el nombre y el DNI de **la persona** que
+  firma, más un renglón "En representación de …". Una firma con la razón social
+  sola es una firma sin nadie que responda por ella.
 - `CartaPoderData.marcas` **sigue existiendo pero no se imprime**: los
   llamadores arman con esa misma estructura el nombre del PDF
   (`nombreArchivoPoder()`) y el email al estudio.
@@ -444,7 +499,11 @@ poder.
 - El texto sale del mismo `src/lib/checkout/cartaPoder.ts` y el PDF del mismo
   `cartaPoderPdf.ts` que usa el paso 7 del wizard. Los dos caminos no pueden
   divergir, y el PDF que llega es idéntico al del checkout.
-- **Es de UN solo otorgante.** Un pedido con cotitulares no se rehace desde acá:
+- **Es de una PERSONA HUMANA y de UN solo otorgante.** Sus query params no
+  contemplan una razón social ni un representante, así que un poder de empresa
+  no se rehace desde acá todavía. Cuando haga falta, los campos ya existen en
+  `TitularPoder` — lo que falta es leerlos de la URL.
+- Un pedido con cotitulares no se rehace desde acá:
   ese poder dice "nosotros autorizamos" y lleva un pie de firma por cabeza, y
   rehacerlo con un titular emitiría un documento distinto del original. Para eso
   está la cadena de firmas (ver arriba).
@@ -528,6 +587,9 @@ clase** en `vigilante.unamarca.com.ar` vía su API externa v1.
   devuelve los ids del primer intento en vez de duplicar.
 - **Un trámite por clase.** Una marca en 2 clases son 2 trámites; no es un
   duplicado.
+- De una persona jurídica se manda `tipo: 'Juridica'`, la razón social en
+  `nombre` y su inscripción registral; **no** se mandan los campos de persona
+  humana ni los datos de quién firma (ver la sección de personas jurídicas).
 - **Nunca se manda `acta`.** Nada de lo que sale del checkout se presentó
   todavía: el trámite nace `no_presentado` y el acta la carga el estudio a mano.
 - **La carta poder firmada va adjunta, y es UNA sola para el pedido.** El poder

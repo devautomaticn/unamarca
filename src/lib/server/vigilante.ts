@@ -41,6 +41,7 @@ export interface VigilanteEnv {
  *  opcionales; los vacíos no se mandan (un campo en blanco nunca borra un dato
  *  ya cargado, pero mandar menos evita ruido). */
 export interface ContactoAlta {
+  /** Persona humana: el nombre de pila. Jurídica: la razón social. */
   nombre: string;
   apellido?: string;
   tipo?: 'Humana' | 'Juridica';
@@ -61,6 +62,14 @@ export interface ContactoAlta {
   depto?: string;
   localidad?: string;
   cp?: string;
+  /** Inscripción registral de una persona jurídica. Va acá y no en el trámite
+   *  porque es un dato de la sociedad: estable, y el mismo en cada presentación.
+   *
+   *  Lo que NO existe del otro lado —ni va a existir— es quién firma por ella:
+   *  eso es del acto, cambia de un poder al siguiente y vive en el PDF. */
+  inscripcion_registro?: string;
+  inscripcion_numero?: string;
+  inscripcion_fecha?: string;
   notas?: string;
 }
 

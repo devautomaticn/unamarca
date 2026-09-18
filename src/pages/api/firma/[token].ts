@@ -25,6 +25,7 @@ import {
 } from '@/lib/server/firmas';
 import { sendFirmaRecibida, sendPoderCompletoClientes } from '@/lib/server/notify';
 import { hoyEnBuenosAires } from '@/lib/checkout/cartaPoderPdf';
+import { apellidoArchivo } from '@/lib/checkout/constants';
 
 interface FirmaEnv extends CheckoutEnv, VigilanteEnv {
   RESEND_API_KEY?: string;
@@ -148,6 +149,18 @@ const ETIQUETAS: Record<string, string> = {
   'domicilio.localidad': 'Localidad',
   'domicilio.codigoPostal': 'Código postal',
   'domicilio.provincia': 'Provincia',
+  // Persona o empresa. Va en la lista de cambios como cualquier otro campo:
+  // si el cotitular resulta ser una sociedad, el poder que firmó el primero
+  // decía "el cotitular que suscribe al pie" y ahora dice una razón social con
+  // un representante. El estudio tiene que verlo.
+  tipoPersona: 'Tipo de titular',
+  'inscripcion.registro': 'Registro de inscripción',
+  'inscripcion.numero': 'N° de inscripción',
+  'inscripcion.fecha': 'Fecha de inscripción',
+  'representante.nombre': 'Firma por la empresa',
+  'representante.documento': 'DNI de quien firma',
+  'representante.caracter': 'Carácter de quien firma',
+  'representante.poder': 'Poder del firmante',
 };
 
 /** Guarda las correcciones en `orders.completion` y devuelve qué cambió, en
@@ -184,12 +197,17 @@ async function aplicarCorreccion(
   }
   if (!cambios.length) return [];
 
-  // El porcentaje, el tipo de persona y quién firma en el wizard son del
-  // pedido, no del titular: se conservan tal cual estaban.
+  // El porcentaje y quién firma en el wizard son del pedido, no del titular:
+  // se conservan tal cual estaban.
+  //
+  // El TIPO DE PERSONA sí viene del formulario, y tiene que venir de ahí: quien
+  // armó el pedido sólo cargó el email y el porcentaje del cotitular, así que
+  // si es una persona o una sociedad recién se sabe cuando entra a firmar.
+  // Forzarlo al valor previo dejaba a toda empresa cotitular como persona
+  // humana, con la razón social en el campo "nombre" y sin representante.
   const actualizado = {
     ...saneado,
     porcentaje: previo.porcentaje,
-    tipoPersona: previo.tipoPersona,
     firmaAqui: previo.firmaAqui,
   };
 
@@ -271,7 +289,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     // El PDF se nombra igual en toda la cadena: el apellido es el del que armó
     // el pedido, no el de quien acaba de firmar. Es un solo documento.
     const archivo = {
-      apellido: (ctx.titulares.find(t => t.firmaAqui) ?? ctx.titulares[0])?.apellido,
+      apellido: apellidoArchivo(ctx.titulares.find(t => t.firmaAqui) ?? ctx.titulares[0]),
       fechaPoder: ctx.fecha,
     };
     try {

@@ -4,15 +4,15 @@
 // TODO wiring: POST /api/checkout/submit (PDF + emails).
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { NIZA_CLASSES } from '../lib/checkout/nizaClasses';
-import { PRICING, MAX_CLASES, MAX_MARCAS, MAX_TITULARES, PROVINCIAS, TRANSFERENCIA, TIPOS_MARCA, LOGO_ACCEPT, LOGO_CM_MAX, formatARS } from '../lib/checkout/constants';
-import { waHref, waHrefMulticlase, waHrefMultimarca } from '../lib/wa';
+import { PRICING, MAX_CLASES, MAX_MARCAS, MAX_TITULARES, PROVINCIAS, TRANSFERENCIA, TIPOS_MARCA, LOGO_ACCEPT, LOGO_CM_MAX, CARACTERES_REPRESENTANTE, formatARS } from '../lib/checkout/constants';
+import { waHref, waHrefMulticlase, waHrefMultimarca, waHrefMultititular } from '../lib/wa';
 
 const SITE_URL = 'https://unamarca.com.ar';
 
-const waEmpresa = waHref('registrar_empresa');
 const waClase = waHref('registrar_clase');
 const waMulti = waHrefMulticlase(MAX_CLASES);
 const waMultiMarca = waHrefMultimarca(MAX_MARCAS);
+const waMultiTitular = waHrefMultititular(MAX_TITULARES);
 
 // FAQ: respuestas cortas que derivan al post canónico de cada tema para no
 // competir con el blog por sus keywords (los posts siguen siendo la página
@@ -116,13 +116,6 @@ const faqSchema = {
 
         <div class="ck-lock" id="ck-lock-marcas" hidden></div>
 
-        <div class="ck-field">
-          <label for="ck-tipo-persona">Tipo de titular</label>
-          <div class="ck-sel ck-sel--locked">
-            <select id="ck-tipo-persona" disabled><option>Humana</option></select>
-          </div>
-          <p class="ck-help">¿Es para una empresa? <a href={waEmpresa} target="_blank" rel="noopener noreferrer" onclick="gtag('event', 'whatsapp_click', {'source': 'registrar_empresa'})">Escribinos por WhatsApp</a></p>
-        </div>
 
       </div>
 
@@ -368,7 +361,7 @@ const faqSchema = {
         </p>
         <p class="ck-help" id="ck-tit-max" hidden>
           Se pueden cargar hasta {MAX_TITULARES} titulares por acá.
-          ¿Necesitás más? <a href={waEmpresa} target="_blank" rel="noopener noreferrer" onclick="gtag('event', 'whatsapp_click', {'source': 'registrar_empresa'})">Escribinos por WhatsApp</a>
+          ¿Necesitás más? <a href={waMultiTitular} target="_blank" rel="noopener noreferrer" onclick="gtag('event', 'whatsapp_click', {'source': 'registrar_multititular'})">Escribinos por WhatsApp</a>
         </p>
 
         <!-- Suma de porcentajes: sólo existe cuando hay más de un titular.
@@ -383,6 +376,14 @@ const faqSchema = {
           <p class="ck-err" data-err="porcentajes"></p>
         </div>
       </div>
+
+      <!-- Atajos de cargo del representante. Vive FUERA del molde: el molde se
+           clona una vez por titular y habría tres datalist con el mismo id.
+           Es una lista de sugerencias, no un cerrojo — el campo acepta
+           cualquier cargo, porque los estatutos inventan los suyos. -->
+      <datalist id="ck-caracteres">
+        {CARACTERES_REPRESENTANTE.map(c => <option value={c}></option>)}
+      </datalist>
 
       <!-- Molde de tarjeta de titular. Los campos se identifican por `data-f`,
            no por id: hay hasta MAX_TITULARES copias en la misma pantalla y los
@@ -416,21 +417,45 @@ const faqSchema = {
                  socio, su domicilio, su estado civil. Los cargaba de memoria y
                  después había que corregirlos. -->
             <div data-solo-firmante>
-              <div class="ck-grid ck-g2">
+              <!-- Persona o empresa. Va primero porque decide qué es todo lo
+                   que sigue: una sociedad no tiene apellido ni documento, y en
+                   su lugar pide su inscripción y quién firma por ella.
+                   Se elige por titular: una marca puede ser de una persona y de
+                   una S.R.L. al 50/50, y eso es un solo pedido. -->
+              <div class="ck-field">
+                <label>Tipo de titular <em>*</em></label>
+                <div class="ck-sel">
+                  <select data-f="tipopersona">
+                    <option value="Humana">Persona humana</option>
+                    <option value="Juridica">Persona jurídica (empresa)</option>
+                  </select>
+                </div>
+                <p class="ck-help ck-tit-tp-help" data-tipo="Juridica">
+                  La marca queda a nombre de la empresa. Más abajo te pedimos
+                  quién firma por ella.
+                </p>
+              </div>
+
+              <!-- En una jurídica este mismo campo es la RAZÓN SOCIAL: el
+                   label, el placeholder y la ayuda cambian, y el apellido
+                   desaparece (una sociedad no tiene). Es un solo campo y no dos
+                   porque `nombre` es lo que va a la carta poder y al portal, y
+                   así cambiar de tipo no pierde lo que ya se tipeó. -->
+              <div class="ck-grid ck-g2" data-nombre-grid>
                 <div class="ck-field">
-                  <label>Nombre <em>*</em></label>
+                  <label class="ck-tit-nombre-label">Nombre <em>*</em></label>
                   <input type="text" data-f="nombre" placeholder="Nombre" autocomplete="given-name" />
-                  <p class="ck-help">Tal como figura en el documento.</p>
+                  <p class="ck-help ck-tit-nombre-help">Tal como figura en el documento.</p>
                   <p class="ck-err" data-err="nombre"></p>
                 </div>
-                <div class="ck-field">
+                <div class="ck-field" data-tipo="Humana">
                   <label>Apellido <em>*</em></label>
                   <input type="text" data-f="apellido" placeholder="Apellido" autocomplete="family-name" />
                   <p class="ck-err" data-err="apellido"></p>
                 </div>
               </div>
 
-              <div class="ck-grid ck-g2">
+              <div class="ck-grid ck-g2" data-tipo="Humana">
                 <div class="ck-field">
                   <label>Tipo de documento <em>*</em></label>
                   <div class="ck-sel">
@@ -450,9 +475,31 @@ const faqSchema = {
               </div>
 
               <div class="ck-field">
-                <label>CUIT / CUIL <em>*</em></label>
+                <label class="ck-tit-cuit-label">CUIT / CUIL <em>*</em></label>
                 <input type="text" data-f="cuit" placeholder="27-22730331-5" inputmode="numeric" autocomplete="off" maxlength="13" />
                 <p class="ck-err" data-err="cuit"></p>
+              </div>
+
+              <!-- Inscripción registral. Los tres van sin asterisco: una
+                   sociedad extranjera o en formación no los tiene, y lo que
+                   falte simplemente no se nombra en el poder. -->
+              <div data-tipo="Juridica">
+                <div class="ck-field">
+                  <label>Registro donde está inscripta</label>
+                  <input type="text" data-f="inscregistro" placeholder="la Inspección General de Justicia" autocomplete="off" />
+                  <p class="ck-help">IGJ, Registro Público de Comercio de la provincia, etc.</p>
+                </div>
+                <div class="ck-grid ck-g2">
+                  <div class="ck-field">
+                    <label>Número de inscripción</label>
+                    <input type="text" data-f="inscnumero" placeholder="9659, libro 97" autocomplete="off" />
+                  </div>
+                  <div class="ck-field">
+                    <label>Fecha de inscripción</label>
+                    <input type="text" data-f="inscfecha" placeholder="13/10/1992" autocomplete="off" maxlength="10" />
+                    <p class="ck-err" data-err="inscfecha"></p>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -479,7 +526,7 @@ const faqSchema = {
               </div>
             </div>
 
-            <div data-solo-firmante>
+            <div data-solo-firmante data-tipo="Humana">
               <div class="ck-grid ck-g2">
                 <div class="ck-field">
                   <label>Género <em>*</em></label>
@@ -516,7 +563,7 @@ const faqSchema = {
             </div>
 
             <div class="ck-tit-dom" data-solo-firmante>
-              <div class="ck-section-label">Domicilio real</div>
+              <div class="ck-section-label ck-tit-dom-titulo">Domicilio real</div>
               <p class="ck-help ck-tit-dom-sub">Dónde vive este titular.</p>
 
               <div class="ck-grid ck-g2">
@@ -573,6 +620,53 @@ const faqSchema = {
               <button type="button" class="ck-link-btn ck-pais-toggle" data-pais-toggle>
                 Este titular vive fuera de Argentina
               </button>
+            </div>
+
+            <!-- Quién firma por la sociedad.
+                 Son datos DEL ACTO, no de la empresa: el que firma hoy puede no
+                 ser el del año que viene. Por eso van en la carta poder y no en
+                 la ficha del contacto. El DNI que se pide acá es el de la
+                 PERSONA — una sociedad no tiene documento. -->
+            <div class="ck-tit-dom" data-solo-firmante data-tipo="Juridica">
+              <div class="ck-section-label">Quién firma por la empresa</div>
+              <p class="ck-help">
+                La persona que firma la carta poder en representación de la
+                sociedad. Firma con su nombre y su DNI, aclarando que lo hace
+                por la empresa.
+              </p>
+
+              <div class="ck-grid ck-g2">
+                <div class="ck-field">
+                  <label>Nombre y apellido <em>*</em></label>
+                  <input type="text" data-f="repnombre" placeholder="María Gómez" autocomplete="name" />
+                  <p class="ck-err" data-err="repnombre"></p>
+                </div>
+                <div class="ck-field">
+                  <label>DNI <em>*</em></label>
+                  <input type="text" data-f="repdocumento" placeholder="20150899" autocomplete="off" maxlength="20" />
+                  <p class="ck-err" data-err="repdocumento"></p>
+                </div>
+              </div>
+
+              <div class="ck-field">
+                <label>Cargo o carácter <em>*</em></label>
+                <input type="text" data-f="repcaracter" list="ck-caracteres" placeholder="Presidenta" autocomplete="off" maxlength="60" />
+                <p class="ck-help">Como figura en el estatuto o en el acta de designación.</p>
+                <p class="ck-err" data-err="repcaracter"></p>
+              </div>
+
+              <!-- Sólo si es apoderado: un presidente o un socio gerente sacan
+                   sus facultades del estatuto, un apoderado de otro poder, y sin
+                   nombrarlo el documento no dice de dónde viene lo que afirma. -->
+              <div class="ck-field" data-reppoder-row hidden>
+                <label>Poder con el que actúa <em>*</em></label>
+                <input type="text" data-f="reppoder" placeholder="suscripto el 27/03/2022 ante el Escribano Pérez, Registro 88" autocomplete="off" maxlength="200" />
+                <p class="ck-help">
+                  Como firmás en carácter de apoderado, la carta poder tiene que
+                  citar el poder que te da esa facultad.
+                </p>
+                <p class="ck-err" data-err="reppoder"></p>
+              </div>
             </div>
 
             <button type="button" class="ck-link-btn ck-tit-rm" data-rm hidden>Quitar este titular</button>
@@ -1014,8 +1108,9 @@ const faqSchema = {
     formatCm, parseCm, medidasDesdePx, normalizeTipoMarca, requiereLogo,
     tieneDenominacion, tipoMarcaLabel, type TipoMarca,
     formatPorcentaje, parsePorcentaje, repartirPorcentajes, sumaPorcentajes,
+    esApoderado,
   } from '../lib/checkout/constants';
-  import { formatCuitInput, isValidCuit, cuitMatchesDni } from '../lib/checkout/cuit';
+  import { formatCuitInput, isValidCuit, cuitMatchesDni, esCuitDeJuridica } from '../lib/checkout/cuit';
   import { cartaPoderHTML, type CartaPoderData } from '../lib/checkout/cartaPoder';
 
   const DRAFT_KEY = 'um-checkout-draft';
@@ -1103,9 +1198,17 @@ const faqSchema = {
    *  lista que usan el render, el draft y los listeners: agregar un campo al
    *  molde y olvidarse de esto lo dejaría fuera del guardado. */
   const TITULAR_FIELDS = [
+    'tipopersona',
+    // `nombre` es el nombre de pila de una persona y la RAZÓN SOCIAL de una
+    // sociedad: el mismo campo con otro rótulo, para que cambiar de tipo no
+    // pierda lo que ya se tipeó.
     'nombre', 'apellido', 'tipodoc', 'docnum', 'cuit', 'email',
     'genero', 'estadocivil', 'conyuge',
     'pais', 'calle', 'numero', 'piso', 'depto', 'localidad', 'codpostal', 'provincia',
+    // Sólo persona jurídica. Los de inscripción son opcionales; los del
+    // representante, obligatorios (salvo `reppoder`, que depende del carácter).
+    'inscregistro', 'inscnumero', 'inscfecha',
+    'repnombre', 'repdocumento', 'repcaracter', 'reppoder',
   ] as const;
   type TitularField = typeof TITULAR_FIELDS[number];
 
@@ -1119,7 +1222,7 @@ const faqSchema = {
 
   function nuevoTitular(porcentaje = 100, firmaAqui = false): TitularState {
     const base = Object.fromEntries(TITULAR_FIELDS.map(f => [f, ''])) as Record<TitularField, string>;
-    return { ...base, tipodoc: 'DNI', pais: 'Argentina', porcentaje, firmaAqui };
+    return { ...base, tipopersona: 'Humana', tipodoc: 'DNI', pais: 'Argentina', porcentaje, firmaAqui };
   }
 
   let titulares: TitularState[] = [nuevoTitular(100, true)];
@@ -1127,6 +1230,11 @@ const faqSchema = {
   /** El que firma en el wizard. Siempre hay uno: al quitar una tarjeta, si el
    *  firmante era ese, pasa al primero. */
   const titularFirmante = () => titulares.find(t => t.firmaAqui) ?? titulares[0];
+
+  /** Una empresa. Cualquier otra cosa —incluido un draft viejo, que no traía el
+   *  campo— es persona humana: es el default seguro, porque es el único tipo
+   *  que no exige datos que el formulario todavía no pidió. */
+  const esJuridicaTit = (t: TitularState) => t.tipopersona === 'Juridica';
 
   /** A quién le mandó el servidor el link para firmar. Lo devuelve el PATCH del
    *  pedido; sin él, la confirmación cae en la lista local de cotitulares. */
@@ -1657,7 +1765,8 @@ const faqSchema = {
         setErrEl(fila.querySelector<HTMLElement>(`[data-err="${key}"]`), msg);
       const claves = ['nombre', 'apellido', 'docnum', 'cuit', 'email', 'genero',
         'estadocivil', 'conyuge', 'porcentaje', 'calle', 'numero', 'localidad',
-        'codpostal', 'provincia'];
+        'codpostal', 'provincia',
+        'inscfecha', 'repnombre', 'repdocumento', 'repcaracter', 'reppoder'];
       claves.forEach(k => err(k, ''));
 
       // El email es obligatorio en TODOS: del cotitular es lo único que
@@ -1696,31 +1805,74 @@ const faqSchema = {
       const req = (campo: TitularField, key: string, msg: string) => {
         if (!FIELDS_OPTIONAL && !t[campo].trim()) { err(key, msg); ok = false; }
       };
-      req('nombre', 'nombre', 'Ingresá tu nombre.');
-      req('apellido', 'apellido', 'Ingresá tu apellido.');
-      req('genero', 'genero', 'Seleccioná el género.');
-      req('estadocivil', 'estadocivil', 'Seleccioná el estado civil.');
-      if (t.estadocivil === 'Casado/a') {
-        req('conyuge', 'conyuge', 'Ingresá el nombre del cónyuge.');
-      }
-
+      const juridica = esJuridicaTit(t);
       const doc = t.docnum.trim();
-      if (t.tipodoc === 'DNI') {
-        const digits = doc.replace(/\D/g, '');
-        if (doc || !FIELDS_OPTIONAL) {
-          if (digits.length < 7 || digits.length > 8) {
-            err('docnum', 'Ingresá un DNI válido (7 u 8 dígitos).'); ok = false;
+
+      if (juridica) {
+        // Una sociedad no tiene apellido, ni documento, ni género, ni estado
+        // civil. Lo que sí tiene —y sin lo cual no puede firmar— es quién la
+        // representa en este acto.
+        req('nombre', 'nombre', 'Ingresá la razón social de la empresa.');
+        req('repnombre', 'repnombre', 'Ingresá el nombre de quien firma por la empresa.');
+        req('repcaracter', 'repcaracter', 'Ingresá con qué cargo firma (presidente, socio gerente, etc.).');
+
+        const repDoc = t.repdocumento.replace(/\D/g, '');
+        if (t.repdocumento.trim() || !FIELDS_OPTIONAL) {
+          if (repDoc.length < 7 || repDoc.length > 8) {
+            err('repdocumento', 'Ingresá el DNI de quien firma (7 u 8 dígitos).'); ok = false;
           }
         }
+
+        // Un apoderado saca sus facultades de otro poder, y la carta tiene que
+        // citarlo: sin eso el documento afirma un carácter y no dice de dónde
+        // sale. Un presidente no lo necesita.
+        if (esApoderado(t.repcaracter)) {
+          req('reppoder', 'reppoder', 'Citá el poder con el que actuás: fecha, escribano y registro.');
+        }
+
+        // Los tres datos de inscripción son opcionales (una sociedad extranjera
+        // o en formación no los tiene). La fecha, si está, se imprime tal cual
+        // en el poder: una fecha ilegible en un documento legal es peor que
+        // ninguna.
+        const f = t.inscfecha.trim();
+        if (f && !/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(f)) {
+          err('inscfecha', 'Escribila como 13/10/1992.'); ok = false;
+        }
       } else {
-        req('docnum', 'docnum', 'Ingresá el número de documento.');
+        req('nombre', 'nombre', 'Ingresá tu nombre.');
+        req('apellido', 'apellido', 'Ingresá tu apellido.');
+        req('genero', 'genero', 'Seleccioná el género.');
+        req('estadocivil', 'estadocivil', 'Seleccioná el estado civil.');
+        if (t.estadocivil === 'Casado/a') {
+          req('conyuge', 'conyuge', 'Ingresá el nombre del cónyuge.');
+        }
+
+        if (t.tipodoc === 'DNI') {
+          const digits = doc.replace(/\D/g, '');
+          if (doc || !FIELDS_OPTIONAL) {
+            if (digits.length < 7 || digits.length > 8) {
+              err('docnum', 'Ingresá un DNI válido (7 u 8 dígitos).'); ok = false;
+            }
+          }
+        } else {
+          req('docnum', 'docnum', 'Ingresá el número de documento.');
+        }
       }
 
       const cuit = t.cuit;
       if (cuit || !FIELDS_OPTIONAL) {
         if (!isValidCuit(cuit)) {
           err('cuit', 'El CUIT/CUIL no es válido. Revisalo.'); ok = false;
-        } else if (t.tipodoc === 'DNI' && doc && !cuitMatchesDni(cuit, doc)) {
+        } else if (juridica && !esCuitDeJuridica(cuit)) {
+          // El dígito verificador de un CUIL de persona es perfectamente
+          // válido: sin mirar el prefijo, el tipo mal elegido pasa entero y el
+          // poder sale diciendo que una persona es una sociedad.
+          err('cuit', 'Ese CUIT es de una persona, no de una empresa. Revisalo, o cambiá el tipo de titular a "Persona humana".'); ok = false;
+        } else if (!juridica && esCuitDeJuridica(cuit)) {
+          err('cuit', 'Ese CUIT es de una empresa. Cambiá el tipo de titular a "Persona jurídica".'); ok = false;
+        } else if (!juridica && t.tipodoc === 'DNI' && doc && !cuitMatchesDni(cuit, doc)) {
+          // Sólo tiene sentido en persona humana: el CUIT de una sociedad no
+          // deriva de ningún documento y no matchea nada.
           err('cuit', 'El CUIT/CUIL no coincide con el documento ingresado.'); ok = false;
         }
       }
@@ -1846,8 +1998,50 @@ const faqSchema = {
 
       // De un cotitular sólo se piden email y porcentaje: el resto lo carga él
       // mismo al firmar, que es quien de verdad lo sabe.
+      const soloFirmante = varios && !t.firmaAqui;
       fila.querySelectorAll<HTMLElement>('[data-solo-firmante]')
-        .forEach(bloque => { bloque.hidden = varios && !t.firmaAqui; });
+        .forEach(bloque => { bloque.hidden = soloFirmante; });
+
+      // ── Persona o empresa ──
+      // Decide qué campos existen en esta tarjeta. Los bloques marcados con
+      // data-tipo aparecen sólo en el suyo; los que comparten campo (nombre /
+      // razón social, CUIT, domicilio) cambian de rótulo.
+      const juridica = esJuridicaTit(t);
+      // Un elemento puede llevar los dos atributos (el bloque del representante
+      // es de persona jurídica Y sólo del firmante), así que la regla es la
+      // UNIÓN de las dos condiciones. Con un `hidden` a secas gana la última
+      // vuelta que corra: así quedaba a la vista "quién firma por la empresa"
+      // de un cotitular, que es justo lo que nadie puede completar por él.
+      fila.querySelectorAll<HTMLElement>('[data-tipo]').forEach(bloque => {
+        bloque.hidden = bloque.dataset.tipo !== (juridica ? 'Juridica' : 'Humana')
+          || (soloFirmante && bloque.hasAttribute('data-solo-firmante'));
+      });
+      // `firstChild` y no textContent: el label lleva el asterisco en un <em>
+      // que no hay que pisar.
+      const rotulo = (sel: string, texto: string) => {
+        const el = fila.querySelector(sel);
+        if (el?.firstChild) el.firstChild.textContent = texto;
+      };
+      rotulo('.ck-tit-nombre-label', juridica ? 'Razón social ' : 'Nombre ');
+      rotulo('.ck-tit-cuit-label', juridica ? 'CUIT ' : 'CUIT / CUIL ');
+      q<HTMLElement>('.ck-tit-nombre-help').textContent = juridica
+        ? 'Como figura en el estatuto, con el tipo societario (S.A., S.R.L., …).'
+        : 'Tal como figura en el documento.';
+      // Sin apellido al lado, la razón social ocupa el ancho entero.
+      q<HTMLElement>('[data-nombre-grid]').dataset.nombreGrid = juridica ? 'sola' : '';
+      const nombreInput = fila.querySelector<HTMLInputElement>('[data-f="nombre"]')!;
+      nombreInput.placeholder = juridica ? 'ACME S.R.L.' : 'Nombre';
+      nombreInput.autocomplete = juridica ? 'organization' : 'given-name';
+      fila.querySelector<HTMLInputElement>('[data-f="cuit"]')!.placeholder =
+        juridica ? '30-71234567-1' : '27-22730331-5';
+      // Una sociedad no tiene domicilio "real": tiene sede social.
+      q<HTMLElement>('.ck-tit-dom-titulo').textContent = juridica ? 'Domicilio legal' : 'Domicilio real';
+      q<HTMLElement>('.ck-tit-dom-sub').textContent = juridica
+        ? 'El de la sede social, como figura en el estatuto.'
+        : 'Dónde vive este titular.';
+      // El poder previo sólo se pide —y sólo se imprime— si quien firma es
+      // apoderado: un presidente saca sus facultades del estatuto.
+      q<HTMLElement>('[data-reppoder-row]').hidden = !esApoderado(t.repcaracter);
 
       // Cónyuge: visible solo si el estado civil es Casado/a
       q<HTMLElement>('[data-conyuge-row]').hidden = t.estadocivil !== 'Casado/a';
@@ -1912,6 +2106,11 @@ const faqSchema = {
       const nota = fila.querySelector<HTMLElement>('[data-firma-nota]')!;
       if (!nota.hidden) nota.textContent = notaCotitular(t);
     }
+    // "Apoderado" es lo único que obliga a citar el poder previo, y se escribe
+    // a mano: el campo tiene que aparecer mientras se tipea, no al salir.
+    if (campo === 'repcaracter') {
+      fila.querySelector<HTMLElement>('[data-reppoder-row]')!.hidden = !esApoderado(valor);
+    }
     saveDraft();
   }
 
@@ -1926,6 +2125,8 @@ const faqSchema = {
       const tipo = fila.querySelector<HTMLSelectElement>('[data-f="tipodoc"]')!.value;
       if (tipo === 'DNI') el.value = el.value.replace(/\D/g, '').slice(0, 8);
     }
+    // El de quien firma por una sociedad es siempre un DNI.
+    if (campo === 'repdocumento') el.value = el.value.replace(/\D/g, '').slice(0, 8);
     onTitularInput(fila, campo, el.value);
   });
 
@@ -1947,6 +2148,12 @@ const faqSchema = {
     // El cónyuge aparece y desaparece con el estado civil.
     if (campo === 'estadocivil') {
       fila.querySelector<HTMLElement>('[data-conyuge-row]')!.hidden = el.value !== 'Casado/a';
+    }
+    // El tipo de titular cambia la tarjeta entera: qué campos hay y cómo se
+    // llaman. Se repinta todo en vez de parchear campo por campo.
+    if (campo === 'tipopersona') {
+      renderTitulares();
+      saveDraft();
     }
   });
 
@@ -3299,6 +3506,8 @@ const faqSchema = {
     }
     return {
       titulares: titulares.map(t => ({
+        tipoPersona: esJuridicaTit(t) ? 'Juridica' as const : 'Humana' as const,
+        // En una jurídica es la razón social, sin apellido que concatenar.
         nombreApellido: `${t.nombre.trim()} ${t.apellido.trim()}`.trim(),
         docTipo: t.tipodoc || 'DNI',
         docNumero: t.docnum.trim(),
@@ -3314,6 +3523,15 @@ const faqSchema = {
         // De un cotitular es lo único que se sabe hasta que entra a firmar: el
         // documento lo identifica por ahí y deja el renglón a la vista.
         email: t.email.trim(),
+        // Sólo se imprimen en una jurídica; en una humana el template los
+        // ignora. La inscripción que falte no deja hueco: se omite.
+        inscripcionRegistro: t.inscregistro.trim(),
+        inscripcionNumero: t.inscnumero.trim(),
+        inscripcionFecha: t.inscfecha.trim(),
+        repNombre: t.repnombre.trim(),
+        repDocumento: t.repdocumento.trim(),
+        repCaracter: t.repcaracter.trim(),
+        repPoder: t.reppoder.trim(),
       })),
       marcas: marcas.map(m => ({ nombre: m.nombre, tipo: m.tipo, clases: [...m.clases] })),
       fecha: fechaPoder,
@@ -3513,14 +3731,21 @@ const faqSchema = {
 
   /** Un titular tal como lo guarda el servidor (`completion.titulares[]`). */
   function titularPayload(t: TitularState) {
+    const juridica = esJuridicaTit(t);
     return {
-      tipoPersona: 'Humana',
+      tipoPersona: juridica ? 'Juridica' : 'Humana',
+      // En una jurídica esto es la razón social. El apellido, el documento, el
+      // género y el estado civil van VACÍOS a propósito: una sociedad no los
+      // tiene, y mandarlos igual los deja guardados e invisibles en la ficha
+      // del portal, que después los devuelve en cada consulta.
       nombre: t.nombre.trim(),
-      apellido: t.apellido.trim(),
-      genero: t.genero,
-      estadoCivil: t.estadocivil,
-      nombreConyuge: t.estadocivil === 'Casado/a' ? t.conyuge.trim() : '',
-      documento: { tipo: t.tipodoc || 'DNI', numero: t.docnum.trim() },
+      apellido: juridica ? '' : t.apellido.trim(),
+      genero: juridica ? '' : t.genero,
+      estadoCivil: juridica ? '' : t.estadocivil,
+      nombreConyuge: !juridica && t.estadocivil === 'Casado/a' ? t.conyuge.trim() : '',
+      documento: juridica
+        ? { tipo: '', numero: '' }
+        : { tipo: t.tipodoc || 'DNI', numero: t.docnum.trim() },
       cuit: t.cuit.trim(),
       email: t.email.trim(),
       domicilio: {
@@ -3533,6 +3758,24 @@ const faqSchema = {
         codigoPostal: t.codpostal.trim(),
         provincia: t.provincia,
       },
+      // Sólo jurídica. La inscripción es del contacto (estable, se repite en
+      // cada trámite) y viaja al portal; el representante es del ACTO y se
+      // queda en el pedido y en el PDF — ver src/lib/checkout/constants.ts.
+      ...(juridica ? {
+        inscripcion: {
+          registro: t.inscregistro.trim(),
+          numero: t.inscnumero.trim(),
+          fecha: t.inscfecha.trim(),
+        },
+        representante: {
+          nombre: t.repnombre.trim(),
+          documento: t.repdocumento.trim(),
+          caracter: t.repcaracter.trim(),
+          // El poder previo sólo si el carácter lo pide: citárselo a un
+          // presidente afirmaría algo que el documento no sabe.
+          poder: esApoderado(t.repcaracter) ? t.reppoder.trim() : '',
+        },
+      } : {}),
       porcentaje: t.porcentaje,
       firmaAqui: t.firmaAqui,
     };
@@ -3870,9 +4113,15 @@ const faqSchema = {
 .ck-fold-body { padding: 0 2rem 1.75rem; }
 
 .ck-grid { display: grid; gap: 1rem; margin-bottom: 1rem; }
+/* Sin esto el `display: grid` de arriba le gana al [hidden] del navegador y la
+   fila sigue a la vista: una empresa mostraba igual "Tipo de documento". */
+.ck-grid[hidden] { display: none; }
 .ck-grid:last-child { margin-bottom: 0; }
 .ck-g2 { grid-template-columns: 1fr 1fr; }
 @media (max-width: 580px) { .ck-g2 { grid-template-columns: 1fr; } }
+/* Sin apellido (persona jurídica) la razón social ocupa el ancho entero: un
+   campo a media caña con la otra mitad vacía se lee como un campo faltante. */
+.ck-g2[data-nombre-grid="sola"] { grid-template-columns: 1fr; }
 
 .ck-field { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
 .ck-field[hidden] { display: none; }

@@ -16,7 +16,7 @@
 // mismo `cartaPoder.ts` y el PDF del mismo `cartaPoderPdf.ts` que el checkout —
 // los dos caminos no pueden divergir.
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import { PROVINCIAS } from '@/lib/checkout/constants';
+import { PROVINCIAS, CARACTERES_REPRESENTANTE } from '@/lib/checkout/constants';
 
 export const prerender = false;
 
@@ -73,17 +73,27 @@ const token = String(Astro.params.token ?? '');
 
             <div class="cp-group">
               <div class="cp-group-label">Identidad</div>
-              <div class="cp-row">
+              <!-- Persona o empresa. Se elige ACÁ y no antes: quien armó el
+                   pedido sólo cargó tu email y tu porcentaje, así que si sos una
+                   persona o una sociedad recién se sabe cuando entrás vos. -->
+              <div class="cp-field">
+                <label for="f-tipopersona">Titular</label>
+                <select id="f-tipopersona" data-f="tipopersona">
+                  <option value="Humana">Soy una persona</option>
+                  <option value="Juridica">Es una empresa</option>
+                </select>
+              </div>
+              <div class="cp-row" id="f-nombre-row">
                 <div class="cp-field">
-                  <label for="f-nombre">Nombre</label>
+                  <label for="f-nombre" id="f-nombre-label">Nombre</label>
                   <input type="text" id="f-nombre" data-f="nombre" autocomplete="given-name" />
                 </div>
-                <div class="cp-field">
+                <div class="cp-field" data-tipo="Humana">
                   <label for="f-apellido">Apellido</label>
                   <input type="text" id="f-apellido" data-f="apellido" autocomplete="family-name" />
                 </div>
               </div>
-              <div class="cp-row">
+              <div class="cp-row" data-tipo="Humana">
                 <div class="cp-field">
                   <label for="f-tipodoc">Documento</label>
                   <select id="f-tipodoc" data-f="tipodoc">
@@ -99,14 +109,32 @@ const token = String(Astro.params.token ?? '');
                 </div>
               </div>
               <div class="cp-field">
-                <label for="f-cuit">CUIT / CUIL</label>
+                <label for="f-cuit" id="f-cuit-label">CUIT / CUIL</label>
                 <input type="text" id="f-cuit" data-f="cuit" inputmode="numeric" maxlength="13" placeholder="20-12345678-9" />
+              </div>
+              <!-- Inscripción registral. Los tres sin marca de obligatorio: lo
+                   que falte simplemente no se nombra en el poder. -->
+              <div data-tipo="Juridica">
+                <div class="cp-field">
+                  <label for="f-inscregistro">Registro donde está inscripta</label>
+                  <input type="text" id="f-inscregistro" data-f="inscregistro" placeholder="la Inspección General de Justicia" />
+                </div>
+                <div class="cp-row">
+                  <div class="cp-field">
+                    <label for="f-inscnumero">N° de inscripción</label>
+                    <input type="text" id="f-inscnumero" data-f="inscnumero" placeholder="9659, libro 97" />
+                  </div>
+                  <div class="cp-field">
+                    <label for="f-inscfecha">Fecha</label>
+                    <input type="text" id="f-inscfecha" data-f="inscfecha" placeholder="13/10/1992" maxlength="10" />
+                  </div>
+                </div>
               </div>
               <div class="cp-field">
                 <label for="f-email">Email</label>
                 <input type="email" id="f-email" data-f="email" autocomplete="email" />
               </div>
-              <div class="cp-row">
+              <div class="cp-row" data-tipo="Humana">
                 <div class="cp-field">
                   <label for="f-genero">Género</label>
                   <select id="f-genero" data-f="genero">
@@ -127,14 +155,14 @@ const token = String(Astro.params.token ?? '');
                   </select>
                 </div>
               </div>
-              <div class="cp-field" id="f-conyuge-row" hidden>
+              <div class="cp-field" id="f-conyuge-row" data-tipo="Humana" hidden>
                 <label for="f-conyuge">Nombre del cónyuge</label>
                 <input type="text" id="f-conyuge" data-f="conyuge" />
               </div>
             </div>
 
             <div class="cp-group">
-              <div class="cp-group-label">Domicilio real</div>
+              <div class="cp-group-label" id="f-dom-label">Domicilio real</div>
               <div class="cp-row cp-row--calle">
                 <div class="cp-field">
                   <label for="f-calle">Calle</label>
@@ -177,6 +205,39 @@ const token = String(Astro.params.token ?? '');
                 <input type="text" id="f-pais" data-f="pais" autocomplete="country-name" />
               </div>
               <button type="button" class="cp-link" id="f-pais-toggle">Vivo fuera de Argentina</button>
+            </div>
+
+            <!-- Quién firma por la sociedad. El DNI que se pide es el de la
+                 PERSONA que está en esta página: una sociedad no tiene
+                 documento, y su firma al pie va con su nombre aclarando que lo
+                 hace en representación de la empresa. -->
+            <div class="cp-group" data-tipo="Juridica">
+              <div class="cp-group-label">Quién firma por la empresa</div>
+              <div class="cp-row">
+                <div class="cp-field">
+                  <label for="f-repnombre">Nombre y apellido</label>
+                  <input type="text" id="f-repnombre" data-f="repnombre" autocomplete="name" />
+                </div>
+                <div class="cp-field">
+                  <label for="f-repdocumento">DNI</label>
+                  <input type="text" id="f-repdocumento" data-f="repdocumento" inputmode="numeric" maxlength="20" />
+                </div>
+              </div>
+              <div class="cp-field">
+                <label for="f-repcaracter">Cargo o carácter</label>
+                <input type="text" id="f-repcaracter" data-f="repcaracter" list="cp-caracteres" placeholder="Presidenta" maxlength="60" />
+                <datalist id="cp-caracteres">
+                  {CARACTERES_REPRESENTANTE.map(c => <option value={c}></option>)}
+                </datalist>
+              </div>
+              <div class="cp-field" id="f-reppoder-row" hidden>
+                <label for="f-reppoder">Poder con el que actuás</label>
+                <input type="text" id="f-reppoder" data-f="reppoder" placeholder="suscripto el 27/03/2022 ante el Escribano Pérez, Registro 88" maxlength="200" />
+                <p class="cp-hint">
+                  Como firmás en carácter de apoderado, el poder tiene que citar
+                  el mandato que te da esa facultad.
+                </p>
+              </div>
             </div>
 
             <!-- El porcentaje se muestra pero no se edita: es lo que acordaron
@@ -248,7 +309,7 @@ const token = String(Astro.params.token ?? '');
 
 <script>
   import { cartaPoderHTML, type CartaPoderData, type TitularPoder } from '@/lib/checkout/cartaPoder';
-  import { formatPorcentaje, type TipoMarca, type TitularPedido } from '@/lib/checkout/constants';
+  import { esApoderado, formatPorcentaje, type TipoMarca, type TitularPedido } from '@/lib/checkout/constants';
   import { formatCuitInput, isValidCuit, cuitMatchesDni } from '@/lib/checkout/cuit';
 
   const $ = (id: string) => document.getElementById(id)!;
@@ -278,9 +339,14 @@ const token = String(Astro.params.token ?? '');
    *  el armado del payload: agregar un input al HTML y no ponerlo acá lo deja
    *  fuera del guardado. */
   const CAMPOS = [
+    'tipopersona',
+    // `nombre` es el nombre de pila de una persona y la RAZÓN SOCIAL de una
+    // sociedad: el mismo campo con otro rótulo.
     'nombre', 'apellido', 'tipodoc', 'docnum', 'cuit', 'email',
     'genero', 'estadocivil', 'conyuge',
     'pais', 'calle', 'numero', 'piso', 'depto', 'localidad', 'codpostal', 'provincia',
+    'inscregistro', 'inscnumero', 'inscfecha',
+    'repnombre', 'repdocumento', 'repcaracter', 'reppoder',
   ] as const;
   type Campo = typeof CAMPOS[number];
 
@@ -291,6 +357,8 @@ const token = String(Astro.params.token ?? '');
    *  del texto viven en cartaPoder.ts: acá sólo se mapea. */
   function aPoder(t: TitularPedido): TitularPoder {
     return {
+      tipoPersona: t.tipoPersona === 'Juridica' ? 'Juridica' : 'Humana',
+      // En una jurídica es la razón social y no hay apellido que concatenar.
       nombreApellido: `${t.nombre ?? ''} ${t.apellido ?? ''}`.trim(),
       docTipo: t.documento?.tipo || 'DNI',
       docNumero: t.documento?.numero || '',
@@ -306,20 +374,34 @@ const token = String(Astro.params.token ?? '');
       // De un cotitular que todavía no cargó sus datos, el email es lo único
       // que lo identifica en el documento.
       email: t.email ?? '',
+      // Sólo se imprimen en una jurídica; en una humana el template los ignora.
+      inscripcionRegistro: t.inscripcion?.registro ?? '',
+      inscripcionNumero: t.inscripcion?.numero ?? '',
+      inscripcionFecha: t.inscripcion?.fecha ?? '',
+      repNombre: t.representante?.nombre ?? '',
+      repDocumento: t.representante?.documento ?? '',
+      repCaracter: t.representante?.caracter ?? '',
+      repPoder: t.representante?.poder ?? '',
     };
   }
 
   /** Lo que hay cargado en el panel, en el formato que guarda el servidor. */
   function misDatos(): TitularPedido {
     const t = ctx!.titulares[ctx!.idx];
+    const juridica = valor('tipopersona') === 'Juridica';
     return {
-      tipoPersona: 'Humana',
+      tipoPersona: juridica ? 'Juridica' : 'Humana',
+      // En una jurídica esto es la razón social. Lo de persona humana va vacío
+      // a propósito: una sociedad no tiene apellido ni documento, y mandarlos
+      // igual los deja guardados e invisibles en la ficha del portal.
       nombre: valor('nombre'),
-      apellido: valor('apellido'),
-      genero: valor('genero'),
-      estadoCivil: valor('estadocivil'),
-      nombreConyuge: valor('estadocivil') === 'Casado/a' ? valor('conyuge') : '',
-      documento: { tipo: valor('tipodoc') || 'DNI', numero: valor('docnum') },
+      apellido: juridica ? '' : valor('apellido'),
+      genero: juridica ? '' : valor('genero'),
+      estadoCivil: juridica ? '' : valor('estadocivil'),
+      nombreConyuge: !juridica && valor('estadocivil') === 'Casado/a' ? valor('conyuge') : '',
+      documento: juridica
+        ? { tipo: '', numero: '' }
+        : { tipo: valor('tipodoc') || 'DNI', numero: valor('docnum') },
       cuit: valor('cuit'),
       email: valor('email'),
       domicilio: {
@@ -332,6 +414,20 @@ const token = String(Astro.params.token ?? '');
         codigoPostal: valor('codpostal'),
         provincia: valor('provincia'),
       },
+      ...(juridica ? {
+        inscripcion: {
+          registro: valor('inscregistro'),
+          numero: valor('inscnumero'),
+          fecha: valor('inscfecha'),
+        },
+        representante: {
+          nombre: valor('repnombre'),
+          documento: valor('repdocumento'),
+          caracter: valor('repcaracter'),
+          // El poder previo sólo si el carácter lo pide.
+          poder: esApoderado(valor('repcaracter')) ? valor('reppoder') : '',
+        },
+      } : {}),
       // No se editan: el porcentaje es lo acordado entre todos y ya lo firmó
       // el primero.
       porcentaje: t.porcentaje,
@@ -436,6 +532,7 @@ const token = String(Astro.params.token ?? '');
     const t = ctx!.titulares[ctx!.idx];
     if (!t) return;
     const valores: Record<Campo, string> = {
+      tipopersona: t.tipoPersona === 'Juridica' ? 'Juridica' : 'Humana',
       nombre: t.nombre ?? '',
       apellido: t.apellido ?? '',
       tipodoc: t.documento?.tipo || 'DNI',
@@ -453,6 +550,13 @@ const token = String(Astro.params.token ?? '');
       localidad: t.domicilio?.localidad ?? '',
       codpostal: t.domicilio?.codigoPostal ?? '',
       provincia: t.domicilio?.provincia ?? '',
+      inscregistro: t.inscripcion?.registro ?? '',
+      inscnumero: t.inscripcion?.numero ?? '',
+      inscfecha: t.inscripcion?.fecha ?? '',
+      repnombre: t.representante?.nombre ?? '',
+      repdocumento: t.representante?.documento ?? '',
+      repcaracter: t.representante?.caracter ?? '',
+      reppoder: t.representante?.poder ?? '',
     };
     CAMPOS.forEach(c => { campo(c).value = valores[c]; });
 
@@ -464,8 +568,29 @@ const token = String(Astro.params.token ?? '');
       ? `${formatPorcentaje(t.porcentaje)}% de la marca`
       : '—';
 
+    syncTipo();
     syncConyuge();
     syncPais();
+  }
+
+  /** Persona o empresa: qué campos existen en el panel y cómo se llaman los que
+   *  comparten los dos tipos. */
+  function syncTipo() {
+    const juridica = valor('tipopersona') === 'Juridica';
+    document.querySelectorAll<HTMLElement>('[data-tipo]').forEach(bloque => {
+      bloque.hidden = bloque.dataset.tipo !== (juridica ? 'Juridica' : 'Humana');
+    });
+    $('f-nombre-label').textContent = juridica ? 'Razón social' : 'Nombre';
+    $('f-cuit-label').textContent = juridica ? 'CUIT' : 'CUIT / CUIL';
+    $('f-dom-label').textContent = juridica ? 'Domicilio legal' : 'Domicilio real';
+    const nombre = campo('nombre') as HTMLInputElement;
+    nombre.placeholder = juridica ? 'ACME S.R.L.' : '';
+    (campo('cuit') as HTMLInputElement).placeholder = juridica ? '30-71234567-1' : '20-12345678-9';
+    // El cónyuge cuelga del estado civil, que en una jurídica no existe: sin
+    // esto el renglón queda abierto al cambiar de tipo.
+    if (juridica) $('f-conyuge-row').hidden = true;
+    // El poder previo, sólo si quien firma es apoderado.
+    $('f-reppoder-row').hidden = !juridica || !esApoderado(valor('repcaracter'));
   }
 
   // Cónyuge: visible sólo si el estado civil es Casado/a
@@ -496,11 +621,21 @@ const token = String(Astro.params.token ?? '');
       if (c === 'docnum' && valor('tipodoc') === 'DNI') {
         (el as HTMLInputElement).value = el.value.replace(/\D/g, '').slice(0, 8);
       }
+      // El de quien firma por una sociedad es siempre un DNI.
+      if (c === 'repdocumento') {
+        (el as HTMLInputElement).value = el.value.replace(/\D/g, '').slice(0, 8);
+      }
+      // "Apoderado" es lo único que obliga a citar el poder previo, y se
+      // escribe a mano: el campo aparece mientras se tipea.
+      if (c === 'repcaracter') $('f-reppoder-row').hidden = !esApoderado(el.value);
       errBox.hidden = true;
       render();
     });
     el.addEventListener('change', () => {
       if (c === 'estadocivil') syncConyuge();
+      // El tipo de titular cambia el panel entero: qué campos hay y cómo se
+      // llaman los que comparten los dos tipos.
+      if (c === 'tipopersona') syncTipo();
       render();
     });
   });
@@ -840,6 +975,9 @@ const token = String(Astro.params.token ?? '');
   }
   .cp-field[hidden] { display: none; }
   .cp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  /* El `display: grid` de arriba le gana al [hidden] del navegador: sin esta
+     regla la fila sigue a la vista aunque esté marcada como oculta. */
+  .cp-row[hidden] { display: none; }
   .cp-row--calle { grid-template-columns: 2fr 1fr; }
   .cp-row--cp { grid-template-columns: 1fr 1.4fr; }
   .cp-hint { margin: 0.3rem 0 0; font-size: 0.72rem; color: #64748b; line-height: 1.5; }

@@ -17,9 +17,17 @@ const LH = SIZE * 1.55;
 
 /** Alto de un bloque de firma completo: imagen + renglón + aclaración. Se usa
  *  para decidir el salto de página ANTES de empezar a dibujarlo: una firma
- *  separada de su aclaración no sirve como prueba de nada. */
+ *  separada de su aclaración no sirve como prueba de nada.
+ *
+ *  Se mide por bloque y no con una constante porque no todos tienen los mismos
+ *  renglones: una sociedad suma "En representación de …" y un poder de varios
+ *  titulares suma el porcentaje. Con un alto fijo, el bloque más largo se
+ *  partía justo por esos renglones — que son los que dicen a nombre de quién
+ *  se firmó. */
 const SIG_H = 52;
-const BLOQUE_FIRMA_H = SIG_H + 4 + LH * 3.2;
+const altoBloqueFirma = (pie: { representacion: string; porcentaje: string }, firmado: boolean) =>
+  SIG_H + 4 + LH * (2.2 + (pie.representacion ? 0.85 : 0) + (pie.porcentaje ? 0.85 : 0)
+    + (firmado ? 0 : 0.85));
 
 function wrapText(text: string, font: PDFFont, size: number, maxWidth: number): string[] {
   const words = text.split(/\s+/);
@@ -94,9 +102,9 @@ export async function buildCartaPoderPdf(
   y -= LH * 1.5;
   for (let i = 0; i < t.firmas.length; i++) {
     const pie = t.firmas[i];
-    ensureSpace(BLOQUE_FIRMA_H);
-
     const firmaDataUrl = firmas[i];
+    ensureSpace(altoBloqueFirma(pie, !!firmaDataUrl));
+
     if (firmaDataUrl?.startsWith('data:image/png;base64,')) {
       const b64 = firmaDataUrl.slice('data:image/png;base64,'.length);
       const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
@@ -120,6 +128,12 @@ export async function buildCartaPoderPdf(
     page.drawText(pie.aclaracion, { x: MARGIN, y, size: SIZE - 1, font });
     y -= LH * 0.85;
     page.drawText(pie.doc, { x: MARGIN, y, size: SIZE - 1, font });
+    // A nombre de quién firma. Sin este renglón, el pie de una sociedad es el
+    // de una persona cualquiera: su nombre y su DNI, y nada que la vincule.
+    if (pie.representacion) {
+      y -= LH * 0.85;
+      page.drawText(pie.representacion, { x: MARGIN, y, size: SIZE - 1, font });
+    }
     if (pie.porcentaje) {
       y -= LH * 0.85;
       page.drawText(pie.porcentaje, { x: MARGIN, y, size: SIZE - 1, font });

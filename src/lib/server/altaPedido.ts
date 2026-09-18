@@ -20,7 +20,7 @@ import {
 import { nombreArchivoPoder } from '@/lib/checkout/cartaPoder';
 import { crearAltaVigilante, type AltaResultado, type VigilanteEnv } from './vigilante';
 import { sendVigilanteAlert } from './notify';
-import { formatPorcentaje, tipoMarcaLabel } from '@/lib/checkout/constants';
+import { apellidoArchivo, formatPorcentaje, tipoMarcaLabel } from '@/lib/checkout/constants';
 
 interface AltaEnv extends CheckoutEnv, VigilanteEnv {
   RESEND_API_KEY?: string;
@@ -104,7 +104,7 @@ export async function darDeAltaEnVigilante(
       ? {
         // El mismo nombre con el que se archiva por email: Apellido_Marca_Fecha.
         filename: nombreArchivoPoder({
-          apellido: principal?.apellido,
+          apellido: apellidoArchivo(principal),
           marca: marcas[0]?.nombre,
           fecha: completion?.fechaPoder ?? null,
           ref,
@@ -116,20 +116,32 @@ export async function darDeAltaEnVigilante(
     // cotitular que ya existe se reusa en vez de duplicarse.
     contactos: titulares.map((x, i) => {
       const d = x.domicilio;
+      const juridica = x.tipoPersona === 'Juridica';
       return {
+        // En una jurídica `nombre` es la razón social y no hay apellido.
         nombre: x.nombre,
-        apellido: x.apellido,
-        tipo: 'Humana' as const, // el checkout todavía no acepta personas jurídicas
+        apellido: juridica ? '' : x.apellido,
+        tipo: juridica ? 'Juridica' as const : 'Humana' as const,
         cuit: x.cuit,
         // El teléfono del pedido es de quien lo completó: no se le cuelga a un
         // cotitular un WhatsApp que no es suyo.
         email: x.email || (x.firmaAqui ? contactoEmail : ''),
         telefono: x.firmaAqui ? whatsapp : '',
-        tipo_doc: x.documento?.tipo || '',
-        documento: x.documento?.numero || '',
-        genero: x.genero,
-        estado_civil: x.estadoCivil,
-        conyuge: x.nombreConyuge || '',
+        // Los campos de persona humana NO se mandan en una jurídica. El portal
+        // los descarta y avisa con `campos_del_otro_tipo`, pero antes de eso los
+        // guardaba: quedaban invisibles en la ficha (el formulario esconde esas
+        // filas para una sociedad) y salían en cada consulta que la leyera.
+        tipo_doc: juridica ? '' : (x.documento?.tipo || ''),
+        documento: juridica ? '' : (x.documento?.numero || ''),
+        genero: juridica ? '' : x.genero,
+        estado_civil: juridica ? '' : x.estadoCivil,
+        conyuge: juridica ? '' : (x.nombreConyuge || ''),
+        // La inscripción registral sí es del contacto: estable, y la misma en
+        // cada trámite. Quién firma por la sociedad NO va — es del acto, vive
+        // en la carta poder, y el portal no tiene dónde guardarlo a propósito.
+        inscripcion_registro: juridica ? (x.inscripcion?.registro || '') : '',
+        inscripcion_numero: juridica ? (x.inscripcion?.numero || '') : '',
+        inscripcion_fecha: juridica ? (x.inscripcion?.fecha || '') : '',
         pais: d.pais || 'Argentina',
         provincia: d.provincia,
         calle: d.calle,
@@ -141,6 +153,15 @@ export async function darDeAltaEnVigilante(
         notas: `Alta automática desde el checkout web. Pedido ${ref}.`
           + (titulares.length > 1
             ? ` Cotitular ${i + 1} de ${titulares.length} (${formatPorcentaje(x.porcentaje)}%).`
+            : '')
+          // El portal no tiene campo para el firmante y no lo va a tener (ver
+          // arriba). Queda en las notas para que quien mire la ficha sepa quién
+          // firmó ESTE poder sin tener que abrir el PDF.
+          + (juridica && x.representante?.nombre
+            ? ` Carta poder firmada por ${x.representante.nombre}`
+              + (x.representante.documento ? ` (DNI ${x.representante.documento})` : '')
+              + (x.representante.caracter ? `, ${x.representante.caracter}` : '')
+              + '.'
             : ''),
       };
     }),

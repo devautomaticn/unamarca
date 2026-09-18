@@ -136,8 +136,81 @@ export interface MarcaPedido {
 
 // ── Titulares ─────────────────────────────────────────────
 // Una marca puede tener más de un dueño (socios de un emprendimiento, un
-// matrimonio). El INPI pide el set completo de datos de CADA uno más su
-// porcentaje de titularidad, y la suma tiene que dar exactamente 100.
+// matrimonio, una sociedad y su fundador). El INPI pide el set completo de
+// datos de CADA uno más su porcentaje de titularidad, y la suma tiene que dar
+// exactamente 100.
+//
+// Un titular puede ser una PERSONA JURÍDICA. No es una segunda versión del
+// pedido ni del poder: es una forma distinta de un mismo renglón, porque una
+// marca puede ser de una persona humana y de una S.R.L. al 50/50 y eso sigue
+// siendo un solo documento. Lo que cambia es qué datos tiene ese renglón.
+
+export type TipoPersona = 'Humana' | 'Juridica';
+
+/** Dónde y con qué número está inscripta la sociedad. Los tres son OPCIONALES
+ *  y se imprimen sólo si están: una sociedad extranjera o en formación no los
+ *  tiene, y "inscripta ante ___ bajo el número ___" a medio llenar se lee como
+ *  un campo que alguien se olvidó de completar.
+ *
+ *  `numero` es texto libre a propósito: la IGJ identifica con una resolución
+ *  ("Resolución Nº 134") y los registros provinciales con número y libro
+ *  ("9659, libro 97"). Ninguna estructura más fina cubre a las dos.
+ *
+ *  A diferencia del representante, esto SÍ es un dato del contacto: es estable
+ *  y se repite en cada trámite, así que viaja al portal Vigilante. */
+export interface InscripcionTitular {
+  registro: string;
+  numero: string;
+  /** Como la escribe el cliente (dd/mm/aaaa). No se parsea: va al documento. */
+  fecha: string;
+}
+
+/** Quién firma por la sociedad y con qué carácter.
+ *
+ *  ⚠️ ES UN DATO DEL ACTO, NO DEL CONTACTO, y por eso vive en el pedido y en el
+ *  PDF pero NO se manda al portal Vigilante. Cambia de un poder al siguiente:
+ *  hoy firma la presidenta, el año que viene un apoderado, y es la misma
+ *  sociedad. Guardarlo en la ficha del contacto haría que el segundo poder
+ *  saliera con el firmante del primero. */
+export interface RepresentanteTitular {
+  nombre: string;
+  /** DNI de quien firma. El de la PERSONA, no el de la sociedad: una sociedad
+   *  no tiene documento, y reusar el campo `documento` del titular para esto
+   *  deja el poder diciendo que la S.R.L. tiene DNI. */
+  documento: string;
+  /** Presidente · Socio Gerente · Apoderado · … (texto libre) */
+  caracter: string;
+  /** El poder previo del que saca sus facultades. Sólo se nombra si el carácter
+   *  dice que es apoderado: un presidente las saca del estatuto, y citarle un
+   *  poder afirmaría algo que el documento no sabe. Ver `esApoderado()`. */
+  poder?: string;
+}
+
+/** Los caracteres que ofrece el formulario. Es una lista de atajos, no un
+ *  cerrojo: el campo acepta cualquier cosa porque los estatutos inventan cargos
+ *  ("Socio Administrador", "Director Titular") y bloquearlos mandaría a alguien
+ *  que ya pagó a resolver su trámite por WhatsApp. */
+export const CARACTERES_REPRESENTANTE = [
+  'Presidente',
+  'Presidenta',
+  'Vicepresidente',
+  'Socio Gerente',
+  'Socia Gerente',
+  'Administrador',
+  'Administradora',
+  'Director',
+  'Directora',
+  'Apoderado',
+  'Apoderada',
+  'Titular',
+] as const;
+
+/** Si el carácter dice que quien firma es apoderado hay que citar el poder del
+ *  que saca sus facultades. Se busca la raíz sin distinguir mayúsculas ni
+ *  género, así cubre "Apoderado", "Apoderada" y "Apoderado legal". */
+export function esApoderado(caracter: string | undefined | null): boolean {
+  return String(caracter ?? '').toLowerCase().includes('apoderad');
+}
 
 export interface DomicilioTitular {
   pais: string;
@@ -150,15 +223,23 @@ export interface DomicilioTitular {
   provincia: string;
 }
 
-/** Un titular del pedido, tal como se guarda en `completion.titulares`. */
+/** Un titular del pedido, tal como se guarda en `completion.titulares`.
+ *
+ *  Los campos de persona humana (`apellido`, `documento`, `genero`,
+ *  `estadoCivil`) y los de jurídica (`inscripcion`, `representante`) conviven
+ *  en la misma interfaz, pero **sólo valen los del tipo que dice
+ *  `tipoPersona`**: el resto queda vacío y no se manda a ningún lado. */
 export interface TitularPedido {
-  /** El checkout todavía no acepta personas jurídicas */
-  tipoPersona: 'Humana';
+  tipoPersona: TipoPersona;
+  /** Persona humana: el nombre de pila. Jurídica: la RAZÓN SOCIAL completa
+   *  (y `apellido` queda vacío — una sociedad no tiene). */
   nombre: string;
   apellido: string;
   genero: string;
   estadoCivil: string;
   nombreConyuge?: string;
+  /** Sólo persona humana. Una sociedad no tiene documento: quien lo tiene es
+   *  su firmante, y ése es `representante.documento`. */
   documento: { tipo: string; numero: string };
   cuit: string;
   /** Adónde va el link para firmar la carta poder. Obligatorio en todos: es la
@@ -166,6 +247,10 @@ export interface TitularPedido {
    *  el único dueño. */
   email: string;
   domicilio: DomicilioTitular;
+  /** Sólo jurídica, y los tres campos opcionales dentro de ella. */
+  inscripcion?: InscripcionTitular;
+  /** Sólo jurídica, y obligatorio ahí: una sociedad no firma sola. */
+  representante?: RepresentanteTitular;
   /** 0–100 con hasta dos decimales. La suma de todos da exactamente 100. */
   porcentaje: number;
   /** true en el titular que está completando el checkout: es el único que firma
@@ -213,6 +298,19 @@ export function repartirPorcentajes(n: number): number[] {
  *  emails y encabezados de tarjeta. */
 export function nombreTitular(t: { nombre?: string; apellido?: string }): string {
   return `${String(t.nombre ?? '').trim()} ${String(t.apellido ?? '').trim()}`.trim();
+}
+
+/** Con qué se archiva el poder: el apellido del titular, o la razón social
+ *  cuando es una sociedad. Una jurídica no tiene apellido, y sin esto su PDF
+ *  quedaba nombrado sólo por la marca — que es justo lo que el nombre de
+ *  archivo viene a evitar (se busca por cliente, no por marca). */
+export function apellidoArchivo(
+  t: { tipoPersona?: TipoPersona; nombre?: string; apellido?: string } | null | undefined,
+): string {
+  if (!t) return '';
+  return t.tipoPersona === 'Juridica'
+    ? String(t.nombre ?? '').trim()
+    : String(t.apellido ?? '').trim();
 }
 
 // ── Logo: formato y medidas ───────────────────────────────

@@ -28,7 +28,7 @@
 //  ("Entré al blog de UnaMarca…") antes que una intención genérica.
 // ────────────────────────────────────────────────────────────────────────────
 
-export const CATALOG_VERSION = '1.8.0';
+export const CATALOG_VERSION = '1.9.0';
 
 /** Agente IA. Recibe todos los CTAs de conversión. */
 export const WA_AGENTE = '5491148999564';
@@ -124,12 +124,19 @@ export const WA_MESSAGES = {
   },
 
   // Checkout
-  registrar_empresa: {
+  registrar_multititular: {
     number: WA_AGENTE,
     section: 'Checkout',
     risk: 'nulo',
-    match: 'exact',
-    text: 'Hola! Quiero registrar una marca a nombre de una empresa (persona jurídica).',
+    match: 'prefix',
+    prefix: 'Hola! Quiero registrar una marca con más de ',
+    template: 'Hola! Quiero registrar una marca con más de {maxTitulares} titulares.',
+    note:
+      'Reemplaza a registrar_empresa (baja 2026-09-18), que atendía dos cosas ' +
+      'distintas con el mismo texto: las personas jurídicas —que desde esa fecha ' +
+      'se registran solas en el checkout— y los pedidos con más de MAX_TITULARES ' +
+      'dueños, que siguen siendo a mano. El número sale de MAX_TITULARES (hoy 3) ' +
+      'en src/lib/checkout/constants.ts: matchear por prefijo.',
   },
   registrar_clase: {
     number: WA_AGENTE,
@@ -409,6 +416,19 @@ export const WA_LEGACY = [
       'original y el resto al agente. No es atribuible a ninguna sección de forma ' +
       'retroactiva: mapear a "Web" y nada más.',
   },
+  {
+    key: 'registrar_empresa',
+    match: 'exact',
+    text: 'Hola! Quiero registrar una marca a nombre de una empresa (persona jurídica).',
+    section: 'Checkout',
+    retiredOn: '2026-09-18',
+    note:
+      'Lo usaban dos links del checkout: el selector de tipo de titular del paso 1 ' +
+      '(que sólo ofrecía "Humana") y el aviso de "hasta 3 titulares" del paso 6. ' +
+      'El primero desapareció cuando el checkout empezó a aceptar personas ' +
+      'jurídicas y el segundo pasó a registrar_multititular. Sigue llegando desde ' +
+      'páginas cacheadas: es un lead de empresa que HOY puede autogestionarse.',
+  },
 ] as const;
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -423,6 +443,7 @@ type WaTemplateContext =
   | 'ads_descuento_109'
   | 'registrar_multiclase'
   | 'registrar_multimarca'
+  | 'registrar_multititular'
   | 'registrar_comprobante'
   | 'verificar_conflicto';
 
@@ -465,6 +486,12 @@ export function waHrefMulticlase(maxClases: number): string {
 export function waHrefMultimarca(maxMarcas: number): string {
   const e = WA_MESSAGES.registrar_multimarca;
   return href(e.number, e.template.replace('{maxMarcas}', String(maxMarcas)));
+}
+
+/** Link de "quiero más de N titulares en la misma marca" del checkout. */
+export function waHrefMultititular(maxTitulares: number): string {
+  const e = WA_MESSAGES.registrar_multititular;
+  return href(e.number, e.template.replace('{maxTitulares}', String(maxTitulares)));
 }
 
 /** Link para mandar el comprobante de una transferencia, con el N° de pedido. */

@@ -1,8 +1,8 @@
 // Helpers compartidos del checkout (carpeta _lib: no se publica como ruta).
 import {
   MAX_CLASES, MAX_MARCAS, MAX_TITULARES, LOGO_CM_MAX, LOGO_CM_MIN,
-  computeOrderPricing, contarLineas, normalizeTipoMarca, redondearPorcentaje,
-  repartirPorcentajes, requiereLogo,
+  computeOrderPricing, contarLineas, esApoderado, normalizeTipoMarca,
+  redondearPorcentaje, repartirPorcentajes, requiereLogo,
   type MarcaPedido, type TitularPedido,
 } from '@/lib/checkout/constants';
 
@@ -291,17 +291,26 @@ export function titularesDesdeCompletion(completion: unknown): TitularPedido[] {
 
   const texto = (v: unknown, max = 120) => String(v ?? '').trim().slice(0, max);
 
-  const titulares: TitularPedido[] = crudos.slice(0, MAX_TITULARES).map((t: any) => ({
-    tipoPersona: 'Humana' as const,
-    nombre: texto(t?.nombre, 80),
-    apellido: texto(t?.apellido, 80),
-    genero: texto(t?.genero, 40),
-    estadoCivil: texto(t?.estadoCivil, 40),
-    nombreConyuge: texto(t?.nombreConyuge, 160),
-    documento: {
-      tipo: texto(t?.documento?.tipo, 40) || 'DNI',
-      numero: texto(t?.documento?.numero, 30),
-    },
+  const titulares: TitularPedido[] = crudos.slice(0, MAX_TITULARES).map((t: any) => {
+    // Cualquier cosa que no diga 'Juridica' es persona humana: es el default
+    // seguro y es lo que eran todos los pedidos antes de que esto existiera.
+    const juridica = t?.tipoPersona === 'Juridica';
+    return {
+    tipoPersona: (juridica ? 'Juridica' : 'Humana') as TitularPedido['tipoPersona'],
+    // En una jurídica, la razón social. Los campos de persona humana se
+    // descartan acá y no más adelante: el cliente puede mandar cualquier cosa,
+    // y un DNI colgado de una sociedad viaja después a los emails y al portal.
+    nombre: texto(t?.nombre, 160),
+    apellido: juridica ? '' : texto(t?.apellido, 80),
+    genero: juridica ? '' : texto(t?.genero, 40),
+    estadoCivil: juridica ? '' : texto(t?.estadoCivil, 40),
+    nombreConyuge: juridica ? '' : texto(t?.nombreConyuge, 160),
+    documento: juridica
+      ? { tipo: '', numero: '' }
+      : {
+        tipo: texto(t?.documento?.tipo, 40) || 'DNI',
+        numero: texto(t?.documento?.numero, 30),
+      },
     cuit: texto(t?.cuit, 20),
     email: texto(t?.email, 160).toLowerCase(),
     domicilio: {
@@ -314,6 +323,27 @@ export function titularesDesdeCompletion(completion: unknown): TitularPedido[] {
       codigoPostal: texto(t?.domicilio?.codigoPostal, 20),
       provincia: texto(t?.domicilio?.provincia, 60),
     },
+    // Sólo jurídica. La inscripción es del contacto y viaja al portal; el
+    // representante es del ACTO —cambia de un poder al siguiente— y se queda
+    // acá y en el PDF. Ver src/lib/checkout/constants.ts.
+    ...(juridica ? {
+      inscripcion: {
+        registro: texto(t?.inscripcion?.registro, 160),
+        numero: texto(t?.inscripcion?.numero, 80),
+        fecha: texto(t?.inscripcion?.fecha, 20),
+      },
+      representante: {
+        nombre: texto(t?.representante?.nombre, 120),
+        documento: texto(t?.representante?.documento, 30),
+        caracter: texto(t?.representante?.caracter, 60),
+        // El poder previo sólo si el carácter lo pide. Se descarta acá para que
+        // no haya forma de que un poder firmado por un presidente termine
+        // citando un mandato que no usó.
+        poder: esApoderado(t?.representante?.caracter)
+          ? texto(t?.representante?.poder, 200)
+          : '',
+      },
+    } : {}),
     porcentaje: (() => {
       const n = typeof t?.porcentaje === 'number'
         ? t.porcentaje
@@ -321,7 +351,8 @@ export function titularesDesdeCompletion(completion: unknown): TitularPedido[] {
       return Number.isFinite(n) && n >= 0 && n <= 100 ? redondearPorcentaje(n) : NaN;
     })(),
     firmaAqui: t?.firmaAqui === true,
-  }));
+    };
+  });
 
   if (!titulares.length) return [];
 

@@ -17,7 +17,7 @@
 // siendo válido para todo el trámite. La marca y las clases concretas viajan en
 // el pedido, no en el papel.
 
-import { APODERADO, formatPorcentaje, type TipoMarca } from './constants';
+import { APODERADO, esApoderado, formatPorcentaje, type TipoMarca, type TipoPersona } from './constants';
 
 /** Un otorgante del poder. `porcentaje` solo se nombra cuando hay más de uno:
  *  en un poder de un solo titular decir "100%" es ruido.
@@ -26,8 +26,13 @@ import { APODERADO, formatPorcentaje, type TipoMarca } from './constants';
  *  su email y su porcentaje, y el resto lo completa él mismo al firmar. Ver
  *  `esPendiente()`. */
 export interface TitularPoder {
+  /** Sin esto es 'Humana': es lo que eran todos los poderes antes de que el
+   *  checkout aceptara sociedades, y los pedidos viejos no lo traen. */
+  tipoPersona?: TipoPersona;
+  /** Persona humana: nombre y apellido. Jurídica: la razón social. */
   nombreApellido: string;
-  /** Tipo de documento: DNI | Pasaporte | Libreta Cívica | Libreta de Enrolamiento */
+  /** Tipo de documento: DNI | Pasaporte | Libreta Cívica | Libreta de Enrolamiento.
+   *  Sólo persona humana — una sociedad no tiene documento. */
   docTipo: string;
   docNumero: string;
   cuit: string;
@@ -42,6 +47,28 @@ export interface TitularPoder {
   /** Adónde se le mandó el link para firmar. Mientras no tenga los datos
    *  cargados es lo ÚNICO que lo identifica en el documento. */
   email?: string;
+
+  // ── Sólo persona jurídica ──
+  /** Inscripción registral. Los tres opcionales: lo que falte no deja hueco,
+   *  se omite (ver `inscripcionFrase`). */
+  inscripcionRegistro?: string;
+  inscripcionNumero?: string;
+  inscripcionFecha?: string;
+  /** Quién firma por la sociedad. Obligatorios en una jurídica: sin firmante
+   *  no hay quién otorgue el poder. */
+  repNombre?: string;
+  repDocumento?: string;
+  repCaracter?: string;
+  /** El poder previo del firmante. Se cita SÓLO si el carácter dice apoderado,
+   *  aunque venga cargado: citárselo a un presidente afirmaría algo que el
+   *  documento no sabe. */
+  repPoder?: string;
+}
+
+/** Una sociedad. El default es 'Humana' porque es lo que eran todos los
+ *  titulares antes de que esto existiera. */
+export function esJuridica(t: TitularPoder): boolean {
+  return t.tipoPersona === 'Juridica';
 }
 
 /** Un cotitular que todavía no cargó sus datos. Sin nombre no hay a quién
@@ -91,18 +118,85 @@ function docDe(t: TitularPoder): string {
   return `${t.docTipo || 'DNI'} ${t.docNumero}`;
 }
 
+/** La inscripción registral de una sociedad, con lo que haya.
+ *
+ *  LO QUE FALTA SE OMITE, NO DEJA HUECO: si no hay ninguno de los tres datos la
+ *  frase entera desaparece y el párrafo pasa del CUIT directo al domicilio, que
+ *  es lo correcto para una sociedad extranjera, una en formación, o una que
+ *  simplemente no lo cargó. Un "inscripta ante ___ bajo el número ___" a medio
+ *  llenar se lee como un campo que alguien se olvidó de completar, y en un
+ *  documento legal eso es peor que no decirlo.
+ *
+ *  El número no siempre es un número, y eso cambia la preposición: la IGJ
+ *  identifica con una resolución y los registros provinciales con número y
+ *  libro. "bajo el número 9659, libro 97" se lee; "bajo el número Resolución
+ *  Nº 134" no. */
+function inscripcionFrase(t: TitularPoder): string {
+  const registro = (t.inscripcionRegistro ?? '').trim();
+  const numero = (t.inscripcionNumero ?? '').trim();
+  const fecha = (t.inscripcionFecha ?? '').trim();
+  if (!registro && !numero && !fecha) return '';
+
+  const partes: string[] = [];
+  if (registro) partes.push(`ante ${registro}`);
+  if (numero) partes.push(/^\d/.test(numero) ? `bajo el número ${numero}` : `bajo ${numero}`);
+  if (fecha) partes.push(`con fecha ${fecha}`);
+  // Con coma y no con espacio porque `numero` es texto libre y suele traer
+  // comas adentro ("9659, libro 97"): sin separar, el "con fecha" que sigue
+  // se lee como parte del número.
+  return `inscripta ${partes.join(', ')}`;
+}
+
+/** Cómo se presenta el firmante de una sociedad.
+ *
+ *  La cláusula de juramento es FIJA y siempre va: es lo que reemplaza acreditar
+ *  el cargo con estatuto y acta de designación, que casi ningún poder presentado
+ *  ante el INPI acompaña. Sin ella el documento afirma un carácter y nadie se
+ *  hace responsable de esa afirmación. */
+function representanteFrase(t: TitularPoder): string {
+  const nombre = (t.repNombre ?? '').trim();
+  const doc = (t.repDocumento ?? '').trim();
+  const caracter = (t.repCaracter ?? '').trim();
+  const poder = (t.repPoder ?? '').trim();
+
+  let frase = `representada en este acto por ${nombre}, DNI ${doc}, ` +
+    `en su carácter de ${caracter}`;
+  // Sólo si el carácter lo pide. Un presidente o un socio gerente son el órgano
+  // de la sociedad y su facultad sale del estatuto; un apoderado la saca de otro
+  // poder, y sin nombrarlo el documento no dice de dónde viene lo que afirma.
+  if (poder && esApoderado(caracter)) frase += `, conforme poder ${poder}`;
+  return `${frase}, quien declara bajo juramento que su cargo se encuentra ` +
+    `vigente y que cuenta con facultades suficientes para este acto`;
+}
+
 /** El bloque que identifica a un otorgante dentro de la intro.
  *
  *  Un cotitular sin datos NO se inventa ni se omite: queda a la vista que ese
  *  renglón está incompleto y quién lo va a completar. El primero firma sabiendo
  *  exactamente eso, y el documento definitivo —el que se presenta— sale recién
- *  cuando firmaron todos y ya no queda ningún renglón así. */
+ *  cuando firmaron todos y ya no queda ningún renglón así.
+ *
+ *  Sirve para los dos tipos de persona. El texto del pendiente no los
+ *  distingue a propósito: al armar el pedido sólo se carga el email y el
+ *  porcentaje del cotitular, así que si es una persona o una sociedad recién se
+ *  sabe cuando entra a firmar. */
 function otorganteLinea(t: TitularPoder): string {
   if (esPendiente(t)) {
     const quien = t.email ? ` (aviso enviado a ${t.email})` : '';
     return `el cotitular que suscribe al pie${quien}, cuyos datos personales ` +
       `completa al momento de su firma`;
   }
+
+  // Una sociedad no lleva documento: el DNI que aparece es el de su firmante,
+  // dentro de `representanteFrase`. Escribir acá el `docDe()` dejaría el poder
+  // diciendo que la S.R.L. tiene DNI.
+  if (esJuridica(t)) {
+    const inscripcion = inscripcionFrase(t);
+    return `${t.nombreApellido}, CUIT/CUIL ${t.cuit}` +
+      (inscripcion ? `, ${inscripcion}` : '') +
+      `, con domicilio en ${domicilioLinea(t)}, ${representanteFrase(t)}`;
+  }
+
   return `${t.nombreApellido}, ${docDe(t)}, CUIT/CUIL ${t.cuit}, ` +
     `con domicilio en ${domicilioLinea(t)}`;
 }
@@ -113,6 +207,10 @@ function otorganteLinea(t: TitularPoder): string {
 export interface FirmaPie {
   aclaracion: string;
   doc: string;
+  /** "En representación de ACME S.R.L." — vacío en una persona humana. Quien
+   *  firma por una sociedad estampa SU nombre y SU DNI: el renglón de abajo es
+   *  lo único que dice a nombre de quién lo hace. */
+  representacion: string;
   /** "50% de titularidad" — vacío cuando el titular es uno solo */
   porcentaje: string;
 }
@@ -131,10 +229,24 @@ export function cartaPoderTexto(d: CartaPoderData): CartaPoderTexto {
   const variosTitulares = titulares.length > 1;
 
   // Toda la conjugación del documento cuelga de esto: un poder con dos dueños
-  // no dice "yo autorizo … a mi nombre".
-  const sujeto = variosTitulares ? 'nosotros' : 'yo';
-  const verbo = variosTitulares ? 'autorizamos' : 'autorizo';
-  const posesivo = variosTitulares ? 'nuestro' : 'mi';
+  // no dice "yo autorizo … a mi nombre", y una sociedad sola no dice ninguna de
+  // las dos cosas — quien habla es la sociedad, no quien firma por ella.
+  //
+  // Mientras TODOS los otorgantes sean personas humanas el texto queda idéntico
+  // al de siempre: la variante aparece recién cuando hay una sociedad en el
+  // pedido, así que los poderes que ya se estaban firmando no cambian.
+  const hayJuridica = titulares.some(esJuridica);
+  const sujeto = variosTitulares
+    ? (hayJuridica ? 'los que suscriben' : 'nosotros')
+    : (hayJuridica ? '' : 'yo');
+  const verbo = variosTitulares
+    ? (hayJuridica ? 'autorizan' : 'autorizamos')
+    : (hayJuridica ? 'autoriza' : 'autorizo');
+  const enNombreDe = variosTitulares
+    ? (hayJuridica ? 'en nombre y representación de los otorgantes' : 'en nuestro nombre y representación')
+    : (hayJuridica
+      ? `en nombre y representación de ${titulares[0].nombreApellido.trim() || 'la sociedad'}`
+      : 'en mi nombre y representación');
 
   return {
     encabezado: [
@@ -143,31 +255,69 @@ export function cartaPoderTexto(d: CartaPoderData): CartaPoderTexto {
     ],
     intro:
       `A los ${d.fecha.dia} días del mes de ${MESES[d.fecha.mes]} de ${d.fecha.anio}, ` +
-      `${sujeto}, ${enumerarOtorgantes(titulares.map(otorganteLinea))}, ` +
+      // Una sociedad sola no lleva pronombre: el sujeto de la frase es su
+      // razón social, que ya abre el bloque del otorgante.
+      (sujeto ? `${sujeto}, ` : '') +
+      `${enumerarOtorgantes(titulares.map(otorganteLinea))}, ` +
       `por la presente ${verbo} expresamente al ` +
       `${APODERADO.tratamiento} ${APODERADO.nombre}, DNI ${APODERADO.dni}, CUIT ${APODERADO.cuit}, ` +
-      `con domicilio en ${APODERADO.domicilio}, para que en ${posesivo} nombre y representación:`,
+      `con domicilio en ${APODERADO.domicilio}, para que ${enNombreDe}:`,
     // Plural y sin nombres propios: el mismo documento sirve para una marca o
     // para cinco, y para las clases que terminen presentándose.
+    //
+    // ⚠️ LAS FACULTADES SON FIJAS: no se configuran desde el checkout ni desde
+    // ningún llamador. Un poder a la carta es un poder que nadie revisó.
+    //
+    // Son amplias a propósito. El poder se firma una vez y acompaña cada
+    // presentación durante años —los estudios adjuntan poderes de hace cinco a
+    // trámites que no existían cuando se firmaron—, así que lo que no esté
+    // escrito hoy no se puede agregar después sin volver a molestar al cliente
+    // y perseguir de nuevo la firma de todos los cotitulares.
+    //
+    // Lo que deliberadamente NO está es SUSTITUIR EL PODER. Sustituir habilita
+    // a pasarle el mandato a un tercero que el poderdante no eligió ni conoce:
+    // es una decisión del estudio con su cliente, no un default.
     bullets: [
       'Solicite ante el Instituto Nacional de la Propiedad Industrial (INPI) el ' +
       'registro de marcas, en las clases de la Clasificación Internacional de ' +
-      'Niza que en cada caso correspondan;',
-      'Realice el seguimiento de los trámites;',
-      'Conteste vistas, observaciones y oposiciones;',
+      'Niza que en cada caso correspondan, y peticione sus renovaciones;',
+      'Realice el seguimiento de los trámites, se notifique y retire títulos;',
+      'Conteste vistas, observaciones y oposiciones, deduzca oposiciones y ' +
+      'desista de ellas total o parcialmente;',
+      'Limite o desista, total o parcialmente, los productos y servicios solicitados;',
+      'Acepte e inscriba transferencias, cesiones y cambios de titularidad;',
+      'Abone tasas y aranceles, y perciba documentos y valores vinculados a los trámites;',
       'Presente escritos, recursos y cualquier otra gestión necesaria hasta la finalización de los trámites.',
     ],
     cierre: cierreTexto(titulares),
     firmas: titulares.map(t => ({
       // Sin datos cargados, el pie se identifica por el email: es lo único que
       // se sabe de esa persona hasta que entra a firmar.
-      aclaracion: esPendiente(t) ? (t.email || 'Cotitular') : t.nombreApellido,
-      doc: esPendiente(t) ? 'Datos a completar por el cotitular' : docDe(t),
+      //
+      // En una sociedad quien firma es una persona: van SU nombre y SU DNI, y
+      // el renglón de representación abajo dice por quién lo hace. Poner ahí la
+      // razón social dejaría una firma sin nadie que responda por ella.
+      aclaracion: esPendiente(t)
+        ? (t.email || 'Cotitular')
+        : (esJuridica(t) ? (t.repNombre ?? '').trim() : t.nombreApellido),
+      doc: esPendiente(t)
+        ? 'Datos a completar por el cotitular'
+        : (esJuridica(t) ? `DNI ${(t.repDocumento ?? '').trim()}` : docDe(t)),
+      representacion: !esPendiente(t) && esJuridica(t)
+        ? `En representación de ${t.nombreApellido}`
+        : '',
       porcentaje: variosTitulares && typeof t.porcentaje === 'number'
         ? `${formatPorcentaje(t.porcentaje)}% de titularidad`
         : '',
     })),
   };
+}
+
+/** Cierra la oración sin duplicar el punto. Casi toda razón social termina en
+ *  uno ("ACME S.R.L.", "Pérez S.A.") y "registradas a nombre de ACME S.R.L.."
+ *  se lee como un error de tipeo en un documento legal. */
+function puntoFinal(s: string): string {
+  return s.endsWith('.') ? s : `${s}.`;
 }
 
 /** Con un titular el poder dice "a mi nombre". Con varios hay que decir en qué
@@ -177,7 +327,13 @@ function cierreTexto(titulares: TitularPoder[]): string {
   // "las marcas", en plural y sin nombrarlas: el poder no dice cuáles son.
   const cosa = 'las marcas sean registradas';
   if (titulares.length <= 1) {
-    return `La presente autorización se otorga a los efectos de que ${cosa} a mi nombre.`;
+    // Una sociedad no dice "a mi nombre": la marca queda a nombre de la razón
+    // social, no de quien firmó por ella.
+    const uno = titulares[0];
+    const aNombre = uno && esJuridica(uno)
+      ? `a nombre de ${uno.nombreApellido.trim() || 'la sociedad'}`
+      : 'a mi nombre';
+    return puntoFinal(`La presente autorización se otorga a los efectos de que ${cosa} ${aNombre}`);
   }
   const partes = titulares.map(t => {
     const quien = esPendiente(t) ? (t.email || 'el cotitular') : t.nombreApellido;
@@ -185,12 +341,14 @@ function cierreTexto(titulares: TitularPoder[]): string {
       ? `${quien}, ${formatPorcentaje(t.porcentaje)}%`
       : quien;
   });
-  return `La presente autorización se otorga a los efectos de que ${cosa} a nombre de ` +
-    `los otorgantes, en las siguientes proporciones de titularidad: ${partes.join('; ')}.`;
+  return puntoFinal(
+    `La presente autorización se otorga a los efectos de que ${cosa} a nombre de ` +
+    `los otorgantes, en las siguientes proporciones de titularidad: ${partes.join('; ')}`);
 }
 
 function vacio(): TitularPoder {
   return {
+    tipoPersona: 'Humana',
     nombreApellido: '', docTipo: 'DNI', docNumero: '', cuit: '',
     calle: '', numero: '', codigoPostal: '', localidad: '', provincia: '',
   };
@@ -215,6 +373,8 @@ export function cartaPoderHTML(
       ${img ? `<img src="${img}" alt="Firma" class="ck-cp-firma-img">` : '<div class="ck-cp-firma-space"></div>'}
       <div class="ck-cp-firma-linea"></div>
       <p class="ck-cp-firma-acl">${esc(f.aclaracion)}<br>${esc(f.doc)}${
+        f.representacion ? `<br>${esc(f.representacion)}` : ''
+      }${
         f.porcentaje ? `<br>${esc(f.porcentaje)}` : ''
       }</p>
     </div>`;

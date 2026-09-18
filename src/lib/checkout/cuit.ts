@@ -27,10 +27,20 @@ export function isValidCuit(value: string): boolean {
   return check === parseInt(d[10], 10);
 }
 
-/** Los 8 dígitos centrales del CUIT/CUIL deben coincidir con el DNI */
+/** Los 8 dígitos centrales del CUIT/CUIL deben coincidir con el DNI.
+ *  ⚠️ SÓLO PARA PERSONA HUMANA: el CUIT de una sociedad (30-…) no deriva de
+ *  ningún documento y no matchea nada. Ver `esCuitDeJuridica()`. */
 export function cuitMatchesDni(cuit: string, dni: string): boolean {
   const c = cuitDigits(cuit);
   const d = cuitDigits(dni);
   if (c.length !== 11 || d.length < 7 || d.length > 8) return false;
   return parseInt(c.slice(2, 10), 10) === parseInt(d, 10);
+}
+
+/** Los CUIT de persona jurídica empiezan con 30, 33 o 34; los de persona
+ *  humana con 20, 23, 24 o 27. Sirve para avisar de un tipo mal elegido: el
+ *  dígito verificador de un CUIT de empresa es perfectamente válido, así que
+ *  sin esto un CUIT de sociedad cargado como persona humana pasa entero. */
+export function esCuitDeJuridica(value: string): boolean {
+  return ['30', '33', '34'].includes(cuitDigits(value).slice(0, 2));
 }
