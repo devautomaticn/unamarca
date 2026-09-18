@@ -24,6 +24,8 @@ Thumbs.db
 # Local-only materials (not for deployment)
 marketing/
 administracion/
+ads/meta/creativos/
 
 # Wrangler local cache
 .wrangler/
+_migracion/
