@@ -40,12 +40,12 @@ En la práctica esto significa que el costo siempre va a estar actualizado: no v
 
 | Concepto | UMAPIS | Pesos aprox. ({{VIGENCIA}}) |
 |---|---|---|
-| Solicitud de registro — hasta 20 posiciones | 100 UMAPIS | {{ARANCEL}} |
+| Solicitud de registro, hasta 20 posiciones | 100 UMAPIS | {{ARANCEL}} |
 | Cada posición adicional (más de 20) | 4 UMAPIS | {{ARANCEL_POSICION}} |
 
 *1 UMAPI = {{UMAPI}} ({{VIGENCIA}}). El valor en pesos varía mensualmente: en nuestra [tabla de aranceles del INPI](/aranceles-inpi/) están todos los trámites de marcas al día, con el valor de la UMAPI mes a mes y el próximo aumento ya anunciado.*
 
-El arancel se cobra **por clase**. Si querés registrar tu marca en dos rubros distintos — por ejemplo, ropa y accesorios — pagás dos veces el arancel base. Para entender qué es una clase y cuál te corresponde, leé: [clases de marcas para registrar en Argentina](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina/).
+El arancel se cobra **por clase**. Si querés registrar tu marca en dos rubros distintos (por ejemplo, ropa y accesorios), pagás dos veces el arancel base. Para entender qué es una clase y cuál te corresponde, leé: [clases de marcas para registrar en Argentina](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina/).
 
 ## ¿Cuánto salen los honorarios profesionales?
 
@@ -73,8 +73,8 @@ Con UnaMarca el total es bastante menor: **{{HONORARIOS}} de honorarios más {{A
 
 | Escenario | Arancel INPI | Honorarios UnaMarca | Total |
 |---|---|---|---|
-| 1 clase — marca denominativa (nombre) | ~{{ARANCEL}} | {{HONORARIOS}} | **{{TOTAL}}** |
-| 1 clase — marca mixta (nombre + logo) | ~{{ARANCEL}} | {{HONORARIOS}} | **{{TOTAL}}** |
+| 1 clase, marca denominativa (nombre) | ~{{ARANCEL}} | {{HONORARIOS}} | **{{TOTAL}}** |
+| 1 clase, marca mixta (nombre + logo) | ~{{ARANCEL}} | {{HONORARIOS}} | **{{TOTAL}}** |
 | 2 clases | ~{{ARANCEL_2}} | {{HONORARIOS_2}} | **{{TOTAL_2}}** |
 
 *Valores de {{VIGENCIA}}. El arancel del INPI se ajusta cada mes según el valor del UMAPI, así que el total puede variar levemente mes a mes. El honorario de UnaMarca es fijo: **{{HONORARIOS}} por clase**, se registre solo el nombre o el nombre junto con el logo.*
@@ -99,4 +99,4 @@ Visto así, el costo del registro es relativamente bajo comparado con lo que pro
 
 ---
 
-Si querés saber cuánto tarda el proceso además de cuánto cuesta, leé: [cuánto tarda registrar una marca en Argentina](/blog/cuanto-tarda-registro-marca-argentina/). Y si preferís que alguien se encargue del trámite completo por vos, [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491148999564&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0) — te respondemos con un presupuesto sin compromiso.
+Si querés saber cuánto tarda el proceso además de cuánto cuesta, leé: [cuánto tarda registrar una marca en Argentina](/blog/cuanto-tarda-registro-marca-argentina/). Y si preferís que alguien se encargue del trámite completo por vos, [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491148999564&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0). Te respondemos con un presupuesto sin compromiso.

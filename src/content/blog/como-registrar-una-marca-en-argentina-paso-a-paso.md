@@ -5,35 +5,35 @@ pubDate: 2026-04-05
 tags: []
 ---
 
-Tenés un negocio, un emprendimiento, un nombre que construiste con esfuerzo — y querés asegurarte de que nadie más lo use. Registrar una marca en Argentina es la única forma de protegerlo legalmente. En esta guía te explico **cómo registrar una marca en Argentina paso a paso**, con todo lo que necesitás saber antes de presentar tu solicitud ante el INPI.
+Tenés un negocio, un emprendimiento, un nombre que construiste con esfuerzo, y querés asegurarte de que nadie más lo use. Registrar una marca en Argentina es la única forma de protegerlo legalmente. En esta guía te explico **cómo registrar una marca en Argentina paso a paso**, con todo lo que necesitás saber antes de presentar tu solicitud ante el INPI.
 
 ## ¿Qué es registrar una marca y por qué importa?
 
-Registrar una marca es obtener el derecho exclusivo a usar un nombre, logo, slogan o combinación de estos dentro de un rubro específico en Argentina. Sin ese registro, otra persona puede usar algo igual o muy similar — y no tenés cómo impedirlo legalmente.
+Registrar una marca es obtener el derecho exclusivo a usar un nombre, logo, slogan o combinación de estos dentro de un rubro específico en Argentina. Sin ese registro, otra persona puede usar algo igual o muy similar, y no tenés cómo impedirlo legalmente.
 
 El registro te da:
 
 - **Exclusividad** sobre tu marca en las clases que registres
 - **Respaldo legal** para actuar contra imitadores
-- **Valor comercial** — una marca registrada vale más al momento de vender o licenciar tu negocio
+- **Valor comercial:** una marca registrada vale más al momento de vender o licenciar tu negocio
 
-## Paso 1 — Decidí qué tipo de marca vas a registrar
+## Paso 1: Decidí qué tipo de marca vas a registrar
 
 Antes de arrancar, tenés que saber qué es exactamente lo que querés proteger:
 
 - **Denominativa:** solo el nombre o texto (ej: "MiMarca")
 - **Figurativa:** solo el logo o imagen, sin texto
-- **Mixta:** nombre + logo combinados — la opción más común y recomendada
+- **Mixta:** nombre + logo combinados, la opción más común y recomendada
 
 Si tenés dudas sobre cuál elegir, podés leer [nuestra guía sobre cómo registrar marca y logo en Argentina](/blog/como-registrar-marca-y-logo-en-argentina/).
 
-## Paso 2 — Verificá que tu marca esté disponible
+## Paso 2: Verificá que tu marca esté disponible
 
-Antes de presentar la solicitud, es fundamental hacer una búsqueda previa para confirmar que no existe una marca igual o similar ya registrada en el mismo rubro. Este paso es más importante que nunca: desde marzo de 2026, el INPI ya no verifica conflictos con marcas existentes durante el examen de fondo — esa responsabilidad recae sobre los titulares de marcas registradas, que deben presentar oposiciones. Esto significa que si presentás una marca similar a una existente y nadie se opone, podría aprobarse — pero también significa que podrías quedar expuesto si alguien registra algo similar a la tuya.
+Antes de presentar la solicitud, es fundamental hacer una búsqueda previa para confirmar que no existe una marca igual o similar ya registrada en el mismo rubro. Este paso es más importante que nunca: desde marzo de 2026, el INPI ya no verifica conflictos con marcas existentes durante el examen de fondo: esa responsabilidad recae sobre los titulares de marcas registradas, que deben presentar oposiciones. Esto significa que si presentás una marca similar a una existente y nadie se opone, podría aprobarse, pero también significa que podrías quedar expuesto si alguien registra algo similar a la tuya.
 
 Podés hacer la búsqueda gratis en nuestro [buscador de marcas del INPI](/verificar-marca/), que consulta por nombre y clase y también detecta marcas parecidas. Explicamos cómo hacerlo con el buscador oficial acá: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente/).
 
-## Paso 3 — Determiná en qué clases registrar tu marca
+## Paso 3: Determiná en qué clases registrar tu marca
 
 Las marcas en Argentina se registran por "clases", que son categorías de productos o servicios basadas en la Clasificación Internacional de Niza. Hay 45 clases en total.
 
@@ -46,7 +46,7 @@ Ejemplos:
 
 Para entender cómo funciona el sistema completo, leé nuestra guía: [clases de marcas para registrar en Argentina](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina/).
 
-## Paso 4 — Reuní la documentación necesaria
+## Paso 4: Reuní la documentación necesaria
 
 El requisito varía según si el titular es una persona física o una empresa:
 
@@ -60,7 +60,7 @@ El requisito varía según si el titular es una persona física o una empresa:
 - Datos del representante legal
 - Si registrás un logo, el archivo de imagen en formato JPEG
 
-## Paso 5 — Presentá la solicitud ante el INPI
+## Paso 5: Presentá la solicitud ante el INPI
 
 El trámite se puede hacer de forma **100% online** en [portaltramites.inpi.gob.ar](https://portaltramites.inpi.gob.ar). Para esto necesitás tener Clave Fiscal de AFIP nivel 2 o superior.
 
@@ -72,13 +72,13 @@ En la solicitud vas a completar:
 4. Lista de productos o servicios específicos dentro de cada clase
 5. Subir el archivo del logo si corresponde
 
-## Paso 6 — Pagá los aranceles del INPI
+## Paso 6: Pagá los aranceles del INPI
 
 Una vez completada la solicitud, el sistema genera una boleta de pago que podés abonar por home banking, Pago Mis Cuentas, Rapipago o Red Link. El costo depende de cuántas clases registres y de la cantidad de posiciones (productos o servicios específicos) dentro de cada clase.
 
 Podés consultar los valores actualizados directamente en [Aranceles INPI](https://www.argentina.gob.ar/inpi/aranceles-inpi). Para una referencia más completa sobre los costos totales del trámite, incluidos honorarios profesionales, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca/).
 
-## Paso 7 — Qué pasa después de presentar la solicitud
+## Paso 7: Qué pasa después de presentar la solicitud
 
 Una vez presentada la solicitud, el INPI sigue este proceso (actualizado según Resolución INPI 583/25, vigente desde marzo 2026):
 
@@ -96,7 +96,7 @@ Desde el momento en que presentás la solicitud ya tenés **prioridad registral*
 
 ## Errores frecuentes que pueden costar caro
 
-- **No hacer la búsqueda previa** — desde 2026 el INPI no filtra marcas similares, así que si no la hacés vos, nadie lo hará por vos
+- **No hacer la búsqueda previa:** desde 2026 el INPI no filtra marcas similares, así que si no la hacés vos, nadie lo hará por vos
 - **Elegir las clases incorrectas** y quedar sin protección en tu rubro real
 - **Registrar solo el nombre** cuando también usás un logo distintivo
 - **Usar términos genéricos** que el INPI no acepta (ej: "Panadería Artesanal" para una panadería)
@@ -106,4 +106,4 @@ Desde el momento en que presentás la solicitud ya tenés **prioridad registral*
 
 El trámite tiene sus tecnicismos, pero con los pasos claros y la documentación correcta es completamente manejable. La clave está en hacer bien la búsqueda previa, elegir las clases correctas y no perder el seguimiento.
 
-Si preferís enfocarte en tu negocio y que alguien con experiencia maneje el proceso por vos, [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491148999564&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0) — te respondemos con un diagnóstico gratuito y sin compromiso.
+Si preferís enfocarte en tu negocio y que alguien con experiencia maneje el proceso por vos, [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491148999564&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0). Te respondemos con un diagnóstico gratuito y sin compromiso.

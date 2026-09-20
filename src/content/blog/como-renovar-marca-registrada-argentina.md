@@ -12,7 +12,7 @@ Una marca registrada en Argentina dura **10 años**. Pasado ese plazo, si no la 
 
 Toda marca registrada ante el INPI tiene una vigencia de 10 años contados desde la fecha de concesión. Esa fecha figura en tu título de marca.
 
-El INPI no te avisa cuando está por vencer — la responsabilidad de estar al tanto es tuya o de tu representante legal.
+El INPI no te avisa cuando está por vencer: la responsabilidad de estar al tanto es tuya o de tu representante legal.
 
 ## ¿Cuándo podés renovar?
 
@@ -34,8 +34,8 @@ El trámite es 100% online en [portaltramites.inpi.gob.ar](https://portaltramite
 2. Buscá tu marca por número de expediente o denominación
 3. Seleccioná la opción de renovación
 4. Completá los datos. Podés renovar en las mismas clases o modificar las posiciones
-5. Abonás el arancel — se genera una boleta de pago por home banking, Pago Mis Cuentas, Rapipago o Red Link
-6. Listo — el INPI registra la renovación y la marca queda vigente por 10 años más
+5. Abonás el arancel: se genera una boleta de pago por home banking, Pago Mis Cuentas, Rapipago o Red Link
+6. Listo: el INPI registra la renovación y la marca queda vigente por 10 años más
 
 ## ¿Cuánto cuesta renovar?
 
@@ -51,9 +51,9 @@ Si no renovás dentro del período de gracia (6 meses posteriores al vencimiento
 
 - Perdés todos los derechos sobre ella
 - Cualquier tercero puede registrarla
-- Para recuperarla, tendrías que iniciar un registro nuevo — compitiendo con quien la haya solicitado mientras tanto
+- Para recuperarla, tendrías que iniciar un registro nuevo, compitiendo con quien la haya solicitado mientras tanto
 
-Si llegaste tarde y la marca ya cayó, lo primero que tenés que hacer es verificar si alguien más ya la solicitó. Podés hacerlo al instante en el [buscador de marcas del INPI](/verificar-marca/) — y te explicamos cómo interpretar el resultado acá: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente/).
+Si llegaste tarde y la marca ya cayó, lo primero que tenés que hacer es verificar si alguien más ya la solicitó. Podés hacerlo al instante en el [buscador de marcas del INPI](/verificar-marca/), y te explicamos cómo interpretar el resultado acá: [cómo saber si una marca está registrada](/blog/como-saber-si-una-marca-esta-registrada-facilmente/).
 
 ## ¿Puedo cambiar algo al renovar?
 
@@ -62,17 +62,17 @@ Sí, con limitaciones. Al renovar podés:
 - **Modificar las posiciones** dentro de las clases registradas (agregar o quitar productos/servicios específicos)
 - **Reducir clases** si ya no operás en algún rubro
 
-Lo que **no podés** hacer al renovar es cambiar la denominación o el logo de la marca — eso requeriría un registro nuevo.
+Lo que **no podés** hacer al renovar es cambiar la denominación o el logo de la marca: eso requeriría un registro nuevo.
 
 ## ¿Cada cuánto hay que renovar?
 
-Cada 10 años indefinidamente, siempre que lo hagas dentro de los plazos. No hay un límite de renovaciones — una marca puede mantenerse registrada por décadas si se renueva correctamente.
+Cada 10 años indefinidamente, siempre que lo hagas dentro de los plazos. No hay un límite de renovaciones: una marca puede mantenerse registrada por décadas si se renueva correctamente.
 
 ## La declaración jurada de uso a los 5 años
 
 Antes de llegar a la renovación, hay una obligación intermedia que muchos titulares no conocen: a los **5 años de concedida la marca**, el INPI exige presentar una **declaración jurada de uso** (DDJJ) acreditando que la marca está siendo utilizada en el comercio.
 
-Si no presentás esa DDJJ, la marca queda expuesta a ser cancelada por no uso. No es un trámite de renovación propiamente dicho — la marca sigue vigente durante los 10 años — pero es una obligación intermedia que hay que cumplir.
+Si no presentás esa DDJJ, la marca queda expuesta a ser cancelada por no uso. No es un trámite de renovación propiamente dicho, la marca sigue vigente durante los 10 años, pero es una obligación intermedia que hay que cumplir.
 
 El plazo para presentarla es dentro del quinto año contado desde la fecha de concesión. Si no lo hacés, cualquier tercero interesado puede iniciar una acción de cancelación por falta de uso.
 
@@ -86,4 +86,4 @@ Para entender el proceso completo de registro desde el inicio, leé: [cómo regi
 
 ---
 
-Renovar una marca a tiempo es un trámite simple. Perder una marca por no renovarla, no lo es. Si tenés dudas sobre el estado de tu marca o necesitás ayuda con la renovación, [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491148999564&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0) — te respondemos con un diagnóstico gratuito.
+Renovar una marca a tiempo es un trámite simple. Perder una marca por no renovarla, no lo es. Si tenés dudas sobre el estado de tu marca o necesitás ayuda con la renovación, [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491148999564&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0). Te respondemos con un diagnóstico gratuito.
