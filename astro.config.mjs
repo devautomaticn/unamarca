@@ -18,10 +18,15 @@ export default defineConfig({
       // cliente puntual para rehacer un poder, no una página del sitio.
       // /firmar/<token> también: el link se lo mandamos por email a un cotitular
       // para que firme, y el token es la credencial.
+      // /formularioregistro es intake manual por WhatsApp (spec_self_checkout.md):
+      // estaba en el sitemap sin un solo enlace interno, con 352 palabras y un
+      // H1 "Registro de Marca" compitiendo por el término de la home. Google la
+      // tenía en "Descubierta: actualmente sin indexar" y nunca la rastreó.
       filter: (page) =>
         !page.includes('/whatsapp/') &&
         !page.includes('/wa-catalog.json') &&
         !page.includes('/carta-poder') &&
+        !page.includes('/formularioregistro') &&
         !page.includes('/firmar/') &&
         !page.includes('/guia/'),
     }),

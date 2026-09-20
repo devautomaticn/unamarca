@@ -1,55 +1,9 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { NIZA_CLASSES } from '../lib/checkout/nizaClasses';
 
 const SITE_URL = 'https://unamarca.com.ar';
 
-const nizaClasses = [
-  { num: 1,  desc: 'Productos químicos industriales y científicos' },
-  { num: 2,  desc: 'Pinturas, barnices, lacas, preservativos' },
-  { num: 3,  desc: 'Cosméticos, perfumería, limpieza' },
-  { num: 4,  desc: 'Aceites y grasas industriales, combustibles' },
-  { num: 5,  desc: 'Productos farmacéuticos y veterinarios' },
-  { num: 6,  desc: 'Metales comunes y sus aleaciones' },
-  { num: 7,  desc: 'Máquinas y máquinas herramientas' },
-  { num: 8,  desc: 'Herramientas e instrumentos de mano' },
-  { num: 9,  desc: 'Aparatos científicos, ópticos, informáticos, electrónicos' },
-  { num: 10, desc: 'Aparatos médicos y quirúrgicos' },
-  { num: 11, desc: 'Aparatos de alumbrado, calefacción, refrigeración' },
-  { num: 12, desc: 'Vehículos y medios de transporte' },
-  { num: 13, desc: 'Armas de fuego, municiones, explosivos' },
-  { num: 14, desc: 'Joyería, relojería, metales preciosos' },
-  { num: 15, desc: 'Instrumentos musicales' },
-  { num: 16, desc: 'Papel, cartón, artículos de imprenta' },
-  { num: 17, desc: 'Caucho, goma, plásticos semielaborados' },
-  { num: 18, desc: 'Cuero, artículos de viaje, bolsos' },
-  { num: 19, desc: 'Materiales de construcción no metálicos' },
-  { num: 20, desc: 'Muebles, espejos, marcos, madera' },
-  { num: 21, desc: 'Utensilios del hogar, vidrio, porcelana' },
-  { num: 22, desc: 'Cuerdas, redes, tiendas, telas técnicas' },
-  { num: 23, desc: 'Hilos y fibras textiles industriales' },
-  { num: 24, desc: 'Tejidos y sustitutos; ropa de hogar' },
-  { num: 25, desc: 'Prendas de vestir, calzado, sombrerería' },
-  { num: 26, desc: 'Encajes, bordados, botones, adornos textiles' },
-  { num: 27, desc: 'Alfombras, revestimientos de suelos' },
-  { num: 28, desc: 'Juegos, juguetes, artículos deportivos' },
-  { num: 29, desc: 'Carne, pescado, aves, conservas, lácteos' },
-  { num: 30, desc: 'Café, té, panadería, repostería, condimentos' },
-  { num: 31, desc: 'Productos agrícolas, hortícolas, animales vivos' },
-  { num: 32, desc: 'Cervezas, aguas, bebidas sin alcohol' },
-  { num: 33, desc: 'Bebidas alcohólicas (excepto cervezas)' },
-  { num: 34, desc: 'Tabaco, cigarrillos, artículos para fumadores' },
-  { num: 35, desc: 'Publicidad, gestión comercial, oficina' },
-  { num: 36, desc: 'Seguros, finanzas, inmobiliaria' },
-  { num: 37, desc: 'Construcción, reparación, instalación' },
-  { num: 38, desc: 'Telecomunicaciones' },
-  { num: 39, desc: 'Transporte, logística, almacenamiento' },
-  { num: 40, desc: 'Tratamiento de materiales, reciclaje' },
-  { num: 41, desc: 'Educación, entretenimiento, deporte, cultura' },
-  { num: 42, desc: 'Servicios científicos, tecnológicos, informáticos' },
-  { num: 43, desc: 'Restauración, alojamiento temporal' },
-  { num: 44, desc: 'Servicios médicos, veterinarios, de belleza' },
-  { num: 45, desc: 'Servicios jurídicos, de seguridad, personales' },
-];
 
 const provinces = [
   'Buenos Aires', 'Catamarca', 'Chaco', 'Chubut',
@@ -61,10 +15,14 @@ const provinces = [
 ];
 ---
 
+<!-- Intake manual: el link se le manda al cliente por WhatsApp, no es una
+     pagina del sitio (spec_self_checkout.md). `noindex` y fuera del sitemap,
+     igual que /carta-poder y /guia. El funnel comercial es /registrar. -->
 <BaseLayout
   title="Formulario de Registro de Marca | UnaMarca"
   description="Completá el formulario para iniciar el registro de tu marca ante el INPI Argentina."
   canonicalURL={`${SITE_URL}/formularioregistro/`}
+  noindex={true}
 >
 
 <div class="fp-page">
@@ -133,11 +91,11 @@ const provinces = [
           <span class="fp-optional">opcional</span>
         </div>
         <div class="fp-clases">
-          {nizaClasses.map(c => (
+          {NIZA_CLASSES.map(c => (
             <label class="fp-clase">
               <input type="checkbox" name="clases" value={c.num} />
               <span class="fp-clase-n">{String(c.num).padStart(2,'0')}</span>
-              <span class="fp-clase-d">{c.desc}</span>
+              <span class="fp-clase-d">{c.nombre}</span>
             </label>
           ))}
         </div>

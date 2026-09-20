@@ -165,6 +165,11 @@ Cases outside scope get a visible WhatsApp exit instead of a dead end:
   payment.
 - The existing `/formularioregistro` page stays as-is (manual/WhatsApp-driven
   intake); this wizard is the commercial funnel. Consolidation decided later.
+  Since 2026-09-20 it is `noindex` and out of the sitemap, like `/carta-poder`
+  and `/guia`: it had no inbound link, 352 words and an H1 competing with the
+  home for "registro de marca", and Google never crawled it. It also now
+  imports `NIZA_CLASSES` instead of keeping its own copy of the 45 classes,
+  which had drifted in 15 of them.
 
 ---
 
