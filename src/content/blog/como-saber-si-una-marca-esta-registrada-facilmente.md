@@ -72,6 +72,8 @@ Si tu marca está disponible, los próximos pasos son definir en qué clases reg
 
 ## Después de registrar: vigilá el Boletín
 
+Si lo que querés saber es si ya podés poner el ® en tu logo, la respuesta depende de en qué etapa está tu trámite: está explicado en [qué significan ® y ™](/blog/simbolo-marca-registrada-r-tm/).
+
 Verificar la disponibilidad es el primer paso. Pero una vez que tu marca está registrada, la protección requiere monitoreo activo: cada semana el INPI publica nuevas solicitudes, y si alguien intenta registrar algo similar tenés 30 días para oponerte. Para entender cómo funciona ese proceso, leé: [Boletín de Marcas del INPI: qué es y cómo vigilar tu marca](/blog/boletin-de-marcas-inpi/).
 
 ---

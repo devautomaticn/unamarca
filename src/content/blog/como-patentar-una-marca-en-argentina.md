@@ -2,7 +2,7 @@
 title: "Cómo patentar una marca en Argentina (y por qué se dice registrar)"
 description: "¿Querés patentar tu marca en Argentina? Te explicamos la diferencia entre patente y marca registrada, y cómo proteger tu nombre ante el INPI paso a paso."
 pubDate: 2026-04-11
-updatedDate: 2026-08-03
+updatedDate: 2026-09-20
 tags: []
 ---
 
@@ -58,7 +58,7 @@ Para el proceso detallado paso a paso, leé: [cómo registrar una marca en Argen
 
 El arancel del INPI se expresa en UMAPIS (Unidades de Medida Arancelaria de la Propiedad Industrial), sistema vigente desde abril de 2026 y actualizado mensualmente según inflación. El costo base es de **100 UMAPIS por clase** (aproximadamente {{ARANCEL}} en {{VIGENCIA}}, sujeto a actualización mensual).
 
-A eso se suman los honorarios profesionales si gestionás el trámite con un agente de la propiedad industrial, que oscilan entre $200.000 y $300.000 ARS. Para más detalle sobre costos, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca/).
+A eso se suman los honorarios profesionales si gestionás el trámite con un agente de la propiedad industrial. Los nuestros son {{HONORARIOS}} por clase, sin costos ocultos. Para el detalle completo, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca/).
 
 ## ¿Cuánto tarda?
 
@@ -90,11 +90,11 @@ Si tu nombre es muy descriptivo, la solución suele ser agregar un elemento dife
 
 ## ¿Podés usar el símbolo ™ antes de registrar?
 
-Sí. El símbolo **™** (trademark) es una declaración unilateral de que considerás ese nombre tu marca comercial, pero no tiene respaldo legal en Argentina: no te otorga derechos exclusivos ni impedimentos contra terceros.
+Sí, pero sabiendo que en Argentina no significa nada legalmente. El **™** es una declaración unilateral: avisa que considerás ese nombre tu marca, y no te da derechos exclusivos ni impedimentos contra terceros.
 
-El símbolo **®** (registered trademark), en cambio, solo puede usarse una vez que el registro fue concedido por el INPI. Usarlo antes de tener el registro concedido es incorrecto y puede tener consecuencias legales.
+El **®** es otra cosa: solo corresponde una vez que el INPI concedió el registro. Usarlo antes es incorrecto.
 
-En la práctica, muchos emprendedores usan ™ mientras esperan la resolución de su solicitud, pero entendiendo que eso no los protege de que otra persona presente una solicitud similar en paralelo.
+Cuál te toca según tu etapa, qué pasa si ponés un ® que no te corresponde y cómo se escriben los dos: [símbolo de marca registrada, qué significan ® y ™](/blog/simbolo-marca-registrada-r-tm/).
 
 ---
 

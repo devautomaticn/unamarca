@@ -25,6 +25,8 @@ La legislación argentina (Ley 22.362) reconoce varios tipos de marcas:
 
 La mayoría de los emprendedores registra una **marca mixta** (nombre + logo combinados) o registra por separado la denominativa y la figurativa para tener más flexibilidad.
 
+Si llegaste buscando cómo "patentar" tu logo, esa palabra apunta a otro trámite: los logos y los nombres se registran, y lo que se patenta son los inventos. La diferencia está en [cómo patentar una marca en Argentina](/blog/como-patentar-una-marca-en-argentina/).
+
 ## ¿Registrar el nombre y el logo juntos o por separado?
 
 No hay obligación de registrarlos juntos. Las opciones son:

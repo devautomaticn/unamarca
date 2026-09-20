@@ -65,7 +65,7 @@ Guardá todo. Incluso si no lo necesitás hoy, puede ser determinante mañana.
 
 ## El error más común: esperar
 
-La mayoría de los emprendedores posponen el registro — a veces lo llaman "patentar la marca", aunque técnicamente las marcas se registran y las invenciones se patentan — porque el negocio recién arranca, porque no quieren gastar, o porque asumen que "nadie va a copiarme". El problema es que el riesgo crece a medida que el negocio crece: cuando tu marca vale algo, es cuando alguien tiene incentivo para registrarla.
+La mayoría de los emprendedores posponen el registro (a veces lo llaman ["patentar la marca"](/blog/como-patentar-una-marca-en-argentina/), aunque técnicamente las marcas se registran y las invenciones se patentan) porque el negocio recién arranca, porque no quieren gastar, o porque asumen que "nadie va a copiarme". El problema es que el riesgo crece a medida que el negocio crece: cuando tu marca vale algo, es cuando alguien tiene incentivo para registrarla.
 
 Registrar antes de que haya un conflicto cuesta mucho menos — en dinero, tiempo y estrés — que resolverlo después.
 
