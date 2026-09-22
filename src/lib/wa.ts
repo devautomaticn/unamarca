@@ -28,7 +28,7 @@
 //  ("Entré al blog de UnaMarca…") antes que una intención genérica.
 // ────────────────────────────────────────────────────────────────────────────
 
-export const CATALOG_VERSION = '1.9.0';
+export const CATALOG_VERSION = '1.10.0';
 
 /** Agente IA. Recibe todos los CTAs de conversión. */
 export const WA_AGENTE = '5491148999564';
@@ -276,6 +276,24 @@ export const WA_MESSAGES = {
       '"cupos" vio el anuncio igual, así que el falso positivo cae en Ads, que ' +
       'es donde corresponde.',
   },
+  ads_gira: {
+    number: WA_AGENTE,
+    section: 'Ads',
+    risk: 'nulo',
+    match: 'prefix',
+    prefix: 'Vi el video de FUTTTURA. Quiero chequear si mi marca está libre:',
+    template: 'Vi el video de FUTTTURA. Quiero chequear si mi marca está libre:',
+    note:
+      'Plantilla del anuncio "tini_futttura_p2609_v6_veo" (caso FUTTTURA: la ' +
+      'gira no está a nombre de quien la canta). Lo prellena Meta: el sitio no ' +
+      'emite este mensaje. match "prefix" porque termina en ":" y el cliente ' +
+      'escribe su marca a continuación. risk "nulo": es el único mensaje que ' +
+      'arranca con "Vi", y nadie nombra una gira ajena por su cuenta. No ' +
+      'unificar con ads_disponibilidad: los dos preguntan por disponibilidad, y ' +
+      'que los textos sigan siendo distintos es lo único que permite comparar ' +
+      'los dos anuncios cuando el referral de Meta no llega.',
+  },
+
   ads_disponibilidad: {
     number: WA_AGENTE,
     section: 'Ads',
