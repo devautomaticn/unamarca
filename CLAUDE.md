@@ -218,10 +218,10 @@ un anuncio manda el mismo mensaje con `Buenas!` en vez de `Hola!`. El contrato
 con el CRM está en `docs/spec_wa_canal.md` — **ese archivo es el que se comparte
 con el otro proyecto**.
 
-- **`WA_CANAL_EMITIR` (en `src/lib/waCanal.ts`) está en `false` y no se prende
-  hasta que el CRM confirme que su parser desplegado lee las variantes.** El día
-  que se prende hay que avisarles: escriben `sin_anuncio` sólo cuando su copia
-  del catálogo dice `emitting: true`. Prenderlo antes
+- **La emisión está prendida desde el 2026-09-29** (`WA_CANAL_EMITIR` en
+  `src/lib/waCanal.ts`). Apagarla o volver a prenderla es un cambio de contrato:
+  sube `CATALOG_VERSION` y se le avisa al CRM el mismo día, porque escriben
+  `sin_anuncio` sólo cuando su copia del catálogo dice `emitting: true`. Prenderlo antes
   manda a "sin match" a todo contacto que llegue por un anuncio, y no falla
   ningún build.
 - Las variantes no se escriben a mano: salen de la regla (`varianteCanal()`) y
@@ -236,8 +236,8 @@ con el otro proyecto**.
   checkout y el verificador arman en el navegador.
 - El canal sale de la cookie `um_canal`, que escribe `/api/origen`. Vence a los
   90 días del clic en el anuncio, no de la última visita.
-- Para probar en producción sin emitirle nada al público:
-  `localStorage.setItem('um-canal-prueba', '1')` y entrar con `?gclid=prueba`.
+- Para probar cómo sale un mensaje, entrar con `?gclid=prueba`. Si la emisión
+  está apagada, antes `localStorage.setItem('um-canal-prueba', '1')`.
 - Quedan afuera los mensajes en inglés y los de la sección `Ads` (los prellena
   Meta).
 

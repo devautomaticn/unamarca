@@ -34,7 +34,7 @@ import {
   WA_CANALES, WA_CANAL_EMITIR, WA_SALUDO_BASE, varianteCanal, type WaCanal,
 } from './waCanal';
 
-export const CATALOG_VERSION = '1.11.0';
+export const CATALOG_VERSION = '1.11.1';
 
 /** Agente IA. Recibe todos los CTAs de conversión. */
 export const WA_AGENTE = '5491148999564';

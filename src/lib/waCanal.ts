@@ -22,14 +22,16 @@
 // ────────────────────────────────────────────────────────────────────────────
 
 /**
- * ⚠️ NO PASAR A `true` HASTA QUE EL CRM CONFIRME QUE SU PARSER LEE LAS
- * VARIANTES. Con esto prendido antes de tiempo, cada contacto que llegue por un
- * anuncio cae en "sin match": se pierde la atribución de sección que hoy
- * funciona, y no falla ningún build ni ningún test.
+ * Prendido el 2026-09-29, después de que el CRM desplegó su parser con la copia
+ * 1.11.0 del catálogo.
  *
- * El valor se publica en /wa-catalog.json (`channels.emitting`).
+ * ⚠️ CAMBIAR ESTE VALOR ES UN CAMBIO DE CONTRATO: bumpear CATALOG_VERSION y
+ * avisar al CRM el mismo día. El valor se publica en /wa-catalog.json
+ * (`channels.emitting`) y ellos escriben `sin_anuncio` sólo cuando su copia
+ * dice `true`. Si algún día su parser deja de leer las variantes, apagar esto
+ * es lo que evita que los contactos de anuncios caigan en "sin match".
  */
-export const WA_CANAL_EMITIR = false;
+export const WA_CANAL_EMITIR = true;
 
 /** Con qué arrancan los mensajes que admiten variante. */
 export const WA_SALUDO_BASE = 'Hola! ';

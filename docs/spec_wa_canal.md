@@ -4,9 +4,8 @@ Documento para el proyecto del CRM, que mantiene el parser de atribución
 (issue #64). Explica qué campo nuevo trae `/wa-catalog.json`, qué tiene que
 hacer el parser con él y en qué orden se despliega cada lado.
 
-**Estado: catálogo 1.11.0 publicado el 2026-09-29, con la emisión apagada.** El
-sitio no va a mandar ningún mensaje nuevo hasta que ustedes confirmen que el
-parser desplegado los reconoce.
+**Estado: emisión activada el 2026-09-29, catálogo 1.11.1.** El sitio ya manda
+`Buenas!` a quien llegó por un anuncio de Google.
 
 Las secciones 4 y 5 son la propuesta original. **Lo que quedó acordado después
 de la respuesta del CRM está en la sección 9**, y es lo que vale donde difieran.
@@ -278,8 +277,8 @@ No lo lee en vivo. La copia se actualiza a mano del lado de ellos
 |---|---|---|---|
 | 1 | CRM | Confirma que el parser ignora campos desconocidos | Hecho |
 | 2 | Sitio | Publica el catálogo 1.11.0 con `emitting: false` y avisa | Hecho |
-| 3 | CRM | Trae la copia, despliega el parser y corre los casos de la sección 4.3 contra el número real | Pendiente |
-| 4 | CRM | Avisa que está listo | Pendiente |
-| 5 | Sitio | Activa la emisión (`emitting: true`) y avisa | Pendiente |
-| 6 | CRM | Trae la copia con `emitting: true` y despliega | Pendiente |
+| 3 | CRM | Trae la copia 1.11.0 y despliega el parser | Hecho |
+| 4 | CRM | Avisa que está listo | Hecho |
+| 5 | Sitio | Activa la emisión y avisa. Catálogo 1.11.1, `emitting: true` | Hecho, 2026-09-29 |
+| 6 | CRM | Trae la copia 1.11.1 y despliega | Pendiente |
 | 7 | Los dos | Primera semana: revisar que "sin match" no haya subido | Pendiente |
