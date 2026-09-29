@@ -17,6 +17,7 @@ import {
   PRICING as PRICING_UNIT, TRANSFERENCIA, contarLineas, clasesTexto,
   normalizeTipoMarca, tipoMarcaLabel, type MarcaPedido, type TipoMarca,
 } from '@/lib/checkout/constants';
+import { leerCookie } from '@/lib/origen';
 
 type MetodoPago = 'mercadopago' | 'transferencia';
 
@@ -89,6 +90,11 @@ export const POST: APIRoute = async (context) => {
     garantia,
     pricing,
     metodo,
+    // Por dónde llegó (Google Ads, orgánico…). Sale de la cookie y no del
+    // cuerpo: la escribe el servidor y el wizard ni la ve. `null` es "no se
+    // sabe" —visita directa, otro dispositivo, cookies bloqueadas—, que no es
+    // lo mismo que orgánico. Ver src/lib/origen.ts.
+    origen: leerCookie(request.headers.get('cookie'), new URL(request.url).hostname),
   };
 
   // ── Transferencia: sin preferencia, sin redirect, sin webhook ──

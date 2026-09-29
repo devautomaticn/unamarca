@@ -121,13 +121,25 @@ function isActive(href: string) {
       rel="stylesheet"
     />
     <!-- Google Analytics 4 + Google Ads -->
+    {/* `is:inline` NO es opcional. Sin eso Astro empaqueta el snippet como
+        módulo, `gtag` deja de ser global y cada `gtag('event', …)` del sitio
+        —los onclick de WhatsApp, el funnel y el purchase del checkout— tira
+        ReferenceError en silencio: GA4 sigue contando páginas vistas y no
+        recibe un solo evento. Estuvo así desde abril hasta septiembre 2026. */}
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-E8ZYE30BC1"></script>
-    <script>
+    <script is:inline>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-E8ZYE30BC1');
       gtag('config', 'AW-18125676878');
+    </script>
+
+    {/* Origen del pedido: avisa al servidor por dónde llegó la visita, para
+        que el pedido sepa si vino de un anuncio. Ver src/lib/origen.ts. */}
+    <script>
+      import { registrarOrigen } from '../lib/origenCliente';
+      registrarOrigen();
     </script>
 
     <!-- Meta Pixel -->

@@ -304,6 +304,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
       clientEmail: contactoEmail,
       garantia: !!stored.garantia,
       total: stored.pricing?.total ?? 0,
+      origen: stored.origen,
       titulares: titularesEmail,
       firmasPendientes: pendientes.map(({ nombre, email, url }) => ({ nombre, email, url })),
       // El PDF se archiva por cliente: Apellido_Marca_Fecha, no el ref.

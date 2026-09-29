@@ -136,6 +136,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         clientEmail: stored.contacto?.email || '',
         whatsapp: stored.contacto?.whatsapp || '',
         completed: row.completion !== null,
+        origen: stored.origen,
       });
     } catch (e) {
       console.error('Webhook: error enviando email de pago:', e);

@@ -209,6 +209,64 @@ instead of hardcoding the strings. Do not remove that endpoint.
 
 ---
 
+## Origen del pedido: de qué canal vino cada compra
+
+GA4 separa Google Ads de orgánico, pero en totales. Para saber de dónde vino
+**este** pedido, cada uno guarda su origen en `orders.payload.origen` y lo
+muestra en los dos emails al estudio ("Pago aprobado" y "Solicitud completada").
+
+```
+cualquier página ──► POST /api/origen ──► cookie um_origen (90 días)
+                                               │
+POST /api/checkout/order ◄─────────────────────┘  payload.origen
+```
+
+- Todo vive en `src/lib/origen.ts` (la lógica, pura), `src/lib/origenCliente.ts`
+  (el script de las páginas) y `src/pages/api/origen.ts`.
+- Se guardan **tres toques**: `primero`, `ultimo` y `anuncio` (el último clic
+  pago). El tercero existe porque quien hace clic en un anuncio y vuelve a la
+  semana buscando "unamarca" tiene como último ingreso una búsqueda orgánica.
+- **`origen: null` es "no se sabe", no "orgánico".** Una visita directa, una
+  compra desde otro dispositivo, una cookie bloqueada y todos los pedidos
+  anteriores al 2026-09-29 se ven iguales.
+- **La cookie la escribe el servidor, no `document.cookie`.** Safari recorta a
+  24 horas las cookies escritas por JavaScript cuando la visita llega con un
+  `gclid` en la URL, que es justo el caso que hay que medir.
+- El wizard no manda el origen ni lo ve (la cookie es `HttpOnly`): el servidor
+  lo lee del header. Un `origen` en el cuerpo del pedido se ignora.
+- Una visita directa o una navegación interna **no llama al endpoint**. Tampoco
+  cuenta como ingreso volver de Mercado Pago.
+- De la URL se guarda sólo el path y del referrer sólo el host: el query de un
+  deep link a `/registrar` lleva la marca, el email y el teléfono.
+- **Una página que no use `BaseLayout` tiene que importar `registrarOrigen()` a
+  mano**, como hace `/whatsapp`. Sin eso, un anuncio que apunte ahí no deja
+  rastro.
+- El `gclid` que sale en el email es el que pide Google Ads para importar la
+  venta como conversión offline.
+
+Para ver los pedidos por canal en D1:
+
+```sql
+SELECT ref, created_at, status,
+       json_extract(payload, '$.origen.ultimo.canal')  AS ultimo,
+       json_extract(payload, '$.origen.anuncio.canal') AS anuncio,
+       json_extract(payload, '$.origen.anuncio.gclid') AS gclid
+FROM orders ORDER BY created_at DESC;
+```
+
+**Esto cubre el checkout, no WhatsApp.** Quien llega por un anuncio y escribe
+por WhatsApp manda el mismo mensaje que un orgánico: el catálogo identifica la
+sección del sitio, no el canal.
+
+### ⚠️ El snippet de gtag lleva `is:inline`
+
+Sin ese atributo Astro empaqueta el `<script>` como módulo y `gtag` deja de ser
+una función global. **No rompe el build ni se ve en la página**: GA4 sigue
+contando páginas vistas, pero cada `gtag('event', …)` tira `ReferenceError` y no
+llega ningún evento (`whatsapp_click`, `purchase`, el funnel del checkout).
+Estuvo así desde abril hasta el 2026-09-29. Para comprobarlo, en la consola del
+sitio: `typeof gtag` tiene que dar `"function"`.
+
 ---
 
 ## Los aranceles del INPI se actualizan solos

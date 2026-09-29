@@ -5,6 +5,7 @@ import {
   tipoMarcaLabel, type TipoMarca,
 } from '@/lib/checkout/constants';
 import { nombreArchivoPoder } from '@/lib/checkout/cartaPoder';
+import { canalLabel, clickId, type Origen, type Toque } from '@/lib/origen';
 
 const FROM = 'UnaMarca <formulario@vigilante.unamarca.com.ar>';
 const ADMIN_EMAIL = 'mike@automaticnation.com';
@@ -20,6 +21,49 @@ function clasesLabel(clases: number[]): string {
   const nums = [...clases].sort((a, b) => a - b);
   const last = nums.pop();
   return `Clases ${nums.join(', ')} y ${last}`;
+}
+
+// ── Origen del pedido ────────────────────────────────────────────────────────
+// Por dónde llegó quien compró (ver src/lib/origen.ts). Va sólo en los emails
+// al estudio. `null` o ausente es "no se sabe", y se dice así: los pedidos
+// anteriores a esto, una visita directa y una cookie bloqueada se ven iguales,
+// y ninguno de los tres es "orgánico".
+
+function fechaToque(t: Toque): string {
+  const d = new Date(t.ts);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('es-AR', {
+    timeZone: 'America/Argentina/Buenos_Aires', day: '2-digit', month: '2-digit', year: 'numeric',
+  });
+}
+
+function toqueHTML(titulo: string, t: Toque): string {
+  const detalle = [fechaToque(t), t.landing && `entró por ${t.landing}`].filter(Boolean).join(' · ');
+  const id = clickId(t);
+  return `<tr>
+      <td style="padding:5px 0;color:#64748b;font-size:13px;width:40%;vertical-align:top">${esc(titulo)}</td>
+      <td style="padding:5px 0;color:#0f172a;font-size:13px;font-weight:500">
+        ${esc(canalLabel(t))}
+        ${detalle ? `<br><span style="color:#64748b;font-weight:400">${esc(detalle)}</span>` : ''}
+        ${id ? `<br><span style="color:#64748b;font-weight:400;font-family:ui-monospace,Menlo,monospace;font-size:11px;word-break:break-all">${esc(id.nombre)}: ${esc(id.valor)}</span>` : ''}
+      </td>
+    </tr>`;
+}
+
+function origenHTML(origen: Origen | null | undefined): string {
+  const titulo = '<p style="margin:18px 0 6px;color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase">Origen</p>';
+  if (!origen?.ultimo || !origen.primero) {
+    return `${titulo}
+    <p style="margin:0;color:#64748b;font-size:13px;line-height:1.6">Sin datos: entró directo, compró desde otro dispositivo o tiene las cookies bloqueadas.</p>`;
+  }
+  const { primero, ultimo, anuncio } = origen;
+  const filas = [toqueHTML('Último ingreso', ultimo)];
+  // El clic pago se muestra aparte sólo cuando NO fue el último ingreso: es el
+  // caso de quien vio el anuncio y volvió días después por otro lado.
+  if (anuncio && anuncio.ts !== ultimo.ts) filas.push(toqueHTML('Clic en anuncio', anuncio));
+  if (primero.ts !== ultimo.ts && primero.ts !== anuncio?.ts) filas.push(toqueHTML('Primer ingreso', primero));
+  return `${titulo}
+    <table style="width:100%;border-collapse:collapse">${filas.join('')}</table>`;
 }
 
 /** Una marca del pedido, tal como llega desde el payload de D1 */
@@ -95,6 +139,8 @@ interface OrderEmailData {
   garantia: boolean;
   total: number;
   titulares: TitularEmail[];
+  /** Por dónde llegó el cliente. Sólo se muestra en el email al estudio. */
+  origen?: Origen | null;
   /** Cambios de tipo que el cliente hizo después de pagar (figurativa → mixta,
    *  la única que se acepta). Van al email porque el pedido ya no coincide con
    *  el snapshot del pago y el estudio tiene que poder verlo. */
@@ -359,6 +405,7 @@ function adminHTML(d: OrderEmailData): string {
     ${marcasAdminHTML(d.marcas)}
     <p style="margin:18px 0 6px;color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase">${d.titulares.length > 1 ? `Titulares (${d.titulares.length})` : 'Titular'}</p>
     ${titularesAdminHTML(d.titulares)}
+    ${origenHTML(d.origen)}
     <p style="margin:16px 0 0;color:#94a3b8;font-size:12px">Carta poder adjunta. Datos completos en D1 (orders / ${esc(d.ref)}).</p>
   </div>
 </body></html>`;
@@ -385,6 +432,7 @@ export interface PaymentEmailData {
   clientEmail: string;
   whatsapp: string;
   completed: boolean; // ya envió titular + firma
+  origen?: Origen | null;
 }
 
 function paymentHTML(d: PaymentEmailData): string {
@@ -404,6 +452,7 @@ function paymentHTML(d: PaymentEmailData): string {
       <tr><td style="padding:5px 0;color:#64748b;font-size:13px;width:40%">Email</td><td style="padding:5px 0;color:#0f172a;font-size:13px;font-weight:500">${esc(d.clientEmail || '—')}</td></tr>
       <tr><td style="padding:5px 0;color:#64748b;font-size:13px">WhatsApp</td><td style="padding:5px 0;color:#0f172a;font-size:13px;font-weight:500">${esc(d.whatsapp || '—')}</td></tr>
     </table>
+    ${origenHTML(d.origen)}
     <p style="margin:16px 0 0;color:#475569;font-size:13px;line-height:1.6">${nextStep}</p>
   </div>
 </body></html>`;
