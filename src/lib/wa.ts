@@ -12,8 +12,10 @@
 //  Si cambiás, agregás o borrás un mensaje:
 //    1. Bumpeá CATALOG_VERSION (semver: patch = texto, minor = alta/baja).
 //    2. El catálogo se publica solo en /wa-catalog.json (generado desde este
-//       archivo por src/pages/wa-catalog.json.ts). El parser lo lee de ahí,
-//       así que no hace falta avisar a mano — pero avisá igual si borrás algo.
+//       archivo por src/pages/wa-catalog.json.ts), pero el CRM NO lo lee en
+//       vivo: guarda una copia y la actualiza a mano. HAY QUE AVISARLES EN CADA
+//       CAMBIO DE VERSIÓN. En septiembre 2026 su copia estaba en 1.8.0 con el
+//       sitio en 1.10.0, y dos mensajes llegaban sin atribuirse.
 //    3. NUNCA borres una entrada de LEGACY: siguen llegando mensajes viejos
 //       desde páginas cacheadas, chats guardados y links compartidos.
 //
@@ -28,7 +30,11 @@
 //  ("Entré al blog de UnaMarca…") antes que una intención genérica.
 // ────────────────────────────────────────────────────────────────────────────
 
-export const CATALOG_VERSION = '1.10.0';
+import {
+  WA_CANALES, WA_CANAL_EMITIR, WA_SALUDO_BASE, varianteCanal, type WaCanal,
+} from './waCanal';
+
+export const CATALOG_VERSION = '1.11.0';
 
 /** Agente IA. Recibe todos los CTAs de conversión. */
 export const WA_AGENTE = '5491148999564';
@@ -533,8 +539,63 @@ export const VERIFICAR_CONFLICTO = {
   },
 };
 
+// ── Variantes por canal ─────────────────────────────────────────────────────
+
+type WaVariant =
+  | { canal: WaCanal; match: 'exact'; text: string }
+  | { canal: WaCanal; match: 'prefix'; prefix: string; template: string };
+
+/**
+ * Las variantes de un mensaje: el mismo texto con el saludo de cada canal (ver
+ * src/lib/waCanal.ts). Los de la sección Ads no llevan: los prellena Meta, el
+ * sitio no los emite, y su canal ya lo dice el referral.
+ */
+function variantesDe(e: WaEntry): WaVariant[] {
+  if (e.section === 'Ads') return [];
+  const out: WaVariant[] = [];
+  for (const canal of Object.keys(WA_CANALES) as WaCanal[]) {
+    if (e.match === 'exact') {
+      const text = varianteCanal(e.text, canal);
+      if (text) out.push({ canal, match: 'exact', text });
+    } else {
+      const prefix = varianteCanal(e.prefix, canal);
+      const template = varianteCanal(e.template, canal);
+      if (prefix && template) out.push({ canal, match: 'prefix', prefix, template });
+    }
+  }
+  return out;
+}
+
+/**
+ * Corta el build si un saludo de canal puede confundirse con un mensaje base.
+ * Hoy no pasa (nada arranca con "Buenas!"), pero alcanza con que alguien
+ * redacte un mensaje nuevo con ese saludo para que el CRM le asigne un canal a
+ * un contacto que no vino de ningún anuncio. Y eso no lo avisa nadie.
+ */
+function verificarSaludos(): void {
+  const bases = [
+    ...Object.entries(WA_MESSAGES).map(([key, e]: [string, WaEntry]) =>
+      [key, e.match === 'exact' ? e.text : e.prefix] as const),
+    ...WA_LEGACY.map(e => [e.key, e.text] as const),
+  ];
+  for (const [canal, { saludo }] of Object.entries(WA_CANALES)) {
+    if ((saludo as string) === WA_SALUDO_BASE) {
+      throw new Error(`wa: el saludo del canal "${canal}" es igual al saludo base`);
+    }
+    for (const [key, texto] of bases) {
+      if (texto.startsWith(saludo.trimEnd())) {
+        throw new Error(
+          `wa: el mensaje "${key}" arranca con "${saludo.trimEnd()}", que es el saludo ` +
+          `del canal "${canal}". El CRM lo tomaría por un contacto de ese canal.`,
+        );
+      }
+    }
+  }
+}
+
 /** Payload que se publica en /wa-catalog.json para el parser del CRM. */
 export function buildCatalogExport() {
+  verificarSaludos();
   return {
     version: CATALOG_VERSION,
     source: 'https://unamarca.com.ar/wa-catalog.json',
@@ -544,13 +605,30 @@ export function buildCatalogExport() {
         'Match exacto incluyendo puntuación y tildes, salvo las entradas con match "prefix".',
         'Aplicar sólo al primer mensaje de la conversación.',
         'El referral de Meta Ads le gana siempre al texto: si hay ambos, es Ads.',
+        'Un mensaje que matchea una entrada de "variants" tiene la sección de su mensaje y el canal de la variante.',
+        'Un mensaje que matchea el texto base NO es orgánico: es "sin anuncio detectado".',
       ],
       riskNote:
         'risk="medio" marca frases que un humano podría tipear por su cuenta. ' +
         'Son las que más pueden inflar "Web" si se relaja el match exacto.',
     },
     numbers: { agente: WA_AGENTE, linea: WA_LINEA },
-    messages: Object.entries(WA_MESSAGES).map(([key, e]) => ({ key, ...e })),
+    // Canal por el que llegó el visitante. Contrato en docs/spec_wa_canal.md.
+    channels: {
+      /** `false`: las variantes están publicadas pero el sitio todavía no las emite. */
+      emitting: WA_CANAL_EMITIR,
+      baseGreeting: WA_SALUDO_BASE,
+      values: Object.fromEntries(
+        Object.entries(WA_CANALES).map(([canal, c]) => [canal, { greeting: c.saludo }]),
+      ),
+      note:
+        'El canal viaja en el saludo: el resto del mensaje es idéntico al base. ' +
+        'Las variantes ya vienen armadas en messages[].variants, no hace falta ' +
+        'aplicar la regla del saludo del lado del parser.',
+    },
+    messages: Object.entries(WA_MESSAGES).map(([key, e]: [string, WaEntry]) => ({
+      key, ...e, variants: variantesDe(e),
+    })),
     legacy: WA_LEGACY,
   };
 }

@@ -196,7 +196,10 @@ Rules:
 - The gtag `source` must equal the catalog key, so GA4 and the CRM join on the
   same value. (Exception: the EN landing has two CTAs sharing one message —
   they keep `en_landing` / `en_landing_final`.)
-- Bump `CATALOG_VERSION` when you change, add, or remove a message.
+- Bump `CATALOG_VERSION` when you change, add, or remove a message, **and tell
+  the CRM project**. Their parser works on a copy of the catalog that they
+  refresh by hand, not on the live URL: in September 2026 their copy was two
+  versions behind and two messages were arriving unattributed.
 - `registrar_multiclase` (una marca en más de `MAX_CLASES` clases) y
   `registrar_multimarca` (más de `MAX_MARCAS` marcas en un pedido) llevan un
   número en el texto: se matchean por prefijo, no exacto.
@@ -206,6 +209,37 @@ Rules:
 The catalog is published at `/wa-catalog.json` (generated at build time from
 `src/lib/wa.ts` by `src/pages/wa-catalog.json.ts`) so the CRM parser reads it
 instead of hardcoding the strings. Do not remove that endpoint.
+
+### El canal viaja en el saludo (`Hola!` / `Buenas!`)
+
+El catálogo dice de qué **sección** salió un mensaje, no por qué **canal** llegó
+el visitante. Para Google Ads eso se resuelve con el saludo: quien hizo clic en
+un anuncio manda el mismo mensaje con `Buenas!` en vez de `Hola!`. El contrato
+con el CRM está en `docs/spec_wa_canal.md` — **ese archivo es el que se comparte
+con el otro proyecto**.
+
+- **`WA_CANAL_EMITIR` (en `src/lib/waCanal.ts`) está en `false` y no se prende
+  hasta que el CRM confirme que su parser desplegado lee las variantes.** El día
+  que se prende hay que avisarles: escriben `sin_anuncio` sólo cuando su copia
+  del catálogo dice `emitting: true`. Prenderlo antes
+  manda a "sin match" a todo contacto que llegue por un anuncio, y no falla
+  ningún build.
+- Las variantes no se escriben a mano: salen de la regla (`varianteCanal()`) y
+  se publican en `messages[].variants` del catálogo.
+- **Ningún mensaje puede arrancar con `Buenas`.** El CRM lo tomaría por un
+  contacto de Google Ads. `buildCatalogExport()` corta el build si pasa.
+- **Un mensaje nuevo en español tiene que arrancar con `Hola! `** (con el espacio).
+  Si no, no tiene variante y quien llegue por un anuncio sale con el mensaje
+  base, sin canal.
+- El link se cambia **en el clic**, con un listener en el documento
+  (`src/lib/origenCliente.ts`). Por eso también alcanza a los links que el
+  checkout y el verificador arman en el navegador.
+- El canal sale de la cookie `um_canal`, que escribe `/api/origen`. Vence a los
+  90 días del clic en el anuncio, no de la última visita.
+- Para probar en producción sin emitirle nada al público:
+  `localStorage.setItem('um-canal-prueba', '1')` y entrar con `?gclid=prueba`.
+- Quedan afuera los mensajes en inglés y los de la sección `Ads` (los prellena
+  Meta).
 
 ---
 
@@ -254,9 +288,13 @@ SELECT ref, created_at, status,
 FROM orders ORDER BY created_at DESC;
 ```
 
-**Esto cubre el checkout, no WhatsApp.** Quien llega por un anuncio y escribe
-por WhatsApp manda el mismo mensaje que un orgánico: el catálogo identifica la
-sección del sitio, no el canal.
+**Esto cubre el checkout, no WhatsApp.** Para WhatsApp el canal viaja en el
+saludo del mensaje (ver "El canal viaja en el saludo", más arriba), y sale de la
+misma cookie.
+
+El clic en un anuncio **vence a los 90 días** aunque la cookie siga viva: se
+renueva con cada ingreso, así que a quien vuelve todos los meses no se le
+vencería nunca (`vigente()` en `src/lib/origen.ts`).
 
 ### ⚠️ El snippet de gtag lleva `is:inline`
 

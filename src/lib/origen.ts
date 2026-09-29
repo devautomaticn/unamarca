@@ -26,6 +26,8 @@
 //  del lado del servidor: nunca se confía en el que venga escrito.
 // ────────────────────────────────────────────────────────────────────────────
 
+import { WA_CANAL_COOKIE, esWaCanal, type WaCanal } from './waCanal';
+
 export const ORIGEN_COOKIE = 'um_origen';
 
 /** 90 días: la ventana de conversión más larga que admite Google Ads. Pasado
@@ -220,13 +222,32 @@ function mismoToque(a: Toque, b: Toque): boolean {
   return claves.every(k => (a[k] ?? '') === (b[k] ?? ''));
 }
 
+/** Segundos que le quedan a un clic pago antes de vencer; 0 si ya venció. */
+function vigencia(anuncio: Toque, ahora: string): number {
+  const edad = (Date.parse(ahora) - Date.parse(anuncio.ts)) / 1000;
+  if (Number.isNaN(edad)) return 0;
+  return Math.max(0, Math.floor(ORIGEN_MAX_AGE - edad));
+}
+
+/**
+ * Suelta el clic pago si ya pasó la ventana. Hace falta porque la cookie se
+ * renueva con cada ingreso: a quien vuelve todos los meses no se le vence
+ * nunca, y un anuncio de hace medio año seguiría figurando en el pedido.
+ */
+export function vigente(origen: Origen, ahora: string): Origen {
+  if (!origen.anuncio || vigencia(origen.anuncio, ahora) > 0) return origen;
+  const { anuncio: _vencido, ...resto } = origen;
+  return resto;
+}
+
 export function combinar(previo: Origen | null, nuevo: Toque): Origen {
   if (!previo) {
     return { primero: nuevo, ultimo: nuevo, ...(esPago(nuevo) ? { anuncio: nuevo } : {}) };
   }
-  if (mismoToque(previo.ultimo, nuevo)) return previo;
-  const anuncio = esPago(nuevo) ? nuevo : previo.anuncio;
-  return { primero: previo.primero, ultimo: nuevo, ...(anuncio ? { anuncio } : {}) };
+  const base = vigente(previo, nuevo.ts);
+  if (mismoToque(base.ultimo, nuevo)) return base;
+  const anuncio = esPago(nuevo) ? nuevo : base.anuncio;
+  return { primero: base.primero, ultimo: nuevo, ...(anuncio ? { anuncio } : {}) };
 }
 
 // ── Cookie ──────────────────────────────────────────────────────────────────
@@ -252,7 +273,10 @@ export function leerCookie(header: string | null, hostPropio: string): Origen | 
     const ultimo = sanitizarToque(o?.ultimo, opts);
     if (!primero || !ultimo) return null;
     const anuncio = sanitizarToque(o?.anuncio, opts);
-    return { primero, ultimo, ...(anuncio && esPago(anuncio) ? { anuncio } : {}) };
+    return vigente(
+      { primero, ultimo, ...(anuncio && esPago(anuncio) ? { anuncio } : {}) },
+      opts.ts,
+    );
   } catch {
     return null;
   }
@@ -295,16 +319,35 @@ function codificar(origen: Origen): string {
 export function serializarCookie(origen: Origen, url: URL): string {
   const valor = codificar(origen);
   if (!valor) return '';
-  const partes = [
-    `${ORIGEN_COOKIE}=${valor}`,
-    'Path=/',
-    `Max-Age=${ORIGEN_MAX_AGE}`,
-    'SameSite=Lax',
-    'HttpOnly',
-  ];
+  return [`${ORIGEN_COOKIE}=${valor}`, `Max-Age=${ORIGEN_MAX_AGE}`, 'HttpOnly', ...atributos(url)].join('; ');
+}
+
+function atributos(url: URL): string[] {
+  const partes = ['Path=/', 'SameSite=Lax'];
   if (url.protocol === 'https:') partes.push('Secure');
   if (/(^|\.)unamarca\.com\.ar$/.test(url.hostname)) partes.push('Domain=unamarca.com.ar');
-  return partes.join('; ');
+  return partes;
+}
+
+/** El canal que viaja en los mensajes de WhatsApp (ver src/lib/waCanal.ts):
+ *  el del último clic pago vigente, si es uno de los que tienen saludo propio. */
+export function canalWa(origen: Origen | null, ahora: string): WaCanal | null {
+  const anuncio = origen && vigente(origen, ahora).anuncio;
+  return anuncio && esWaCanal(anuncio.canal) ? anuncio.canal : null;
+}
+
+/**
+ * `Set-Cookie` de la cookie de canal, o '' si no corresponde ninguna.
+ *
+ * Es aparte de `um_origen` porque esa es `HttpOnly` y ésta la tiene que leer el
+ * navegador para elegir el mensaje. Lleva sólo el nombre del canal, ningún id.
+ * Vence junto con el clic que la originó, no 90 días después de la última
+ * visita.
+ */
+export function serializarCookieCanal(origen: Origen, url: URL, ahora: string): string {
+  const canal = canalWa(origen, ahora);
+  if (!canal || !origen.anuncio) return '';
+  return [`${WA_CANAL_COOKIE}=${canal}`, `Max-Age=${vigencia(origen.anuncio, ahora)}`, ...atributos(url)].join('; ');
 }
 
 // ── Para mostrar ────────────────────────────────────────────────────────────
