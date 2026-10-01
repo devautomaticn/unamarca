@@ -1,152 +1,148 @@
 {
-  "actualizado": "2026-09-14T17:04:44.908Z",
+  "actualizado": "2026-10-01T11:58:23.183Z",
   "fuente": "https://portaltramites.inpi.gob.ar/InfoPortal/Aranceles",
-  "umapi": 405.69,
-  "vigencia": "2026-09",
-  "vigenciaTexto": "septiembre 2026",
-  "proximo": {
-    "desde": "2026-10-01",
-    "umapi": 412.59,
-    "variacionPct": 1.7
-  },
+  "umapi": 412.59,
+  "vigencia": "2026-10",
+  "vigenciaTexto": "octubre 2026",
+  "proximo": null,
   "tramites": [
     {
       "codigo": 168000,
       "descripcion": "Solicitud de nulidad de marca registrada",
       "umapis": 666,
-      "importe": 270189.54
+      "importe": 274784.94
     },
     {
       "codigo": 169000,
       "descripcion": "Solicitud de caducidad de marca registrada",
       "umapis": 666,
-      "importe": 270189.54
+      "importe": 274784.94
     },
     {
       "codigo": 161000,
       "descripcion": "Mantenimiento de la vigencia de una oposición a una solicitud de marca — apertura del procedimiento de resolucion administrativa de oposiciones - ampliacion de fundamentos de oposicion",
       "umapis": 500,
-      "importe": 202845
+      "importe": 206295
     },
     {
       "codigo": 168200,
       "descripcion": "Solicitud de nulidad de marca registrada en el contexto de una oposición a una solicitud de marca",
       "umapis": 333,
-      "importe": 135094.77
+      "importe": 137392.47
     },
     {
       "codigo": 169200,
       "descripcion": "Solicitud de caducidad de marca registrada en el contexto de una oposición a una solicitud de marca",
       "umapis": 333,
-      "importe": 135094.77
+      "importe": 137392.47
     },
     {
       "codigo": 120001,
       "descripcion": "Tramitacion de solicitud de renovacion de marca",
       "umapis": 200,
-      "importe": 81138
+      "importe": 82518
     },
     {
       "codigo": 139000,
       "descripcion": "Derecho a oposición a marcas colectivas por parte de terceros",
       "umapis": 200,
-      "importe": 81138
+      "importe": 82518
     },
     {
       "codigo": 171000,
       "descripcion": "Tramitacion de solicitud de renovacion registro vencido dentro del plazo de gracia",
       "umapis": 200,
-      "importe": 81138
+      "importe": 82518
     },
     {
       "codigo": 110001,
       "descripcion": "Tramitación de solicitud de registro de marca nueva con proteccion hasta 20 posiciones de nomenclador",
       "umapis": 100,
-      "importe": 40569
+      "importe": 41259
     },
     {
       "codigo": 131000,
       "descripcion": "Derecho a oposición por parte de terceros",
       "umapis": 100,
-      "importe": 40569
+      "importe": 41259
     },
     {
       "codigo": 760001,
       "descripcion": "Recursos administrativos de marcas",
       "umapis": 78,
-      "importe": 31643.82
+      "importe": 32182.02
     },
     {
       "codigo": 170000,
       "descripcion": "Resolución administrativa de las oposiciones vigentes – tasa solicitante – art. 2° bis de res. 183/18",
       "umapis": 50,
-      "importe": 20284.5
+      "importe": 20629.5
     },
     {
       "codigo": 770001,
       "descripcion": "Solicitud de extension de plazo de marcas",
       "umapis": 50,
-      "importe": 20284.5
+      "importe": 20629.5
     },
     {
       "codigo": 181000,
       "descripcion": "Declaracion de uso art. 26 Ley 22,362",
       "umapis": 44,
-      "importe": 17850.36
+      "importe": 18153.96
     },
     {
       "codigo": 192000,
       "descripcion": "Tasa de reserva estudio de fondo -anual",
       "umapis": 43,
-      "importe": 17444.67
+      "importe": 17741.37
     },
     {
       "codigo": 187000,
       "descripcion": "Renuncia parcial de marcas",
       "umapis": 40,
-      "importe": 16227.6
+      "importe": 16503.6
     },
     {
       "codigo": 190010,
       "descripcion": "Ratificacion de gestion",
       "umapis": 35,
-      "importe": 14199.15
+      "importe": 14440.65
     },
     {
       "codigo": 152000,
       "descripcion": "Pedido de informe de clasificación de productos / servicios en oficinas extranjeras",
       "umapis": 24,
-      "importe": 9736.56
+      "importe": 9902.16
     },
     {
       "codigo": 182000,
       "descripcion": "Declaracion de uso vencida art. 26 Ley 22,362 (tasa anual en adición a la declaracion de uso en termino)",
       "umapis": 22,
-      "importe": 8925.18
+      "importe": 9076.98
     },
     {
       "codigo": 750001,
       "descripcion": "Contestacion de vistas por incumplimientos formales de marcas",
       "umapis": 22,
-      "importe": 8925.18
+      "importe": 9076.98
     },
     {
       "codigo": 470000,
       "descripcion": "Renuncia total de registro de marcas",
       "umapis": 17,
-      "importe": 6896.73
+      "importe": 7014.03
     },
     {
       "codigo": 151000,
       "descripcion": "Pedido de informe de clasificación de productos/servicios en nuestras oficinas",
       "umapis": 12,
-      "importe": 4868.28
+      "importe": 4951.08
     },
     {
       "codigo": 110100,
       "descripcion": "Excedente por cada posicion adicional",
       "umapis": 4,
-      "importe": 1622.76
+      "importe": 1650.36
     }
   ],
   "historial": [
@@ -165,6 +161,10 @@
     {
       "mes": "2026-09",
       "umapi": 405.69
+    },
+    {
+      "mes": "2026-10",
+      "umapi": 412.59
     }
   ]
 }
