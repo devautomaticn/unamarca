@@ -125,7 +125,10 @@ function isActive(href: string) {
         módulo, `gtag` deja de ser global y cada `gtag('event', …)` del sitio
         —los onclick de WhatsApp, el funnel y el purchase del checkout— tira
         ReferenceError en silencio: GA4 sigue contando páginas vistas y no
-        recibe un solo evento. Estuvo así desde abril hasta septiembre 2026. */}
+        recibe el evento. Se detectó el 2026-09-29. Ojo: Google Ads registró
+        conversiones whatsapp_click hasta el 2026-08-06, así que en algún
+        momento ese evento llegaba a GA4 por otro camino (¿una regla "crear
+        evento" en GA4?). Si esa regla existe, ahora cuenta doble. */}
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-E8ZYE30BC1"></script>
     <script is:inline>
       window.dataLayer = window.dataLayer || [];

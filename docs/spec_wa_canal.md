@@ -280,5 +280,5 @@ No lo lee en vivo. La copia se actualiza a mano del lado de ellos
 | 3 | CRM | Trae la copia 1.11.0 y despliega el parser | Hecho |
 | 4 | CRM | Avisa que está listo | Hecho |
 | 5 | Sitio | Activa la emisión y avisa. Catálogo 1.11.1, `emitting: true` | Hecho, 2026-09-29 |
-| 6 | CRM | Trae la copia 1.11.1 y despliega | Pendiente |
+| 6 | CRM | Trae la copia 1.11.1 y despliega. Corre el backfill | Hecho, 2026-09-29 21:08 UTC |
 | 7 | Los dos | Primera semana: revisar que "sin match" no haya subido | Pendiente |

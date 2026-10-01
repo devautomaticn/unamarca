@@ -42,7 +42,7 @@ const confirmando = motivo === 'pendiente' && volviendoDeMP;
       <p class="g-bloqueo-espera"><span class="g-bloqueo-punto"></span> Esperando la confirmación…</p>
       <p class="g-bloqueo-pie">
         Si en un minuto seguís viendo esto, escribinos y lo destrabamos:
-        <a href={waHref('guia_pendiente')}>abrir WhatsApp</a>. Tu acceso no se pierde.
+        <a href={waHref('guia_pendiente')} onclick="gtag('event', 'whatsapp_click', {'source': 'guia_pendiente'})">abrir WhatsApp</a>. Tu acceso no se pierde.
       </p>
       <script is:inline>
         // Hasta 12 reintentos cada 5 s (un minuto). Después deja de insistir y
@@ -88,7 +88,7 @@ const confirmando = motivo === 'pendiente' && volviendoDeMP;
 
       <p class="g-bloqueo-pie">
         ¿Ya pagaste y seguís viendo esto? Escribinos y lo revisamos:
-        <a href={waHref('guia_pendiente')}>abrir WhatsApp</a>.
+        <a href={waHref('guia_pendiente')} onclick="gtag('event', 'whatsapp_click', {'source': 'guia_pendiente'})">abrir WhatsApp</a>.
       </p>
     </>
   )}
@@ -101,7 +101,7 @@ const confirmando = motivo === 'pendiente' && volviendoDeMP;
         Si creés que es un error, escribinos y lo vemos.
       </p>
       <p class="g-bloqueo-pie">
-        <a class="g-btn g-bloqueo-btn" href={waHref('guia_pendiente')}>Escribirnos por WhatsApp</a>
+        <a class="g-btn g-bloqueo-btn" href={waHref('guia_pendiente')} onclick="gtag('event', 'whatsapp_click', {'source': 'guia_pendiente'})">Escribirnos por WhatsApp</a>
       </p>
     </>
   )}
@@ -115,7 +115,7 @@ const confirmando = motivo === 'pendiente' && volviendoDeMP;
         no se haya cortado. Si no, escribinos y te lo reenviamos.
       </p>
       <p class="g-bloqueo-pie">
-        <a class="g-btn g-bloqueo-btn" href={waHref('guia_pendiente')}>Escribirnos por WhatsApp</a>
+        <a class="g-btn g-bloqueo-btn" href={waHref('guia_pendiente')} onclick="gtag('event', 'whatsapp_click', {'source': 'guia_pendiente'})">Escribirnos por WhatsApp</a>
       </p>
     </>
   )}

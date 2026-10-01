@@ -301,9 +301,16 @@ vencería nunca (`vigente()` en `src/lib/origen.ts`).
 Sin ese atributo Astro empaqueta el `<script>` como módulo y `gtag` deja de ser
 una función global. **No rompe el build ni se ve en la página**: GA4 sigue
 contando páginas vistas, pero cada `gtag('event', …)` tira `ReferenceError` y no
-llega ningún evento (`whatsapp_click`, `purchase`, el funnel del checkout).
-Estuvo así desde abril hasta el 2026-09-29. Para comprobarlo, en la consola del
-sitio: `typeof gtag` tiene que dar `"function"`.
+llega el evento (`whatsapp_click`, `purchase`, el funnel del checkout). Se
+detectó y arregló el 2026-09-29. Para comprobarlo, en la consola del sitio:
+`typeof gtag` tiene que dar `"function"`.
+
+Lo que no cierra: Google Ads registró 25 conversiones `whatsapp_click` entre
+abril y el 2026-08-06, con el snippet ya roto. Ese evento llegaba a GA4 por
+otro camino, probablemente una regla "crear evento" en GA4 a partir del `click`
+saliente a `wa.me`. **Si esa regla existe, desde el arreglo cada clic cuenta
+doble en GA4** (en Ads no, porque la acción cuenta una por clic). Hay que
+mirarlo en GA4 → Administrar → Eventos → Crear eventos.
 
 ---
 

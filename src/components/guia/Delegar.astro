@@ -20,5 +20,10 @@ const { contexto, texto, enlace } = Astro.props;
 
 <p class="g-delegar">
   {texto}{' '}
-  <a href={waHref(contexto)} target="_blank" rel="noopener">{enlace}</a>
+  <a
+    href={waHref(contexto)}
+    target="_blank"
+    rel="noopener"
+    onclick={`gtag('event','whatsapp_click',{'source':'${contexto}'})`}
+  >{enlace}</a>
 </p>
