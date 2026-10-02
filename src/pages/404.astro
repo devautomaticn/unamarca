@@ -1,0 +1,108 @@
+---
+// Página 404. Hasta el 2026-10-02 no existía, y Cloudflare servía la home con
+// un 200 en cualquier URL inexistente: Google las consolidaba por el canonical
+// ("Página alternativa con etiqueta canónica adecuada"), así que no llegó a
+// indexar duplicados, pero gastaba rastreo y mentía el código de estado.
+//
+// `noindex` porque es la misma página en infinitas URLs. El canonical se
+// autorreferencia (default de BaseLayout) y eso está bien acá: no puede
+// apuntar a la home, porque esta URL no es la home.
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Página no encontrada | UnaMarca"
+  description="La página que buscás no existe o cambió de dirección."
+  noindex={true}
+>
+  <section class="nf">
+    <div class="container nf-wrap">
+      <span class="section-label">Error 404</span>
+      <h1>Esta página no existe</h1>
+      <p class="nf-lead">
+        El enlace que seguiste puede estar roto o la dirección puede haber
+        cambiado. Estos son los lugares a los que suele querer ir la gente:
+      </p>
+
+      <div class="nf-links">
+        <a href="/verificar-marca/" class="nf-card">
+          <strong>Buscador de marcas del INPI</strong>
+          <span>Consultá gratis si tu marca está libre, en trámite o registrada.</span>
+        </a>
+        <a href="/aranceles-inpi/" class="nf-card">
+          <strong>Aranceles del INPI</strong>
+          <span>La tabla vigente en pesos, sincronizada todos los meses.</span>
+        </a>
+        <a href="/registrar/" class="nf-card">
+          <strong>Registrá tu marca online</strong>
+          <span>Precio fijo por clase y presentación ante el INPI.</span>
+        </a>
+        <a href="/blog/" class="nf-card">
+          <strong>Guías sobre marcas</strong>
+          <span>Costos, plazos, clases y todo el trámite explicado.</span>
+        </a>
+      </div>
+
+      <p class="nf-foot">
+        Si llegaste acá desde un link nuestro, avisanos y lo arreglamos.
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .nf {
+    padding: 5rem 0 6rem;
+    background: var(--c-bg);
+  }
+  .nf-wrap {
+    max-width: 760px;
+  }
+  .nf h1 {
+    margin: 0.75rem 0 1rem;
+  }
+  .nf-lead {
+    color: var(--c-text-muted);
+    margin-bottom: 2.5rem;
+  }
+  .nf-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+  .nf-card {
+    display: block;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--c-border);
+    border-radius: 14px;
+    background: #fff;
+    text-decoration: none;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .nf-card:hover {
+    border-color: var(--c-blue);
+    transform: translateY(-2px);
+  }
+  .nf-card strong {
+    display: block;
+    color: var(--c-navy);
+    margin-bottom: 0.35rem;
+  }
+  .nf-card span {
+    font-size: 0.925rem;
+    color: var(--c-text-muted);
+  }
+  .nf-foot {
+    margin-top: 2.5rem;
+    font-size: 0.925rem;
+    color: var(--c-text-muted);
+  }
+  @media (max-width: 640px) {
+    .nf {
+      padding: 3rem 0 4rem;
+    }
+    .nf-links {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

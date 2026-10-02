@@ -812,7 +812,22 @@ This site depends on organic search traffic. Every change must preserve:
   info (phone, email, address) is available
 - Blog posts: `Article` schema — auto-generated from frontmatter
 
-### 6. Open Graph / Twitter Card
+### 6. Página 404
+
+`src/pages/404.astro` existe para que una URL inexistente devuelva **404 y no
+200**. Hasta el 2026-10-02 no estaba, y Cloudflare servía la home con un 200 en
+cualquier ruta: Google las consolidaba por el canonical (las marcaba "Página
+alternativa con etiqueta canónica adecuada"), así que no indexó duplicados, pero
+gastaba rastreo y mentía el estado. Se habían colado en GSC URLs como
+`/tag/workflow` y tres slugs mal escritos, todas con impresiones.
+
+- Va con `noindex`: es la misma página en infinitas URLs.
+- El canonical se autorreferencia, que es el default de `BaseLayout`. **No
+  ponerle el de la home**: esa URL no es la home.
+- Se verifica con `npx wrangler pages dev dist` y `curl -o /dev/null -w '%{http_code}'`
+  contra una ruta inventada. `astro dev` no reproduce el ruteo de Pages.
+
+### 7. Open Graph / Twitter Card
 - Set via `BaseLayout.astro` using page props
 - Add a real `og:image` at `/public/og-default.png` (1200×630px recommended)
   before going live
