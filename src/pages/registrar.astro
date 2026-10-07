@@ -4,7 +4,7 @@
 // TODO wiring: POST /api/checkout/submit (PDF + emails).
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { NIZA_CLASSES } from '../lib/checkout/nizaClasses';
-import { PRICING, MAX_CLASES, MAX_MARCAS, MAX_TITULARES, PROVINCIAS, TRANSFERENCIA, TIPOS_MARCA, LOGO_ACCEPT, LOGO_CM_MAX, CARACTERES_REPRESENTANTE, formatARS } from '../lib/checkout/constants';
+import { PRICING, MAX_CLASES, MAX_MARCAS, MAX_TITULARES, PROVINCIAS, PAISES, TRANSFERENCIA, TIPOS_MARCA, LOGO_ACCEPT, LOGO_CM_MAX, CARACTERES_REPRESENTANTE, PRIORIDAD_MESES, formatARS } from '../lib/checkout/constants';
 import { waHref, waHrefMulticlase, waHrefMultimarca, waHrefMultititular } from '../lib/wa';
 
 const SITE_URL = 'https://unamarca.com.ar';
@@ -316,8 +316,103 @@ const faqSchema = {
             </label>
             <p class="ck-err ck-confirm-err"></p>
           </div>
+
+          <!-- Prioridad del Convenio de París. Plegada detrás de una casilla:
+               casi nadie la reclama, y a quien no aplica no tiene que leer qué
+               es. Va acá y no antes del pago porque no cambia el precio, y
+               porque el certificado necesita el pedido para subirse. -->
+          <div class="ck-prio">
+            <label class="ck-terms ck-prio-toggle">
+              <input type="checkbox" class="ck-prio-on" />
+              <span>Ya presenté esta marca en otro país en los últimos {PRIORIDAD_MESES} meses <span class="ck-field-opt">(reclamar prioridad)</span></span>
+            </label>
+            <div class="ck-prio-body" hidden>
+              <p class="ck-help ck-prio-intro">
+                Por el Convenio de París, la solicitud en Argentina puede tomar
+                la fecha de aquella presentación si se hace dentro de los
+                {PRIORIDAD_MESES} meses. Cubre sólo las clases y los productos que
+                presentaste allá.
+              </p>
+              <!-- Una tarjeta por solicitud de origen (#ck-prio-pres-tpl). Casi
+                   siempre es una con todas las clases; hay oficinas donde se
+                   presenta una por clase, y cada una trae su certificado. -->
+              <div class="ck-prio-lista"></div>
+              <button type="button" class="ck-link-btn ck-prio-add">+ Agregar otra solicitud de origen</button>
+              <p class="ck-help ck-prio-add-help">
+                Si allá presentaste cada clase por separado, cargá cada solicitud
+                con su número, sus clases y su certificado.
+              </p>
+              <p class="ck-prio-aviso">
+                <b>El certificado tiene que llegar antes de que el INPI ordene
+                publicar la marca.</b> Si no está para entonces, la marca se
+                publica sin prioridad y no se puede corregir. Si todavía no lo
+                tenés, seguí igual y mandánoslo apenas te lo entreguen.
+              </p>
+            </div>
+          </div>
           </div>
         </details>
+      </template>
+
+      <!-- Una solicitud de origen dentro del bloque de prioridad. Vive fuera
+           de la tarjeta de marca porque se clona N veces por marca. -->
+      <template id="ck-prio-pres-tpl">
+        <div class="ck-prio-pres">
+          <div class="ck-prio-pres-head">
+            <span class="ck-prio-pres-titulo">Solicitud de origen</span>
+            <button type="button" class="ck-link-btn ck-prio-quitar">Quitar</button>
+          </div>
+          <div class="ck-grid ck-g2">
+            <div class="ck-field">
+              <label>País donde la presentaste <em>*</em></label>
+              <div class="ck-sel">
+                <select class="ck-prio-pais">
+                  <option value="">Seleccionar…</option>
+                  {PAISES.filter(p => p !== 'Argentina').map(p => <option value={p}>{p}</option>)}
+                </select>
+              </div>
+              <p class="ck-err ck-prio-pais-err"></p>
+            </div>
+            <div class="ck-field">
+              <label>Fecha de presentación <em>*</em></label>
+              <input type="date" class="ck-prio-fecha" />
+              <p class="ck-err ck-prio-fecha-err"></p>
+            </div>
+          </div>
+          <div class="ck-field">
+            <label>Número de solicitud <em>*</em></label>
+            <input type="text" class="ck-prio-numero" maxlength="40" autocomplete="off" placeholder="512345" />
+            <p class="ck-err ck-prio-numero-err"></p>
+          </div>
+          <!-- No frena: el plazo lo revisa el estudio (puede haber una
+               fecha mal cargada, o un caso que no conocemos). -->
+          <p class="ck-prio-vencida" hidden></p>
+          <div class="ck-field ck-prio-clases-row" hidden>
+            <label>Clases que presentaste allá <em>*</em></label>
+            <div class="ck-prio-clases"></div>
+            <p class="ck-err ck-prio-clases-err"></p>
+          </div>
+
+          <div class="ck-field">
+            <label>Certificado de prioridad (PDF) <span class="ck-field-opt">(si ya lo tenés)</span></label>
+            <p class="ck-help">Lo emite la oficina donde la presentaste.</p>
+            <label class="ck-prio-file">
+              <input type="file" class="ck-sr ck-prio-cert" accept="application/pdf,.pdf" />
+              <span>Elegir PDF</span>
+            </label>
+            <p class="ck-help ck-prio-cert-estado"></p>
+            <p class="ck-err ck-prio-cert-err"></p>
+          </div>
+          <div class="ck-field">
+            <label>Traducción al español (PDF) <span class="ck-field-opt">(sólo si el certificado está en otro idioma)</span></label>
+            <label class="ck-prio-file">
+              <input type="file" class="ck-sr ck-prio-trad" accept="application/pdf,.pdf" />
+              <span>Elegir PDF</span>
+            </label>
+            <p class="ck-help ck-prio-trad-estado"></p>
+            <p class="ck-err ck-prio-trad-err"></p>
+          </div>
+        </div>
       </template>
 
       <div class="ck-nav">
@@ -436,6 +531,24 @@ const faqSchema = {
                 </p>
               </div>
 
+              <!-- País del domicilio. Va arriba porque, igual que el tipo,
+                   decide qué campos existen: alguien del exterior no tiene
+                   CUIT ni provincia, y se identifica con su pasaporte (el INPI
+                   no tiene cédula extranjera). El domicilio legal en Argentina
+                   lo constituye el estudio: no se le pide nada para eso. -->
+              <div class="ck-field">
+                <label>País del domicilio <em>*</em></label>
+                <div class="ck-sel">
+                  <select data-f="pais" autocomplete="country-name">
+                    {PAISES.map(p => <option value={p}>{p}</option>)}
+                  </select>
+                </div>
+                <p class="ck-help" data-pais="ext">
+                  No hace falta CUIT: te identificamos con tu pasaporte. El
+                  domicilio legal en Argentina lo constituimos nosotros.
+                </p>
+              </div>
+
               <!-- En una jurídica este mismo campo es la RAZÓN SOCIAL: el
                    label, el placeholder y la ayuda cambian, y el apellido
                    desaparece (una sociedad no tiene). Es un solo campo y no dos
@@ -474,10 +587,18 @@ const faqSchema = {
                 </div>
               </div>
 
-              <div class="ck-field">
+              <div class="ck-field" data-pais="ar">
                 <label class="ck-tit-cuit-label">CUIT / CUIL <em>*</em></label>
                 <input type="text" data-f="cuit" placeholder="27-22730331-5" inputmode="numeric" autocomplete="off" maxlength="13" />
                 <p class="ck-err" data-err="cuit"></p>
+              </div>
+              <!-- Del exterior: la identificación tributaria de su país, si la
+                   tiene. No es el CUIT ni va donde va el CUIT: el CUIT es lo que
+                   deduplica contactos en el portal. -->
+              <div class="ck-field" data-pais="ext">
+                <label>Identificación tributaria <span class="ck-field-opt">(opcional)</span></label>
+                <input type="text" data-f="idtrib" placeholder="RUT, NIF, EIN…" autocomplete="off" maxlength="40" />
+                <p class="ck-help">La de tu país, si tenés. Va en la carta poder.</p>
               </div>
 
               <!-- Inscripción registral. Los tres van sin asterisco: una
@@ -592,15 +713,18 @@ const faqSchema = {
                 <div class="ck-field">
                   <label>Localidad <em>*</em></label>
                   <input type="text" data-f="localidad" placeholder="La Plata" autocomplete="address-level2" />
+                  <!-- Afuera no hay provincia: la región, si la quieren, va acá. -->
+                  <p class="ck-help" data-pais="ext">Ciudad, y si querés la región: «Ciudad de la Costa, Canelones».</p>
                   <p class="ck-err" data-err="localidad"></p>
                 </div>
                 <div class="ck-field">
-                  <label>Código postal <em>*</em></label>
+                  <!-- Hay países sin código postal: afuera es opcional. -->
+                  <label>Código postal <em data-pais="ar">*</em></label>
                   <input type="text" data-f="codpostal" placeholder="1900" autocomplete="postal-code" />
                   <p class="ck-err" data-err="codpostal"></p>
                 </div>
               </div>
-              <div class="ck-field">
+              <div class="ck-field" data-pais="ar">
                 <label>Provincia <em>*</em></label>
                 <div class="ck-sel">
                   <select data-f="provincia">
@@ -610,16 +734,6 @@ const faqSchema = {
                 </div>
                 <p class="ck-err" data-err="provincia"></p>
               </div>
-
-              <!-- Casi todos los titulares viven en Argentina: el campo está,
-                   pero no ocupa lugar hasta que hace falta. -->
-              <div class="ck-field ck-pais-row" data-pais-row hidden>
-                <label>País <em>*</em></label>
-                <input type="text" data-f="pais" value="Argentina" autocomplete="country-name" />
-              </div>
-              <button type="button" class="ck-link-btn ck-pais-toggle" data-pais-toggle>
-                Este titular vive fuera de Argentina
-              </button>
             </div>
 
             <!-- Quién firma por la sociedad.
@@ -631,18 +745,29 @@ const faqSchema = {
               <div class="ck-section-label">Quién firma por la empresa</div>
               <p class="ck-help">
                 La persona que firma la carta poder en representación de la
-                sociedad. Firma con su nombre y su DNI, aclarando que lo hace
-                por la empresa.
+                sociedad. Firma con su nombre y su documento, aclarando que lo
+                hace por la empresa.
               </p>
 
+              <div class="ck-field">
+                <label>Nombre y apellido <em>*</em></label>
+                <input type="text" data-f="repnombre" placeholder="María Gómez" autocomplete="name" />
+                <p class="ck-err" data-err="repnombre"></p>
+              </div>
+              <!-- Quien firma por una sociedad del exterior lo hace con su
+                   pasaporte: el tipo de documento ya no es fijo. -->
               <div class="ck-grid ck-g2">
                 <div class="ck-field">
-                  <label>Nombre y apellido <em>*</em></label>
-                  <input type="text" data-f="repnombre" placeholder="María Gómez" autocomplete="name" />
-                  <p class="ck-err" data-err="repnombre"></p>
+                  <label>Tipo de documento <em>*</em></label>
+                  <div class="ck-sel">
+                    <select data-f="repdoctipo">
+                      <option value="DNI" selected>DNI</option>
+                      <option value="Pasaporte">Pasaporte</option>
+                    </select>
+                  </div>
                 </div>
                 <div class="ck-field">
-                  <label>DNI <em>*</em></label>
+                  <label>Número de documento <em>*</em></label>
                   <input type="text" data-f="repdocumento" placeholder="20150899" autocomplete="off" maxlength="20" />
                   <p class="ck-err" data-err="repdocumento"></p>
                 </div>
@@ -1108,7 +1233,8 @@ const faqSchema = {
     formatCm, parseCm, medidasDesdePx, normalizeTipoMarca, requiereLogo,
     tieneDenominacion, tipoMarcaLabel, type TipoMarca,
     formatPorcentaje, parsePorcentaje, repartirPorcentajes, sumaPorcentajes,
-    esApoderado,
+    esApoderado, esDelExterior, paisCanonico, DOC_EXTERIOR,
+    PRIORIDAD_MAX_BYTES, prioridadVencida, vencimientoPrioridad, fechaCorta,
   } from '../lib/checkout/constants';
   import { formatCuitInput, isValidCuit, cuitMatchesDni, esCuitDeJuridica } from '../lib/checkout/cuit';
   import { cartaPoderHTML, type CartaPoderData } from '../lib/checkout/cartaPoder';
@@ -1150,6 +1276,8 @@ const faqSchema = {
     corregidaAMixta?: boolean;
     /** Key en R2, la escribe el servidor al subir */
     logoKey: string | null;
+    /** Prioridad del Convenio de París (paso 5). Casi siempre apagada. */
+    prioridad: PrioridadState;
     /** Transitorios: no van al draft (un JPG no entra en localStorage) */
     logoBlob?: Blob | null;
     logoUrl?: string | null;
@@ -1160,7 +1288,59 @@ const faqSchema = {
     nombre, tipo, clases: [], descripcion: '', sitioWeb: '',
     colores: '', alto: null, ancho: null, confirmaTexto: false, sinTexto: null,
     logoKey: null, logoBlob: null, logoUrl: null, logoNombre: '', logoPx: null,
+    prioridad: nuevaPrioridad(),
   });
+
+  /** La prioridad de una marca: una o más SOLICITUDES DE ORIGEN. Casi siempre
+   *  es una con todas las clases; hay oficinas donde se presenta una solicitud
+   *  por clase, y entonces cada una trae su número, su fecha y su certificado.
+   *  Una clase va en una sola: acá es un trámite, y un trámite tiene una
+   *  prioridad. */
+  interface PrioridadState {
+    activa: boolean;
+    presentaciones: PresentacionState[];
+  }
+  /** `certificado` y `traduccion` son el nombre del archivo YA SUBIDO al
+   *  servidor: el PDF en sí no viaja en el draft. `id` nombra esos archivos en
+   *  R2, por eso es estable y no el índice (quitar una correría las demás). */
+  interface PresentacionState {
+    id: string;
+    pais: string;
+    numero: string;
+    /** AAAA-MM-DD, lo que da el `<input type="date">` */
+    fecha: string;
+    clases: number[];
+    certificado: string;
+    traduccion: string;
+  }
+  const idPresentacion = () => Math.random().toString(36).slice(2, 10) || 'p1';
+  function nuevaPresentacion(clases: number[] = []): PresentacionState {
+    return { id: idPresentacion(), pais: '', numero: '', fecha: '', clases, certificado: '', traduccion: '' };
+  }
+  function nuevaPrioridad(): PrioridadState {
+    return { activa: false, presentaciones: [] };
+  }
+  function presentacionDesde(raw: any): PresentacionState {
+    const id = String(raw?.id ?? '');
+    return {
+      id: /^[a-z0-9]{1,12}$/.test(id) ? id : idPresentacion(),
+      pais: String(raw?.pais ?? ''),
+      numero: String(raw?.numero ?? ''),
+      fecha: String(raw?.fecha ?? ''),
+      clases: Array.isArray(raw?.clases) ? raw.clases.filter((n: unknown) => Number.isInteger(n)) : [],
+      certificado: String(raw?.certificado ?? ''),
+      traduccion: String(raw?.traduccion ?? ''),
+    };
+  }
+  function prioridadDesde(raw: any): PrioridadState {
+    if (!raw || typeof raw !== 'object') return nuevaPrioridad();
+    return {
+      activa: raw.activa === true,
+      presentaciones: Array.isArray(raw.presentaciones)
+        ? raw.presentaciones.map(presentacionDesde)
+        : [],
+    };
+  }
 
   let marcas: MarcaState[] = [nuevaMarca()];
   let garantia = false;
@@ -1202,13 +1382,16 @@ const faqSchema = {
     // `nombre` es el nombre de pila de una persona y la RAZÓN SOCIAL de una
     // sociedad: el mismo campo con otro rótulo, para que cambiar de tipo no
     // pierda lo que ya se tipeó.
-    'nombre', 'apellido', 'tipodoc', 'docnum', 'cuit', 'email',
+    'nombre', 'apellido', 'tipodoc', 'docnum', 'cuit',
+    // Sólo del exterior, y opcional: la identificación tributaria de su país.
+    'idtrib',
+    'email',
     'genero', 'estadocivil', 'conyuge',
     'pais', 'calle', 'numero', 'piso', 'depto', 'localidad', 'codpostal', 'provincia',
     // Sólo persona jurídica. Los de inscripción son opcionales; los del
     // representante, obligatorios (salvo `reppoder`, que depende del carácter).
     'inscregistro', 'inscnumero', 'inscfecha',
-    'repnombre', 'repdocumento', 'repcaracter', 'reppoder',
+    'repnombre', 'repdoctipo', 'repdocumento', 'repcaracter', 'reppoder',
   ] as const;
   type TitularField = typeof TITULAR_FIELDS[number];
 
@@ -1222,7 +1405,10 @@ const faqSchema = {
 
   function nuevoTitular(porcentaje = 100, firmaAqui = false): TitularState {
     const base = Object.fromEntries(TITULAR_FIELDS.map(f => [f, ''])) as Record<TitularField, string>;
-    return { ...base, tipopersona: 'Humana', tipodoc: 'DNI', pais: 'Argentina', porcentaje, firmaAqui };
+    return {
+      ...base, tipopersona: 'Humana', tipodoc: 'DNI', repdoctipo: 'DNI', pais: 'Argentina',
+      porcentaje, firmaAqui,
+    };
   }
 
   let titulares: TitularState[] = [nuevoTitular(100, true)];
@@ -1235,6 +1421,9 @@ const faqSchema = {
    *  campo— es persona humana: es el default seguro, porque es el único tipo
    *  que no exige datos que el formulario todavía no pidió. */
   const esJuridicaTit = (t: TitularState) => t.tipopersona === 'Juridica';
+
+  /** Vive fuera de Argentina: sin CUIT, sin provincia, con pasaporte. */
+  const esExteriorTit = (t: TitularState) => esDelExterior(t.pais);
 
   /** A quién le mandó el servidor el link para firmar. Lo devuelve el PATCH del
    *  pedido; sin él, la confirmación cae en la lista local de cotitulares. */
@@ -1403,6 +1592,7 @@ const faqSchema = {
         sinTexto: m?.sinTexto === true ? true : null,
         corregidaAMixta: m?.corregidaAMixta === true,
         logoKey: typeof m?.logoKey === 'string' ? m.logoKey : null,
+        prioridad: prioridadDesde(m?.prioridad),
       }));
     }
     const nombre = String(draft?.values?.['ck-marca'] ?? '');
@@ -1678,6 +1868,31 @@ const faqSchema = {
         );
       }
 
+      // Prioridad: sólo si la reclamó, y cada solicitud de origen por separado.
+      // El certificado NO se exige —muchos todavía no lo tienen al pagar— y el
+      // plazo vencido tampoco frena: los dos se avisan y el estudio los revisa.
+      if (m.prioridad.activa && !FIELDS_OPTIONAL) {
+        const tarjetas = card.querySelectorAll<HTMLElement>('.ck-prio-pres');
+        m.prioridad.presentaciones.forEach((pr, j) => {
+          const pres = tarjetas[j];
+          if (!pres) return;
+          const errP = (cls: string) => pres.querySelector<HTMLElement>(`.ck-prio-${cls}-err`)!;
+          const campoP = (cls: string) => pres.querySelector<HTMLElement>(`.ck-prio-${cls}`)!;
+          const cual = m.prioridad.presentaciones.length > 1 ? ` (solicitud ${j + 1})` : '';
+          ['pais', 'fecha', 'numero', 'clases'].forEach(c => setErrEl(errP(c), ''));
+          if (!pr.pais) fallo(errP('pais'), 'Elegí el país donde la presentaste.', campoP('pais'), `el país de la prioridad${cual}`);
+          if (!vencimientoPrioridad(pr.fecha)) {
+            fallo(errP('fecha'), 'Ingresá la fecha en que la presentaste.', campoP('fecha'), `la fecha de la prioridad${cual}`);
+          } else if (pr.fecha > hoyIso()) {
+            fallo(errP('fecha'), 'La fecha no puede ser posterior a hoy.', campoP('fecha'), `la fecha de la prioridad${cual}`);
+          }
+          if (!pr.numero.trim()) fallo(errP('numero'), 'Ingresá el número de la solicitud.', campoP('numero'), `el número de solicitud${cual}`);
+          if (!clasesDe(m, pr).length) {
+            fallo(errP('clases'), 'Marcá al menos una clase.', campoP('clases'), `las clases de la prioridad${cual}`);
+          }
+        });
+      }
+
       // Logo y medidas: obligatorios en mixta y figurativa. Los colores ya no
       // se le piden al cliente: los enuncia el estudio mirando la imagen.
       if (!requiereLogo(m.tipo)) { pintarResumen(); return; }
@@ -1806,6 +2021,7 @@ const faqSchema = {
         if (!FIELDS_OPTIONAL && !t[campo].trim()) { err(key, msg); ok = false; }
       };
       const juridica = esJuridicaTit(t);
+      const exterior = esExteriorTit(t);
       const doc = t.docnum.trim();
 
       if (juridica) {
@@ -1816,11 +2032,17 @@ const faqSchema = {
         req('repnombre', 'repnombre', 'Ingresá el nombre de quien firma por la empresa.');
         req('repcaracter', 'repcaracter', 'Ingresá con qué cargo firma (presidente, socio gerente, etc.).');
 
-        const repDoc = t.repdocumento.replace(/\D/g, '');
-        if (t.repdocumento.trim() || !FIELDS_OPTIONAL) {
-          if (repDoc.length < 7 || repDoc.length > 8) {
-            err('repdocumento', 'Ingresá el DNI de quien firma (7 u 8 dígitos).'); ok = false;
+        // Un DNI tiene 7 u 8 dígitos; un pasaporte, el formato de cada país
+        // (FY283918, C1234567): no se valida más que que esté.
+        if ((t.repdoctipo || 'DNI') === 'DNI') {
+          const repDoc = t.repdocumento.replace(/\D/g, '');
+          if (t.repdocumento.trim() || !FIELDS_OPTIONAL) {
+            if (repDoc.length < 7 || repDoc.length > 8) {
+              err('repdocumento', 'Ingresá el DNI de quien firma (7 u 8 dígitos).'); ok = false;
+            }
           }
+        } else {
+          req('repdocumento', 'repdocumento', 'Ingresá el número de documento de quien firma.');
         }
 
         // Un apoderado saca sus facultades de otro poder, y la carta tiene que
@@ -1859,8 +2081,9 @@ const faqSchema = {
         }
       }
 
+      // Del exterior no hay CUIT que validar: no tiene, y no se le pide.
       const cuit = t.cuit;
-      if (cuit || !FIELDS_OPTIONAL) {
+      if (!exterior && (cuit || !FIELDS_OPTIONAL)) {
         if (!isValidCuit(cuit)) {
           err('cuit', 'El CUIT/CUIL no es válido. Revisalo.'); ok = false;
         } else if (juridica && !esCuitDeJuridica(cuit)) {
@@ -1879,9 +2102,12 @@ const faqSchema = {
 
       req('calle', 'calle', 'Ingresá la calle.');
       req('numero', 'numero', 'Ingresá el número.');
-      req('localidad', 'localidad', 'Ingresá la localidad.');
-      req('codpostal', 'codpostal', 'Ingresá el código postal.');
-      req('provincia', 'provincia', 'Seleccioná la provincia.');
+      req('localidad', 'localidad', exterior ? 'Ingresá la ciudad.' : 'Ingresá la localidad.');
+      // Afuera no hay provincia, y hay países sin código postal.
+      if (!exterior) {
+        req('codpostal', 'codpostal', 'Ingresá el código postal.');
+        req('provincia', 'provincia', 'Seleccioná la provincia.');
+      }
     });
 
     // La suma tiene que dar 100 exacto: es lo que se carga en TITULARIDAD del
@@ -1972,6 +2198,15 @@ const faqSchema = {
       q('.ck-tit-titulo').textContent = varios ? `Titular ${i + 1} de ${titulares.length}` : 'Titular';
       q('.ck-tit-sub').textContent = subtituloTitular(t, i);
 
+      // El país se guarda con el nombre de la lista: un draft de antes del
+      // selector lo traía como texto libre ("uruguay").
+      t.pais = paisCanonico(t.pais);
+      const selPais = fila.querySelector<HTMLSelectElement>('[data-f="pais"]')!;
+      if (!Array.from(selPais.options).some(o => o.value === t.pais)) {
+        // Un país que no está en la lista no se pierde: se agrega como opción.
+        selPais.add(new Option(t.pais, t.pais));
+      }
+
       TITULAR_FIELDS.forEach(campo => {
         const el = fila.querySelector<HTMLInputElement | HTMLSelectElement>(`[data-f="${campo}"]`);
         if (el) el.value = t[campo];
@@ -2046,11 +2281,22 @@ const faqSchema = {
       // Cónyuge: visible solo si el estado civil es Casado/a
       q<HTMLElement>('[data-conyuge-row]').hidden = t.estadocivil !== 'Casado/a';
 
-      // País: oculto mientras sea Argentina, que es el caso de casi todos. Si
-      // un draft trae otro país, el campo aparece solo.
-      const otroPais = t.pais.trim().toLowerCase() !== 'argentina';
-      q<HTMLElement>('[data-pais-row]').hidden = !otroPais;
-      q<HTMLElement>('[data-pais-toggle]').hidden = otroPais;
+      // ── Argentina o el exterior ──
+      // Afuera no hay CUIT ni provincia, y aparecen la identificación
+      // tributaria de su país y la ayuda para la localidad. Ninguno de estos
+      // bloques lleva data-tipo, así que alcanza con su propia condición.
+      const exterior = esExteriorTit(t);
+      fila.querySelectorAll<HTMLElement>('[data-pais]').forEach(bloque => {
+        bloque.hidden = bloque.dataset.pais !== (exterior ? 'ext' : 'ar');
+      });
+      const loc = fila.querySelector<HTMLInputElement>('[data-f="localidad"]')!;
+      loc.placeholder = exterior ? 'Montevideo' : 'La Plata';
+      fila.querySelector<HTMLInputElement>('[data-f="codpostal"]')!.placeholder = exterior ? '11100' : '1900';
+      if (exterior) {
+        q<HTMLElement>('.ck-tit-dom-sub').textContent = juridica
+          ? 'El de la sede social. Sin provincia: la región, si querés, va junto a la ciudad.'
+          : 'Dónde vive este titular. Sin provincia: la región, si querés, va junto a la ciudad.';
+      }
 
       const rm = q<HTMLButtonElement>('[data-rm]');
       rm.hidden = !varios;
@@ -2125,8 +2371,12 @@ const faqSchema = {
       const tipo = fila.querySelector<HTMLSelectElement>('[data-f="tipodoc"]')!.value;
       if (tipo === 'DNI') el.value = el.value.replace(/\D/g, '').slice(0, 8);
     }
-    // El de quien firma por una sociedad es siempre un DNI.
-    if (campo === 'repdocumento') el.value = el.value.replace(/\D/g, '').slice(0, 8);
+    // El de quien firma por una sociedad, sólo si es un DNI: un pasaporte
+    // lleva letras.
+    if (campo === 'repdocumento') {
+      const tipo = fila.querySelector<HTMLSelectElement>('[data-f="repdoctipo"]')!.value;
+      if (tipo === 'DNI') el.value = el.value.replace(/\D/g, '').slice(0, 8);
+    }
     onTitularInput(fila, campo, el.value);
   });
 
@@ -2155,6 +2405,20 @@ const faqSchema = {
       renderTitulares();
       saveDraft();
     }
+    // El país también: afuera desaparecen el CUIT y la provincia, y el
+    // documento pasa a ser el pasaporte. Sólo se cambia el default —DNI ↔
+    // Pasaporte—: un argentino que vive afuera y elige DNI a mano se respeta.
+    if (campo === 'pais') {
+      const t = titulares[i];
+      if (t) {
+        const exterior = esExteriorTit(t);
+        const [de, a] = exterior ? ['DNI', DOC_EXTERIOR] : [DOC_EXTERIOR, 'DNI'];
+        if (t.tipodoc === de) t.tipodoc = a;
+        if (t.repdoctipo === de) t.repdoctipo = a;
+      }
+      renderTitulares();
+      saveDraft();
+    }
   });
 
   titularesBox().addEventListener('click', (e) => {
@@ -2162,16 +2426,6 @@ const faqSchema = {
     const fila = target.closest<HTMLElement>('.ck-tit');
     if (!fila) return;
     const i = Number(fila.dataset.i);
-
-    if (target.closest('[data-pais-toggle]')) {
-      const row = fila.querySelector<HTMLElement>('[data-pais-row]')!;
-      const campo = fila.querySelector<HTMLInputElement>('[data-f="pais"]')!;
-      row.hidden = false;
-      fila.querySelector<HTMLElement>('[data-pais-toggle]')!.hidden = true;
-      campo.select();
-      campo.focus();
-      return;
-    }
 
     if (target.closest('[data-rm]')) {
       if (titulares.length <= 1) return;
@@ -2222,6 +2476,7 @@ const faqSchema = {
       logoUrl: m.logoUrl ?? null,
       logoNombre: m.logoNombre ?? '',
       logoPx: m.logoPx ?? null,
+      prioridad: prioridadDesde(m.prioridad),
     }));
     marcas = limpias.length ? limpias : [nuevaMarca()];
     renderMarcasStep1();
@@ -2971,7 +3226,231 @@ const faqSchema = {
 
       updateHelp();
       montarLogo(card, m, i);
+      montarPrioridad(card, m, i);
       cont.append(card);
+    });
+  }
+
+  /** AAAA-MM-DD de hoy, en hora local: lo que compara con el `<input type="date">`. */
+  function hoyIso(): string {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  /** Las clases que cubre una solicitud de origen. Con una sola clase en la
+   *  marca es esa (no hay nada que elegir); nunca una que no esté en la marca. */
+  function clasesDe(m: MarcaState, pr: PresentacionState): number[] {
+    return m.clases.length === 1 ? [...m.clases] : pr.clases.filter(c => m.clases.includes(c));
+  }
+
+  /** Bloque de prioridad dentro de la tarjeta del paso 5: la casilla y la
+   *  lista de solicitudes de origen. */
+  function montarPrioridad(card: HTMLElement, m: MarcaState, i: number) {
+    const pr = m.prioridad;
+    const on = card.querySelector<HTMLInputElement>('.ck-prio-on')!;
+    const body = card.querySelector<HTMLElement>('.ck-prio-body')!;
+    const lista = card.querySelector<HTMLElement>('.ck-prio-lista')!;
+    const add = card.querySelector<HTMLButtonElement>('.ck-prio-add')!;
+    const addHelp = card.querySelector<HTMLElement>('.ck-prio-add-help')!;
+
+    /** Repinta la lista entera. Se llama al agregar, quitar o pasar una clase
+     *  de una solicitud a otra: cambia lo que muestran las demás tarjetas. */
+    const pintar = () => {
+      // La primera nace con todas las clases: es el caso de casi todos.
+      if (!pr.presentaciones.length) pr.presentaciones.push(nuevaPresentacion([...m.clases]));
+      lista.innerHTML = '';
+      pr.presentaciones.forEach((pres, j) => lista.append(tarjetaPresentacion(m, i, pres, j, pintar)));
+      // Una solicitud por clase como máximo: más no tiene a qué aplicarse.
+      const puedeAgregar = pr.presentaciones.length < m.clases.length;
+      add.hidden = !puedeAgregar;
+      addHelp.hidden = !puedeAgregar;
+    };
+
+    on.checked = pr.activa;
+    body.hidden = !pr.activa;
+    if (pr.activa) pintar();
+
+    on.addEventListener('change', () => {
+      pr.activa = on.checked;
+      body.hidden = !pr.activa;
+      if (pr.activa) pintar();
+      saveDraft();
+    });
+    add.addEventListener('click', () => {
+      // Nace con las clases que ninguna otra reclama, si queda alguna.
+      const tomadas = new Set(pr.presentaciones.flatMap(p => p.clases));
+      pr.presentaciones.push(nuevaPresentacion(m.clases.filter(c => !tomadas.has(c))));
+      pintar();
+      saveDraft();
+      lista.lastElementChild?.querySelector<HTMLElement>('.ck-prio-pais')?.focus();
+    });
+  }
+
+  /** Una solicitud de origen: sus datos, sus clases y sus PDF. */
+  function tarjetaPresentacion(
+    m: MarcaState, i: number, pres: PresentacionState, j: number, repintar: () => void,
+  ): HTMLElement {
+    const todas = m.prioridad.presentaciones;
+    const el = tpl('ck-prio-pres-tpl').content.firstElementChild!.cloneNode(true) as HTMLElement;
+    const q = <T extends HTMLElement>(cls: string) => el.querySelector<T>(`.ck-prio-${cls}`)!;
+    const pais = q<HTMLSelectElement>('pais');
+    const fecha = q<HTMLInputElement>('fecha');
+    const numero = q<HTMLInputElement>('numero');
+    const vencida = q<HTMLElement>('vencida');
+
+    // Con una sola no hace falta título ni se puede quitar: se apaga la casilla.
+    const varias = todas.length > 1;
+    el.querySelector<HTMLElement>('.ck-prio-pres-head')!.hidden = !varias;
+    el.querySelector<HTMLElement>('.ck-prio-pres-titulo')!.textContent = `Solicitud de origen ${j + 1}`;
+    el.classList.toggle('ck-prio-pres--sola', !varias);
+
+    pais.value = pres.pais;
+    fecha.value = pres.fecha;
+    fecha.max = hoyIso();
+    numero.value = pres.numero;
+
+    const pintarVencida = () => {
+      const fuera = !!vencimientoPrioridad(pres.fecha) && prioridadVencida(pres.fecha);
+      vencida.hidden = !fuera;
+      if (fuera) {
+        vencida.textContent =
+          `Desde el ${fechaCorta(pres.fecha)} pasaron más de 6 meses, así que el plazo ` +
+          'para reclamar la prioridad puede estar vencido. Podés seguir igual: lo ' +
+          'revisamos antes de presentar.';
+      }
+    };
+    pintarVencida();
+
+    // Clases. Una clase va en UNA solicitud: tildarla acá la saca de la otra,
+    // y la casilla avisa dónde está. Con una sola clase no hay nada que elegir.
+    q<HTMLElement>('clases-row').hidden = m.clases.length <= 1;
+    if (m.clases.length > 1) {
+      const box = q<HTMLElement>('clases');
+      m.clases.forEach(c => {
+        const lab = document.createElement('label');
+        const chk = document.createElement('input');
+        chk.type = 'checkbox';
+        chk.checked = pres.clases.includes(c);
+        const otra = todas.findIndex((p, k) => k !== j && p.clases.includes(c));
+        chk.addEventListener('change', () => {
+          if (chk.checked) {
+            todas.forEach((p, k) => { if (k !== j) p.clases = p.clases.filter(x => x !== c); });
+            pres.clases = m.clases.filter(x => x === c || pres.clases.includes(x));
+          } else {
+            pres.clases = pres.clases.filter(x => x !== c);
+          }
+          saveDraft();
+          // Las otras tarjetas cambian (la clase se fue de ahí): se repinta.
+          if (chk.checked && otra >= 0) repintar();
+          else setErrEl(el.querySelector<HTMLElement>('.ck-prio-clases-err'), '');
+        });
+        lab.append(chk, document.createTextNode(`Clase ${c}`));
+        if (!chk.checked && otra >= 0) {
+          const nota = document.createElement('span');
+          nota.className = 'ck-prio-clase-otra';
+          nota.textContent = `(en la ${otra + 1})`;
+          lab.append(nota);
+        }
+        box.append(lab);
+      });
+    }
+
+    pais.addEventListener('change', () => {
+      pres.pais = pais.value;
+      setErrEl(el.querySelector<HTMLElement>('.ck-prio-pais-err'), '');
+      saveDraft();
+    });
+    fecha.addEventListener('input', () => {
+      pres.fecha = fecha.value;
+      setErrEl(el.querySelector<HTMLElement>('.ck-prio-fecha-err'), '');
+      pintarVencida();
+      saveDraft();
+    });
+    numero.addEventListener('input', () => {
+      pres.numero = numero.value;
+      setErrEl(el.querySelector<HTMLElement>('.ck-prio-numero-err'), '');
+      saveDraft();
+    });
+    el.querySelector<HTMLButtonElement>('.ck-prio-quitar')!.addEventListener('click', () => {
+      // Los PDF que haya subido quedan en R2 sin dueño: el alta sólo lee los
+      // de las solicitudes que siguen en el pedido.
+      todas.splice(j, 1);
+      repintar();
+      saveDraft();
+    });
+
+    montarPdfPrioridad(el, i, pres, 'certificado', 'cert');
+    montarPdfPrioridad(el, i, pres, 'traduccion', 'trad');
+    return el;
+  }
+
+  /** Un PDF de una solicitud de origen. Se sube apenas se elige —no al enviar,
+   *  como el logo—: el pedido ya existe en el paso 5, y así no se pierde si el
+   *  cliente recarga antes de terminar (un PDF no entra en el draft). */
+  function montarPdfPrioridad(
+    el: HTMLElement, i: number, pres: PresentacionState,
+    doc: 'certificado' | 'traduccion', cls: 'cert' | 'trad',
+  ) {
+    const file = el.querySelector<HTMLInputElement>(`.ck-prio-${cls}`)!;
+    const estado = el.querySelector<HTMLElement>(`.ck-prio-${cls}-estado`)!;
+    const err = el.querySelector<HTMLElement>(`.ck-prio-${cls}-err`)!;
+    const boton = file.parentElement!.querySelector('span')!;
+
+    const pintar = () => {
+      const nombre = pres[doc];
+      estado.textContent = nombre ? `✓ ${nombre}` : '';
+      estado.style.color = nombre ? '#16a34a' : '';
+      boton.textContent = nombre ? 'Cambiar PDF' : 'Elegir PDF';
+    };
+    pintar();
+
+    file.addEventListener('change', async () => {
+      const f = file.files?.[0];
+      file.value = '';
+      if (!f) return;
+      setErrEl(err, '');
+      if (f.type !== 'application/pdf' && !/\.pdf$/i.test(f.name)) {
+        setErrEl(err, 'Tiene que ser un PDF.');
+        return;
+      }
+      if (f.size > PRIORIDAD_MAX_BYTES) {
+        setErrEl(err, `El archivo pesa más de ${Math.round(PRIORIDAD_MAX_BYTES / 1024 / 1024)} MB. Si es un escaneo, probá bajándole la resolución.`);
+        return;
+      }
+      // Sin pedido (modo demo) no hay dónde subirlo.
+      if (!orderRef) {
+        pres[doc] = f.name;
+        pintar();
+        saveDraft();
+        return;
+      }
+      estado.textContent = 'Subiendo…';
+      estado.style.color = '';
+      try {
+        const res = await fetch(
+          `/api/checkout/order/${encodeURIComponent(orderRef)}/prioridad?i=${i}&p=${pres.id}&doc=${doc}`,
+          { method: 'POST', headers: { 'Content-Type': 'application/pdf' }, body: f },
+        );
+        if (!res.ok) {
+          const data = await res.json().catch(() => null);
+          // Un archivo que no es PDF o que pesa de más: el motivo es del
+          // archivo, y reintentar con el mismo no sirve. Se dice cuál es.
+          if (res.status === 413 || res.status === 415) {
+            pintar();
+            setErrEl(err, `${data?.error || 'El archivo no es válido'}. Elegí otro.`);
+            return;
+          }
+          throw new Error(data?.error || String(res.status));
+        }
+        pres[doc] = f.name.slice(0, 120);
+        saveDraft();
+        pintar();
+      } catch (e) {
+        console.error(`[um-checkout] no se pudo subir el ${doc} de prioridad:`, e);
+        track('ck_prioridad_upload_error', { motivo: String(e).slice(0, 100) }, false);
+        pintar();
+        setErrEl(err, 'No pudimos subir el archivo. Probá de nuevo, o seguí y mandánoslo después.');
+      }
     });
   }
 
@@ -3467,6 +3946,7 @@ const faqSchema = {
             ancho: previo.ancho,
             confirmaTexto: previo.confirmaTexto,
             logoKey: m.logoKey ?? previo.logoKey,
+            prioridad: previo.prioridad,
           };
         }), false);
       }
@@ -3511,14 +3991,18 @@ const faqSchema = {
         nombreApellido: `${t.nombre.trim()} ${t.apellido.trim()}`.trim(),
         docTipo: t.tipodoc || 'DNI',
         docNumero: t.docnum.trim(),
-        cuit: t.cuit.trim(),
+        // Del exterior: sin CUIT ni provincia aunque haya quedado algo tipeado
+        // de antes de cambiar el país. El poder imprime lo mismo que se manda.
+        cuit: esExteriorTit(t) ? '' : t.cuit.trim(),
+        idTributaria: esExteriorTit(t) ? t.idtrib.trim() : '',
+        pais: t.pais,
         calle: t.calle.trim(),
         numero: t.numero.trim(),
         piso: t.piso.trim() || undefined,
         depto: t.depto.trim() || undefined,
         codigoPostal: t.codpostal.trim(),
         localidad: t.localidad.trim(),
-        provincia: t.provincia,
+        provincia: esExteriorTit(t) ? '' : t.provincia,
         porcentaje: t.porcentaje,
         // De un cotitular es lo único que se sabe hasta que entra a firmar: el
         // documento lo identifica por ahí y deja el renglón a la vista.
@@ -3529,6 +4013,7 @@ const faqSchema = {
         inscripcionNumero: t.inscnumero.trim(),
         inscripcionFecha: t.inscfecha.trim(),
         repNombre: t.repnombre.trim(),
+        repDocTipo: t.repdoctipo || 'DNI',
         repDocumento: t.repdocumento.trim(),
         repCaracter: t.repcaracter.trim(),
         repPoder: t.reppoder.trim(),
@@ -3732,6 +4217,7 @@ const faqSchema = {
   /** Un titular tal como lo guarda el servidor (`completion.titulares[]`). */
   function titularPayload(t: TitularState) {
     const juridica = esJuridicaTit(t);
+    const exterior = esExteriorTit(t);
     return {
       tipoPersona: juridica ? 'Juridica' : 'Humana',
       // En una jurídica esto es la razón social. El apellido, el documento, el
@@ -3746,17 +4232,20 @@ const faqSchema = {
       documento: juridica
         ? { tipo: '', numero: '' }
         : { tipo: t.tipodoc || 'DNI', numero: t.docnum.trim() },
-      cuit: t.cuit.trim(),
+      // Del exterior: sin CUIT (no tiene, y uno inventado lo cruzaría en el
+      // portal con otro contacto) y con su identificación tributaria, si la hay.
+      cuit: exterior ? '' : t.cuit.trim(),
+      ...(exterior && t.idtrib.trim() ? { idTributaria: t.idtrib.trim() } : {}),
       email: t.email.trim(),
       domicilio: {
-        pais: t.pais.trim() || 'Argentina',
+        pais: paisCanonico(t.pais),
         calle: t.calle.trim(),
         numero: t.numero.trim(),
         piso: t.piso.trim(),
         depto: t.depto.trim(),
         localidad: t.localidad.trim(),
         codigoPostal: t.codpostal.trim(),
-        provincia: t.provincia,
+        provincia: exterior ? '' : t.provincia,
       },
       // Sólo jurídica. La inscripción es del contacto (estable, se repite en
       // cada trámite) y viaja al portal; el representante es del ACTO y se
@@ -3769,6 +4258,7 @@ const faqSchema = {
         },
         representante: {
           nombre: t.repnombre.trim(),
+          tipoDoc: t.repdoctipo || 'DNI',
           documento: t.repdocumento.trim(),
           caracter: t.repcaracter.trim(),
           // El poder previo sólo si el carácter lo pide: citárselo a un
@@ -3808,6 +4298,17 @@ const faqSchema = {
         // El servidor arma el pedido con el snapshot del pago, donde esta marca
         // todavía es figurativa: sin esta bandera la corrección se perdería.
         ...(m.corregidaAMixta ? { corregidaAMixta: true } : {}),
+        // Sólo los datos: los PDF ya están en el servidor (se suben al
+        // elegirlos) y el alta los busca ahí.
+        ...(m.prioridad.activa ? {
+          prioridades: m.prioridad.presentaciones.map(pr => ({
+            id: pr.id,
+            pais: pr.pais,
+            numero: pr.numero.trim(),
+            fecha: pr.fecha,
+            clases: clasesDe(m, pr),
+          })),
+        } : {}),
         ...(requiereLogo(m.tipo) ? {
           colores: m.colores.trim(),
           alto: m.alto,
@@ -4483,6 +4984,61 @@ const faqSchema = {
 .ck-figtxt .ck-terms { margin-top: 0.625rem; padding-top: 0; border-top: none; }
 .ck-figtxt .ck-terms span { color: #334155; }
 .ck-figtxt .ck-err { margin-top: 0.625rem; }
+
+/* Prioridad del Convenio de París: plegada detrás de una casilla */
+.ck-prio-toggle { margin-top: 1.25rem; }
+.ck-prio-body {
+  margin-top: 0.875rem; padding: 1rem 1.125rem;
+  border: 1.5px solid #e2e8f0; border-radius: 12px; background: #f8fafc;
+}
+.ck-prio-body[hidden] { display: none; }
+.ck-prio-intro { margin-bottom: 0.875rem; }
+.ck-prio-pres {
+  padding: 1rem 1.125rem; margin-bottom: 0.75rem;
+  background: #fff; border: 1.5px solid #e2e8f0; border-radius: 12px;
+}
+/* Con una sola solicitud, la tarjeta no agrega nada: se funde con el bloque. */
+.ck-prio-pres--sola { padding: 0; background: none; border: none; margin-bottom: 0; }
+.ck-prio-pres-head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 0.75rem;
+}
+.ck-prio-pres-head[hidden] { display: none; }
+.ck-prio-pres-titulo { font-size: 0.8125rem; font-weight: 700; color: #0b1d3a; }
+.ck-prio-clase-otra { color: #94a3b8; font-weight: 400; font-size: 0.75rem; }
+.ck-prio-add { margin: 0.25rem 0 0.35rem; }
+.ck-prio-add[hidden], .ck-prio-add-help[hidden] { display: none; }
+.ck-prio-add-help { margin-bottom: 1rem; }
+.ck-prio-clases { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; }
+.ck-prio-clases label {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  font-size: 0.8125rem; color: #334155; cursor: pointer; font-weight: 500;
+}
+/* El estilo general de `.ck-field input` es el de un campo de texto: le saca
+   la apariencia nativa y le pone padding y fondo. Sin devolvérsela, el
+   casillero queda como una caja vacía sin la tilde, aunque esté tildado. */
+.ck-field .ck-prio-clases input[type="checkbox"] {
+  appearance: auto; -webkit-appearance: checkbox;
+  width: 16px; height: 16px; padding: 0; margin: 0; flex: none;
+  border: none; border-radius: 0; background: none; box-shadow: none;
+  accent-color: #2563eb; cursor: pointer;
+}
+.ck-prio-file {
+  align-self: flex-start;
+  display: inline-flex; align-items: center; cursor: pointer; margin-top: 0.35rem;
+  padding: 0.45rem 0.9rem; border-radius: 100px; border: 1.5px solid #cbd5e1;
+  font-size: 0.8125rem; font-weight: 600; color: #0b1d3a; background: #fff;
+}
+.ck-prio-file:hover { border-color: #2563eb; color: #2563eb; }
+.ck-prio-file:focus-within { outline: 2px solid #2563eb; outline-offset: 2px; }
+.ck-prio-cert-estado, .ck-prio-trad-estado { margin-top: 0.35rem; }
+.ck-prio-vencida, .ck-prio-aviso {
+  margin: 0.25rem 0 0; padding: 0.75rem 0.875rem; border-radius: 10px;
+  font-size: 0.78rem; line-height: 1.55; color: #92400e;
+  background: #fffbeb; border: 1.5px solid #fde68a;
+}
+.ck-prio-vencida { margin: 0 0 1rem; }
+.ck-prio-vencida[hidden] { display: none; }
 
 /* La figurativa que resultó ser mixta: se corrige acá, ya con el pedido pagado */
 .ck-denomfix {

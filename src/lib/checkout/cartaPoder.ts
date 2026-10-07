@@ -17,7 +17,10 @@
 // siendo válido para todo el trámite. La marca y las clases concretas viajan en
 // el pedido, no en el papel.
 
-import { APODERADO, esApoderado, formatPorcentaje, type TipoMarca, type TipoPersona } from './constants';
+import {
+  APODERADO, esApoderado, esDelExterior, formatPorcentaje, paisCanonico,
+  type TipoMarca, type TipoPersona,
+} from './constants';
 
 /** Un otorgante del poder. `porcentaje` solo se nombra cuando hay más de uno:
  *  en un poder de un solo titular decir "100%" es ruido.
@@ -35,7 +38,11 @@ export interface TitularPoder {
    *  Sólo persona humana — una sociedad no tiene documento. */
   docTipo: string;
   docNumero: string;
+  /** Vacío en un titular del exterior: el poder no imprime "CUIT/CUIL" en
+   *  blanco, omite la frase entera. */
   cuit: string;
+  /** Del exterior, opcional: la identificación tributaria de su país. */
+  idTributaria?: string;
   calle: string;
   numero: string;
   piso?: string;
@@ -43,6 +50,8 @@ export interface TitularPoder {
   codigoPostal: string;
   localidad: string;
   provincia: string;
+  /** Sin esto es Argentina: es lo que eran todos los poderes antes. */
+  pais?: string;
   porcentaje?: number;
   /** Adónde se le mandó el link para firmar. Mientras no tenga los datos
    *  cargados es lo ÚNICO que lo identifica en el documento. */
@@ -57,6 +66,8 @@ export interface TitularPoder {
   /** Quién firma por la sociedad. Obligatorios en una jurídica: sin firmante
    *  no hay quién otorgue el poder. */
   repNombre?: string;
+  /** DNI | Pasaporte. Sin esto es DNI. */
+  repDocTipo?: string;
   repDocumento?: string;
   repCaracter?: string;
   /** El poder previo del firmante. Se cita SÓLO si el carácter dice apoderado,
@@ -107,6 +118,14 @@ function domicilioLinea(d: TitularPoder): string {
   let dir = `${d.calle} ${d.numero}`;
   if (d.piso) dir += `, piso ${d.piso}`;
   if (d.depto) dir += `, depto ${d.depto}`;
+  // Del exterior: sin provincia (el INPI no la pide; la región, si la hay, va
+  // dentro de la localidad) y con el país al final. El código postal puede no
+  // existir: hay países sin él, y "Código Postal ," en un documento legal se
+  // lee como un campo que alguien se olvidó de llenar.
+  if (esDelExterior(d.pais)) {
+    const cp = (d.codigoPostal ?? '').trim();
+    return `${dir}${cp ? `, Código Postal ${cp}` : ''}, ${d.localidad}, ${paisCanonico(d.pais)}`;
+  }
   // CABA no es una provincia — no anteponer "Provincia de"
   const prov = d.provincia === 'Ciudad Autónoma de Buenos Aires'
     ? d.provincia
@@ -116,6 +135,20 @@ function domicilioLinea(d: TitularPoder): string {
 
 function docDe(t: TitularPoder): string {
   return `${t.docTipo || 'DNI'} ${t.docNumero}`;
+}
+
+/** ", CUIT/CUIL 20-…" o, de un titular del exterior, su identificación
+ *  tributaria si la cargó. Sin ninguna de las dos la frase no va: un
+ *  "CUIT/CUIL ," vacío es lo que salía antes con un poderdante uruguayo. */
+function tributariaFrase(t: TitularPoder): string {
+  const cuit = (t.cuit ?? '').trim();
+  if (cuit) return `, CUIT/CUIL ${cuit}`;
+  const id = (t.idTributaria ?? '').trim();
+  return id ? `, identificación tributaria ${id}` : '';
+}
+
+function docFirmante(t: TitularPoder): string {
+  return `${(t.repDocTipo ?? '').trim() || 'DNI'} ${(t.repDocumento ?? '').trim()}`;
 }
 
 /** La inscripción registral de una sociedad, con lo que haya.
@@ -155,11 +188,10 @@ function inscripcionFrase(t: TitularPoder): string {
  *  hace responsable de esa afirmación. */
 function representanteFrase(t: TitularPoder): string {
   const nombre = (t.repNombre ?? '').trim();
-  const doc = (t.repDocumento ?? '').trim();
   const caracter = (t.repCaracter ?? '').trim();
   const poder = (t.repPoder ?? '').trim();
 
-  let frase = `representada en este acto por ${nombre}, DNI ${doc}, ` +
+  let frase = `representada en este acto por ${nombre}, ${docFirmante(t)}, ` +
     `en su carácter de ${caracter}`;
   // Sólo si el carácter lo pide. Un presidente o un socio gerente son el órgano
   // de la sociedad y su facultad sale del estatuto; un apoderado la saca de otro
@@ -192,12 +224,12 @@ function otorganteLinea(t: TitularPoder): string {
   // diciendo que la S.R.L. tiene DNI.
   if (esJuridica(t)) {
     const inscripcion = inscripcionFrase(t);
-    return `${t.nombreApellido}, CUIT/CUIL ${t.cuit}` +
+    return `${t.nombreApellido}${tributariaFrase(t)}` +
       (inscripcion ? `, ${inscripcion}` : '') +
       `, con domicilio en ${domicilioLinea(t)}, ${representanteFrase(t)}`;
   }
 
-  return `${t.nombreApellido}, ${docDe(t)}, CUIT/CUIL ${t.cuit}, ` +
+  return `${t.nombreApellido}, ${docDe(t)}${tributariaFrase(t)}, ` +
     `con domicilio en ${domicilioLinea(t)}`;
 }
 
@@ -208,7 +240,7 @@ export interface FirmaPie {
   aclaracion: string;
   doc: string;
   /** "En representación de ACME S.R.L." — vacío en una persona humana. Quien
-   *  firma por una sociedad estampa SU nombre y SU DNI: el renglón de abajo es
+   *  firma por una sociedad estampa SU nombre y SU documento: el renglón de abajo es
    *  lo único que dice a nombre de quién lo hace. */
   representacion: string;
   /** "50% de titularidad" — vacío cuando el titular es uno solo */
@@ -302,7 +334,7 @@ export function cartaPoderTexto(d: CartaPoderData): CartaPoderTexto {
         : (esJuridica(t) ? (t.repNombre ?? '').trim() : t.nombreApellido),
       doc: esPendiente(t)
         ? 'Datos a completar por el cotitular'
-        : (esJuridica(t) ? `DNI ${(t.repDocumento ?? '').trim()}` : docDe(t)),
+        : (esJuridica(t) ? docFirmante(t) : docDe(t)),
       representacion: !esPendiente(t) && esJuridica(t)
         ? `En representación de ${t.nombreApellido}`
         : '',

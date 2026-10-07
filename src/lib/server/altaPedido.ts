@@ -14,13 +14,15 @@
 // primer intento en vez de duplicar.
 
 import {
-  type CheckoutEnv, consolidarMarcas, ensureVigilanteColumn, pdfDesdeBase64, poderKeyFor,
-  titularesDesdeCompletion,
+  type CheckoutEnv, type DocPrioridad, consolidarMarcas, ensureVigilanteColumn, pdfDesdeBase64,
+  poderKeyFor, prioridadKeyFor, titularesDesdeCompletion,
 } from './checkout';
 import { nombreArchivoPoder } from '@/lib/checkout/cartaPoder';
-import { crearAltaVigilante, type AltaResultado, type VigilanteEnv } from './vigilante';
+import {
+  crearAltaVigilante, subirPrioridadesDiferidas, type AltaResultado, type VigilanteEnv,
+} from './vigilante';
 import { sendVigilanteAlert } from './notify';
-import { apellidoArchivo, formatPorcentaje, tipoMarcaLabel } from '@/lib/checkout/constants';
+import { apellidoArchivo, esDelExterior, formatPorcentaje, tipoMarcaLabel } from '@/lib/checkout/constants';
 
 interface AltaEnv extends CheckoutEnv, VigilanteEnv {
   RESEND_API_KEY?: string;
@@ -98,6 +100,30 @@ export async function darDeAltaEnVigilante(
   }
   const principal = titulares.find(t => t.firmaAqui) ?? titulares[0];
 
+  // Los PDF de cada solicitud de origen, de R2. Que no estén es lo normal
+  // (casi nadie reivindica prioridad, y quien lo hace a veces todavía no tiene
+  // el certificado): el estudio lo sube después a mano en el portal, que marca
+  // en rojo el trámite hasta que lo tenga.
+  const leerPrioridad = async (i: number, id: string, doc: DocPrioridad) => {
+    if (!env.LOGOS) return null;
+    try {
+      const obj = await env.LOGOS.get(prioridadKeyFor(ref, i, id, doc));
+      return obj
+        ? { filename: `${doc}-prioridad-${ref}-marca-${i + 1}-${id}.pdf`, bytes: await obj.arrayBuffer() }
+        : null;
+    } catch (e) {
+      console.error(`[vigilante] no se pudo leer el ${doc} de prioridad ${id} de ${ref} (marca ${i + 1}):`, e);
+      return null;
+    }
+  };
+  const prioridadesAlta = await Promise.all(marcas.map((m, i) => Promise.all(
+    m.prioridades.map(async p => ({
+      ...p,
+      certificado: await leerPrioridad(i, p.id, 'certificado'),
+      traduccion: await leerPrioridad(i, p.id, 'traduccion'),
+    })),
+  )));
+
   const alta = await crearAltaVigilante(env, {
     ref,
     poder: poderBytes
@@ -117,6 +143,11 @@ export async function darDeAltaEnVigilante(
     contactos: titulares.map((x, i) => {
       const d = x.domicilio;
       const juridica = x.tipoPersona === 'Juridica';
+      // Del exterior: sin CUIT ni provincia (el saneador ya los vació), y el país
+      // por nombre. La identificación tributaria de su país no tiene campo en el
+      // portal y NO va en `cuit` —es lo que deduplica—: queda en las notas.
+      const exterior = esDelExterior(d.pais);
+      const rep = x.representante;
       return {
         // En una jurídica `nombre` es la razón social y no hay apellido.
         nombre: x.nombre,
@@ -157,10 +188,13 @@ export async function darDeAltaEnVigilante(
           // El portal no tiene campo para el firmante y no lo va a tener (ver
           // arriba). Queda en las notas para que quien mire la ficha sepa quién
           // firmó ESTE poder sin tener que abrir el PDF.
-          + (juridica && x.representante?.nombre
-            ? ` Carta poder firmada por ${x.representante.nombre}`
-              + (x.representante.documento ? ` (DNI ${x.representante.documento})` : '')
-              + (x.representante.caracter ? `, ${x.representante.caracter}` : '')
+          + (exterior && x.idTributaria
+            ? ` Identificación tributaria (${d.pais}): ${x.idTributaria}.`
+            : '')
+          + (juridica && rep?.nombre
+            ? ` Carta poder firmada por ${rep.nombre}`
+              + (rep.documento ? ` (${rep.tipoDoc || 'DNI'} ${rep.documento})` : '')
+              + (rep.caracter ? `, ${rep.caracter}` : '')
               + '.'
             : ''),
       };
@@ -179,8 +213,34 @@ export async function darDeAltaEnVigilante(
       logo: logosBytes[i]
         ? { filename: `logo-${ref}-marca-${i + 1}.jpg`, bytes: logosBytes[i]! }
         : null,
+      prioridades: prioridadesAlta[i],
     })),
   });
+
+  // Los certificados que no entraron en el tope de 8 MB del alta se suben
+  // ahora, trámite por trámite. Lo que no se pueda subir queda como
+  // advertencia y sale en el email al estudio, igual que antes.
+  if (alta.diferidos?.length) {
+    const fallas = await subirPrioridadesDiferidas(env, alta);
+    console.log(`[vigilante] ${ref}: ${alta.diferidos.length} PDF de prioridad no entraron en el alta`
+      + (fallas.length ? `; ${fallas.length} quedaron sin subir (van en el aviso)` : '; subidos aparte'));
+    // El portal avisa `certificado_faltante` en el 201 porque, al momento del
+    // alta, el certificado diferido todavía no estaba. Si después se subió y
+    // ninguna otra prioridad de esa marca quedó sin certificado, el aviso ya
+    // no es cierto: dejarlo mandaría al estudio una alerta falsa.
+    const conFalla = new Set(fallas.map(f => f.marca));
+    const completas = new Set(marcas
+      .filter((m, i) => m.prioridades.length && !conFalla.has(m.nombre)
+        && prioridadesAlta[i].every(p => p.certificado))
+      .map(m => m.nombre));
+    alta.advertencias = [
+      ...(alta.advertencias ?? []).filter(a =>
+        !(a.codigo === 'certificado_faltante' && a.marca && completas.has(a.marca))),
+      ...fallas,
+    ];
+  }
+  // Son bytes: no van a D1 ni vuelven a nadie.
+  delete alta.diferidos;
 
   if (alta.omitido) {
     console.warn(`[vigilante] alta omitida para ${ref}: ${alta.error}`);

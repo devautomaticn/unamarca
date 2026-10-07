@@ -435,8 +435,8 @@ cambia (los honorarios son por clase), así que la elección va después de paga
 junto con el resto de los datos.
 
 - Una sociedad **no tiene apellido, ni documento, ni género, ni estado civil**.
-  `nombre` es la razón social; el resto va vacío. El DNI que se pide es el de
-  **quien firma por ella**, y vive en `representante`. Reusar el campo
+  `nombre` es la razón social; el resto va vacío. El documento que se pide es el
+  de **quien firma por ella** (DNI o pasaporte), y vive en `representante`. Reusar el campo
   `documento` del titular para ese DNI deja el poder diciendo que la S.R.L.
   tiene DNI: es el error más fácil de cometer y el saneador del servidor lo
   descarta explícitamente (`titularesDesdeCompletion`).
@@ -468,6 +468,85 @@ junto con el resto de los datos.
   pedido sólo carga su email y su porcentaje, así que el selector y los campos
   de empresa están también en `/firmar/<token>`, y `aplicarCorreccion()` toma el
   `tipoPersona` del formulario y no del pedido.
+
+## Titulares del exterior y prioridad del Convenio de París
+
+Desde el 2026-10-07 el checkout toma a un titular que vive fuera de Argentina
+(persona o sociedad) y a quien reclama la prioridad de una presentación en otro
+país. El pedido lo hizo el proyecto Vigilante a partir de un caso real (FLETEGO,
+Uruguay); su API ya acepta las dos cosas (`docs/API_Alta_Externa.md` de allá,
+versión 2026-10-07).
+
+**Titular del exterior** — se decide con el selector **"País del domicilio"**,
+primero en cada tarjeta del paso 6 y en `/firmar/<token>`:
+
+- **Sin CUIT y sin provincia.** No se piden, no se validan y el saneador del
+  servidor los vacía (`titularesDesdeCompletion`). Nunca se inventa un CUIT: es
+  lo que deduplica contactos en el portal. Sin él, cada compra del mismo
+  extranjero crea un contacto nuevo, y está aceptado así.
+- **Pasaporte por defecto.** Al elegir otro país, DNI pasa a Pasaporte (también
+  el del firmante de una sociedad). Si un argentino que vive afuera vuelve a
+  elegir DNI, se respeta. El número es alfanumérico (`FY283918`).
+- La **identificación tributaria de su país** (RUT, EIN) es opcional y vive en
+  `idTributaria`, **no en `cuit`**. Va al poder ("identificación tributaria …")
+  y al portal en `notas`.
+- El poder no imprime "CUIT/CUIL" vacío, cierra el domicilio con el país y sin
+  provincia, y omite el código postal si no hay. El domicilio legal en
+  Argentina lo constituye el estudio: al cliente no se le pide.
+- El firmante de una sociedad ahora tiene **tipo de documento**
+  (`representante.tipoDoc`, DNI | Pasaporte). Antes estaba fijo en DNI.
+- Al portal va el `pais` del CONTACTO por nombre ("Uruguay"). **La marca va sin
+  `pais`**: con uno, queda afuera de todo el seguimiento contra el INPI.
+
+**Prioridad** — una casilla por marca en el paso 5 (post-pago, porque no cambia
+el precio y el PDF necesita el `ref`):
+
+- Se cargan **una o más solicitudes de origen** por marca. Casi siempre es una
+  con todas las clases, pero hay oficinas donde se presenta una solicitud por
+  clase, y cada una tiene su número, su fecha y **su certificado**.
+- **Una clase va en una sola solicitud**: acá una clase es un trámite, y en el
+  portal un trámite tiene una sola prioridad. Tildar una clase en una solicitud
+  la saca de la otra. Una clase que no está en ninguna va sin prioridad.
+- Cada solicitud tiene un `id` estable que nombra sus PDF en R2
+  (`prioridad/<ref>/marca-<n>-<id>-certificado.pdf`). No se usa el índice
+  porque quitar una solicitud correría las demás, y cada una quedaría con el
+  certificado de otra.
+- Viaja en `completion.marcas[i].prioridades[]` y la sanea
+  `sanitizePrioridades()` dentro de `consolidarMarcas()`, que también descarta
+  las clases repetidas.
+- Al portal va un elemento de `prioridades[]` por solicitud, con sus `clases` y
+  su certificado como parte `cert_<marca>_<solicitud>` (y `trad_…`).
+- Si pasaron más de 6 meses, avisa pero **no frena**: lo revisa el estudio.
+- El certificado y la traducción se suben **al elegirlos** a
+  `POST /api/checkout/order/:ref/prioridad?i=&p=<id>&doc=certificado|traduccion`
+  (PDF, 4 MB). La key en R2 es determinística (`prioridadKeyFor`) y no se anota
+  en el pedido: el alta la busca ahí, igual que el poder.
+- **Si el cliente todavía no tiene el certificado, paga igual.** Lo manda
+  después por email o WhatsApp y **el estudio lo sube a mano en el portal**
+  (decisión del 2026-10-07: había un solo caso; si se repite, se arma una
+  página de subida que haga el `PUT /tramites/<id>/prioridad/certificado`). Los
+  dos emails lo dicen: el del estudio marca "⚠ FALTA" y el del cliente le pide
+  el PDF. El portal pone en rojo la marca que se va a publicar sin prioridad.
+- El alta respeta el tope de **8 MB por pedido** de la API. Entran primero el
+  poder y los logos; el certificado que no entra se manda **después**, con
+  `PUT /tramites/<id>/prioridad/certificado` a cada trámite de sus clases
+  (`subirPrioridadesDiferidas`). Qué trámite es de qué clase sale de la
+  posición en `tramites[]` de la respuesta del alta, que el portal garantiza:
+  las marcas en el orden del pedido y, dentro de cada una, las clases en el
+  orden enviado. Si la cantidad no coincide no se sube nada y vuelve la
+  advertencia `adjunto_no_enviado`, que dispara el email de alerta para
+  subirlo a mano. Cada PUT gasta una de las 60 escrituras por hora de la
+  credencial. Un logo que no entra
+  también va por esa advertencia. Las advertencias de
+  prioridad del portal (`prioridad_fuera_de_plazo`, `certificado_faltante`, …)
+  salen por el mismo camino que todas.
+
+Un trámite con titular del exterior o con prioridad **lo presenta el estudio a
+mano**: el envío automático de Vigilante todavía no arma esos casos y los
+rechaza.
+
+`/carta-poder` (rehacer un poder) sigue siendo sólo para una persona humana en
+Argentina: sus query params no leen país ni pasaporte.
 
 ## El poder es genérico: no nombra la marca ni las clases
 

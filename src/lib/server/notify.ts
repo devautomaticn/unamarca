@@ -1,8 +1,8 @@
 // Emails de confirmación de solicitud (cliente + admin) vía Resend,
 // con la carta poder firmada adjunta en PDF.
 import {
-  TRANSFERENCIA, contarLineas, formatCm, normalizeTipoMarca, requiereLogo,
-  tipoMarcaLabel, type TipoMarca,
+  TRANSFERENCIA, contarLineas, fechaCorta, formatCm, normalizeTipoMarca, prioridadVencida,
+  requiereLogo, tipoMarcaLabel, vencimientoPrioridad, type PrioridadMarca, type TipoMarca,
 } from '@/lib/checkout/constants';
 import { nombreArchivoPoder } from '@/lib/checkout/cartaPoder';
 import { canalLabel, clickId, type Origen, type Toque } from '@/lib/origen';
@@ -79,6 +79,8 @@ export interface MarcaEmail {
   ancho?: number | null;
   /** Nombre del JPG adjunto al email del admin, o null si no se pudo recuperar */
   logoAdjunto?: string | null;
+  /** Solicitudes de origen declaradas en el paso 5, con qué PDF quedaron en R2 */
+  prioridades?: (PrioridadMarca & { certificado?: boolean; traduccion?: boolean })[];
 }
 
 /** "MARCA A" / "MARCA A + MARCA B" — para asuntos y títulos */
@@ -216,6 +218,28 @@ function pendientesClientHTML(d: OrderEmailData): string {
     </div>`;
 }
 
+/** Recordatorio al cliente que reclamó prioridad sin tener todavía el
+ *  certificado. Es él quien lo consigue (lo emite la oficina de origen), y si
+ *  no llega a tiempo la marca se publica "SIN PRIORIDAD" sin vuelta atrás: el
+ *  aviso tiene que quedarle por escrito, no sólo en la pantalla del paso 5. */
+function certificadoPendienteClientHTML(d: OrderEmailData): string {
+  const sinCert = d.marcas.filter(m => m.prioridades?.some(p => !p.certificado));
+  if (!sinCert.length) return '';
+  const cuales = sinCert.map(m => `“${esc(m.nombre.toUpperCase())}”`).join(', ');
+  return `<div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:16px 20px;margin-bottom:18px">
+      <p style="margin:0 0 6px;color:#92400e;font-size:14px;font-weight:800">
+        Falta el certificado de prioridad
+      </p>
+      <p style="margin:0;color:#92400e;font-size:13px;line-height:1.6">
+        Reclamaste prioridad para ${cuales} (pedido ${esc(d.ref)}). Apenas la oficina donde la presentaste
+        te entregue el <b>certificado de prioridad</b> (uno por cada solicitud que hiciste allá), mandanos el PDF (y su
+        traducción, si no está en español) respondiendo este email o por WhatsApp. Tiene que estar en el
+        expediente <b>antes de que el INPI ordene publicar la marca</b>: si no, se
+        publica sin prioridad y no se puede corregir.
+      </p>
+    </div>`;
+}
+
 function clientHTML(d: OrderEmailData): string {
   const porTransferencia = d.status === 'pending_transfer';
   const varias = d.marcas.length > 1;
@@ -244,6 +268,7 @@ function clientHTML(d: OrderEmailData): string {
     </p>
     ${porTransferencia ? transferBlockHTML(d) : ''}
     ${pendientesClientHTML(d)}
+    ${certificadoPendienteClientHTML(d)}
     <div style="background:#f8faff;border:1px solid #e2e8f0;border-radius:10px;padding:16px 20px;margin-bottom:18px">
       <p style="margin:0;color:#475569;font-size:13px;line-height:1.65">
         📎 Adjuntamos la <b>carta poder${d.firmasPendientes?.length ? '' : ' firmada'}</b> que nos autoriza a gestionar el trámite.<br>
@@ -275,6 +300,49 @@ function medidasHTML(m: MarcaEmail): string {
     </div>`;
   return `${fila('Original', set(1), true)}${fila('× 2', set(2), false)}${fila('× 3', set(3), false)}
     <div style="margin:2px 0 0;color:#94a3b8;font-size:11px;line-height:1.5">alto × ancho · los tres mantienen la proporción: se declara el set que se prefiera</div>`;
+}
+
+/** La prioridad de una marca, para el estudio. Va como un aviso y no como una
+ *  fila más porque cambia cómo se presenta: un trámite con prioridad lo
+ *  presenta el estudio a mano (el envío automático del portal no lo arma), y si
+ *  el certificado no está cuando el INPI ordena publicar, la marca sale "SIN
+ *  PRIORIDAD" y no se vuelve a publicar. */
+function prioridadAdminHTML(m: MarcaEmail): string {
+  const lista = m.prioridades ?? [];
+  if (!lista.length) return '';
+  const fueraDePlazo = lista.some(p => prioridadVencida(p.fecha));
+  const fila = (k: string, v: string) =>
+    `<tr><td style="padding:3px 0;color:#92400e;font-size:13px;width:34%;vertical-align:top">${esc(k)}</td><td style="padding:3px 0;color:#0f172a;font-size:13px">${v}</td></tr>`;
+  // Una tabla por solicitud de origen: con una solicitud por clase, cada clase
+  // tiene su número, su fecha y su certificado, y así se cargan en el portal.
+  const tablas = lista.map((p, j) => {
+    const venc = vencimientoPrioridad(p.fecha);
+    const vencStr = venc
+      ? `${String(venc.getUTCDate()).padStart(2, '0')}/${String(venc.getUTCMonth() + 1).padStart(2, '0')}/${venc.getUTCFullYear()}`
+      : '—';
+    return `${lista.length > 1
+        ? `<p style="margin:8px 0 2px;color:#92400e;font-size:12px;font-weight:700">Solicitud de origen ${j + 1} de ${lista.length}</p>`
+        : ''}
+      <table style="width:100%;border-collapse:collapse">
+        ${fila('País de origen', esc(p.pais))}
+        ${fila('N° de solicitud', esc(p.numero || '⚠ no lo cargó'))}
+        ${fila('Fecha de origen', `${esc(fechaCorta(p.fecha))} · vence ${esc(vencStr)}${prioridadVencida(p.fecha) ? ' <b>⚠ vencido</b>' : ''}`)}
+        ${fila('Clases', esc(clasesLabel(p.clases)))}
+        ${fila('Certificado', p.certificado
+          ? 'subido · va al portal con el alta'
+          : '<b>⚠ FALTA</b> — pedírselo y subirlo en el portal antes de que se ordene publicar')}
+        ${p.traduccion ? fila('Traducción', 'subida · va al portal con el alta') : ''}
+      </table>`;
+  }).join('');
+  const sinPrioridad = m.clases.filter(c => !lista.some(p => p.clases.includes(c)));
+  return `<div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:8px;padding:10px 14px;margin:0 0 10px">
+      <p style="margin:0 0 6px;color:#92400e;font-size:13px;line-height:1.55">
+        <b>⚑ RECLAMA PRIORIDAD (Convenio de París).</b> Se presenta a mano.
+        ${fueraDePlazo ? '<br><b>⚠ Hay un plazo de 6 meses que parece vencido: revisar antes de presentar.</b>' : ''}
+        ${sinPrioridad.length ? `<br>Sin prioridad: ${esc(clasesLabel(sinPrioridad).toLowerCase())}.` : ''}
+      </p>
+      ${tablas}
+    </div>`;
 }
 
 /** Bloque operativo del email al admin: una tarjeta por marca con sus clases,
@@ -311,6 +379,7 @@ function marcasAdminHTML(marcas: MarcaEmail[]): string {
       <p style="margin:0 0 2px;color:#0B1D3A;font-size:16px;font-weight:800">${titulo}</p>
       <p style="margin:0 0 10px;color:#2563EB;font-size:13px;font-weight:700">${esc(clasesLabel(m.clases))}</p>
       ${avisoFigurativa}
+      ${prioridadAdminHTML(m)}
       <table style="width:100%;border-collapse:collapse">
         ${conLogo ? `<tr><td style="padding:4px 0;color:#64748b;font-size:13px;width:34%;vertical-align:top">Logo (JPG)</td><td style="padding:4px 0;color:#0f172a;font-size:13px">${logo}</td></tr>
         <tr><td style="padding:4px 0;color:#64748b;font-size:13px;vertical-align:top">Medidas</td><td style="padding:4px 0;color:#0f172a;font-size:13px">${medidas}</td></tr>

@@ -1,9 +1,9 @@
 // Helpers compartidos del checkout (carpeta _lib: no se publica como ruta).
 import {
   MAX_CLASES, MAX_MARCAS, MAX_TITULARES, LOGO_CM_MAX, LOGO_CM_MIN,
-  computeOrderPricing, contarLineas, esApoderado, normalizeTipoMarca,
-  redondearPorcentaje, repartirPorcentajes, requiereLogo,
-  type MarcaPedido, type TitularPedido,
+  computeOrderPricing, contarLineas, esApoderado, esDelExterior, normalizeTipoMarca,
+  idPrioridadValido, paisCanonico, redondearPorcentaje, repartirPorcentajes, requiereLogo, vencimientoPrioridad,
+  type MarcaPedido, type PrioridadMarca, type TitularPedido,
 } from '@/lib/checkout/constants';
 
 // Tipos mínimos de D1 (evitamos la dependencia @cloudflare/workers-types,
@@ -54,6 +54,20 @@ export function logoKeyFor(ref: string, indice: number): string {
  *  todos sobre el mismo documento. */
 export function poderKeyFor(ref: string): string {
   return `poderes/${ref}/carta-poder.pdf`;
+}
+
+/** Qué documento de la prioridad: el certificado de la oficina de origen, o su
+ *  traducción si no está en español. */
+export type DocPrioridad = 'certificado' | 'traduccion';
+
+/** Key de un documento de una solicitud de origen. Determinística a
+ *  propósito: el alta la lee de acá sin que nada tenga que anotarla en el
+ *  pedido, igual que el poder. Si el objeto no está, el cliente no lo subió.
+ *
+ *  Va por el `id` de la solicitud y no por su posición: si el cliente quita la
+ *  primera, la segunda no puede quedarse con el certificado de aquella. */
+export function prioridadKeyFor(ref: string, indice: number, id: string, doc: DocPrioridad): string {
+  return `prioridad/${ref}/marca-${indice + 1}-${id}-${doc}.pdf`;
 }
 
 /** Tope del poder que declara la API de Vigilante. El nuestro ronda los 100 KB;
@@ -295,6 +309,12 @@ export function titularesDesdeCompletion(completion: unknown): TitularPedido[] {
     // Cualquier cosa que no diga 'Juridica' es persona humana: es el default
     // seguro y es lo que eran todos los pedidos antes de que esto existiera.
     const juridica = t?.tipoPersona === 'Juridica';
+    // Del exterior: sin CUIT, sin provincia. Lo que llegue en esos campos se
+    // descarta acá —el wizard ya no los muestra, pero un draft viejo los puede
+    // traer— para que ni el poder ni el portal reciban un dato que el
+    // formulario no le pidió.
+    const pais = paisCanonico(t?.domicilio?.pais);
+    const exterior = esDelExterior(pais);
     return {
     tipoPersona: (juridica ? 'Juridica' : 'Humana') as TitularPedido['tipoPersona'],
     // En una jurídica, la razón social. Los campos de persona humana se
@@ -311,17 +331,18 @@ export function titularesDesdeCompletion(completion: unknown): TitularPedido[] {
         tipo: texto(t?.documento?.tipo, 40) || 'DNI',
         numero: texto(t?.documento?.numero, 30),
       },
-    cuit: texto(t?.cuit, 20),
+    cuit: exterior ? '' : texto(t?.cuit, 20),
+    ...(exterior && texto(t?.idTributaria, 40) ? { idTributaria: texto(t?.idTributaria, 40) } : {}),
     email: texto(t?.email, 160).toLowerCase(),
     domicilio: {
-      pais: texto(t?.domicilio?.pais, 60) || 'Argentina',
+      pais: pais.slice(0, 60),
       calle: texto(t?.domicilio?.calle, 120),
       numero: texto(t?.domicilio?.numero, 20),
       piso: texto(t?.domicilio?.piso, 20),
       depto: texto(t?.domicilio?.depto, 20),
       localidad: texto(t?.domicilio?.localidad, 120),
       codigoPostal: texto(t?.domicilio?.codigoPostal, 20),
-      provincia: texto(t?.domicilio?.provincia, 60),
+      provincia: exterior ? '' : texto(t?.domicilio?.provincia, 60),
     },
     // Sólo jurídica. La inscripción es del contacto y viaja al portal; el
     // representante es del ACTO —cambia de un poder al siguiente— y se queda
@@ -334,6 +355,7 @@ export function titularesDesdeCompletion(completion: unknown): TitularPedido[] {
       },
       representante: {
         nombre: texto(t?.representante?.nombre, 120),
+        tipoDoc: texto(t?.representante?.tipoDoc, 40) || 'DNI',
         documento: texto(t?.representante?.documento, 30),
         caracter: texto(t?.representante?.caracter, 60),
         // El poder previo sólo si el carácter lo pide. Se descarta acá para que
@@ -382,6 +404,51 @@ export interface MarcaConsolidada extends MarcaPedido {
   alto?: number | null;
   ancho?: number | null;
   logoAdjunto?: string | null;
+  /** Las solicitudes de origen que declaró el cliente en el paso 5, ya
+   *  saneadas. Vacío si no reclama prioridad. */
+  prioridades: PrioridadMarca[];
+}
+
+/** Las solicitudes de origen de una marca tal como las manda el paso 5,
+ *  saneadas.
+ *
+ *  Las clases tienen que ser de la marca —una clase que no está en el pedido no
+ *  tiene trámite al que colgársela— y **no se repiten entre solicitudes**: una
+ *  clase es un trámite y un trámite tiene una sola prioridad. Si dos la
+ *  reclaman, se queda con la primera; el wizard ya no lo permite, esto es por
+ *  un payload armado a mano. Una solicitud sin ninguna clase propia se
+ *  descarta, salvo que la marca tenga una sola clase.
+ *
+ *  Se descarta también la que no tiene lo mínimo para identificarla: un id
+ *  válido (nombra sus PDF), país y fecha. El número puede faltar: hay oficinas
+ *  que lo asignan días después, y el estudio lo completa en el portal. */
+export function sanitizePrioridades(raw: unknown, clasesMarca: number[]): PrioridadMarca[] {
+  if (!Array.isArray(raw)) return [];
+  const usadas = new Set<number>();
+  const ids = new Set<string>();
+  const out: PrioridadMarca[] = [];
+  for (const p of raw.slice(0, Math.max(1, clasesMarca.length))) {
+    if (!p || typeof p !== 'object') continue;
+    const id = (p as any).id;
+    const pais = String((p as any).pais ?? '').trim().slice(0, 60);
+    const fecha = String((p as any).fecha ?? '').trim();
+    if (!idPrioridadValido(id) || ids.has(id) || !pais || !vencimientoPrioridad(fecha)) continue;
+    const pedidas = sanitizeClases((p as any).clases).filter(c => clasesMarca.includes(c));
+    // Con una sola clase en la marca no hay nada que elegir: es esa.
+    const base = clasesMarca.length === 1 ? clasesMarca : pedidas;
+    const clases = base.filter(c => !usadas.has(c));
+    if (!clases.length) continue;
+    clases.forEach(c => usadas.add(c));
+    ids.add(id);
+    out.push({
+      id,
+      pais: paisCanonico(pais),
+      numero: String((p as any).numero ?? '').trim().slice(0, 40),
+      fecha,
+      clases,
+    });
+  }
+  return out;
 }
 
 /** Junta el snapshot del pago con lo que el cliente cargó post-pago.
@@ -429,6 +496,7 @@ export function consolidarMarcas(stored: any, completion: any): {
       tipo,
       descripcion: String(extra.descripcion || '').trim(),
       sitioWeb: String(extra.sitioWeb || '').trim(),
+      prioridades: sanitizePrioridades(extra.prioridades, m.clases),
       ...(requiereLogo(tipo ?? 'denominativa') ? {
         colores: String(extra.colores || '').trim(),
         alto: sanitizeCm(extra.alto),

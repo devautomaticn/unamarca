@@ -174,9 +174,13 @@ export interface InscripcionTitular {
  *  saliera con el firmante del primero. */
 export interface RepresentanteTitular {
   nombre: string;
-  /** DNI de quien firma. El de la PERSONA, no el de la sociedad: una sociedad
-   *  no tiene documento, y reusar el campo `documento` del titular para esto
-   *  deja el poder diciendo que la S.R.L. tiene DNI. */
+  /** DNI | Pasaporte. Sin esto es DNI, que es lo que eran todos los firmantes
+   *  antes de que el checkout aceptara sociedades del exterior: el presidente
+   *  de una S.A. uruguaya firma con su pasaporte. */
+  tipoDoc?: string;
+  /** Documento de quien firma. El de la PERSONA, no el de la sociedad: una
+   *  sociedad no tiene documento, y reusar el campo `documento` del titular
+   *  para esto deja el poder diciendo que la S.R.L. tiene DNI. */
   documento: string;
   /** Presidente · Socio Gerente · Apoderado · … (texto libre) */
   caracter: string;
@@ -241,7 +245,12 @@ export interface TitularPedido {
   /** Sólo persona humana. Una sociedad no tiene documento: quien lo tiene es
    *  su firmante, y ése es `representante.documento`. */
   documento: { tipo: string; numero: string };
+  /** Vacío en un titular del exterior: no tiene, y no se inventa. */
   cuit: string;
+  /** Sólo del exterior, y opcional: la identificación tributaria de su país
+   *  (el RUT uruguayo, el EIN). NO va en `cuit`: el CUIT es lo que deduplica
+   *  contactos en el portal, y un RUT ahí lo cruzaría con cualquier otro. */
+  idTributaria?: string;
   /** Adónde va el link para firmar la carta poder. Obligatorio en todos: es la
    *  única forma de completar el poder cuando el que llena el formulario no es
    *  el único dueño. */
@@ -494,6 +503,149 @@ export const PROVINCIAS = [
   'San Juan', 'San Luis', 'Santa Cruz', 'Santa Fe',
   'Santiago del Estero', 'Tierra del Fuego', 'Tucumán',
 ] as const;
+
+// ── Titulares del exterior ────────────────────────────────
+// Un titular puede vivir fuera de Argentina. Para el INPI eso cambia tres
+// cosas: no tiene CUIT (las sociedades del exterior figuran sin él, y las
+// personas con el pasaporte en el campo de documento), su domicilio no tiene
+// provincia (el portal la oculta y la región va dentro de la localidad), y su
+// documento es el PASAPORTE — el formulario del INPI no tiene cédula
+// extranjera. El domicilio legal en Argentina lo constituye el estudio: al
+// cliente no se le pide nada para eso.
+
+/** Los países tal como los nombra el portal Vigilante: el NOMBRE en español,
+ *  no el código. Argentina va primero porque es casi todos los casos; los
+ *  vecinos después, porque son casi todos los demás. */
+export const PAISES = [
+  'Argentina',
+  'Uruguay', 'Chile', 'Paraguay', 'Brasil', 'Bolivia', 'Perú',
+  'Afganistán', 'Albania', 'Alemania', 'Andorra', 'Angola', 'Antigua y Barbuda',
+  'Arabia Saudita', 'Argelia', 'Armenia', 'Australia', 'Austria', 'Azerbaiyán',
+  'Bahamas', 'Bangladés', 'Barbados', 'Baréin', 'Bélgica', 'Belice', 'Benín',
+  'Bielorrusia', 'Bosnia y Herzegovina', 'Botsuana', 'Brunéi', 'Bulgaria',
+  'Burkina Faso', 'Burundi', 'Bután', 'Cabo Verde', 'Camboya', 'Camerún',
+  'Canadá', 'Catar', 'Chad', 'China', 'Chipre', 'Colombia', 'Comoras',
+  'Corea del Norte', 'Corea del Sur', 'Costa de Marfil', 'Costa Rica', 'Croacia',
+  'Cuba', 'Dinamarca', 'Dominica', 'Ecuador', 'Egipto', 'El Salvador',
+  'Emiratos Árabes Unidos', 'Eritrea', 'Eslovaquia', 'Eslovenia', 'España',
+  'Estados Unidos', 'Estonia', 'Esuatini', 'Etiopía', 'Filipinas', 'Finlandia',
+  'Fiyi', 'Francia', 'Gabón', 'Gambia', 'Georgia', 'Ghana', 'Granada', 'Grecia',
+  'Guatemala', 'Guinea', 'Guinea-Bisáu', 'Guinea Ecuatorial', 'Guyana', 'Haití',
+  'Honduras', 'Hong Kong', 'Hungría', 'India', 'Indonesia', 'Irak', 'Irán', 'Irlanda',
+  'Islandia', 'Islas Marshall', 'Islas Salomón', 'Israel', 'Italia', 'Jamaica',
+  'Japón', 'Jordania', 'Kazajistán', 'Kenia', 'Kirguistán', 'Kiribati', 'Kuwait',
+  'Laos', 'Lesoto', 'Letonia', 'Líbano', 'Liberia', 'Libia', 'Liechtenstein',
+  'Lituania', 'Luxemburgo', 'Macedonia del Norte', 'Madagascar', 'Malasia',
+  'Malaui', 'Maldivas', 'Malí', 'Malta', 'Marruecos', 'Mauricio', 'Mauritania',
+  'México', 'Micronesia', 'Moldavia', 'Mónaco', 'Mongolia', 'Montenegro',
+  'Mozambique', 'Myanmar', 'Namibia', 'Nauru', 'Nepal', 'Nicaragua', 'Níger',
+  'Nigeria', 'Noruega', 'Nueva Zelanda', 'Omán', 'Países Bajos', 'Pakistán',
+  'Palaos', 'Palestina', 'Panamá', 'Papúa Nueva Guinea', 'Polonia', 'Portugal',
+  'Puerto Rico', 'Reino Unido', 'República Centroafricana', 'República Checa',
+  'República del Congo', 'República Democrática del Congo',
+  'República Dominicana', 'Ruanda', 'Rumania', 'Rusia', 'Samoa',
+  'San Cristóbal y Nieves', 'San Marino', 'San Vicente y las Granadinas',
+  'Santa Lucía', 'Santo Tomé y Príncipe', 'Senegal', 'Serbia', 'Seychelles',
+  'Sierra Leona', 'Singapur', 'Siria', 'Somalia', 'Sri Lanka', 'Sudáfrica',
+  'Sudán', 'Sudán del Sur', 'Suecia', 'Suiza', 'Surinam', 'Tailandia', 'Taiwán',
+  'Tanzania', 'Tayikistán', 'Timor Oriental', 'Togo', 'Tonga', 'Trinidad y Tobago',
+  'Túnez', 'Turkmenistán', 'Turquía', 'Tuvalu', 'Ucrania', 'Uganda', 'Uzbekistán',
+  'Vanuatu', 'Venezuela', 'Vietnam', 'Yemen', 'Yibuti', 'Zambia', 'Zimbabue',
+] as const;
+
+function sinAcentos(s: string): string {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+}
+
+/** El nombre del país como lo tiene la lista (con sus acentos), o el texto tal
+ *  cual si no está: un país que no reconocemos no se descarta, se manda como
+ *  vino y el portal avisa si no lo conoce. Vacío es Argentina — es lo que eran
+ *  todos los titulares antes de que esto existiera. */
+export function paisCanonico(raw: unknown): string {
+  const s = String(raw ?? '').trim();
+  if (!s) return 'Argentina';
+  const k = sinAcentos(s);
+  return PAISES.find(p => sinAcentos(p) === k) ?? s;
+}
+
+/** El titular vive fuera de Argentina: sin CUIT, sin provincia, con pasaporte. */
+export function esDelExterior(pais: unknown): boolean {
+  return sinAcentos(paisCanonico(pais)) !== 'argentina';
+}
+
+/** Tipo de documento con el que se identifica a alguien del exterior. Es el
+ *  único del formulario del INPI que sirve fuera de Argentina; un argentino que
+ *  vive afuera puede igual elegir DNI, y se respeta. */
+export const DOC_EXTERIOR = 'Pasaporte';
+
+// ── Prioridad (Convenio de París, art. 4) ─────────────────
+// Quien presentó la marca en otro país de la Unión puede presentarla acá dentro
+// de los 6 meses con la fecha de aquella presentación.
+//
+// Lo que se reclama es una SOLICITUD DE ORIGEN concreta, y una marca puede tener
+// varias: hay oficinas donde se presenta una solicitud por clase, y entonces
+// cada clase tiene su número, su fecha y su certificado. Una clase acá es un
+// trámite, y un trámite tiene UNA prioridad: las clases de dos solicitudes de
+// origen de la misma marca no se pisan.
+//
+// El certificado de prioridad lo emite la oficina de origen y tiene que estar
+// en el expediente ANTES de que el INPI ordene publicar: si no, la marca sale
+// publicada "SIN PRIORIDAD" y no se vuelve a publicar. Por eso no se exige para
+// pagar —muchos todavía no lo tienen—, pero se avisa.
+
+export const PRIORIDAD_MESES = 6;
+
+/** Tope por PDF de la prioridad (certificado o traducción). La API del portal
+ *  acepta 10 MB por archivo pero 8 MB por pedido entero, y el alta lleva además
+ *  el poder y los logos: uno de 10 MB no entraría nunca. Un certificado
+ *  escaneado ronda 1 MB. */
+export const PRIORIDAD_MAX_BYTES = 4 * 1024 * 1024;
+
+/** Una solicitud de origen, tal como la declara el cliente en el paso 5.
+ *  `fecha` en AAAA-MM-DD: es lo que pide la API y lo que da un
+ *  `<input type="date">`. */
+export interface PrioridadMarca {
+  /** Identificador estable dentro de la marca. Nombra los PDF en R2: el índice
+   *  no sirve, porque quitar una solicitud corre las demás y cada una quedaría
+   *  con el certificado de otra. */
+  id: string;
+  pais: string;
+  numero: string;
+  fecha: string;
+  /** Subconjunto de las clases de la marca, sin repetir ninguna de otra
+   *  solicitud de origen de la misma marca. */
+  clases: number[];
+}
+
+/** Lo que vale como `id` de una solicitud de origen: va dentro de una key de R2. */
+export function idPrioridadValido(id: unknown): id is string {
+  return typeof id === 'string' && /^[a-z0-9]{1,12}$/.test(id);
+}
+
+/** El último día para reivindicar la prioridad de una presentación del
+ *  `fecha` (AAAA-MM-DD). Null si la fecha no es válida. */
+export function vencimientoPrioridad(fecha: string): Date | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(fecha ?? '').trim());
+  if (!m) return null;
+  const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  if (d.getUTCMonth() !== +m[2] - 1) return null; // 2026-02-31
+  d.setUTCMonth(d.getUTCMonth() + PRIORIDAD_MESES);
+  return d;
+}
+
+/** Pasaron los 6 meses. No bloquea nada —el estudio lo revisa—, sólo avisa. */
+export function prioridadVencida(fecha: string, hoy: Date = new Date()): boolean {
+  const v = vencimientoPrioridad(fecha);
+  if (!v) return false;
+  const hoyUtc = Date.UTC(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+  return hoyUtc > v.getTime();
+}
+
+/** "06/10/2026" para mostrar una fecha AAAA-MM-DD. */
+export function fechaCorta(iso: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso ?? '').trim());
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : String(iso ?? '');
+}
 
 export function formatARS(n: number): string {
   return '$' + n.toLocaleString('es-AR');

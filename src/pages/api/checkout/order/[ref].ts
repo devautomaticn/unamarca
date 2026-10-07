@@ -10,7 +10,7 @@ export const prerender = false;
 
 import {
   type CheckoutEnv, base64FromArrayBuffer, consolidarMarcas, ensureSchema, guardarPoderFirmado,
-  ensureProgresoColumn, ensureVigilanteColumn, json, titularesDesdeCompletion,
+  ensureProgresoColumn, ensureVigilanteColumn, json, prioridadKeyFor, titularesDesdeCompletion,
 } from '@/lib/server/checkout';
 import {
   sendFirmaInvite, sendOrderEmails,
@@ -19,7 +19,9 @@ import {
 import { abrirFirma, asegurarTablaFirmas, urlFirma } from '@/lib/server/firmas';
 import { darDeAltaEnVigilante } from '@/lib/server/altaPedido';
 import type { VigilanteEnv } from '@/lib/server/vigilante';
-import { apellidoArchivo, formatPorcentaje, nombreTitular, type TitularPedido } from '@/lib/checkout/constants';
+import {
+  apellidoArchivo, esDelExterior, formatPorcentaje, nombreTitular, type TitularPedido,
+} from '@/lib/checkout/constants';
 
 interface OrderRow {
   ref: string;
@@ -162,6 +164,19 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     }
   }
 
+  // Qué PDF de la prioridad quedaron en R2: el email al estudio tiene que decir
+  // si el certificado está o hay que pedírselo al cliente, y el del cliente se
+  // lo recuerda. No se adjuntan al email: van al portal con el alta.
+  const prioridadEmail = await Promise.all(marcas.map((m, i) => Promise.all(
+    m.prioridades.map(async p => {
+      const hay = async (doc: 'certificado' | 'traduccion') => {
+        if (!env.LOGOS) return false;
+        try { return !!(await env.LOGOS.get(prioridadKeyFor(ref, i, p.id, doc))); } catch { return false; }
+      };
+      return { ...p, certificado: await hay('certificado'), traduccion: await hay('traduccion') };
+    }),
+  )));
+
   // ── Cadena de firmas de la carta poder ──────────────────
   // El poder es UNO solo con un pie de firma por titular. El que completó el
   // checkout ya firmó (viene en `completion.firma`); al resto se le abre un
@@ -245,7 +260,13 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     }
 
     const juridica = x.tipoPersona === 'Juridica';
+    const exterior = esDelExterior(d.pais);
     const fila = (k: string, v: string): [string, string][] => (v ? [[k, v]] : []);
+    // Del exterior no hay CUIT: se dice, en vez de dejar la fila vacía, y va su
+    // identificación tributaria si la cargó.
+    const tributaria: [string, string] = exterior
+      ? ['Id. tributaria', x.idTributaria ? `${x.idTributaria} (${d.pais})` : `— (sin CUIT: titular del exterior)`]
+      : [juridica ? 'CUIT' : 'CUIT/CUIL', x.cuit || ''];
 
     // Una sociedad no tiene documento, género ni estado civil: esas filas no
     // van vacías, no van. En su lugar, su inscripción y —lo más importante—
@@ -254,7 +275,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     const propias: [string, string][] = juridica
       ? [
         ['Razón social', x.nombre || ''],
-        ['CUIT', x.cuit || ''],
+        tributaria,
         ['Titularidad', `${pct}%`],
         ...fila('Inscripción', [
           x.inscripcion?.registro && `ante ${x.inscripcion.registro}`,
@@ -263,7 +284,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
         ].filter(Boolean).join(', ')),
         ['Firma el poder', [
           x.representante?.nombre,
-          x.representante?.documento && `DNI ${x.representante.documento}`,
+          x.representante?.documento && `${x.representante.tipoDoc || 'DNI'} ${x.representante.documento}`,
           x.representante?.caracter,
         ].filter(Boolean).join(' · ') || '⚠ SIN REPRESENTANTE'],
         ...fila('Poder del firmante', x.representante?.poder || ''),
@@ -271,7 +292,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
       : [
         ['Nombre', nombreTitular(x)],
         ['Documento', `${x.documento?.tipo || ''} ${x.documento?.numero || ''}`.trim()],
-        ['CUIT/CUIL', x.cuit || ''],
+        tributaria,
         ['Titularidad', `${pct}%`],
         ['Género', x.genero || ''],
         ['Estado civil', x.estadoCivil || ''],
@@ -281,11 +302,17 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     return {
       titulo: `Titular ${i + 1} de ${titulares.length} · ${pct}%`
         + (juridica ? ' · empresa' : '')
+        + (exterior ? ` · del exterior (${d.pais})` : '')
         + (x.firmaAqui ? ' · completó el pedido' : ''),
       filas: [
         ...propias,
         [juridica ? 'Domicilio legal' : 'Domicilio', [d.calle, d.numero, d.piso && `piso ${d.piso}`, d.depto && `depto ${d.depto}`].filter(Boolean).join(' ')],
-        ['Localidad', `${d.localidad || ''} (CP ${d.codigoPostal || '—'}), ${d.provincia || ''}, ${d.pais || 'Argentina'}`],
+        ['Localidad', exterior
+          ? `${d.localidad || ''}${d.codigoPostal ? ` (CP ${d.codigoPostal})` : ''}, ${d.pais}`
+          : `${d.localidad || ''} (CP ${d.codigoPostal || '—'}), ${d.provincia || ''}, ${d.pais || 'Argentina'}`],
+        // El domicilio legal en Argentina lo constituye el estudio: es lo único
+        // que el formulario no le pide a alguien del exterior.
+        ...(exterior ? [['Domicilio legal', 'A constituir por el estudio (Argentina)'] as [string, string]] : []),
         ['Email', email],
         ...(x.firmaAqui ? [['WhatsApp', stored.contacto?.whatsapp || ''] as [string, string]] : []),
       ],
@@ -299,7 +326,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     await sendOrderEmails(env.RESEND_API_KEY, {
       ref,
       status: row.status,
-      marcas,
+      marcas: marcas.map((m, i) => ({ ...m, prioridades: prioridadEmail[i] })),
       correcciones,
       clientEmail: contactoEmail,
       garantia: !!stored.garantia,

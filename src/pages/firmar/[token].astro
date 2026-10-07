@@ -16,7 +16,7 @@
 // mismo `cartaPoder.ts` y el PDF del mismo `cartaPoderPdf.ts` que el checkout —
 // los dos caminos no pueden divergir.
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import { PROVINCIAS, CARACTERES_REPRESENTANTE } from '@/lib/checkout/constants';
+import { PAISES, PROVINCIAS, CARACTERES_REPRESENTANTE } from '@/lib/checkout/constants';
 
 export const prerender = false;
 
@@ -83,6 +83,18 @@ const token = String(Astro.params.token ?? '');
                   <option value="Juridica">Es una empresa</option>
                 </select>
               </div>
+              <!-- Igual que el tipo, decide qué campos hay: afuera no hay CUIT
+                   ni provincia, y el documento es el pasaporte. -->
+              <div class="cp-field">
+                <label for="f-pais">País del domicilio</label>
+                <select id="f-pais" data-f="pais" autocomplete="country-name">
+                  {PAISES.map(p => <option value={p}>{p}</option>)}
+                </select>
+                <p class="cp-hint" data-pais="ext">
+                  No hace falta CUIT: te identificamos con tu pasaporte. El
+                  domicilio legal en Argentina lo constituimos nosotros.
+                </p>
+              </div>
               <div class="cp-row" id="f-nombre-row">
                 <div class="cp-field">
                   <label for="f-nombre" id="f-nombre-label">Nombre</label>
@@ -108,9 +120,13 @@ const token = String(Astro.params.token ?? '');
                   <input type="text" id="f-docnum" data-f="docnum" inputmode="numeric" maxlength="20" />
                 </div>
               </div>
-              <div class="cp-field">
+              <div class="cp-field" data-pais="ar">
                 <label for="f-cuit" id="f-cuit-label">CUIT / CUIL</label>
                 <input type="text" id="f-cuit" data-f="cuit" inputmode="numeric" maxlength="13" placeholder="20-12345678-9" />
+              </div>
+              <div class="cp-field" data-pais="ext">
+                <label for="f-idtrib">Identificación tributaria <span>(opcional)</span></label>
+                <input type="text" id="f-idtrib" data-f="idtrib" maxlength="40" placeholder="RUT, NIF, EIN…" />
               </div>
               <!-- Inscripción registral. Los tres sin marca de obligatorio: lo
                    que falte simplemente no se nombra en el poder. -->
@@ -193,34 +209,40 @@ const token = String(Astro.params.token ?? '');
                   <input type="text" id="f-localidad" data-f="localidad" autocomplete="address-level2" />
                 </div>
               </div>
-              <div class="cp-field">
+              <div class="cp-field" data-pais="ar">
                 <label for="f-provincia">Provincia</label>
                 <select id="f-provincia" data-f="provincia">
                   <option value="">Seleccionar…</option>
                   {PROVINCIAS.map(p => <option value={p}>{p}</option>)}
                 </select>
               </div>
-              <div class="cp-field" id="f-pais-row" hidden>
-                <label for="f-pais">País</label>
-                <input type="text" id="f-pais" data-f="pais" autocomplete="country-name" />
-              </div>
-              <button type="button" class="cp-link" id="f-pais-toggle">Vivo fuera de Argentina</button>
+              <p class="cp-hint" data-pais="ext">
+                Sin provincia: la región, si querés, va junto a la ciudad
+                («Ciudad de la Costa, Canelones»).
+              </p>
             </div>
 
-            <!-- Quién firma por la sociedad. El DNI que se pide es el de la
-                 PERSONA que está en esta página: una sociedad no tiene
+            <!-- Quién firma por la sociedad. El documento que se pide es el de
+                 la PERSONA que está en esta página: una sociedad no tiene
                  documento, y su firma al pie va con su nombre aclarando que lo
                  hace en representación de la empresa. -->
             <div class="cp-group" data-tipo="Juridica">
               <div class="cp-group-label">Quién firma por la empresa</div>
+              <div class="cp-field">
+                <label for="f-repnombre">Nombre y apellido</label>
+                <input type="text" id="f-repnombre" data-f="repnombre" autocomplete="name" />
+              </div>
               <div class="cp-row">
                 <div class="cp-field">
-                  <label for="f-repnombre">Nombre y apellido</label>
-                  <input type="text" id="f-repnombre" data-f="repnombre" autocomplete="name" />
+                  <label for="f-repdoctipo">Documento</label>
+                  <select id="f-repdoctipo" data-f="repdoctipo">
+                    <option value="DNI">DNI</option>
+                    <option value="Pasaporte">Pasaporte</option>
+                  </select>
                 </div>
                 <div class="cp-field">
-                  <label for="f-repdocumento">DNI</label>
-                  <input type="text" id="f-repdocumento" data-f="repdocumento" inputmode="numeric" maxlength="20" />
+                  <label for="f-repdocumento">Número</label>
+                  <input type="text" id="f-repdocumento" data-f="repdocumento" maxlength="20" />
                 </div>
               </div>
               <div class="cp-field">
@@ -309,8 +331,11 @@ const token = String(Astro.params.token ?? '');
 
 <script>
   import { cartaPoderHTML, type CartaPoderData, type TitularPoder } from '@/lib/checkout/cartaPoder';
-  import { esApoderado, formatPorcentaje, type TipoMarca, type TitularPedido } from '@/lib/checkout/constants';
-  import { formatCuitInput, isValidCuit, cuitMatchesDni } from '@/lib/checkout/cuit';
+  import {
+    DOC_EXTERIOR, esApoderado, esDelExterior, formatPorcentaje, paisCanonico,
+    type TipoMarca, type TitularPedido,
+  } from '@/lib/checkout/constants';
+  import { formatCuitInput, isValidCuit, cuitMatchesDni, esCuitDeJuridica } from '@/lib/checkout/cuit';
 
   const $ = (id: string) => document.getElementById(id)!;
   const input = (id: string) => document.getElementById(id) as HTMLInputElement;
@@ -342,11 +367,11 @@ const token = String(Astro.params.token ?? '');
     'tipopersona',
     // `nombre` es el nombre de pila de una persona y la RAZÓN SOCIAL de una
     // sociedad: el mismo campo con otro rótulo.
-    'nombre', 'apellido', 'tipodoc', 'docnum', 'cuit', 'email',
+    'nombre', 'apellido', 'tipodoc', 'docnum', 'cuit', 'idtrib', 'email',
     'genero', 'estadocivil', 'conyuge',
     'pais', 'calle', 'numero', 'piso', 'depto', 'localidad', 'codpostal', 'provincia',
     'inscregistro', 'inscnumero', 'inscfecha',
-    'repnombre', 'repdocumento', 'repcaracter', 'reppoder',
+    'repnombre', 'repdoctipo', 'repdocumento', 'repcaracter', 'reppoder',
   ] as const;
   type Campo = typeof CAMPOS[number];
 
@@ -363,6 +388,7 @@ const token = String(Astro.params.token ?? '');
       docTipo: t.documento?.tipo || 'DNI',
       docNumero: t.documento?.numero || '',
       cuit: t.cuit ?? '',
+      idTributaria: t.idTributaria ?? '',
       calle: t.domicilio?.calle ?? '',
       numero: t.domicilio?.numero ?? '',
       piso: t.domicilio?.piso || undefined,
@@ -370,6 +396,7 @@ const token = String(Astro.params.token ?? '');
       codigoPostal: t.domicilio?.codigoPostal ?? '',
       localidad: t.domicilio?.localidad ?? '',
       provincia: t.domicilio?.provincia ?? '',
+      pais: t.domicilio?.pais || 'Argentina',
       porcentaje: t.porcentaje,
       // De un cotitular que todavía no cargó sus datos, el email es lo único
       // que lo identifica en el documento.
@@ -379,6 +406,7 @@ const token = String(Astro.params.token ?? '');
       inscripcionNumero: t.inscripcion?.numero ?? '',
       inscripcionFecha: t.inscripcion?.fecha ?? '',
       repNombre: t.representante?.nombre ?? '',
+      repDocTipo: t.representante?.tipoDoc || 'DNI',
       repDocumento: t.representante?.documento ?? '',
       repCaracter: t.representante?.caracter ?? '',
       repPoder: t.representante?.poder ?? '',
@@ -389,6 +417,7 @@ const token = String(Astro.params.token ?? '');
   function misDatos(): TitularPedido {
     const t = ctx!.titulares[ctx!.idx];
     const juridica = valor('tipopersona') === 'Juridica';
+    const exterior = esDelExterior(valor('pais'));
     return {
       tipoPersona: juridica ? 'Juridica' : 'Humana',
       // En una jurídica esto es la razón social. Lo de persona humana va vacío
@@ -402,17 +431,20 @@ const token = String(Astro.params.token ?? '');
       documento: juridica
         ? { tipo: '', numero: '' }
         : { tipo: valor('tipodoc') || 'DNI', numero: valor('docnum') },
-      cuit: valor('cuit'),
+      // Del exterior: sin CUIT ni provincia, aunque haya quedado algo tipeado
+      // antes de cambiar el país.
+      cuit: exterior ? '' : valor('cuit'),
+      ...(exterior && valor('idtrib') ? { idTributaria: valor('idtrib') } : {}),
       email: valor('email'),
       domicilio: {
-        pais: valor('pais') || 'Argentina',
+        pais: paisCanonico(valor('pais')),
         calle: valor('calle'),
         numero: valor('numero'),
         piso: valor('piso'),
         depto: valor('depto'),
         localidad: valor('localidad'),
         codigoPostal: valor('codpostal'),
-        provincia: valor('provincia'),
+        provincia: exterior ? '' : valor('provincia'),
       },
       ...(juridica ? {
         inscripcion: {
@@ -422,6 +454,7 @@ const token = String(Astro.params.token ?? '');
         },
         representante: {
           nombre: valor('repnombre'),
+          tipoDoc: valor('repdoctipo') || 'DNI',
           documento: valor('repdocumento'),
           caracter: valor('repcaracter'),
           // El poder previo sólo si el carácter lo pide.
@@ -494,7 +527,6 @@ const token = String(Astro.params.token ?? '');
       document.querySelector('.cp-sign')?.setAttribute('hidden', '');
       // Los datos dejan de ser editables: lo que firmó es lo que quedó.
       CAMPOS.forEach(c => { campo(c).disabled = true; });
-      $('f-pais-toggle').hidden = true;
       return;
     }
 
@@ -538,11 +570,12 @@ const token = String(Astro.params.token ?? '');
       tipodoc: t.documento?.tipo || 'DNI',
       docnum: t.documento?.numero ?? '',
       cuit: t.cuit ?? '',
+      idtrib: t.idTributaria ?? '',
       email: t.email ?? '',
       genero: t.genero ?? '',
       estadocivil: t.estadoCivil ?? '',
       conyuge: t.nombreConyuge ?? '',
-      pais: t.domicilio?.pais || 'Argentina',
+      pais: paisCanonico(t.domicilio?.pais),
       calle: t.domicilio?.calle ?? '',
       numero: t.domicilio?.numero ?? '',
       piso: t.domicilio?.piso ?? '',
@@ -554,10 +587,16 @@ const token = String(Astro.params.token ?? '');
       inscnumero: t.inscripcion?.numero ?? '',
       inscfecha: t.inscripcion?.fecha ?? '',
       repnombre: t.representante?.nombre ?? '',
+      repdoctipo: t.representante?.tipoDoc || 'DNI',
       repdocumento: t.representante?.documento ?? '',
       repcaracter: t.representante?.caracter ?? '',
       reppoder: t.representante?.poder ?? '',
     };
+    // Un país que no está en la lista no se pierde: se agrega como opción.
+    const selPais = campo('pais') as HTMLSelectElement;
+    if (!Array.from(selPais.options).some(o => o.value === valores.pais)) {
+      selPais.add(new Option(valores.pais, valores.pais));
+    }
     CAMPOS.forEach(c => { campo(c).value = valores[c]; });
 
     $('cp-side-help').innerHTML = valores.nombre
@@ -598,19 +637,24 @@ const token = String(Astro.params.token ?? '');
     $('f-conyuge-row').hidden = valor('estadocivil') !== 'Casado/a';
   }
 
-  // País: oculto mientras sea Argentina, que es el caso de casi todos.
+  /** Argentina o el exterior: afuera no hay CUIT ni provincia, y aparecen la
+   *  identificación tributaria de su país y la ayuda para la localidad. */
   function syncPais() {
-    const otro = valor('pais').toLowerCase() !== 'argentina';
-    $('f-pais-row').hidden = !otro;
-    $('f-pais-toggle').hidden = otro;
+    const exterior = esDelExterior(valor('pais'));
+    document.querySelectorAll<HTMLElement>('[data-pais]').forEach(bloque => {
+      bloque.hidden = bloque.dataset.pais !== (exterior ? 'ext' : 'ar');
+    });
   }
 
-  $('f-pais-toggle').addEventListener('click', () => {
-    $('f-pais-row').hidden = false;
-    $('f-pais-toggle').hidden = true;
-    (campo('pais') as HTMLInputElement).select();
-    campo('pais').focus();
-  });
+  /** Al cambiar de país cambia el documento por defecto (DNI ↔ Pasaporte). Sólo
+   *  el default: un argentino que vive afuera y elige DNI a mano se respeta. */
+  function cambiarDocPorPais() {
+    const exterior = esDelExterior(valor('pais'));
+    const [de, a] = exterior ? ['DNI', DOC_EXTERIOR] : [DOC_EXTERIOR, 'DNI'];
+    for (const c of ['tipodoc', 'repdoctipo'] as const) {
+      if (campo(c).value === de) campo(c).value = a;
+    }
+  }
 
   // Cualquier campo del panel redibuja el documento: el cotitular tiene que ver
   // en el papel lo que acaba de corregir, antes de firmarlo.
@@ -621,8 +665,9 @@ const token = String(Astro.params.token ?? '');
       if (c === 'docnum' && valor('tipodoc') === 'DNI') {
         (el as HTMLInputElement).value = el.value.replace(/\D/g, '').slice(0, 8);
       }
-      // El de quien firma por una sociedad es siempre un DNI.
-      if (c === 'repdocumento') {
+      // El de quien firma por una sociedad, sólo si es un DNI: un pasaporte
+      // lleva letras.
+      if (c === 'repdocumento' && valor('repdoctipo') === 'DNI') {
         (el as HTMLInputElement).value = el.value.replace(/\D/g, '').slice(0, 8);
       }
       // "Apoderado" es lo único que obliga a citar el poder previo, y se
@@ -636,6 +681,7 @@ const token = String(Astro.params.token ?? '');
       // El tipo de titular cambia el panel entero: qué campos hay y cómo se
       // llaman los que comparten los dos tipos.
       if (c === 'tipopersona') syncTipo();
+      if (c === 'pais') { cambiarDocPorPais(); syncPais(); }
       render();
     });
   });
@@ -757,31 +803,63 @@ const token = String(Astro.params.token ?? '');
    *  el panel es corto y con un mensaje alcanza para saber adónde ir. */
   function problemaEnDatos(): string | null {
     const d = misDatos();
-    if (!d.nombre) return 'Falta tu nombre.';
-    if (!d.apellido) return 'Falta tu apellido.';
-    if (!d.genero) return 'Falta seleccionar el género.';
-    if (!d.estadoCivil) return 'Falta seleccionar el estado civil.';
-    if (d.estadoCivil === 'Casado/a' && !d.nombreConyuge) return 'Falta el nombre del cónyuge.';
+    const juridica = d.tipoPersona === 'Juridica';
+    const exterior = esDelExterior(d.domicilio.pais);
 
-    const doc = d.documento.numero;
-    if (d.documento.tipo === 'DNI') {
-      const digitos = doc.replace(/\D/g, '');
-      if (digitos.length < 7 || digitos.length > 8) return 'El DNI tiene que tener 7 u 8 dígitos.';
-    } else if (!doc) {
-      return 'Falta el número de documento.';
+    if (juridica) {
+      // Una sociedad no tiene apellido, documento, género ni estado civil. Lo
+      // que sí tiene —y sin lo cual no puede firmar— es quién la representa.
+      if (!d.nombre) return 'Falta la razón social de la empresa.';
+      const rep = d.representante!;
+      if (!rep.nombre) return 'Falta el nombre de quien firma por la empresa.';
+      if ((rep.tipoDoc || 'DNI') === 'DNI') {
+        const digitos = rep.documento.replace(/\D/g, '');
+        if (digitos.length < 7 || digitos.length > 8) return 'El DNI de quien firma tiene que tener 7 u 8 dígitos.';
+      } else if (!rep.documento) {
+        return 'Falta el número de documento de quien firma.';
+      }
+      if (!rep.caracter) return 'Falta el cargo con el que firmás por la empresa.';
+      if (esApoderado(rep.caracter) && !rep.poder) return 'Falta citar el poder con el que actuás.';
+    } else {
+      if (!d.nombre) return 'Falta tu nombre.';
+      if (!d.apellido) return 'Falta tu apellido.';
+      if (!d.genero) return 'Falta seleccionar el género.';
+      if (!d.estadoCivil) return 'Falta seleccionar el estado civil.';
+      if (d.estadoCivil === 'Casado/a' && !d.nombreConyuge) return 'Falta el nombre del cónyuge.';
+
+      const doc = d.documento.numero;
+      if (d.documento.tipo === 'DNI') {
+        const digitos = doc.replace(/\D/g, '');
+        if (digitos.length < 7 || digitos.length > 8) return 'El DNI tiene que tener 7 u 8 dígitos.';
+      } else if (!doc) {
+        return 'Falta el número de documento.';
+      }
     }
 
-    if (!isValidCuit(d.cuit)) return 'El CUIT/CUIL no es válido. Revisalo.';
-    if (d.documento.tipo === 'DNI' && doc && !cuitMatchesDni(d.cuit, doc)) {
-      return 'El CUIT/CUIL no coincide con el documento ingresado.';
+    // Del exterior no hay CUIT: no se pide ni se valida.
+    if (!exterior) {
+      if (!isValidCuit(d.cuit)) return 'El CUIT/CUIL no es válido. Revisalo.';
+      if (juridica && !esCuitDeJuridica(d.cuit)) {
+        return 'Ese CUIT es de una persona, no de una empresa. Revisalo, o cambiá el tipo de titular.';
+      }
+      if (!juridica && esCuitDeJuridica(d.cuit)) {
+        return 'Ese CUIT es de una empresa. Cambiá el tipo de titular a "Es una empresa".';
+      }
+      if (!juridica && d.documento.tipo === 'DNI' && d.documento.numero
+        && !cuitMatchesDni(d.cuit, d.documento.numero)) {
+        return 'El CUIT/CUIL no coincide con el documento ingresado.';
+      }
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) return 'Ingresá un email válido.';
 
     const dom = d.domicilio;
-    if (!dom.calle || !dom.numero) return 'Falta la calle y el número de tu domicilio.';
-    if (!dom.localidad) return 'Falta la localidad.';
-    if (!dom.codigoPostal) return 'Falta el código postal.';
-    if (!dom.provincia) return 'Falta seleccionar la provincia.';
+    if (!dom.calle || !dom.numero) return 'Falta la calle y el número del domicilio.';
+    if (!dom.localidad) return exterior ? 'Falta la ciudad.' : 'Falta la localidad.';
+    // Afuera no hay provincia, y hay países sin código postal.
+    if (!exterior) {
+      if (!dom.codigoPostal) return 'Falta el código postal.';
+      if (!dom.provincia) return 'Falta seleccionar la provincia.';
+    }
     return null;
   }
 

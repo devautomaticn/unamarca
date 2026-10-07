@@ -137,6 +137,7 @@ const ETIQUETAS: Record<string, string> = {
   'documento.tipo': 'Tipo de documento',
   'documento.numero': 'Número de documento',
   cuit: 'CUIT/CUIL',
+  idTributaria: 'Identificación tributaria',
   email: 'Email',
   genero: 'Género',
   estadoCivil: 'Estado civil',
@@ -158,7 +159,8 @@ const ETIQUETAS: Record<string, string> = {
   'inscripcion.numero': 'N° de inscripción',
   'inscripcion.fecha': 'Fecha de inscripción',
   'representante.nombre': 'Firma por la empresa',
-  'representante.documento': 'DNI de quien firma',
+  'representante.tipoDoc': 'Tipo de documento de quien firma',
+  'representante.documento': 'Documento de quien firma',
   'representante.caracter': 'Carácter de quien firma',
   'representante.poder': 'Poder del firmante',
 };
