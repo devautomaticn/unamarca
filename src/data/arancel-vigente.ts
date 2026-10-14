@@ -8,7 +8,7 @@
 // termina en el bundle del checkout: acá solo pueden estar estos dos valores.
 //
 // Fuente: https://portaltramites.inpi.gob.ar/InfoPortal/Aranceles
-// Actualizado: 2026-10-01T11:58:23.183Z
+// Actualizado: 2026-10-14T16:00:12.271Z
 
 /** Solicitud de registro de marca nueva, por clase (100 UMAPI) */
 export const ARANCEL_MARCA_NUEVA = 41259;
