@@ -141,7 +141,7 @@ export const WA_MESSAGES = {
       'Reemplaza a registrar_empresa (baja 2026-09-18), que atendía dos cosas ' +
       'distintas con el mismo texto: las personas jurídicas —que desde esa fecha ' +
       'se registran solas en el checkout— y los pedidos con más de MAX_TITULARES ' +
-      'dueños, que siguen siendo a mano. El número sale de MAX_TITULARES (hoy 3) ' +
+      'dueños, que siguen siendo a mano. El número sale de MAX_TITULARES (hoy 10) ' +
       'en src/lib/checkout/constants.ts: matchear por prefijo.',
   },
   registrar_clase: {

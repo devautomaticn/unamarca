@@ -61,8 +61,16 @@ export const MAX_MARCAS = 3;
 
 /** Máximo de cotitulares de una marca. El INPI no pone tope, nosotros sí: con
  *  más que esto el paso 6 se vuelve interminable y la cadena de firmas, un
- *  seguimiento a mano. Más titulares se derivan a WhatsApp. */
-export const MAX_TITULARES = 3;
+ *  seguimiento a mano. Más titulares se derivan a WhatsApp.
+ *
+ *  Era 3 hasta 2026-10-14. Sube a 10 porque de cada cotitular el paso 6 pide
+ *  sólo email y porcentaje (el resto lo carga cada uno al firmar), así que diez
+ *  tarjetas siguen siendo cortas. Diez es también el techo de contactos por
+ *  pedido de la API de altas del portal (`limite_items` de la credencial del
+ *  formulario, default 10): cada titular viaja como un contacto, una sola vez
+ *  aunque haya varias marcas. Subir esto por encima de 10 exige subir primero
+ *  ese límite, o el alta se rechaza ENTERA después de cobrar. */
+export const MAX_TITULARES = 10;
 
 /** Techo duro de líneas del pedido (una línea = una marca en una clase) */
 export const MAX_LINEAS = MAX_MARCAS * MAX_CLASES;
