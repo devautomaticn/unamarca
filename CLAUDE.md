@@ -586,7 +586,7 @@ concretas viven en el pedido, no en el papel.
 
 ## Cotitulares y la cadena de firmas
 
-Una marca puede tener hasta `MAX_TITULARES` (3) dueños. **Cada uno carga sus
+Una marca puede tener hasta `MAX_TITULARES` (10; eran 3 hasta 2026-10-14) dueños. **Cada uno carga sus
 propios datos**: el que arma el pedido completa los suyos y, de los cotitulares,
 sólo el **email** y el **porcentaje de titularidad**.
 
