@@ -58,7 +58,7 @@ Contratar un profesional no es obligatorio, pero sí recomendable. Un abogado o 
 
 Los honorarios varían según el estudio o profesional, pero como referencia general oscilan entre **$200.000 y $300.000 ARS** para un registro estándar en una clase. Contestar oposiciones de terceros o vistas del INPI puede tener costos adicionales.
 
-**En UnaMarca cobramos {{HONORARIOS}} de honorarios por clase**, entre un tercio y un cuarto de ese valor de mercado. Lo podemos hacer porque estandarizamos el caso más común (marca denominativa, en una clase, a nombre de una persona) en un trámite 100% online: completás la solicitud en unos minutos, firmás la carta poder desde el celular y nosotros presentamos tu solicitud ante el INPI dentro de las 48 horas hábiles. Sin reuniones ni papeleo de por medio, el costo baja sin resignar el seguimiento profesional del trámite. Podés [registrar tu marca online](/registrar/) directamente desde la web.
+**En UnaMarca cobramos {{HONORARIOS}} de honorarios por clase**, una fracción de ese valor de mercado. Lo podemos hacer porque estandarizamos el caso más común (marca denominativa, en una clase, a nombre de una persona) en un trámite 100% online: completás la solicitud en unos minutos, firmás la carta poder desde el celular y nosotros presentamos tu solicitud ante el INPI dentro de las 48 horas hábiles. Sin reuniones ni papeleo de por medio, el costo baja sin resignar el seguimiento profesional del trámite. Podés [registrar tu marca online](/registrar/) directamente desde la web.
 
 ## ¿Cuánto sale en total?
 
