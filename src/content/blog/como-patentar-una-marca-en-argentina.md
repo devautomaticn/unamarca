@@ -1,101 +1,106 @@
 ---
-title: "Cómo patentar una marca en Argentina (y por qué se dice registrar)"
-description: "¿Querés patentar tu marca en Argentina? Te explicamos la diferencia entre patente y marca registrada, y cómo proteger tu nombre ante el INPI paso a paso."
+title: "Marcas y patentes: qué protege cada una y cuál necesitás"
+description: "Marca, patente, modelo de utilidad, diseño industrial o derecho de autor: qué protege cada figura en Argentina, dónde se tramita y cuál le sirve a tu negocio."
 pubDate: 2026-04-11
-updatedDate: 2026-09-20
+updatedDate: 2026-10-18
 tags: []
+faqs:
+  - question: "¿Cuál es la diferencia entre una marca y una patente?"
+    answer: "La marca protege el signo con el que te reconocen (el nombre, el logo) y la patente protege un invento: una solución técnica nueva. La marca dura 10 años y se renueva sin límite; la patente dura 20 años y después pasa al dominio público."
+  - question: "¿Se puede patentar una marca?"
+    answer: "No. Las marcas se registran y los inventos se patentan. Cuando alguien dice \"patentar mi marca\" en realidad necesita registrarla ante el INPI, que es un trámite distinto, más corto y más barato que una patente."
+  - question: "¿Se puede patentar una idea o una app?"
+    answer: "Una idea no se protege con ninguna figura. Y en Argentina los programas de computación no son patentables en sí mismos: el código lo protege el derecho de autor y el nombre de la app, una marca."
+  - question: "¿Marcas y patentes se tramitan en el mismo lugar?"
+    answer: "Sí, las dos en el INPI (Instituto Nacional de la Propiedad Industrial), igual que los modelos de utilidad y los diseños industriales. El derecho de autor es la excepción: va a la Dirección Nacional del Derecho de Autor."
 ---
 
-Cuando alguien quiere proteger el nombre de su negocio, lo más común es decir "quiero patentar mi marca". Es la expresión que circula entre emprendedores, pero técnicamente no es lo correcto, y entender la diferencia importa. En Argentina, las marcas **no se patentan: se registran**. Y el proceso es distinto al de una patente. En esta guía te explicamos la diferencia, qué protege cada figura legal, y cómo **registrar tu marca ante el INPI** paso a paso.
+La respuesta corta: **la marca protege cómo te reconocen y la patente protege lo que inventaste.** Si tenés un negocio con nombre propio, lo que necesitás casi seguro es una marca. La patente es para una solución técnica nueva, y es un trámite mucho más largo y exigente.
 
-## ¿Se puede "patentar" una marca en Argentina?
+Marcas y patentes se confunden porque las dos se tramitan en el mismo organismo, el INPI, y porque en la calle se dice "patentar la marca". Pero son figuras distintas, con requisitos, plazos y costos distintos. Y no son las únicas: hay otras tres que conviene conocer antes de decidir qué proteger.
 
-No, en sentido técnico. En Argentina existen dos figuras distintas dentro de la propiedad industrial:
+## Las cinco figuras, de un vistazo
 
-- **Marcas:** nombres, logos, slogans que identifican productos o servicios. Se **registran** ante el INPI bajo la Ley 22.362.
-- **Patentes:** inventos, procesos técnicos, fórmulas. Se **patentan** ante el INPI bajo la Ley 24.481.
+| | Qué protege | Ejemplo | Dónde | Duración |
+|---|---|---|---|---|
+| **Marca** | El nombre, logo o signo que identifica tus productos o servicios | El nombre de tu cervecería | INPI | 10 años, renovable sin límite |
+| **Patente de invención** | Una solución técnica nueva | Un mecanismo de cierre que no existía | INPI | 20 años, no renovable |
+| **Modelo de utilidad** | Una forma nueva que mejora un objeto conocido | Una herramienta con un mango rediseñado para que funcione mejor | INPI | 10 años, no renovable |
+| **Diseño industrial** | La forma o el aspecto ornamental de un producto | La silueta de una botella o de una silla | INPI | 5 años, renovable dos veces (hasta 15) |
+| **Derecho de autor** | Obras: textos, música, fotos, ilustraciones, software | El código de tu app | Dirección Nacional del Derecho de Autor | La vida del autor más 70 años |
 
-Cuando un emprendedor dice "quiero patentar mi marca", en realidad quiere decir "quiero registrar mi marca". Son dos trámites completamente diferentes que protegen cosas distintas.
+La pregunta que ordena todo es **qué es lo valioso que querés que nadie copie**: el nombre, el funcionamiento, la forma o la obra.
 
-## Diferencia entre marca registrada y patente
+## La marca: el nombre con el que te eligen
 
-| | Marca registrada | Patente |
-|---|---|---|
-| ¿Qué protege? | Nombre, logo, slogan | Invento, proceso técnico |
-| Duración | 10 años, renovable indefinidamente | 20 años, no renovable |
-| ¿Quién tramita? | INPI (División Marcas) | INPI (División Patentes) |
-| Uso comercial | Para identificar productos o servicios | Para explotar una innovación técnica |
-| ¿Necesitás ser inventor? | No | Sí |
+La marca es el signo que distingue tus productos o servicios de los de la competencia: una palabra, un logo, o los dos juntos. Se registra ante el INPI bajo la Ley 22.362 y te da el **derecho exclusivo** de usarla en las clases que registraste.
 
-Si tenés un emprendimiento, una tienda, un servicio o cualquier tipo de negocio con nombre propio, lo que necesitás es una **marca registrada**, no una patente.
+- **Dura 10 años** desde la concesión y se renueva indefinidamente mientras la sigas usando.
+- **Se registra por clase**: la misma palabra puede ser de otra persona en un rubro distinto. Ver [clases de marcas](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina/).
+- **No exige novedad**: no tenés que inventar nada, solo que el nombre sea distintivo y no se confunda con otro ya registrado en tu rubro.
+- **Con el procedimiento vigente desde 2026, sale en unos 2 meses** si nadie se opone. Ver [cuánto tarda el registro](/blog/cuanto-tarda-registro-marca-argentina/).
 
-## ¿Qué protege el registro de marca?
+Si tu logo tiene letras, se registra como marca mixta; si es solo una imagen, sin ninguna letra, como figurativa. El detalle está en [cómo registrar una marca y su logo](/blog/como-registrar-marca-y-logo-en-argentina/).
 
-Al registrar tu marca ante el INPI, obtenés el **derecho exclusivo** de usarla en el rubro que registraste durante 10 años. Eso significa que podés:
+## La patente de invención: una solución técnica nueva
 
-- Impedir que otras personas o empresas usen un nombre igual o similar en tu sector
-- Iniciar acciones legales si alguien lo hace sin tu autorización
-- Licenciar o vender tu marca
-- Usar el símbolo ® legalmente
+La patente protege un invento: un producto o un procedimiento que resuelve un problema técnico de una forma que no existía. Se rige por la Ley 24.481 y tiene tres requisitos que el INPI examina a fondo:
 
-Sin registro, no tenés ninguno de estos derechos. Que hayas usado un nombre durante años no te da titularidad legal sobre él. En Argentina el derecho sobre una marca se adquiere por su registro.
+1. **Novedad:** que no se haya divulgado en ningún lugar del mundo antes de presentar la solicitud.
+2. **Actividad inventiva:** que no sea algo obvio para alguien que conoce el rubro.
+3. **Aplicación industrial:** que se pueda fabricar o usar en alguna actividad productiva.
 
-## ¿Cómo registrar (= "patentar") tu marca en Argentina?
+A cambio, te da 20 años de exclusividad sobre la explotación del invento, contados desde la presentación. Después pasa al dominio público y cualquiera lo puede usar. El examen suele llevar varios años, y la redacción de la solicitud (sobre todo de las reivindicaciones, que definen qué cubre exactamente la patente) es trabajo de un especialista.
 
-El trámite se hace 100% online ante el INPI y, con el proceso vigente desde 2026, puede resolverse en aproximadamente **2 meses** si no hay oposiciones.
+**Lo que la ley excluye de la patente**, aunque sea novedoso:
 
-Los pasos principales son:
+- Las ideas, los descubrimientos y las teorías científicas.
+- Los métodos de negocio, los planes y las reglas de juegos.
+- Los programas de computación en sí mismos.
+- Las obras artísticas y las formas de presentar información.
 
-1. **Verificar disponibilidad:** antes de presentar, confirmá que tu marca no esté registrada por otra persona en tu rubro. Podés hacerlo gratis en nuestro [buscador de marcas del INPI](/verificar-marca/).
-2. **Definir en qué clases registrar:** las marcas se registran por categorías (clases) según el tipo de producto o servicio.
-3. **Presentar la solicitud online** en [portaltramites.inpi.gob.ar](https://portaltramites.inpi.gob.ar) con tu CUIT y Clave Fiscal.
-4. **Pagar el arancel:** se genera una boleta de pago al momento de la solicitud.
-5. **Período de publicación y oposición:** el INPI publica tu solicitud durante 30 días corridos. Si nadie presenta una oposición, la marca se concede.
+**Un cuidado que no admite vuelta atrás:** mostrar el invento antes de presentarlo (en una feria, en redes, en una campaña de preventa) puede costarte la novedad. La ley da un año de gracia para las divulgaciones del propio inventor, pero otros países no, y contar con eso es arriesgado.
 
-Para el proceso detallado paso a paso, leé: [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso/).
+## El modelo de utilidad: la "patente chica"
 
-## ¿Cuánto cuesta registrar una marca?
+Protege una forma o disposición nueva de un objeto ya conocido que lo hace funcionar mejor o más fácil de usar. Es la figura para las mejoras prácticas que no llegan a ser un invento: una herramienta, un envase o un accesorio rediseñados para cumplir mejor su función.
 
-El arancel del INPI se expresa en UMAPIS (Unidades de Medida Arancelaria de la Propiedad Industrial), sistema vigente desde abril de 2026 y actualizado mensualmente según inflación. El costo base es de **100 UMAPIS por clase** (aproximadamente {{ARANCEL}} en {{VIGENCIA}}, sujeto a actualización mensual).
+Exige novedad y aplicación industrial, pero no la actividad inventiva de una patente. A cambio, protege menos tiempo: **10 años, sin renovación**. También va por la Ley 24.481 ante el INPI.
 
-A eso se suman los honorarios profesionales si gestionás el trámite con un agente de la propiedad industrial. Los nuestros son {{HONORARIOS}} por clase, sin costos ocultos. Para el detalle completo, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca/).
+## El diseño industrial: la forma que se ve
 
-## ¿Cuánto tarda?
+Protege el aspecto ornamental de un producto: su forma, sus líneas, su silueta. No importa cómo funciona sino cómo se ve. La botella con una forma propia, el diseño de una lámpara o de una silla.
 
-Con el nuevo sistema vigente desde la Resolución 583/25 de marzo de 2026, el proceso dura aproximadamente **2 meses** si no hay oposiciones. Este es un cambio significativo respecto al proceso anterior, que podía demorar 18 a 24 meses. Para más detalle sobre tiempos, leé: [cuánto tarda el registro de marca en Argentina](/blog/cuanto-tarda-registro-marca-argentina/).
+Se rige por el Decreto-Ley 6673/63, se registra en el INPI y dura **5 años, renovables por dos períodos iguales**: hasta 15 años en total. Igual que la patente, exige novedad, así que conviene registrarlo antes de lanzar el producto.
 
-## ¿En qué clases registrar?
+## El derecho de autor: las obras
 
-Las marcas se registran en clases según la Clasificación Internacional de Niza. Antes de presentar la solicitud, tenés que definir en cuál o cuáles clases aplica tu negocio. Por ejemplo, indumentaria es Clase 25, alimentos es Clase 30, servicios profesionales es Clase 45.
+Protege las creaciones intelectuales: textos, música, fotografías, ilustraciones, videos y también el software. Es la única de las cinco que **no se tramita en el INPI** sino en la Dirección Nacional del Derecho de Autor (Ley 11.723).
 
-Para entender qué clase corresponde a tu rubro, leé: [clases de marcas en Argentina: guía completa](/blog/clases-de-marcas-guia-para-registrar-tu-marca-en-argentina/).
+Para un negocio aparece más de lo que parece: el código de una app, las fotos del catálogo, los textos de la web, la ilustración de un packaging. Lo que no protege es el nombre: el nombre de una app, de un libro o de un podcast, si lo usás para ofrecer productos o servicios, se protege con una marca.
 
-## ¿Necesitás un abogado o agente para registrar?
+## Y una sexta opción: no registrar nada
 
-No es obligatorio. Podés hacer el trámite vos mismo si tenés CUIT y Clave Fiscal. Sin embargo, los errores en la elección de clases o en la redacción de la solicitud pueden resultar en una denegación o en una protección incompleta.
+Una receta, una fórmula o un proceso de fabricación también se pueden proteger **manteniéndolos en secreto**. La Ley 24.766 protege la información confidencial que tiene valor comercial, siempre que tomes medidas razonables para que no se filtre (acuerdos de confidencialidad, acceso restringido).
 
-Un agente de la propiedad industrial te ayuda con la búsqueda previa, la estrategia de clases y el seguimiento del expediente, reduciendo el riesgo de errores que luego son difíciles de corregir.
+La diferencia con la patente es de fondo: la patente obliga a publicar el invento a cambio de 20 años de exclusividad, y el secreto dura lo que dure el secreto. Por eso muchas recetas famosas nunca se patentaron. Además, una receta de cocina rara vez cumple los requisitos de una patente.
 
-## ¿Qué nombres no podés registrar como marca?
+## Qué necesita tu negocio: casos frecuentes
 
-No todos los nombres son registrables. El INPI rechaza solicitudes que incluyan:
+- **Tenés una marca de ropa, un local o un emprendimiento de servicios:** una marca. Es lo único que impide que otro use tu nombre en tu rubro.
+- **Hacés cerveza, alimentos o cosmética con fórmula propia:** una marca para el nombre, y la fórmula como secreto.
+- **Desarrollaste una app o un software:** una marca para el nombre de la app; el código lo cubre el derecho de autor. Patente no, salvo que haya una solución técnica que vaya más allá del programa.
+- **Inventaste un dispositivo o una mejora técnica:** patente o modelo de utilidad, antes de mostrarlo. Y una marca para el nombre con el que lo vas a vender: la patente vence a los 20 años y la marca no.
+- **Diseñaste un producto con una forma propia:** diseño industrial para la forma, y marca para el nombre.
 
-- **Términos genéricos o descriptivos:** palabras que describen directamente el producto o servicio no pueden ser marcas exclusivas. "Café Artesanal" para una cafetería, "Zapatería" para una zapatería o "Transporte Rápido" para una empresa de transporte son ejemplos de nombres que el INPI no acepta porque cualquier competidor tiene el derecho de usarlos para describir su actividad.
-- **Nombres geográficos:** indicaciones de origen como "Mendoza", "Patagonia" o "Buenos Aires" no son registrables de forma exclusiva para la mayoría de los rubros.
-- **Nombres que pueden confundir al consumidor:** nombres iguales o similares a marcas ya registradas en el mismo rubro, o que inducen a error sobre la naturaleza del producto.
-- **Símbolos oficiales:** banderas, escudos, insignias de organismos públicos o internacionales.
-- **Nombres contrarios al orden público o las buenas costumbres.**
+Las figuras no se excluyen: un mismo producto puede tener una patente por cómo funciona, un diseño industrial por cómo se ve y una marca por cómo se llama. Cada una protege una capa distinta.
 
-Si tu nombre es muy descriptivo, la solución suele ser agregar un elemento diferenciador: un término inventado, un logo particular o una combinación que le dé distintividad al conjunto.
+## ¿Por qué se dice "patentar una marca"?
 
-## ¿Podés usar el símbolo ™ antes de registrar?
+Por costumbre. En la calle "patentar" se usa como sinónimo de "proteger legalmente", y por eso tanta gente busca "cómo patentar una marca" o "cómo patentar un nombre". Técnicamente, **las marcas no se patentan: se registran**. La diferencia no es solo de palabras: si llegás a un estudio pidiendo una patente para tu nombre comercial, estás pidiendo un trámite que no corresponde.
 
-Sí, pero sabiendo que en Argentina no significa nada legalmente. El **™** es una declaración unilateral: avisa que considerás ese nombre tu marca, y no te da derechos exclusivos ni impedimentos contra terceros.
+Registrar una marca es bastante más simple que patentar un invento. Se hace online ante el INPI, no hay que demostrar ninguna novedad técnica y, con el procedimiento actual, sale en unos 2 meses si nadie se opone. Con UnaMarca, el total por una clase es de **{{TOTAL}}**: {{ARANCEL}} de arancel del INPI y {{HONORARIOS}} de honorarios. El desglose está en [cuánto sale registrar una marca](/blog/cuanto-sale-registrar-una-marca/), y el trámite completo en [cómo registrar una marca en Argentina paso a paso](/blog/como-registrar-una-marca-en-argentina-paso-a-paso/).
 
-El **®** es otra cosa: solo corresponde una vez que el INPI concedió el registro. Usarlo antes es incorrecto.
+## Antes de registrar tu marca
 
-Cuál te toca según tu etapa, qué pasa si ponés un ® que no te corresponde y cómo se escriben los dos: [símbolo de marca registrada, qué significan ® y ™](/blog/simbolo-marca-registrada-r-tm/).
-
----
-
-Si querés proteger tu marca y no sabés por dónde empezar, [contactanos por WhatsApp](https://api.whatsapp.com/send/?phone=5491148999564&text=Hola%21+Quisiera+m%C3%A1s+informaci%C3%B3n+acerca+del+tr%C3%A1mite+de+registro+de+marca&type=phone_number&app_absent=0). Te respondemos con un diagnóstico gratuito: si tu marca está disponible, en qué clases conviene registrarla, y cuál es el mejor camino para tu situación.
+El primer paso es saber si el nombre está libre en tu rubro. Podés consultarlo gratis en nuestro [buscador de marcas del INPI](/verificar-marca/), y si está disponible, [registrar tu marca online](/registrar/) en unos minutos. Nosotros nos ocupamos del registro de marcas: presentamos la solicitud ante el INPI y la seguimos hasta que se concede.

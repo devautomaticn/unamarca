@@ -94,7 +94,7 @@ Depende de un solo dato: si tu marca está concedida o no.
 
 Si no estás seguro de en cuál de los dos estás, o querés confirmar que el nombre que usás no lo tiene registrado otra persona, podés [consultar marcas registradas gratis](/verificar-marca/) por nombre y clase.
 
-Y si llegaste acá buscando "patentar" tu marca, esa palabra esconde otra confusión que vale la pena despejar: en Argentina las marcas no se patentan, se registran, y son trámites distintos. Está explicado en [cómo patentar una marca en Argentina](/blog/como-patentar-una-marca-en-argentina/).
+Y si llegaste acá buscando "patentar" tu marca, esa palabra esconde otra confusión que vale la pena despejar: en Argentina las marcas no se patentan, se registran, y son trámites distintos. Está explicado en [marcas y patentes: qué protege cada una](/blog/como-patentar-una-marca-en-argentina/).
 
 ---
 
