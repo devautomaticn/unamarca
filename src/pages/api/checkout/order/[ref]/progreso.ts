@@ -18,6 +18,7 @@ import { runtime } from '@/lib/server/runtime';
 export const prerender = false;
 
 import { type CheckoutEnv, ensureProgresoColumn, ensureSchema, json } from '@/lib/server/checkout';
+import { MAX_TITULARES } from '@/lib/checkout/constants';
 
 /** Tope del cuerpo. El progreso son campos de texto: sin firma (que es una data
  *  URL grande) y sin PDF, no hay forma de que se acerque a esto por las buenas. */
@@ -46,8 +47,14 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
 
   // Solo se guarda la forma que conocemos: nada de aceptar un blob arbitrario
   // que después haya que interpretar del otro lado.
+  // Los titulares van también: sin ellos, el que retomaba desde otro
+  // dispositivo recuperaba la marca pero no a los dueños (con cinco titulares,
+  // cinco sets de datos para volver a tipear).
   const progreso = {
     values: body?.values && typeof body.values === 'object' ? body.values : {},
+    titulares: Array.isArray(body?.titulares)
+      ? body.titulares.filter((t: unknown) => t && typeof t === 'object').slice(0, MAX_TITULARES)
+      : [],
     marcas: Array.isArray(body?.marcas) ? body.marcas : [],
     at: new Date().toISOString(),
   };

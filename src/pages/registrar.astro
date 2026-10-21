@@ -1447,6 +1447,10 @@ const faqSchema = {
       titulares: titulares.map(t => ({ ...t })),
       marcas: marcas.map(marcaParaDraft),
       garantia,
+      // El pedido creado. Es lo que permite volver a un pedido ya pagado
+      // entrando por cualquier link, no sólo por el back_url de Mercado Pago
+      // (ver pedidoPorRetomar()).
+      orderRef,
       at: new Date().toISOString(),
     };
   }
@@ -4492,9 +4496,42 @@ const faqSchema = {
   // ── Bootstrap: volver de Mercado Pago (?order=REF) o draft local ─────
   const urlParams = new URLSearchParams(window.location.search);
   const urlOrderRef = urlParams.get('order');
+
+  /** Un pedido de este navegador que ya se pagó (o espera acreditación) y al
+   *  que le faltan los datos. Sin esto, el único camino de vuelta era el
+   *  back_url exacto de Mercado Pago: si esa pestaña se cerraba y el cliente
+   *  entraba por otro link —el de WhatsApp, que además trae ?marca= y
+   *  precarga una compra nueva— veía el formulario vacío con el pago hecho. */
+  async function pedidoPorRetomar(): Promise<string | null> {
+    const ref = leerDraft()?.orderRef;
+    if (typeof ref !== 'string' || !ref) return null;
+    try {
+      const res = await fetch(`/api/checkout/order/${encodeURIComponent(ref)}`);
+      if (!res.ok) return null;
+      const o = await res.json();
+      if (o.completed) return null;
+      return ['paid', 'payment_pending', 'pending_transfer'].includes(o.status) ? ref : null;
+    } catch {
+      return null;
+    }
+  }
+
   if (urlOrderRef) {
     resumeOrder(urlOrderRef).then(ok => { if (!ok) restoreDraft(); });
   } else {
+    pedidoPorRetomar().then(ref => {
+      if (ref) {
+        // La URL queda como la del retorno de MP: un recargo vuelve al pedido.
+        history.replaceState(null, '', `${location.pathname}?order=${encodeURIComponent(ref)}`);
+        track('ck_pedido_retomado', {}, false);
+        resumeOrder(ref).then(ok => { if (!ok) arrancarSinPedido(); });
+      } else {
+        arrancarSinPedido();
+      }
+    });
+  }
+
+  function arrancarSinPedido() {
     restoreDraft();
     // Prefill desde /verificar-marca, campañas y otros proyectos. Los tres
     // parámetros repetibles (marca, clase, tipo) se aparean POR POSICIÓN:
