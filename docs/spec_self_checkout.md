@@ -616,3 +616,23 @@ the user loses the alias and the payment never arrives.
 
 New entry `registrar_comprobante` (prefix match, carries the order ref) —
 `CATALOG_VERSION` bumped to `1.1.0`.
+
+## 13. Estado del pedido para el agente de WhatsApp (2026-10-28)
+
+`GET /api/checkout/estado?tel=<número>` o `?ref=UM-…`, con
+`Authorization: Bearer <GUIA_API_KEY>` (la misma clave del agente que usa la
+guía). Lo consume Sofía (vigilant, tool `consultar_pedido`, #269) para contestar
+«ya pagué pero se me cerró» o «¿les llegó?» sin que tenga que mirar el panel una
+persona.
+
+- **Por teléfono, y el teléfono lo pone el gateway**: es el número de la charla
+  de WhatsApp, que autentica WhatsApp. No hay búsqueda por email a propósito.
+- Matchea por los últimos 10 dígitos (`claveTelefono`), así cruzan el
+  `+549…` que prellena el link de Sofía y el `11 5555 5555` que tipea el
+  cliente. Mira los pedidos de los últimos 60 días, hasta 5.
+- **Sin datos personales**: devuelve ref, fecha, método, `pago`, si el formulario
+  está completo, marcas y clases, total y `url_retomar`
+  (`/registrar?order=<ref>`). Los titulares no salen de acá.
+- `pago`: `aprobado` · `sin_pagar` · `mercadopago_procesando` · `rechazado` ·
+  `devuelto` · `transferencia_a_confirmar`. La transferencia no se confirma
+  nunca desde acá: la conciliación es manual (§12) y no vuelve a `orders`.
