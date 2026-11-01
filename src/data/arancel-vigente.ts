@@ -8,13 +8,13 @@
 // termina en el bundle del checkout: acá solo pueden estar estos dos valores.
 //
 // Fuente: https://portaltramites.inpi.gob.ar/InfoPortal/Aranceles
-// Actualizado: 2026-10-14T16:00:12.271Z
+// Actualizado: 2026-11-01T17:16:08.596Z
 
 /** Solicitud de registro de marca nueva, por clase (100 UMAPI) */
-export const ARANCEL_MARCA_NUEVA = 41259;
+export const ARANCEL_MARCA_NUEVA = 42043;
 
 /** Mes del valor UMAPI con el que se calculó ese arancel */
-export const ARANCEL_VIGENCIA = 'octubre 2026';
+export const ARANCEL_VIGENCIA = 'noviembre 2026';
 
 /** Valor de 1 UMAPI, en pesos */
-export const UMAPI = 412.59;
+export const UMAPI = 420.43;
