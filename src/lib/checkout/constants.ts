@@ -18,7 +18,7 @@ export const PRICING = {
    *
    *      honorarios = 119.569 − arancel del INPI
    *
-   *  A octubre 2026: 119.569 − 41.259 = 78.310.
+   *  A noviembre 2026: 119.569 − 42.043 = 77.526.
    *
    *  Como el arancel sube TODOS LOS MESES con la UMAPI, sostener el total
    *  significa absorber el aumento acá. Esto NO se recalcula solo: el workflow
@@ -26,7 +26,7 @@ export const PRICING = {
    *  que promete el anuncio hasta que alguien baje esta línea a mano. Cada vez
    *  que entre un commit de aranceles hay que rehacer la resta, o cambiar los
    *  anuncios para que no prometan un total exacto. */
-  honorarios: 78_310,
+  honorarios: 77_526,
   /** Upsell: Garantía de Devolución, POR CLASE (si el INPI deniega una clase,
    *  se devuelven los honorarios de esa clase) */
   garantia: 20_000,
