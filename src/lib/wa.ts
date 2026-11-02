@@ -34,7 +34,7 @@ import {
   WA_CANALES, WA_CANAL_EMITIR, WA_SALUDO_BASE, varianteCanal, type WaCanal,
 } from './waCanal';
 
-export const CATALOG_VERSION = '1.11.1';
+export const CATALOG_VERSION = '1.12.0';
 
 /** Agente IA. Recibe todos los CTAs de conversión. */
 export const WA_AGENTE = '5491148999564';
@@ -208,6 +208,18 @@ export const WA_MESSAGES = {
     note:
       'Se emite sólo cuando el verificador encuentra un conflicto fuerte. Trae la ' +
       'marca buscada y las clases en el texto: es el mensaje más rico del catálogo.',
+  },
+  verificar_disponible: {
+    number: WA_AGENTE,
+    section: 'Verificador',
+    risk: 'nulo',
+    match: 'prefix',
+    prefix: 'Hola! Verifiqué la marca «',
+    template: 'Hola! Verifiqué la marca «{marca}» en {clases} y figura disponible. Quiero registrarla.',
+    note:
+      'Se emite cuando el verificador NO encuentra un conflicto fuerte (el caso ' +
+      'contrario de verificar_conflicto). Arranca distinto a propósito: con el ' +
+      'mismo prefijo, el parser no podría separarlos. Desde 1.12.0.',
   },
   verificar_float: {
     number: WA_AGENTE,
@@ -469,7 +481,8 @@ type WaTemplateContext =
   | 'registrar_multimarca'
   | 'registrar_multititular'
   | 'registrar_comprobante'
-  | 'verificar_conflicto';
+  | 'verificar_conflicto'
+  | 'verificar_disponible';
 
 /** Link de WhatsApp para un contexto de mensaje estático. */
 export function waHref(context: Exclude<WaContext, WaTemplateContext>): string {
@@ -535,6 +548,18 @@ export const VERIFICAR_CONFLICTO = {
       WA_MESSAGES.verificar_conflicto.number,
       `Hola! Busqué la marca «${marca}» en ${clases} y aparecieron marcas similares ` +
         `(ej. «${otraMarca}»). Quiero asesorarme para registrarla.`
+    );
+  },
+};
+
+/** Lo mismo para el resultado "disponible" del verificador. */
+export const VERIFICAR_DISPONIBLE = {
+  build(marca: string, clases: string): string {
+    const e = WA_MESSAGES.verificar_disponible;
+    return href(
+      e.number,
+      // Con función: un `$&` en lo que tipeó el usuario no es un patrón.
+      e.template.replace('{marca}', () => marca).replace('{clases}', () => clases),
     );
   },
 };

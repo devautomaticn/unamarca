@@ -1352,6 +1352,46 @@ a:hover { text-decoration: underline; }
 
 .post-cta-wa:hover { color: #fff; }
 
+/* Botón de WhatsApp (CTAs del blog). Verde oscuro: el #22C55E de marca no
+   llega a contraste AA con texto blanco. */
+.btn-wa {
+  background: #15803D;
+  color: #fff;
+  border-color: #15803D;
+}
+.btn-wa:hover {
+  background: #166534;
+  border-color: #166534;
+  color: #fff;
+  text-decoration: none;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(21, 128, 61, 0.35);
+}
+
+/* CTA a mitad de post (lo inserta src/lib/remarkCtaBlog.ts). */
+.post-cta-mid {
+  background: var(--c-green-light);
+  border: 1.5px solid #15803D;
+  border-radius: 16px;
+  padding: 1.5rem 1.75rem;
+  margin: 2rem 0;
+}
+.post-cta-mid-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--c-navy);
+  margin: 0 0 0.35rem !important;
+}
+.post-cta-mid-sub {
+  font-size: 0.9375rem;
+  color: var(--c-text-muted);
+  margin: 0 0 1rem !important;
+}
+.prose .post-cta-mid a.btn-wa { color: #fff; text-decoration: none; }
+@media (max-width: 540px) {
+  .post-cta-mid .btn { width: 100%; justify-content: center; }
+}
+
 .post-footer {
   margin-top: var(--sp-md);
   padding-top: var(--sp-md);

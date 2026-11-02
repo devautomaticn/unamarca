@@ -395,7 +395,7 @@ const structuredData = [
 </style>
 
 <script>
-  import { VERIFICAR_CONFLICTO } from '../lib/wa';
+  import { VERIFICAR_CONFLICTO, VERIFICAR_DISPONIBLE } from '../lib/wa';
 
   const ACTA_BASE = 'https://vigilante.com.ar/inpi/acta/';
 
@@ -550,6 +550,9 @@ const structuredData = [
       const sub = displayRows.length
         ? 'Encontramos algunos parecidos, pero ninguno lo suficientemente fuerte como para bloquear tu registro.'
         : 'No encontramos antecedentes que bloqueen tu marca. Conviene registrarla cuanto antes — en Argentina la prioridad es de quien registra primero.';
+      // WhatsApp primero: con tráfico orgánico el checkout casi no cierra
+      // (1 pedido pagado de Google entre 29/9 y 30/10) y la charla con Sofía sí.
+      const waDisponibleHref = VERIFICAR_DISPONIBLE.build(marca, phrase);
       verdict = `
         <div class="vm-verdict vm-verdict--ok">
           <div class="vm-verdict-icon" aria-hidden="true">
@@ -557,7 +560,10 @@ const structuredData = [
           </div>
           <h2>Tu marca parece estar disponible</h2>
           <p>${sub}</p>
-          <a class="btn btn-primary" href="${regUrl}" id="vm-cta">Registrarla ahora online</a>
+          <div class="vm-cta-row">
+            <a class="btn btn-primary" href="${waDisponibleHref}" target="_blank" rel="noopener noreferrer" id="vm-cta">Registrarla por WhatsApp</a>
+            <a class="btn vm-btn-ghost" href="${regUrl}" id="vm-cta-reg">Hacerlo online</a>
+          </div>
         </div>`;
     }
 
@@ -616,14 +622,17 @@ const structuredData = [
 
     const cta = document.getElementById('vm-cta');
     cta?.addEventListener('click', () => {
-      track(conflict ? 'whatsapp_click' : 'registrar_click', {
-        source: conflict ? 'verificar_conflicto' : 'verificar-marca',
-        cta_type: conflict ? 'contactar' : 'solicitar',
+      track('whatsapp_click', {
+        source: conflict ? 'verificar_conflicto' : 'verificar_disponible',
+        cta_type: conflict ? 'contactar' : 'registrar',
       });
       track('generate_lead', { source: 'verificar-marca' });
     });
     document.getElementById('vm-cta-reg')?.addEventListener('click', () => {
-      track('registrar_click', { source: 'verificar-marca', cta_type: 'registrar_igual' });
+      track('registrar_click', {
+        source: 'verificar-marca',
+        cta_type: conflict ? 'registrar_igual' : 'solicitar',
+      });
       track('generate_lead', { source: 'verificar-marca' });
     });
 

@@ -121,23 +121,29 @@ const schemas = faqSchema ? [structuredData, faqSchema] : structuredData;
         </section>
       )}
 
+      {/* WhatsApp primero: medido 2026-11-02, este CTA con WhatsApp como link
+          chico no generó ninguna charla en tres meses, y el checkout casi no
+          cierra con tráfico orgánico. Ver src/lib/remarkCtaBlog.ts. */}
       <aside class="post-cta" aria-label="Registrá tu marca">
-        <h2>Registrá tu marca 100% online</h2>
+        <h2>¿Querés registrar tu marca?</h2>
         <p>
-          Precio fijo y sin vueltas: completás los datos, firmás la carta poder
-          digital y presentamos tu solicitud ante el INPI dentro de las 48 horas hábiles.
+          Escribinos por WhatsApp y te decimos gratis si el nombre está disponible
+          y cuánto te sale. Precio fijo, y presentamos tu solicitud ante el INPI
+          dentro de las 48 horas hábiles.
         </p>
         <div class="post-cta-actions">
-          <a href="/registrar/" class="btn btn-white" onclick="gtag('event', 'registrar_click', {'source': 'blog'})">
-            Empezar mi registro
-          </a>
           <a
             href={waHrefBlogPost(post.data.title)}
-            class="post-cta-wa"
+            class="btn btn-wa"
             target="_blank"
             rel="noopener noreferrer"
-            onclick="gtag('event', 'whatsapp_click', {'source': 'blog_post'})"
-          >o consultanos por WhatsApp</a>
+            onclick="typeof gtag==='function'&&gtag('event','whatsapp_click',{'source':'blog_post','cta_position':'end'})"
+          >Consultar por WhatsApp</a>
+          <a
+            href="/registrar/"
+            class="post-cta-wa"
+            onclick="typeof gtag==='function'&&gtag('event','registrar_click',{'source':'blog'})"
+          >o hacé el registro online</a>
         </div>
       </aside>
 

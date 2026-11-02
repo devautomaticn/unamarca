@@ -2,6 +2,7 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import cloudflare from '@astrojs/cloudflare';
 import { remarkPrecios } from './src/lib/remarkPrecios';
+import { remarkCtaBlog } from './src/lib/remarkCtaBlog';
 
 export default defineConfig({
   site: 'https://unamarca.com.ar',
@@ -9,7 +10,9 @@ export default defineConfig({
   // resuelve contra PRICING al buildear, para que un aumento no deje un
   // artículo cotizando el precio viejo. El frontmatter se resuelve aparte, en
   // `src/content/config.ts`. Ver `src/lib/precios.ts`.
-  markdown: { remarkPlugins: [remarkPrecios] },
+  // remarkCtaBlog mete el bloque de WhatsApp a mitad de cada post (ver el
+  // porqué en el archivo).
+  markdown: { remarkPlugins: [remarkPrecios, remarkCtaBlog] },
   integrations: [
     sitemap({
       // /guia/ es privada: se vende por WhatsApp, no se linkea desde ningún
