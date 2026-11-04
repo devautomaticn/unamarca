@@ -25,11 +25,13 @@ export default defineConfig({
       // estaba en el sitemap sin un solo enlace interno, con 352 palabras y un
       // H1 "Registro de Marca" compitiendo por el término de la home. Google la
       // tenía en "Descubierta: actualmente sin indexar" y nunca la rastreó.
+      // /formulario-terminos es el mismo caso: intake de términos y privacidad.
       filter: (page) =>
         !page.includes('/whatsapp/') &&
         !page.includes('/wa-catalog.json') &&
         !page.includes('/carta-poder') &&
         !page.includes('/formularioregistro') &&
+        !page.includes('/formulario-terminos') &&
         !page.includes('/firmar/') &&
         !page.includes('/guia/'),
     }),

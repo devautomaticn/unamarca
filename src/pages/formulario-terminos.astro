@@ -1,0 +1,333 @@
+---
+// Relevamiento para redactar términos y condiciones + política de privacidad
+// de la app o web de un cliente. Intake manual: el link se manda por WhatsApp,
+// el pago se gestiona por fuera. `noindex` y fuera del sitemap, igual que
+// /formularioregistro. Lo recibe /api/formulario-terminos (D1 + email).
+//
+// Las preguntas son datos: cambiar una es tocar SECCIONES. `si` muestra la
+// pregunta (o la sección) sólo cuando otra respuesta incluye alguno de esos
+// valores; una pregunta oculta no se valida ni se envía.
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const SITE_URL = 'https://unamarca.com.ar';
+
+type Tipo = 'text' | 'email' | 'tel' | 'textarea' | 'radio' | 'check';
+interface Si { campo: string; valores: string[] }
+interface Pregunta {
+  id: string; label: string; tipo: Tipo; req?: boolean;
+  opciones?: string[]; ph?: string; ayuda?: string; si?: Si;
+}
+interface Seccion { titulo: string; intro?: string; si?: Si; preguntas: Pregunta[] }
+
+const PAGO: Si = { campo: 'modelo', valores: ['Paga', 'Plan gratis y plan pago'] };
+
+const SECCIONES: Seccion[] = [
+  {
+    titulo: 'Quién es el responsable',
+    intro: 'La persona o empresa que figura como dueña de la app frente a los usuarios.',
+    preguntas: [
+      { id: 'tipo_persona', label: '¿Persona o empresa?', tipo: 'radio', req: true, opciones: ['Persona', 'Empresa'] },
+      { id: 'nombre', label: 'Nombre completo o razón social', tipo: 'text', req: true },
+      { id: 'cuit', label: 'CUIT', tipo: 'text', req: true, ph: '20-12345678-9' },
+      { id: 'domicilio', label: 'Domicilio legal', tipo: 'text', req: true, ph: 'Calle, número, localidad, provincia' },
+      { id: 'email', label: 'Email de contacto para los usuarios', tipo: 'email', req: true,
+        ayuda: 'El que va a figurar en los términos para consultas y pedidos sobre datos personales.' },
+      { id: 'whatsapp', label: 'Tu WhatsApp', tipo: 'tel', req: true },
+    ],
+  },
+  {
+    titulo: 'La app o web',
+    preguntas: [
+      { id: 'app', label: 'Nombre de la app o web', tipo: 'text', req: true },
+      { id: 'dominio', label: 'Dominio', tipo: 'text', req: true, ph: 'miapp.com.ar' },
+      { id: 'plataforma', label: '¿Qué es?', tipo: 'radio', req: true, opciones: ['Web', 'App móvil', 'Las dos'] },
+      { id: 'descripcion', label: '¿Qué hace?', tipo: 'textarea', req: true,
+        ph: 'En 2 o 3 líneas, como se lo contarías a un amigo.' },
+      { id: 'paises', label: '¿En qué países se ofrece?', tipo: 'check', req: true,
+        opciones: ['Argentina', 'Resto de Latinoamérica', 'Estados Unidos', 'Europa', 'Todo el mundo'] },
+      { id: 'edad', label: 'Edad mínima para usarla', tipo: 'radio', req: true, opciones: ['13 años', '16 años', '18 años', 'No sé'] },
+    ],
+  },
+  {
+    titulo: 'Cuentas y cobro',
+    preguntas: [
+      { id: 'cuenta', label: '¿Hay que crear una cuenta para usarla?', tipo: 'radio', req: true, opciones: ['Sí', 'No'] },
+      { id: 'cuenta_con', label: '¿Cómo se crea la cuenta?', tipo: 'check', req: true,
+        opciones: ['Email y contraseña', 'Google', 'Apple', 'Otro'], si: { campo: 'cuenta', valores: ['Sí'] } },
+      { id: 'modelo', label: '¿Es gratis o paga?', tipo: 'radio', req: true, opciones: ['Gratis', 'Paga', 'Plan gratis y plan pago'] },
+      { id: 'planes', label: 'Planes y precios', tipo: 'textarea', req: true, si: PAGO,
+        ph: 'Ej.: gratis 3 videos por mes; plan Pro USD 19 por mes.' },
+      { id: 'renovacion', label: '¿La suscripción se renueva sola?', tipo: 'radio', req: true,
+        opciones: ['Sí', 'No', 'No es suscripción', 'No sé'], si: PAGO },
+      { id: 'prueba', label: '¿Hay prueba gratis?', tipo: 'radio', req: true, opciones: ['Sí', 'No'], si: PAGO },
+      { id: 'medios', label: 'Medios de pago', tipo: 'check', req: true,
+        opciones: ['Mercado Pago', 'Stripe', 'Transferencia', 'Tienda de Apple o Google', 'Otro'], si: PAGO },
+      { id: 'reembolso', label: '¿Devolvés la plata?', tipo: 'radio', req: true,
+        opciones: ['Nunca', 'Dentro de un plazo', 'Caso por caso', 'No lo definí'], si: PAGO },
+    ],
+  },
+  {
+    titulo: 'Datos personales',
+    preguntas: [
+      { id: 'datos', label: '¿Qué datos se les piden o se guardan de los usuarios?', tipo: 'check', req: true,
+        opciones: ['Nombre', 'Email', 'Teléfono', 'DNI', 'Ubicación', 'Fotos', 'Voz o audio', 'Datos de pago', 'Otros'] },
+      { id: 'datos_otros', label: '¿Qué otros datos?', tipo: 'text', req: true, si: { campo: 'datos', valores: ['Otros'] } },
+      { id: 'uso', label: '¿Para qué se usan?', tipo: 'textarea', req: true,
+        ph: 'Ej.: el email para el login y los avisos; las fotos para generar el video.' },
+      { id: 'servicios', label: '¿Qué servicios externos reciben datos?', tipo: 'check', req: true,
+        opciones: ['Hosting o servidores', 'Inteligencia artificial', 'Pagos', 'Analítica', 'Envío de emails', 'Ninguno', 'Otro'] },
+      { id: 'servicios_cuales', label: '¿Cuáles? (nombres, si los sabés)', tipo: 'text',
+        ph: 'Ej.: Vercel, OpenAI, Mercado Pago, Google Analytics' },
+      { id: 'pixeles', label: '¿Usás Google Analytics o el píxel de Meta?', tipo: 'radio', req: true, opciones: ['Sí', 'No', 'No sé'] },
+      { id: 'retencion', label: '¿Cuánto tiempo se guardan los datos?', tipo: 'text', req: true,
+        ph: 'Ej.: mientras la cuenta esté activa. Si no lo pensaste, poné «no lo pensé».' },
+    ],
+  },
+  {
+    titulo: 'Fotos y menores',
+    si: { campo: 'datos', valores: ['Fotos', 'Voz o audio'] },
+    preguntas: [
+      { id: 'quienes', label: '¿Quiénes aparecen en las fotos o audios?', tipo: 'check', req: true,
+        opciones: ['Sólo el usuario', 'Otros adultos', 'Menores de edad'] },
+      { id: 'original', label: '¿Qué pasa con la foto o el audio original después de usarlo?', tipo: 'radio', req: true,
+        opciones: ['Se borra enseguida', 'Se guarda un tiempo', 'Se guarda siempre', 'No sé'] },
+      { id: 'original_plazo', label: '¿Cuánto tiempo?', tipo: 'text', req: true,
+        si: { campo: 'original', valores: ['Se guarda un tiempo'] } },
+      { id: 'resultado', label: 'Lo que se genera, ¿quién lo puede ver?', tipo: 'radio', req: true,
+        opciones: ['Sólo el usuario', 'Cualquiera con el link', 'Es público'] },
+    ],
+  },
+  {
+    titulo: 'Inteligencia artificial y contenido',
+    si: { campo: 'servicios', valores: ['Inteligencia artificial'] },
+    preguntas: [
+      { id: 'ia_genera', label: '¿Qué genera la IA?', tipo: 'textarea', req: true, ph: 'Ej.: videos a partir de una foto y un guion.' },
+      { id: 'ia_dueno', label: '¿De quién es lo que se genera?', tipo: 'radio', req: true,
+        opciones: ['Del usuario', 'De la empresa', 'No sé'] },
+      { id: 'ia_prohibidos', label: '¿Qué usos querés prohibir?', tipo: 'textarea',
+        ph: 'Ej.: usar fotos de personas sin su permiso, contenido sexual u ofensivo.' },
+    ],
+  },
+  {
+    titulo: 'Para cerrar',
+    preguntas: [
+      { id: 'referencias', label: 'Links a términos de otras apps que te gusten', tipo: 'textarea' },
+      { id: 'texto_actual', label: '¿Ya tenés algún texto? Pegalo o pasá el link', tipo: 'textarea' },
+      { id: 'comentarios', label: 'Comentarios', tipo: 'textarea' },
+    ],
+  },
+];
+
+const siAttr = (si?: Si) => (si ? `${si.campo}:${si.valores.join('|')}` : undefined);
+---
+
+<BaseLayout
+  title="Términos y privacidad de tu app | UnaMarca"
+  description="Completá los datos de tu app o web para que redactemos sus términos y condiciones y su política de privacidad."
+  canonicalURL={`${SITE_URL}/formulario-terminos/`}
+  noindex={true}
+>
+<div class="ft-page">
+  <div class="ft-wrap">
+    <header class="ft-header">
+      <h1>Términos y privacidad de tu app</h1>
+      <p>Con estas respuestas redactamos los términos y condiciones y la política de privacidad. Si una pregunta no la sabés, ponelo así: también nos sirve.</p>
+    </header>
+
+    <div id="ft-ok" class="ft-toast ft-toast--ok" hidden>
+      <strong>¡Listo, recibimos tus respuestas!</strong>
+      <span>Te escribimos por WhatsApp si necesitamos algo más.</span>
+    </div>
+
+    <form id="ft-form" novalidate>
+      {SECCIONES.map(s => (
+        <fieldset class="ft-card" data-seccion={s.titulo} data-si={siAttr(s.si)}>
+          <legend>{s.titulo}</legend>
+          {s.intro && <p class="ft-intro">{s.intro}</p>}
+          {s.preguntas.map(p => (
+            <div class="ft-q" data-campo={p.id} data-label={p.label} data-tipo={p.tipo}
+                 data-req={p.req ? '1' : undefined} data-si={siAttr(p.si)}>
+              <label class="ft-label" for={p.tipo === 'radio' || p.tipo === 'check' ? undefined : `f-${p.id}`}>
+                {p.label}{p.req ? <em> *</em> : <span class="ft-opt"> (opcional)</span>}
+              </label>
+              {p.ayuda && <p class="ft-ayuda">{p.ayuda}</p>}
+              {p.tipo === 'textarea' && <textarea id={`f-${p.id}`} name={p.id} rows="3" placeholder={p.ph}></textarea>}
+              {(p.tipo === 'text' || p.tipo === 'email' || p.tipo === 'tel') &&
+                <input id={`f-${p.id}`} name={p.id} type={p.tipo} placeholder={p.ph} autocomplete="off" />}
+              {(p.tipo === 'radio' || p.tipo === 'check') && (
+                <div class="ft-opts">
+                  {p.opciones!.map(o => (
+                    <label class="ft-opt-item">
+                      <input type={p.tipo === 'radio' ? 'radio' : 'checkbox'} name={p.id} value={o} />
+                      <span>{o}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+              <p class="ft-err" hidden>Completá esta respuesta.</p>
+            </div>
+          ))}
+        </fieldset>
+      ))}
+
+      <!-- Honeypot: invisible para personas, los bots lo completan. -->
+      <div class="ft-hp" aria-hidden="true">
+        <label>Website <input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+      </div>
+
+      <p id="ft-error" class="ft-toast ft-toast--err" hidden>No se pudo enviar. Probá de nuevo o escribinos por WhatsApp.</p>
+      <button type="submit" id="ft-submit">Enviar respuestas</button>
+    </form>
+  </div>
+</div>
+</BaseLayout>
+
+<script>
+  const form = document.getElementById('ft-form') as HTMLFormElement;
+
+  /** Valores marcados o escritos de un campo, aunque esté oculto. */
+  function valores(campo: string): string[] {
+    const els = form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(`[name="${campo}"]`);
+    const out: string[] = [];
+    els.forEach(el => {
+      if (el instanceof HTMLInputElement && (el.type === 'radio' || el.type === 'checkbox')) {
+        if (el.checked) out.push(el.value);
+      } else if (el.value.trim()) out.push(el.value.trim());
+    });
+    return out;
+  }
+
+  function cumple(si: string | undefined): boolean {
+    if (!si) return true;
+    const [campo, lista] = si.split(':');
+    const v = valores(campo);
+    return lista.split('|').some(x => v.includes(x));
+  }
+
+  function visible(el: HTMLElement): boolean {
+    const sec = el.closest<HTMLElement>('[data-seccion]');
+    return cumple(el.dataset.si) && (!sec || cumple(sec.dataset.si));
+  }
+
+  function actualizar() {
+    form.querySelectorAll<HTMLElement>('[data-seccion]').forEach(s => { s.hidden = !cumple(s.dataset.si); });
+    form.querySelectorAll<HTMLElement>('.ft-q').forEach(q => { q.hidden = !visible(q); });
+  }
+
+  // "Ninguno" excluye al resto de los servicios, y al revés.
+  form.addEventListener('change', e => {
+    const t = e.target as HTMLInputElement;
+    if (t.name === 'servicios' && t.checked) {
+      form.querySelectorAll<HTMLInputElement>('[name="servicios"]').forEach(o => {
+        if (t.value === 'Ninguno' ? o !== t : o.value === 'Ninguno') o.checked = false;
+      });
+    }
+    actualizar();
+  });
+
+  function validar(): HTMLElement | null {
+    let primero: HTMLElement | null = null;
+    form.querySelectorAll<HTMLElement>('.ft-q').forEach(q => {
+      const err = q.querySelector<HTMLElement>('.ft-err')!;
+      let ok = q.hidden || !q.dataset.req || valores(q.dataset.campo!).length > 0;
+      if (ok && !q.hidden && q.dataset.tipo === 'email') {
+        const v = valores(q.dataset.campo!)[0];
+        if (v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) ok = false;
+      }
+      err.hidden = ok;
+      q.classList.toggle('ft-q--err', !ok);
+      if (!ok && !primero) primero = q;
+    });
+    return primero;
+  }
+
+  function armar() {
+    const secciones: { titulo: string; campos: { pregunta: string; respuesta: string }[] }[] = [];
+    form.querySelectorAll<HTMLElement>('[data-seccion]').forEach(s => {
+      if (s.hidden) return;
+      const campos: { pregunta: string; respuesta: string }[] = [];
+      s.querySelectorAll<HTMLElement>('.ft-q').forEach(q => {
+        if (q.hidden) return;
+        const r = valores(q.dataset.campo!).join(', ');
+        if (r) campos.push({ pregunta: q.dataset.label!, respuesta: r });
+      });
+      if (campos.length) secciones.push({ titulo: s.dataset.seccion!, campos });
+    });
+    const uno = (c: string) => valores(c)[0] ?? '';
+    return {
+      secciones,
+      contacto: { nombre: uno('nombre'), email: uno('email'), app: uno('app') },
+      website: uno('website'),
+    };
+  }
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    actualizar();
+    const malo = validar();
+    if (malo) { malo.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+
+    const btn = document.getElementById('ft-submit') as HTMLButtonElement;
+    const errBox = document.getElementById('ft-error')!;
+    btn.disabled = true; btn.textContent = 'Enviando…'; errBox.hidden = true;
+    try {
+      const res = await fetch('/api/formulario-terminos', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(armar()),
+      });
+      const j = await res.json();
+      if (!j.success) throw new Error(j.error);
+      form.hidden = true;
+      const ok = document.getElementById('ft-ok')!;
+      ok.hidden = false;
+      ok.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } catch {
+      errBox.hidden = false;
+      btn.disabled = false; btn.textContent = 'Enviar respuestas';
+    }
+  });
+
+  actualizar();
+</script>
+
+<style is:global>
+  .ft-page { background: #f4f6f9; min-height: 100vh; padding: 3rem 1rem 6rem; }
+  .ft-wrap { max-width: 700px; margin: 0 auto; }
+  .ft-header h1 { font-size: clamp(1.6rem, 4vw, 2.1rem); color: var(--c-navy); margin: 0 0 .6rem; letter-spacing: -.02em; }
+  .ft-header p { color: var(--c-text-muted); margin: 0 0 2rem; line-height: 1.6; }
+
+  .ft-card { background: #fff; border: 1px solid var(--c-border); border-radius: var(--r-lg); padding: 1.6rem 1.5rem 1.2rem; margin: 0 0 1.25rem; min-width: 0; }
+  .ft-card[hidden], .ft-q[hidden] { display: none; }
+  .ft-card legend { float: left; width: 100%; padding: 0; margin: 0 0 1rem; font-size: .8rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--c-blue); }
+  .ft-intro { clear: both; color: var(--c-text-muted); font-size: .9rem; margin: 0 0 1rem; }
+
+  .ft-q { clear: both; margin: 0 0 1.25rem; }
+  .ft-label { display: block; font-weight: 600; color: var(--c-text); font-size: .95rem; margin-bottom: .45rem; }
+  .ft-label em { color: #dc2626; font-style: normal; }
+  .ft-opt { color: var(--c-text-muted); font-weight: 400; font-size: .85rem; }
+  .ft-ayuda { color: var(--c-text-muted); font-size: .85rem; margin: -.2rem 0 .5rem; }
+
+  .ft-q input[type=text], .ft-q input[type=email], .ft-q input[type=tel], .ft-q textarea {
+    width: 100%; box-sizing: border-box; font: inherit; font-size: 16px; color: var(--c-text);
+    border: 1px solid var(--c-border); border-radius: var(--r-sm); padding: .65rem .8rem; background: #fff;
+  }
+  .ft-q textarea { resize: vertical; }
+  .ft-q input:focus, .ft-q textarea:focus { outline: none; border-color: var(--c-blue); box-shadow: 0 0 0 3px var(--c-blue-mid); }
+
+  .ft-opts { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .ft-opt-item { display: inline-flex; align-items: center; gap: .45rem; border: 1px solid var(--c-border); border-radius: 100px; padding: .45rem .9rem; cursor: pointer; font-size: .92rem; background: #fff; }
+  .ft-opt-item:has(input:checked) { border-color: var(--c-blue); background: var(--c-blue-light); color: var(--c-navy); }
+  .ft-opt-item input { margin: 0; accent-color: var(--c-blue); }
+
+  .ft-q--err input, .ft-q--err textarea, .ft-q--err .ft-opt-item { border-color: #fca5a5; }
+  .ft-err { color: #dc2626; font-size: .85rem; margin: .4rem 0 0; }
+
+  .ft-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+  .ft-toast { display: flex; flex-direction: column; gap: .25rem; border-radius: var(--r-md); padding: 1rem 1.2rem; margin: 0 0 1.25rem; }
+  .ft-toast[hidden] { display: none; }
+  .ft-toast--ok { background: var(--c-green-light); color: #166534; }
+  .ft-toast--err { background: #fee2e2; color: #991b1b; }
+
+  #ft-submit { width: 100%; border: 0; border-radius: var(--r-md); padding: 1rem; font: inherit; font-weight: 700; font-size: 1rem; color: #fff; background: var(--grad-brand); cursor: pointer; }
+  #ft-submit:disabled { opacity: .6; cursor: wait; }
+</style>
