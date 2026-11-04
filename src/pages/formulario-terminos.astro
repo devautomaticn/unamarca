@@ -19,17 +19,22 @@ interface Pregunta {
 }
 interface Seccion { titulo: string; intro?: string; si?: Si; preguntas: Pregunta[] }
 
-const PAGO: Si = { campo: 'modelo', valores: ['Paga', 'Plan gratis y plan pago'] };
+const PAGO: Si = { campo: 'modelo', valores: ['Paga', 'Plan gratis y plan pago', 'Mixto u otro'] };
+const DEFINIDO: Si = { campo: 'tipo_persona', valores: ['Persona', 'Empresa'] };
 
 const SECCIONES: Seccion[] = [
   {
     titulo: 'Quién es el responsable',
-    intro: 'La persona o empresa que figura como dueña de la app frente a los usuarios.',
+    intro: 'La persona o empresa que figura como dueña de la app frente a los usuarios. Si todavía no lo decidiste, no pasa nada: lo completamos después.',
     preguntas: [
-      { id: 'tipo_persona', label: '¿Persona o empresa?', tipo: 'radio', req: true, opciones: ['Persona', 'Empresa'] },
-      { id: 'nombre', label: 'Nombre completo o razón social', tipo: 'text', req: true },
-      { id: 'cuit', label: 'CUIT', tipo: 'text', req: true, ph: '20-12345678-9' },
-      { id: 'domicilio', label: 'Domicilio legal', tipo: 'text', req: true, ph: 'Calle, número, localidad, provincia' },
+      { id: 'tipo_persona', label: '¿Persona o empresa?', tipo: 'radio', req: true, opciones: ['Persona', 'Empresa', 'Todavía no lo sé'] },
+      { id: 'responsable_opciones', label: '¿Qué opciones estás evaluando?', tipo: 'textarea', req: true,
+        si: { campo: 'tipo_persona', valores: ['Todavía no lo sé'] },
+        ph: 'Ej.: a mi nombre, con una SRL que ya tengo o con una sociedad nueva.' },
+      { id: 'nombre', label: 'Nombre completo o razón social', tipo: 'text', req: true,
+        ayuda: 'Si todavía no lo sabés, poné tu nombre.' },
+      { id: 'cuit', label: 'CUIT', tipo: 'text', req: true, ph: '20-12345678-9', si: DEFINIDO },
+      { id: 'domicilio', label: 'Domicilio legal', tipo: 'text', req: true, ph: 'Calle, número, localidad, provincia', si: DEFINIDO },
       { id: 'email', label: 'Email de contacto para los usuarios', tipo: 'email', req: true,
         ayuda: 'El que va a figurar en los términos para consultas y pedidos sobre datos personales.' },
       { id: 'whatsapp', label: 'Tu WhatsApp', tipo: 'tel', req: true },
@@ -46,6 +51,12 @@ const SECCIONES: Seccion[] = [
       { id: 'paises', label: '¿En qué países se ofrece?', tipo: 'check', req: true,
         opciones: ['Argentina', 'Resto de Latinoamérica', 'Estados Unidos', 'Europa', 'Todo el mundo'] },
       { id: 'edad', label: 'Edad mínima para usarla', tipo: 'radio', req: true, opciones: ['13 años', '16 años', '18 años', 'No sé'] },
+      { id: 'sube', label: '¿Los usuarios suben fotos, audios o videos?', tipo: 'check', req: true,
+        opciones: ['Fotos', 'Audios o voz', 'Videos', 'No suben nada'],
+        ayuda: 'De ellos, de otras personas o de mascotas.' },
+      { id: 'usa_ia', label: '¿La app usa inteligencia artificial?', tipo: 'radio', req: true,
+        opciones: ['Sí', 'No', 'No sé'],
+        ayuda: 'Por ejemplo, para generar videos, imágenes, textos o voces.' },
     ],
   },
   {
@@ -54,28 +65,32 @@ const SECCIONES: Seccion[] = [
       { id: 'cuenta', label: '¿Hay que crear una cuenta para usarla?', tipo: 'radio', req: true, opciones: ['Sí', 'No'] },
       { id: 'cuenta_con', label: '¿Cómo se crea la cuenta?', tipo: 'check', req: true,
         opciones: ['Email y contraseña', 'Google', 'Apple', 'Otro'], si: { campo: 'cuenta', valores: ['Sí'] } },
-      { id: 'modelo', label: '¿Es gratis o paga?', tipo: 'radio', req: true, opciones: ['Gratis', 'Paga', 'Plan gratis y plan pago'] },
+      { id: 'modelo', label: '¿Es gratis o paga?', tipo: 'radio', req: true, opciones: ['Gratis', 'Paga', 'Plan gratis y plan pago', 'Mixto u otro'] },
+      { id: 'modelo_detalle', label: 'Contanos cómo lo pensás', tipo: 'textarea', req: true,
+        si: { campo: 'modelo', valores: ['Mixto u otro'] },
+        ph: 'Ej.: es paga, pero regalamos videos con códigos de descuento o a través de marcas que los pagan por el usuario.' },
       { id: 'planes', label: 'Planes y precios', tipo: 'textarea', req: true, si: PAGO,
         ph: 'Ej.: gratis 3 videos por mes; plan Pro USD 19 por mes.' },
       { id: 'renovacion', label: '¿La suscripción se renueva sola?', tipo: 'radio', req: true,
         opciones: ['Sí', 'No', 'No es suscripción', 'No sé'], si: PAGO },
-      { id: 'prueba', label: '¿Hay prueba gratis?', tipo: 'radio', req: true, opciones: ['Sí', 'No'], si: PAGO },
+      { id: 'prueba', label: '¿Hay prueba gratis?', tipo: 'radio', req: true, opciones: ['Sí', 'No', 'No sé'], si: PAGO },
       { id: 'medios', label: 'Medios de pago', tipo: 'check', req: true,
-        opciones: ['Mercado Pago', 'Stripe', 'Transferencia', 'Tienda de Apple o Google', 'Otro'], si: PAGO },
+        opciones: ['Mercado Pago', 'Stripe', 'Transferencia', 'Tienda de Apple o Google', 'Otro', 'No sé'], si: PAGO },
       { id: 'reembolso', label: '¿Devolvés la plata?', tipo: 'radio', req: true,
         opciones: ['Nunca', 'Dentro de un plazo', 'Caso por caso', 'No lo definí'], si: PAGO },
     ],
   },
   {
     titulo: 'Datos personales',
+    intro: 'Varias de estas preguntas las define quien desarrolla la app. Si no sabés, marcá «No sé» y lo vemos después con él.',
     preguntas: [
       { id: 'datos', label: '¿Qué datos se les piden o se guardan de los usuarios?', tipo: 'check', req: true,
-        opciones: ['Nombre', 'Email', 'Teléfono', 'DNI', 'Ubicación', 'Fotos', 'Voz o audio', 'Datos de pago', 'Otros'] },
+        opciones: ['Nombre', 'Email', 'Teléfono', 'DNI', 'Ubicación', 'Datos de pago', 'Otros', 'No sé'] },
       { id: 'datos_otros', label: '¿Qué otros datos?', tipo: 'text', req: true, si: { campo: 'datos', valores: ['Otros'] } },
       { id: 'uso', label: '¿Para qué se usan?', tipo: 'textarea', req: true,
-        ph: 'Ej.: el email para el login y los avisos; las fotos para generar el video.' },
+        ph: 'Ej.: el email para el login y los avisos; las fotos para generar el video. Si no sabés, poné «no sé».' },
       { id: 'servicios', label: '¿Qué servicios externos reciben datos?', tipo: 'check', req: true,
-        opciones: ['Hosting o servidores', 'Inteligencia artificial', 'Pagos', 'Analítica', 'Envío de emails', 'Ninguno', 'Otro'] },
+        opciones: ['Hosting o servidores', 'Inteligencia artificial', 'Pagos', 'Analítica', 'Envío de emails', 'Ninguno', 'Otro', 'No sé'] },
       { id: 'servicios_cuales', label: '¿Cuáles? (nombres, si los sabés)', tipo: 'text',
         ph: 'Ej.: Vercel, OpenAI, Mercado Pago, Google Analytics' },
       { id: 'pixeles', label: '¿Usás Google Analytics o el píxel de Meta?', tipo: 'radio', req: true, opciones: ['Sí', 'No', 'No sé'] },
@@ -85,7 +100,7 @@ const SECCIONES: Seccion[] = [
   },
   {
     titulo: 'Fotos y menores',
-    si: { campo: 'datos', valores: ['Fotos', 'Voz o audio'] },
+    si: { campo: 'sube', valores: ['Fotos', 'Audios o voz', 'Videos'] },
     preguntas: [
       { id: 'quienes', label: '¿Quiénes aparecen en las fotos o audios?', tipo: 'check', req: true,
         opciones: ['Sólo el usuario', 'Otros adultos', 'Menores de edad'] },
@@ -94,12 +109,18 @@ const SECCIONES: Seccion[] = [
       { id: 'original_plazo', label: '¿Cuánto tiempo?', tipo: 'text', req: true,
         si: { campo: 'original', valores: ['Se guarda un tiempo'] } },
       { id: 'resultado', label: 'Lo que se genera, ¿quién lo puede ver?', tipo: 'radio', req: true,
-        opciones: ['Sólo el usuario', 'Cualquiera con el link', 'Es público'] },
+        opciones: ['Sólo el usuario', 'Cualquiera con el link', 'Es público', 'No sé'] },
+      { id: 'publicidad', label: '¿Alguien más puede usar lo que se genera para publicidad?', tipo: 'check', req: true,
+        opciones: ['Nadie, es sólo del usuario', 'La app, si el usuario lo autoriza', 'La app, siempre',
+          'Una marca que le regala el servicio al usuario', 'No sé'],
+        ayuda: 'Por ejemplo, publicarlo en las redes de la app o de una marca que pagó el video.' },
+      { id: 'publicidad_detalle', label: 'Contanos cómo lo pensás', tipo: 'textarea',
+        ph: 'Ej.: si paga, elige si nos deja publicarlo; si se lo regala una marca, acepta que la marca lo use.' },
     ],
   },
   {
     titulo: 'Inteligencia artificial y contenido',
-    si: { campo: 'servicios', valores: ['Inteligencia artificial'] },
+    si: { campo: 'usa_ia', valores: ['Sí'] },
     preguntas: [
       { id: 'ia_genera', label: '¿Qué genera la IA?', tipo: 'textarea', req: true, ph: 'Ej.: videos a partir de una foto y un guion.' },
       { id: 'ia_dueno', label: '¿De quién es lo que se genera?', tipo: 'radio', req: true,
