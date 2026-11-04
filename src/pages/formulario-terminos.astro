@@ -51,6 +51,12 @@ const SECCIONES: Seccion[] = [
       { id: 'paises', label: '¿En qué países se ofrece?', tipo: 'check', req: true,
         opciones: ['Argentina', 'Resto de Latinoamérica', 'Estados Unidos', 'Europa', 'Todo el mundo'] },
       { id: 'edad', label: 'Edad mínima para usarla', tipo: 'radio', req: true, opciones: ['13 años', '16 años', '18 años', 'No sé'] },
+      { id: 'sube', label: '¿Los usuarios suben fotos, audios o videos?', tipo: 'check', req: true,
+        opciones: ['Fotos', 'Audios o voz', 'Videos', 'No suben nada'],
+        ayuda: 'De ellos, de otras personas o de mascotas.' },
+      { id: 'usa_ia', label: '¿La app usa inteligencia artificial?', tipo: 'radio', req: true,
+        opciones: ['Sí', 'No', 'No sé'],
+        ayuda: 'Por ejemplo, para generar videos, imágenes, textos o voces.' },
     ],
   },
   {
@@ -79,7 +85,7 @@ const SECCIONES: Seccion[] = [
     intro: 'Varias de estas preguntas las define quien desarrolla la app. Si no sabés, marcá «No sé» y lo vemos después con él.',
     preguntas: [
       { id: 'datos', label: '¿Qué datos se les piden o se guardan de los usuarios?', tipo: 'check', req: true,
-        opciones: ['Nombre', 'Email', 'Teléfono', 'DNI', 'Ubicación', 'Fotos', 'Voz o audio', 'Datos de pago', 'Otros', 'No sé'] },
+        opciones: ['Nombre', 'Email', 'Teléfono', 'DNI', 'Ubicación', 'Datos de pago', 'Otros', 'No sé'] },
       { id: 'datos_otros', label: '¿Qué otros datos?', tipo: 'text', req: true, si: { campo: 'datos', valores: ['Otros'] } },
       { id: 'uso', label: '¿Para qué se usan?', tipo: 'textarea', req: true,
         ph: 'Ej.: el email para el login y los avisos; las fotos para generar el video. Si no sabés, poné «no sé».' },
@@ -94,7 +100,7 @@ const SECCIONES: Seccion[] = [
   },
   {
     titulo: 'Fotos y menores',
-    si: { campo: 'datos', valores: ['Fotos', 'Voz o audio'] },
+    si: { campo: 'sube', valores: ['Fotos', 'Audios o voz', 'Videos'] },
     preguntas: [
       { id: 'quienes', label: '¿Quiénes aparecen en las fotos o audios?', tipo: 'check', req: true,
         opciones: ['Sólo el usuario', 'Otros adultos', 'Menores de edad'] },
@@ -114,7 +120,7 @@ const SECCIONES: Seccion[] = [
   },
   {
     titulo: 'Inteligencia artificial y contenido',
-    si: { campo: 'servicios', valores: ['Inteligencia artificial'] },
+    si: { campo: 'usa_ia', valores: ['Sí'] },
     preguntas: [
       { id: 'ia_genera', label: '¿Qué genera la IA?', tipo: 'textarea', req: true, ph: 'Ej.: videos a partir de una foto y un guion.' },
       { id: 'ia_dueno', label: '¿De quién es lo que se genera?', tipo: 'radio', req: true,
