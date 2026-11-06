@@ -1,0 +1,468 @@
+---
+// Servicio: acuerdo de confidencialidad (NDA) a medida. Landing SEO: apunta a
+// «contrato de confidencialidad» (260 búsquedas/mes en Argentina), «acuerdo de
+// confidencialidad» (210) y sus variantes con «modelo» y «NDA» (unas 500 en
+// total, DataForSEO, noviembre 2026). Lo que rankea hoy son PDFs y Word sueltos
+// y guías genéricas: ninguno explica la ley argentina y ofrece armarlo.
+//
+// El modelo vive en src/data/modelo-confidencialidad.ts y se muestra entero: es
+// lo que busca la gente. La venta es por WhatsApp (mensaje `confidencialidad`, a
+// la línea humana). El puente al negocio principal es «un NDA no protege el
+// nombre»: la marca se registra.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ModeloDocumento from '../components/ModeloDocumento.astro';
+import OtrosDocumentos from '../components/OtrosDocumentos.astro';
+import { PRICING, formatARS } from '../lib/checkout/constants';
+import { waHref } from '../lib/wa';
+import { MODELO_CONFIDENCIALIDAD } from '../data/modelo-confidencialidad';
+import '../styles/servicio-legal.css';
+
+const SITE_URL = 'https://unamarca.com.ar';
+const RUTA = '/acuerdo-de-confidencialidad/';
+const canonicalURL = `${SITE_URL}${RUTA}`;
+const precio = formatARS(PRICING.confidencialidad);
+const wa = waHref('confidencialidad');
+const clickWa = (lugar: string) =>
+  `gtag('event','whatsapp_click',{'source':'confidencialidad','lugar':'${lugar}'})`;
+
+const usos = [
+  {
+    titulo: 'Antes de mostrar tu proyecto',
+    texto:
+      'A un programador, una agencia o un diseñador que va a ver tu idea, tus pantallas o ' +
+      'tu código antes de que decidas contratarlo.',
+  },
+  {
+    titulo: 'Con socios e inversores',
+    texto:
+      'Cuando compartís números, planes o clientes para evaluar una sociedad, una inversión ' +
+      'o una venta del negocio.',
+  },
+  {
+    titulo: 'Con proveedores y fabricantes',
+    texto:
+      'Cuando un tercero va a conocer tu receta, tu diseño o tu proceso para producir algo ' +
+      'para vos.',
+  },
+  {
+    titulo: 'Con quienes trabajan para vos',
+    texto:
+      'Freelancers y colaboradores con acceso a tu base de clientes, tus accesos o tus ' +
+      'precios.',
+  },
+];
+
+const normas = [
+  {
+    norma: 'Ley 24.766 de Confidencialidad',
+    texto:
+      'Protege la información que es secreta, tiene valor comercial por serlo y fue objeto ' +
+      'de medidas razonables para mantenerla en secreto (art. 1). Hacer firmar un acuerdo ' +
+      'de confidencialidad es, justamente, una de esas medidas.',
+  },
+  {
+    norma: 'Código Civil y Comercial, art. 992',
+    texto:
+      'Durante una negociación, quien recibe información confidencial no puede revelarla ni ' +
+      'usarla en su propio interés. Sin un acuerdo escrito, probar qué era confidencial es ' +
+      'mucho más difícil.',
+  },
+  {
+    norma: 'Código Civil y Comercial, arts. 790 y siguientes',
+    texto:
+      'Permiten pactar una cláusula penal: un monto fijo a pagar si se incumple, sin tener ' +
+      'que probar cuánto daño causó la filtración.',
+  },
+  {
+    norma: 'Ley de Contrato de Trabajo, art. 85',
+    texto:
+      'Los empleados ya tienen un deber de reserva por ley. El acuerdo de confidencialidad ' +
+      'hace más falta con quienes no son empleados: freelancers, proveedores, socios.',
+  },
+];
+
+const clausulas = [
+  {
+    nombre: 'Qué es información confidencial',
+    texto:
+      'Una definición amplia, con ejemplos de tu caso. Lo que no entra en la definición no ' +
+      'queda protegido por el acuerdo.',
+  },
+  {
+    nombre: 'Excepciones',
+    texto:
+      'Lo que ya era público o ya conocía el otro. Sin estas excepciones, el acuerdo se ' +
+      'vuelve discutible y más difícil de hacer firmar.',
+  },
+  {
+    nombre: 'Para qué se puede usar',
+    texto: 'Sólo para el proyecto que se evalúa, y con quién se puede compartir.',
+  },
+  {
+    nombre: 'Plazo',
+    texto:
+      'Cuánto dura la obligación de reserva después de terminado el proyecto. Para un ' +
+      'secreto comercial, mientras siga siéndolo.',
+  },
+  {
+    nombre: 'Devolución',
+    texto: 'Qué pasa con los documentos y las copias cuando la relación termina.',
+  },
+  {
+    nombre: 'Cláusula penal',
+    texto: 'Cuánto paga quien filtra la información, para no depender de probar el daño.',
+  },
+];
+
+// Lo que el modelo deja entre corchetes y la versión personalizada resuelve.
+const decisiones = [
+  {
+    decision: 'Unilateral o mutuo',
+    texto:
+      'Si comparte información una sola parte o las dos. Un acuerdo unilateral cuando las dos ' +
+      'comparten deja expuesta a una de ellas.',
+  },
+  {
+    decision: 'Qué información proteger',
+    texto:
+      'La definición tiene que nombrar lo tuyo: tu código, tu receta, tu base de clientes, tus ' +
+      'números. Lo que no entra en la definición no queda protegido.',
+  },
+  {
+    decision: 'Para qué se puede usar',
+    texto:
+      'Describir bien el proyecto es lo que después permite probar que el otro usó tu ' +
+      'información para otra cosa.',
+  },
+  {
+    decision: 'Cuánto tiempo',
+    texto:
+      'No es lo mismo un plan comercial, que envejece en meses, que un algoritmo o una ' +
+      'receta, que pueden valer por años.',
+  },
+  {
+    decision: 'El monto de la cláusula penal',
+    texto:
+      'Si es bajo, no disuade. Si es desproporcionado, un juez lo puede reducir (art. 794 del ' +
+      'Código Civil y Comercial).',
+  },
+  {
+    decision: 'Que el otro lo firme',
+    texto:
+      'Un acuerdo demasiado duro hace que el programador, el proveedor o el inversor no lo ' +
+      'firmen. Hay que proteger lo tuyo sin espantar a la otra parte.',
+  },
+];
+
+const pasos = [
+  {
+    titulo: 'Nos escribís por WhatsApp',
+    texto: `Te contamos cómo trabajamos y abonás ${precio} por el acuerdo.`,
+  },
+  {
+    titulo: 'Nos pasás los datos',
+    texto:
+      'Te mandamos unas preguntas cortas: quiénes firman, qué van a compartir, para qué, ' +
+      'si es de un solo lado o de los dos, y por cuánto tiempo.',
+  },
+  {
+    titulo: 'Revisás el borrador',
+    texto: 'Con lo que falta definir marcado. Lo ajustamos con vos antes de cerrarlo.',
+  },
+  {
+    titulo: 'Recibís el acuerdo final',
+    texto: 'En Word y en PDF, listo para firmar en papel o con firma digital.',
+  },
+];
+
+const faqs = [
+  {
+    q: '¿Qué es un acuerdo de confidencialidad o NDA?',
+    a: 'Es un contrato por el que una parte se obliga a no revelar ni usar para otro fin la información que le comparte la otra. NDA es la sigla en inglés de «non-disclosure agreement». En Argentina también se lo llama contrato o convenio de confidencialidad.',
+  },
+  {
+    q: '¿Es válido un NDA en Argentina?',
+    a: 'Sí. Es un contrato como cualquier otro, y se apoya en la Ley 24.766 de Confidencialidad y en el Código Civil y Comercial. Para que sirva tiene que definir bien qué información protege, para qué se puede usar y por cuánto tiempo.',
+  },
+  {
+    q: '¿Cuál es la diferencia entre un NDA unilateral y uno mutuo?',
+    a: 'En el unilateral, una sola parte comparte información y la otra se obliga a cuidarla: es el caso de quien le muestra su proyecto a un programador. En el mutuo, las dos comparten y las dos se obligan: es lo habitual entre dos empresas que evalúan trabajar juntas. El modelo de esta página es unilateral.',
+  },
+  {
+    q: '¿Un acuerdo de confidencialidad protege mi idea?',
+    a: 'Protege la información que compartís, no la idea en sí. Si el otro desarrolla algo parecido por su cuenta, sin usar tu información, el acuerdo no lo impide. Tampoco protege el nombre de tu proyecto: eso se protege registrando la marca en el INPI.',
+  },
+  {
+    q: '¿Cuánto tiempo dura la confidencialidad?',
+    a: 'Lo que pacten las partes. Lo habitual es entre dos y cinco años después de terminada la relación. Para un secreto comercial, como una receta o un algoritmo, conviene que dure mientras siga siendo secreto.',
+  },
+  {
+    q: '¿Tiene que firmarse ante escribano?',
+    a: 'No. Firmado por las dos partes, en papel o con firma digital, ya es válido.',
+  },
+  {
+    q: '¿Cuánto cuesta que me redacten un acuerdo de confidencialidad?',
+    a: `Con UnaMarca, ${precio}, a medida de tu caso y a precio fijo, sea unilateral o mutuo.`,
+  },
+];
+
+const structuredData = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'Acuerdo de confidencialidad (NDA) a medida',
+    serviceType: 'Redacción de acuerdo de confidencialidad',
+    description:
+      'Acuerdo de confidencialidad (NDA) redactado a medida según la ley argentina.',
+    url: canonicalURL,
+    areaServed: { '@type': 'Country', name: 'Argentina' },
+    provider: { '@type': 'Organization', name: 'UnaMarca', url: SITE_URL },
+    offers: {
+      '@type': 'Offer',
+      price: PRICING.confidencialidad,
+      priceCurrency: 'ARS',
+      description: 'El acuerdo, a medida',
+    },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Inicio', item: SITE_URL },
+      { '@type': 'ListItem', position: 2, name: 'Acuerdo de confidencialidad', item: canonicalURL },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map(f => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="Acuerdo de confidencialidad (NDA): modelo y redacción a medida"
+  description={`Modelo de acuerdo de confidencialidad (NDA) según la ley argentina, con cada cláusula explicada. Te lo redactamos a medida por ${precio}.`}
+  canonicalURL={canonicalURL}
+  waContext="confidencialidad"
+  structuredData={structuredData}
+>
+  <!-- ===== Encabezado ===== -->
+  <section class="tc-hero">
+    <div class="container">
+      <span class="section-label">Para startups, emprendedores y empresas</span>
+      <h1>Acuerdo de confidencialidad (NDA)</h1>
+      <p class="tc-lead">
+        Te lo redactamos <strong>a medida y según la ley argentina</strong>, para que puedas
+        mostrar tu proyecto a un programador, un socio o un inversor. Abajo tenés un modelo
+        completo con cada cláusula explicada.
+      </p>
+
+      <div class="tc-precio">
+        <div>
+          <span class="tc-precio-label">Acuerdo a medida</span>
+          <strong class="tc-precio-valor">{precio}</strong>
+          <span class="tc-precio-nota">precio fijo · unilateral o mutuo</span>
+        </div>
+        <div class="tc-precio-ctas">
+          <a href={wa} class="btn btn-primary btn-glow" target="_blank" rel="noopener" onclick={clickWa('hero')}>
+            Quiero mi acuerdo
+          </a>
+          <a href="#modelo" class="btn btn-outline-white">Ver el modelo</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Qué es ===== -->
+  <section class="tc-seccion">
+    <div class="container">
+      <header class="section-header">
+        <h2>Qué es un acuerdo de confidencialidad</h2>
+      </header>
+      <div class="tc-definicion">
+        <p>
+          Es un contrato por el que una parte se obliga a <strong>no revelar ni usar para otro
+          fin</strong> la información que le comparte la otra. También se lo llama contrato o
+          convenio de confidencialidad, o NDA, por su sigla en inglés (non-disclosure agreement).
+        </p>
+        <p>
+          Puede ser <strong>unilateral</strong>, cuando una sola parte comparte información, o
+          <strong>mutuo</strong>, cuando las dos lo hacen. Define qué información se protege,
+          para qué se puede usar, por cuánto tiempo y qué pasa si alguien la filtra.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Cuándo se usa ===== -->
+  <section class="tc-seccion tc-seccion-alt">
+    <div class="container">
+      <header class="section-header">
+        <h2>Cuándo conviene firmar uno</h2>
+      </header>
+      <div class="tc-cards">
+        {usos.map(u => (
+          <div class="tc-card">
+            <h3>{u.titulo}</h3>
+            <p>{u.texto}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Ley argentina ===== -->
+  <section class="tc-seccion">
+    <div class="container">
+      <header class="section-header">
+        <h2>Qué dice la ley argentina</h2>
+        <p class="section-subtitle">
+          La información confidencial tiene protección legal aun sin contrato, pero el acuerdo
+          escrito es lo que permite probarla y reclamar.
+        </p>
+      </header>
+      <ul class="tc-requisitos" role="list">
+        {normas.map(n => (
+          <li>
+            <strong>{n.norma}</strong>
+            <p>{n.texto}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===== Cláusulas ===== -->
+  <section class="tc-seccion tc-seccion-alt">
+    <div class="container">
+      <header class="section-header">
+        <h2>Qué cláusulas tiene que tener</h2>
+      </header>
+      <ul class="tc-requisitos" role="list">
+        {clausulas.map(c => (
+          <li>
+            <strong>{c.nombre}</strong>
+            <p>{c.texto}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===== Modelo ===== -->
+  <section class="tc-seccion" id="modelo">
+    <div class="container">
+      <header class="section-header">
+        <span class="section-label">Modelo</span>
+        <h2>Modelo de acuerdo de confidencialidad</h2>
+        <p class="section-subtitle">
+          Un modelo unilateral completo según la ley argentina, con los datos a completar entre
+          corchetes.
+        </p>
+      </header>
+      <article class="tc-modelo">
+        <h3 class="tc-modelo-titulo">Acuerdo de confidencialidad</h3>
+        <ModeloDocumento secciones={MODELO_CONFIDENCIALIDAD} />
+      </article>
+      <p class="tc-modelo-nota">
+        Este modelo sirve para entender qué dice cada cláusula. Es genérico: para firmarlo,
+        la definición de información confidencial, la finalidad y los plazos tienen que
+        reflejar tu caso.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== Lo que el modelo no decide ===== -->
+  <section class="tc-seccion tc-seccion-alt">
+    <div class="container">
+      <header class="section-header">
+        <h2>Lo que el modelo no decide por vos</h2>
+        <p class="section-subtitle">
+          El modelo es genérico: es igual para todos y no sabe nada de tu caso. El que te
+          redactamos es <strong>personalizado</strong>: lo armamos sobre tu situación, tomamos
+          con vos estas decisiones y cuidamos tu lado del acuerdo.
+        </p>
+      </header>
+      <ul class="tc-requisitos" role="list">
+        {decisiones.map(d => (
+          <li>
+            <strong>{d.decision}</strong>
+            <p>{d.texto}</p>
+          </li>
+        ))}
+      </ul>
+
+      <div class="tc-cta tc-cta-personalizado">
+        <div>
+          <strong class="tc-cta-precio">{precio}</strong>
+          <p>Tu acuerdo de confidencialidad personalizado, redactado sobre tu caso.</p>
+        </div>
+        <a href={wa} class="btn btn-primary btn-glow" target="_blank" rel="noopener" onclick={clickWa('personalizado')}>
+          Quiero la versión personalizada
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Cómo trabajamos + precio ===== -->
+  <section class="tc-seccion">
+    <div class="container">
+      <header class="section-header">
+        <h2>Cómo te lo armamos</h2>
+      </header>
+      <ol class="tc-pasos" role="list">
+        {pasos.map((p, i) => (
+          <li>
+            <span class="tc-paso-num" aria-hidden="true">{i + 1}</span>
+            <div>
+              <h3>{p.titulo}</h3>
+              <p>{p.texto}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+
+      <div class="tc-cta">
+        <div>
+          <strong class="tc-cta-precio">{precio}</strong>
+          <p>Acuerdo de confidencialidad, unilateral o mutuo, a medida de tu caso.</p>
+        </div>
+        <a href={wa} class="btn btn-primary btn-glow" target="_blank" rel="noopener" onclick={clickWa('pasos')}>
+          Escribinos por WhatsApp
+        </a>
+      </div>
+
+      <p class="tc-marca">
+        Un acuerdo de confidencialidad no protege el nombre de tu proyecto: eso se logra
+        registrando la marca. {' '}<a href="/verificar-marca/">Verificá si está disponible</a>.
+      </p>
+    </div>
+  </section>
+
+  <OtrosDocumentos actual={RUTA} alterno />
+
+  <!-- ===== FAQ ===== -->
+  <section class="faq-section" aria-labelledby="faq-heading">
+    <div class="container">
+      <header class="section-header">
+        <span class="section-label">FAQ</span>
+        <h2 id="faq-heading">Preguntas frecuentes</h2>
+      </header>
+      <ul class="faq-list" role="list">
+        {faqs.map(f => (
+          <li>
+            <details class="faq-item">
+              <summary>{f.q}</summary>
+              <div class="faq-body"><p>{f.a}</p></div>
+            </details>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+</BaseLayout>

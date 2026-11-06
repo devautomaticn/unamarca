@@ -1,0 +1,43 @@
+---
+// Dibuja un documento modelo (términos, privacidad, contratos) a partir de sus
+// secciones. Un párrafo que empieza con «- » es un ítem de lista; los ítems
+// seguidos se juntan en una misma lista, en el lugar donde aparecen.
+import type { SeccionEjemplo } from '../data/ejemplo-terminos';
+
+interface Props {
+  secciones: SeccionEjemplo[];
+  /** Nivel del título de cada sección: h3 si el modelo está a la vista, h4 si
+   *  va dentro de un bloque plegable que ya tiene su h3. */
+  nivel?: 'h3' | 'h4';
+}
+
+const { secciones, nivel = 'h3' } = Astro.props;
+const Titulo = nivel;
+
+type Bloque = { tipo: 'p'; texto: string } | { tipo: 'ul'; items: string[] };
+
+function bloques(parrafos: string[]): Bloque[] {
+  const out: Bloque[] = [];
+  for (const p of parrafos) {
+    if (p.startsWith('- ')) {
+      const ultimo = out[out.length - 1];
+      if (ultimo?.tipo === 'ul') ultimo.items.push(p.slice(2));
+      else out.push({ tipo: 'ul', items: [p.slice(2)] });
+    } else {
+      out.push({ tipo: 'p', texto: p });
+    }
+  }
+  return out;
+}
+---
+
+{secciones.map(sec => (
+  <section>
+    {sec.titulo && <Titulo>{sec.titulo}</Titulo>}
+    {bloques(sec.parrafos).map(b =>
+      b.tipo === 'ul'
+        ? <ul>{b.items.map(i => <li>{i}</li>)}</ul>
+        : <p>{b.texto}</p>
+    )}
+  </section>
+))}

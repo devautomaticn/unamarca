@@ -1,0 +1,432 @@
+---
+// Servicio: contrato de locación de servicios a medida. Landing SEO: apunta a
+// «contrato de locación de servicios» (590 búsquedas/mes en Argentina) y sus
+// variantes con «modelo» y «monotributo» (unas 800 en total, DataForSEO,
+// noviembre 2026). Lo que rankea hoy son PDFs y Word sueltos de municipios y
+// defensorías, y artículos de doctrina: ninguno explica y ofrece armarlo.
+//
+// El modelo vive en src/data/modelo-locacion-servicios.ts y se muestra entero:
+// es lo que busca la gente. La venta es por WhatsApp (mensaje
+// `locacion_servicios`, a la línea humana).
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ModeloDocumento from '../components/ModeloDocumento.astro';
+import OtrosDocumentos from '../components/OtrosDocumentos.astro';
+import { PRICING, formatARS } from '../lib/checkout/constants';
+import { waHref } from '../lib/wa';
+import { MODELO_LOCACION_SERVICIOS } from '../data/modelo-locacion-servicios';
+import '../styles/servicio-legal.css';
+
+const SITE_URL = 'https://unamarca.com.ar';
+const RUTA = '/contrato-de-locacion-de-servicios/';
+const canonicalURL = `${SITE_URL}${RUTA}`;
+const precio = formatARS(PRICING.locacionServicios);
+const wa = waHref('locacion_servicios');
+const clickWa = (lugar: string) =>
+  `gtag('event','whatsapp_click',{'source':'locacion_servicios','lugar':'${lugar}'})`;
+
+const senales = [
+  {
+    titulo: 'Horario fijo y órdenes',
+    texto:
+      'Si el comitente decide cuándo, dónde y cómo se trabaja, y controla la tarea como ' +
+      'un jefe, se parece más a un empleo que a un servicio.',
+  },
+  {
+    titulo: 'Exclusividad',
+    texto:
+      'Un prestador independiente puede tener otros clientes. Prohibírselo, o que en los ' +
+      'hechos trabaje sólo para uno durante años, es una señal de dependencia.',
+  },
+  {
+    titulo: 'Medios del comitente',
+    texto:
+      'Trabajar con la computadora, la oficina, el email y las herramientas del comitente, ' +
+      'integrado a su equipo, también lo acerca a una relación laboral.',
+  },
+];
+
+const clausulas = [
+  {
+    nombre: 'Objeto',
+    texto:
+      'Qué servicios se prestan, con el detalle suficiente para que quede claro qué está ' +
+      'incluido y qué se presupuesta aparte.',
+  },
+  {
+    nombre: 'Plazo',
+    texto:
+      'Desde cuándo y hasta cuándo. Si no se pone, el contrato es por tiempo indeterminado ' +
+      'y cualquiera puede terminarlo con un preaviso razonable (art. 1279).',
+  },
+  {
+    nombre: 'Precio, factura y actualización',
+    texto:
+      'Cuánto, cuándo y cómo se paga, contra qué factura y cómo se actualiza. Si no se ' +
+      'pacta, el precio lo fijan la ley, los usos o un juez (art. 1255).',
+  },
+  {
+    nombre: 'Independencia',
+    texto:
+      'Que el prestador organiza su trabajo y elige sus medios (art. 1253), y que no hay ' +
+      'relación de dependencia. Sirve si coincide con cómo se trabaja en la realidad.',
+  },
+  {
+    nombre: 'Propiedad intelectual',
+    texto:
+      'De quién son los textos, diseños o código que se producen. Sin una cláusula, el ' +
+      'autor sigue siendo el prestador (Ley 11.723).',
+  },
+  {
+    nombre: 'Confidencialidad',
+    texto: 'Qué información del comitente no se puede divulgar, y por cuánto tiempo.',
+  },
+  {
+    nombre: 'Terminación',
+    texto:
+      'Con cuánto preaviso se puede terminar y qué se paga. Sin pacto, el comitente que ' +
+      'desiste debe pagar gastos, trabajo hecho y la utilidad que el prestador dejó de ganar ' +
+      '(art. 1261).',
+  },
+];
+
+// Lo que el modelo deja entre corchetes y la versión personalizada resuelve.
+const decisiones = [
+  {
+    decision: 'De qué lado estás',
+    texto:
+      'El modelo es neutro. Si contratás, conviene un contrato que te cuide como comitente; ' +
+      'si prestás el servicio, uno que cuide tu cobro y tu trabajo. El nuestro defiende a ' +
+      'quien nos contrata.',
+  },
+  {
+    decision: 'Obra o servicio',
+    texto:
+      'Si se promete un resultado o una actividad cambia qué se puede reclamar cuando el ' +
+      'trabajo no sale como se esperaba. Muchos casos son una mezcla y hay que escribirla bien.',
+  },
+  {
+    decision: 'Cómo se trabaja en la realidad',
+    texto:
+      'La cláusula de independencia tiene que coincidir con los horarios, las herramientas y ' +
+      'la exclusividad reales. Si el papel dice una cosa y la realidad otra, no protege.',
+  },
+  {
+    decision: 'Precio y actualización',
+    texto:
+      'Con qué índice y cada cuánto se ajusta. Un contrato de un año sin una buena cláusula ' +
+      'de actualización pierde valor mes a mes.',
+  },
+  {
+    decision: 'De quién es lo que se produce',
+    texto:
+      'Ceder todo, ceder con permiso para reutilizar o conservar los derechos. Define qué ' +
+      'puede hacer cada uno con el trabajo cuando la relación termine.',
+  },
+  {
+    decision: 'Cómo se termina',
+    texto:
+      'Cuánto preaviso y qué se paga. Si no se pacta, el comitente que corta antes debe pagar ' +
+      'también la ganancia que el prestador dejó de obtener (art. 1261).',
+  },
+];
+
+const pasos = [
+  {
+    titulo: 'Nos escribís por WhatsApp',
+    texto: `Te contamos cómo trabajamos y abonás ${precio} por el contrato.`,
+  },
+  {
+    titulo: 'Nos pasás los datos',
+    texto:
+      'Te mandamos unas preguntas cortas: quiénes firman, qué servicio, cuánto y cómo se ' +
+      'paga, por cuánto tiempo y de quién es lo que se produce.',
+  },
+  {
+    titulo: 'Revisás el borrador',
+    texto: 'Con lo que falta definir marcado. Lo ajustamos con vos antes de cerrarlo.',
+  },
+  {
+    titulo: 'Recibís el contrato final',
+    texto: 'En Word y en PDF, listo para firmar en papel o con firma digital.',
+  },
+];
+
+const faqs = [
+  {
+    q: '¿Qué es un contrato de locación de servicios?',
+    a: 'Es el contrato por el que una persona, el prestador, se obliga a prestarle un servicio a otra, el comitente, a cambio de un precio, trabajando de forma independiente. Lo regula el Código Civil y Comercial en los artículos 1251 a 1279, que lo llama «contrato de servicios». Es el contrato típico de un freelancer, un consultor o una agencia con su cliente.',
+  },
+  {
+    q: '¿Cuál es la diferencia entre locación de servicios y locación de obra?',
+    a: 'En la locación de obra se promete un resultado (una web terminada, un logo, una reforma). En la de servicios se promete una actividad, con independencia de su eficacia (un mantenimiento mensual, una asesoría, la gestión de redes). Si hay dudas, el artículo 1252 del Código Civil y Comercial dice que es de servicios cuando lo que se debe es realizar cierta actividad. Muchos contratos combinan las dos cosas.',
+  },
+  {
+    q: '¿Un contrato de locación de servicios evita un juicio laboral?',
+    a: 'No por sí solo. Desde la Ley 27.742 (2024), la presunción de relación laboral del artículo 23 de la Ley de Contrato de Trabajo no se aplica a servicios profesionales u oficios facturados y pagados por los medios bancarios que fija la reglamentación. Pero si en los hechos hay horario, órdenes y exclusividad, un juez puede considerar que hay un empleo, diga lo que diga el papel. El contrato ayuda cuando describe cómo se trabaja de verdad.',
+  },
+  {
+    q: '¿Un monotributista necesita un contrato de locación de servicios?',
+    a: 'No es obligatorio: la factura ya prueba que hubo un servicio. Pero el contrato deja por escrito lo que la factura no dice: qué está incluido, cómo se actualiza el precio, de quién es lo que se produce y cómo se termina la relación. Es lo que evita la mayoría de las discusiones con un cliente.',
+  },
+  {
+    q: '¿Tiene que firmarse ante escribano?',
+    a: 'No. Firmado por las dos partes, en papel o con firma digital, ya es válido. Según la provincia y el monto, puede corresponder pagar el impuesto de sellos.',
+  },
+  {
+    q: '¿Puedo usar el modelo de esta página?',
+    a: 'Sí, como guía. Está pensado para mostrar qué tiene que decir cada cláusula según la ley argentina. Para firmarlo, cada cláusula tiene que reflejar tu caso: qué servicio, cuánto, cómo se trabaja y qué pasa con lo que se produce.',
+  },
+  {
+    q: '¿Cuánto cuesta que me redacten un contrato de locación de servicios?',
+    a: `Con UnaMarca, ${precio}, a medida de tu caso y a precio fijo. Sirve tanto si contratás un servicio como si lo prestás.`,
+  },
+];
+
+const structuredData = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'Contrato de locación de servicios a medida',
+    serviceType: 'Redacción de contrato de locación de servicios',
+    description:
+      'Contrato de locación de servicios redactado a medida según el Código Civil y Comercial argentino.',
+    url: canonicalURL,
+    areaServed: { '@type': 'Country', name: 'Argentina' },
+    provider: { '@type': 'Organization', name: 'UnaMarca', url: SITE_URL },
+    offers: {
+      '@type': 'Offer',
+      price: PRICING.locacionServicios,
+      priceCurrency: 'ARS',
+      description: 'El contrato, a medida',
+    },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Inicio', item: SITE_URL },
+      { '@type': 'ListItem', position: 2, name: 'Contrato de locación de servicios', item: canonicalURL },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map(f => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="Contrato de locación de servicios: modelo y redacción a medida"
+  description={`Modelo de contrato de locación de servicios según el Código Civil y Comercial, con cada cláusula explicada. Te lo redactamos a medida por ${precio}.`}
+  canonicalURL={canonicalURL}
+  waContext="locacion_servicios"
+  structuredData={structuredData}
+>
+  <!-- ===== Encabezado ===== -->
+  <section class="tc-hero">
+    <div class="container">
+      <span class="section-label">Para freelancers, agencias y empresas</span>
+      <h1>Contrato de locación de servicios</h1>
+      <p class="tc-lead">
+        Te lo redactamos <strong>a medida y según el Código Civil y Comercial</strong>, ya sea
+        que contrates un servicio o que lo prestes. Abajo tenés un modelo completo con cada
+        cláusula explicada.
+      </p>
+
+      <div class="tc-precio">
+        <div>
+          <span class="tc-precio-label">Contrato a medida</span>
+          <strong class="tc-precio-valor">{precio}</strong>
+          <span class="tc-precio-nota">precio fijo · en Word y PDF</span>
+        </div>
+        <div class="tc-precio-ctas">
+          <a href={wa} class="btn btn-primary btn-glow" target="_blank" rel="noopener" onclick={clickWa('hero')}>
+            Quiero mi contrato
+          </a>
+          <a href="#modelo" class="btn btn-outline-white">Ver el modelo</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Qué es ===== -->
+  <section class="tc-seccion">
+    <div class="container">
+      <header class="section-header">
+        <h2>Qué es un contrato de locación de servicios</h2>
+      </header>
+      <div class="tc-definicion">
+        <p>
+          Es el contrato por el que una persona, el <strong>prestador</strong>, se obliga a
+          prestarle un servicio a otra, el <strong>comitente</strong>, a cambio de un precio y
+          trabajando de forma independiente. El Código Civil y Comercial lo regula en los
+          artículos 1251 a 1279, junto con la locación de obra.
+        </p>
+        <p>
+          La diferencia con la locación de obra es qué se promete: en la de obra, un resultado
+          (una web terminada, un logo); en la de servicios, una actividad (un mantenimiento
+          mensual, una asesoría, la gestión de redes). Es el contrato típico de un freelancer,
+          un consultor o una agencia con su cliente.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Relación de dependencia ===== -->
+  <section class="tc-seccion tc-seccion-alt">
+    <div class="container">
+      <header class="section-header">
+        <h2>Locación de servicios o relación de dependencia</h2>
+        <p class="section-subtitle">
+          Es la pregunta que más importa. Si en los hechos el prestador trabaja como un
+          empleado, un juez puede considerar que hay una relación laboral, diga lo que diga el
+          contrato. Estas son las señales que más pesan.
+        </p>
+      </header>
+      <div class="tc-cards">
+        {senales.map(s => (
+          <div class="tc-card">
+            <h3>{s.titulo}</h3>
+            <p>{s.texto}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Cláusulas ===== -->
+  <section class="tc-seccion">
+    <div class="container">
+      <header class="section-header">
+        <h2>Qué cláusulas tiene que tener</h2>
+        <p class="section-subtitle">
+          Lo que el contrato no dice lo completa el Código Civil y Comercial, y no siempre
+          como las partes esperan. Estas son las que conviene escribir siempre.
+        </p>
+      </header>
+      <ul class="tc-requisitos" role="list">
+        {clausulas.map(c => (
+          <li>
+            <strong>{c.nombre}</strong>
+            <p>{c.texto}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===== Modelo ===== -->
+  <section class="tc-seccion tc-seccion-alt" id="modelo">
+    <div class="container">
+      <header class="section-header">
+        <span class="section-label">Modelo</span>
+        <h2>Modelo de contrato de locación de servicios</h2>
+        <p class="section-subtitle">
+          Un modelo completo según la ley argentina, con los datos a completar entre corchetes.
+        </p>
+      </header>
+      <article class="tc-modelo">
+        <h3 class="tc-modelo-titulo">Contrato de locación de servicios</h3>
+        <ModeloDocumento secciones={MODELO_LOCACION_SERVICIOS} />
+      </article>
+      <p class="tc-modelo-nota">
+        Este modelo sirve para entender qué dice cada cláusula. Es genérico: para firmarlo,
+        cada cláusula tiene que reflejar tu caso.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== Lo que el modelo no decide ===== -->
+  <section class="tc-seccion">
+    <div class="container">
+      <header class="section-header">
+        <h2>Lo que el modelo no decide por vos</h2>
+        <p class="section-subtitle">
+          El modelo es genérico: es igual para todos y no sabe nada de tu caso. El que te
+          redactamos es <strong>personalizado</strong>: lo armamos sobre tu situación, tomamos
+          con vos estas decisiones y cuidamos tu lado del acuerdo.
+        </p>
+      </header>
+      <ul class="tc-requisitos" role="list">
+        {decisiones.map(d => (
+          <li>
+            <strong>{d.decision}</strong>
+            <p>{d.texto}</p>
+          </li>
+        ))}
+      </ul>
+
+      <div class="tc-cta tc-cta-personalizado">
+        <div>
+          <strong class="tc-cta-precio">{precio}</strong>
+          <p>Tu contrato de locación de servicios personalizado, redactado sobre tu caso.</p>
+        </div>
+        <a href={wa} class="btn btn-primary btn-glow" target="_blank" rel="noopener" onclick={clickWa('personalizado')}>
+          Quiero la versión personalizada
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Cómo trabajamos + precio ===== -->
+  <section class="tc-seccion tc-seccion-alt">
+    <div class="container">
+      <header class="section-header">
+        <h2>Cómo te lo armamos</h2>
+      </header>
+      <ol class="tc-pasos" role="list">
+        {pasos.map((p, i) => (
+          <li>
+            <span class="tc-paso-num" aria-hidden="true">{i + 1}</span>
+            <div>
+              <h3>{p.titulo}</h3>
+              <p>{p.texto}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+
+      <div class="tc-cta">
+        <div>
+          <strong class="tc-cta-precio">{precio}</strong>
+          <p>Contrato de locación de servicios, a medida de tu caso.</p>
+        </div>
+        <a href={wa} class="btn btn-primary btn-glow" target="_blank" rel="noopener" onclick={clickWa('pasos')}>
+          Escribinos por WhatsApp
+        </a>
+      </div>
+
+      <p class="tc-marca">
+        ¿Tu negocio ya tiene la marca registrada? El nombre es lo primero que te pueden copiar.
+        {' '}<a href="/verificar-marca/">Verificá si está disponible</a>.
+      </p>
+    </div>
+  </section>
+
+  <OtrosDocumentos actual={RUTA} />
+
+  <!-- ===== FAQ ===== -->
+  <section class="faq-section" aria-labelledby="faq-heading">
+    <div class="container">
+      <header class="section-header">
+        <span class="section-label">FAQ</span>
+        <h2 id="faq-heading">Preguntas frecuentes</h2>
+      </header>
+      <ul class="faq-list" role="list">
+        {faqs.map(f => (
+          <li>
+            <details class="faq-item">
+              <summary>{f.q}</summary>
+              <div class="faq-body"><p>{f.a}</p></div>
+            </details>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+</BaseLayout>

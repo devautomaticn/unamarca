@@ -1,0 +1,53 @@
+---
+// Enlaces cruzados entre las páginas de documentos legales a precio fijo. Cada
+// página muestra las otras: además de vender, es lo que hace que Google las
+// encuentre y las indexe juntas.
+import { PRICING, formatARS } from '../lib/checkout/constants';
+
+interface Props {
+  /** Ruta de la página actual, para no enlazarse a sí misma. */
+  actual: string;
+  /** Fondo gris, para alternar con la sección de arriba. */
+  alterno?: boolean;
+}
+
+const { actual, alterno = false } = Astro.props;
+
+const documentos = [
+  {
+    href: '/terminos-y-condiciones-app/',
+    titulo: 'Términos y condiciones y política de privacidad',
+    texto: 'Para tu app, web o tienda online, según la ley argentina.',
+    precio: PRICING.terminos,
+  },
+  {
+    href: '/contrato-de-locacion-de-servicios/',
+    titulo: 'Contrato de locación de servicios',
+    texto: 'Para contratar o prestar servicios sin relación de dependencia.',
+    precio: PRICING.locacionServicios,
+  },
+  {
+    href: '/acuerdo-de-confidencialidad/',
+    titulo: 'Acuerdo de confidencialidad (NDA)',
+    texto: 'Para mostrar tu proyecto a un programador, socio o inversor.',
+    precio: PRICING.confidencialidad,
+  },
+].filter(d => d.href !== actual);
+---
+
+<section class:list={['tc-seccion tc-otros', { 'tc-seccion-alt': alterno }]}>
+  <div class="container">
+    <header class="section-header">
+      <h2>Otros documentos que redactamos</h2>
+    </header>
+    <div class="tc-cards">
+      {documentos.map(d => (
+        <a class="tc-card" href={d.href}>
+          <h3>{d.titulo}</h3>
+          <p>{d.texto}</p>
+          <span class="tc-card-precio">{formatARS(d.precio)}</span>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>
