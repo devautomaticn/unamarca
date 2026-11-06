@@ -1,0 +1,60 @@
+name: Reseñas
+
+# Mantiene `src/data/resenas.json` igual a las reseñas publicadas en el portal
+# Vigilante (GET /api/ext/v1/resenas). Si cambió algo, commitea; el push dispara
+# el deploy de Cloudflare Pages y la home y /resenas/ salen con la reseña nueva.
+# Los días sin reseñas nuevas el script no escribe y no hay commit.
+#
+# Secret: VIGILANTE_RESENAS_KEY, una clave del portal con el permiso `resenas`
+# y nada más (no lee contactos ni trámites).
+
+on:
+  schedule:
+    # 12:30 UTC = 09:30 en Buenos Aires.
+    - cron: '30 12 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: resenas
+  cancel-in-progress: false
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Bajar reseñas del portal
+        env:
+          VIGILANTE_RESENAS_KEY: ${{ secrets.VIGILANTE_RESENAS_KEY }}
+        run: |
+          for intento in 1 2 3; do
+            if node scripts/actualizar-resenas.mjs; then
+              exit 0
+            fi
+            echo "Intento $intento falló; reintento en 60s"
+            sleep 60
+          done
+          echo "::error::No pude leer las reseñas del portal después de 3 intentos"
+          exit 1
+
+      - name: Commitear si cambió
+        run: |
+          if [ -z "$(git status --porcelain src/data/resenas.json)" ]; then
+            echo "Sin cambios en las reseñas."
+            exit 0
+          fi
+          n=$(node -p "require('./src/data/resenas.json').items.length")
+          git config user.name  'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/data/resenas.json
+          git commit -m "Reseñas: $n publicadas"
+          git push
+          echo "### Reseñas actualizadas: $n publicadas" >> "$GITHUB_STEP_SUMMARY"

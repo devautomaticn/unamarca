@@ -30,3 +30,10 @@
 # adivina, y detras hay DNI, CUIT y domicilio de una persona.
 # Se pueden borrar una vez que el poder llego firmado.
 /f/oliva-9k3q /carta-poder?nombre=Juan+Carlos&apellido=Oliva+Romero&doctipo=DNI&doc=23922051&cuit=20-23922051-8&calle=Laprida+este&numero=156&piso=2&depto=C&cp=5400&localidad=San+Juan&provincia=San+Juan&motivo=Actualizamos+el+modelo+de+la+carta+poder%3A+la+nueva+no+menciona+la+marca+ni+la+clase%2C+as%C3%AD+que+sirve+para+todo+el+tr%C3%A1mite+aunque+despu%C3%A9s+haya+que+ajustar+algo.+Es+el+mismo+poder+de+siempre%2C+solo+necesitamos+tu+firma+de+nuevo. 302
+
+# /reseñas con eñe (como se dice) → /resenas/ (como vive). Las dos formas: la
+# cruda y la codificada, porque no todos los clientes mandan el path igual.
+/reseñas /resenas/ 301
+/reseñas/ /resenas/ 301
+/rese%C3%B1as /resenas/ 301
+/rese%C3%B1as/ /resenas/ 301

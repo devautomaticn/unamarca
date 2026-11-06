@@ -354,6 +354,40 @@ portal del INPI ──► scripts/actualizar-aranceles.mjs
 
 ---
 
+## Reseñas de clientes (home + `/resenas/`)
+
+Las reseñas salen del portal Vigilante (workspace 2), no se escriben a mano.
+`.github/workflows/resenas.yml` corre todos los días a las 9:30,
+`scripts/actualizar-resenas.mjs` llama a `GET /api/ext/v1/resenas` y, si cambió
+algo, regenera `src/data/resenas.json` y commitea. El push dispara el deploy.
+
+```
+portal Vigilante ──► scripts/actualizar-resenas.mjs ──► src/data/resenas.json
+                                                         ├─► home: las 3 más nuevas
+                                                         └─► /resenas/: todas
+```
+
+- **Qué se publica lo decide el portal**: toda reseña en la que el cliente marcó
+  que se puede publicar (sin moderación previa, decisión de Mike 2026-11-06).
+  De esas, el script se queda **sólo con las de 5 estrellas** (decisión de
+  Mike, mismo día); por eso no se muestra un promedio.
+  Para bajar una: `moderacion='rechazada'` en `resenas` de portal.db, y correr
+  el workflow a mano (`workflow_dispatch`).
+- **La firma viene armada** («Nombre I.»): el nombre completo no sale del
+  portal. Si viene `null` (el contacto no tiene apellido cargado) se muestra
+  «Cliente de UnaMarca»; se arregla cargando el apellido en el portal.
+- **Cada acta linkea a `vigilante.com.ar/inpi/acta/<n>`**, el mismo redirect
+  que usa `/verificar-marca` (la ficha del INPI sólo acepta POST).
+- **Secret `VIGILANTE_RESENAS_KEY`** (GitHub, no Cloudflare): una credencial con
+  el permiso especial `resenas` y nada más. No es la `VIGILANTE_API_KEY` del
+  checkout, que puede crear trámites.
+- El script **corta sin escribir** si la respuesta viene mal formada o si la
+  lista baja a menos de la mitad (`--forzar` para aceptarlo).
+- `/reseñas` redirige a `/resenas/` (`public/_redirects`).
+- **Sin `aggregateRating`**: Google no muestra estrellas de reseñas que un
+  negocio publica de sí mismo en su sitio, y marcarlas arriesga una acción
+  manual.
+
 ## Deep links a `/registrar` (contrato con otros proyectos)
 
 `/verificar-marca`, las campañas y proyectos externos prellenan el wizard con
