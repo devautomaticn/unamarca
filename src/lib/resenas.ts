@@ -38,7 +38,3 @@ export const mesDe = (fecha: string) => {
   const [a, m] = fecha.split('-');
   return `${MESES[Number(m) - 1]} de ${a}`;
 };
-
-export const promedio = RESENAS.length
-  ? RESENAS.reduce((s, r) => s + r.estrellas, 0) / RESENAS.length
-  : 0;

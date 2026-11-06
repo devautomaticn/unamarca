@@ -369,6 +369,8 @@ portal Vigilante ──► scripts/actualizar-resenas.mjs ──► src/data/res
 
 - **Qué se publica lo decide el portal**: toda reseña en la que el cliente marcó
   que se puede publicar (sin moderación previa, decisión de Mike 2026-11-06).
+  De esas, el script se queda **sólo con las de 5 estrellas** (decisión de
+  Mike, mismo día); por eso no se muestra un promedio.
   Para bajar una: `moderacion='rechazada'` en `resenas` de portal.db, y correr
   el workflow a mano (`workflow_dispatch`).
 - **La firma viene armada** («Nombre I.»): el nombre completo no sale del

@@ -4,7 +4,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { waHref } from '../lib/wa';
 import { PRICING, formatARS } from '../lib/checkout/constants';
 import ResenaCard from '../components/ResenaCard.astro';
-import { RESENAS, promedio } from '../lib/resenas';
+import { RESENAS } from '../lib/resenas';
 
 const SITE_URL = 'https://unamarca.com.ar';
 
@@ -17,7 +17,6 @@ const precioClaseNum = precioClase.toLocaleString('es-AR');
 
 // Las tres más nuevas; el resto vive en /resenas/.
 const resenasHome = RESENAS.slice(0, 3);
-const promedioTxt = promedio.toLocaleString('es-AR', { maximumFractionDigits: 1 });
 
 const allPosts = await getCollection('blog');
 const recentPosts = allPosts
@@ -549,8 +548,8 @@ const structuredData = [
             <span class="section-label">Reseñas</span>
             <h2 id="resenas-heading">Lo que dicen nuestros clientes</h2>
             <p class="section-subtitle">
-              {promedioTxt} de 5 estrellas en {RESENAS.length} {RESENAS.length === 1 ? 'reseña' : 'reseñas'}.
-              Cada una lleva el acta de su marca: podés verla en el INPI.
+              Clientes que ya registraron su marca con nosotros. Cada reseña
+              lleva el acta de su marca: podés verla en el INPI.
             </p>
           </div>
           <a href="/resenas/" class="btn btn-primary">Ver todas las reseñas</a>

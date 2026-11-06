@@ -9,7 +9,8 @@
 // está caído, el sitio sigue con las reseñas del último día bueno.
 //
 // Qué se publica lo decide el portal (`GET /api/ext/v1/resenas`, backlog #82 de
-// Vigilant): toda reseña en la que el cliente marcó que se puede publicar. La
+// Vigilant): toda reseña en la que el cliente marcó que se puede publicar; de
+// esas, este script se queda sólo con las de 5 estrellas. La
 // firma («Nombre I.») viene armada de allá: el nombre completo no sale del
 // portal. Cuando no hay apellido cargado la firma viene en null y el sitio
 // firma «Cliente de UnaMarca».
@@ -92,7 +93,9 @@ async function anterior() {
   }
 }
 
-const items = normalizar(await bajar());
+// Sólo las de 5 estrellas (decisión de Mike, 2026-11-06). Por eso el sitio no
+// muestra un promedio: sería el de una selección, no el de todas.
+const items = normalizar(await bajar()).filter(r => r.estrellas === 5);
 const previo = await anterior();
 const nAntes = previo?.items?.length ?? 0;
 

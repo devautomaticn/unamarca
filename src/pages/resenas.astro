@@ -12,13 +12,12 @@
 // acción manual sobre el dominio.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ResenaCard from '../components/ResenaCard.astro';
-import { RESENAS, promedio } from '../lib/resenas';
+import { RESENAS } from '../lib/resenas';
 import { waHref } from '../lib/wa';
 
 const SITE_URL = 'https://unamarca.com.ar';
 const canonicalURL = `${SITE_URL}/resenas/`;
 const n = RESENAS.length;
-const promedioTxt = promedio.toLocaleString('es-AR', { maximumFractionDigits: 1 });
 
 const structuredData = {
   '@context': 'https://schema.org',
@@ -33,7 +32,7 @@ const structuredData = {
 <BaseLayout
   title="Reseñas de clientes | UnaMarca"
   description={n
-    ? `${n} reseñas de clientes que registraron su marca con UnaMarca, ${promedioTxt} de 5 estrellas. Cada una con el acta de su marca en el INPI.`
+    ? `${n} reseñas de clientes que registraron su marca con UnaMarca. Cada una con el acta de su marca en el INPI.`
     : 'Reseñas de clientes que registraron su marca con UnaMarca.'}
   canonicalURL={canonicalURL}
   structuredData={structuredData}
@@ -44,7 +43,7 @@ const structuredData = {
       <h1>Lo que dicen nuestros clientes</h1>
       {n > 0 && (
         <p class="rs-resumen">
-          <strong>{promedioTxt}</strong> de 5 estrellas · {n} {n === 1 ? 'reseña' : 'reseñas'}
+          <span aria-hidden="true">★★★★★</span> {n} {n === 1 ? 'reseña' : 'reseñas'} de 5 estrellas
         </p>
       )}
       <p class="rs-lead">
@@ -97,7 +96,7 @@ const structuredData = {
     color: #FCD34D;
     margin-bottom: 0.75rem;
   }
-  .rs-resumen strong { font-size: 1.5rem; font-weight: 800; }
+  .rs-resumen span { letter-spacing: 0.08em; margin-right: 0.25rem; }
   .rs-lead {
     max-width: 58ch;
     color: rgba(255, 255, 255, 0.78);
