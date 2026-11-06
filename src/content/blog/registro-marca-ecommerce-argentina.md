@@ -68,6 +68,10 @@ El arancel del INPI para registrar en una clase es de 100 UMAPIS (aproximadament
 
 Para un e-commerce que vende productos físicos, registrar en 2 clases (la de tu producto + Clase 35) es lo más recomendable. Para más detalle sobre costos, leé: [cuánto sale registrar una marca en Argentina](/blog/cuanto-sale-registrar-una-marca/).
 
+## Además de la marca: términos y política de privacidad
+
+Una tienda online también necesita sus textos legales. La Ley de Defensa del Consumidor exige informar precios, condiciones de envío y el derecho de arrepentimiento, con un botón de arrepentimiento visible. Y si pedís datos a tus clientes, la Ley 25.326 exige una política de privacidad. Te contamos qué tienen que decir, con un ejemplo, en [términos y condiciones y política de privacidad para tu tienda o app](/terminos-y-condiciones-app/).
+
 ## El momento ideal para registrar
 
 No esperés a tener el e-commerce consolidado. El momento ideal es **antes de invertir en publicidad o branding**, porque ese gasto construye el valor de tu marca, y querés que ese valor sea tuyo.

@@ -89,7 +89,7 @@ La diferencia con la patente es de fondo: la patente obliga a publicar el invent
 
 - **Tenés una marca de ropa, un local o un emprendimiento de servicios:** una marca. Es lo único que impide que otro use tu nombre en tu rubro.
 - **Hacés cerveza, alimentos o cosmética con fórmula propia:** una marca para el nombre, y la fórmula como secreto.
-- **Desarrollaste una app o un software:** una marca para el nombre de la app; el código lo cubre el derecho de autor. Patente no, salvo que haya una solución técnica que vaya más allá del programa.
+- **Desarrollaste una app o un software:** una marca para el nombre de la app; el código lo cubre el derecho de autor. Patente no, salvo que haya una solución técnica que vaya más allá del programa. Y si la app pide datos a sus usuarios, necesita [términos y condiciones y política de privacidad](/terminos-y-condiciones-app/).
 - **Inventaste un dispositivo o una mejora técnica:** patente o modelo de utilidad, antes de mostrarlo. Y una marca para el nombre con el que lo vas a vender: la patente vence a los 20 años y la marca no.
 - **Diseñaste un producto con una forma propia:** diseño industrial para la forma, y marca para el nombre.
 

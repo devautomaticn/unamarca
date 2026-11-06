@@ -90,6 +90,11 @@ const structuredData = [
         name: '¿Tengo que pagar un costo de mantenimiento anual?',
         acceptedAnswer: { '@type': 'Answer', text: 'No, las marcas no abonan anualidades. Sin embargo, a los 5 años de obtener el registro deberás presentar una declaración jurada (DDJJ) informando que la marca se encuentra en uso.' },
       },
+      {
+        '@type': 'Question',
+        name: '¿También hacen los términos y condiciones de una app o una web?',
+        acceptedAnswer: { '@type': 'Answer', text: `Sí. Redactamos los términos y condiciones y la política de privacidad de tu app, web o tienda online, a medida y según la ley argentina, a precio fijo. Ver precio y ejemplo en ${SITE_URL}/terminos-y-condiciones-app/` },
+      },
     ],
   },
 ];
@@ -632,6 +637,14 @@ const structuredData = [
             <summary>¿Tengo que pagar un costo de mantenimiento anual?</summary>
             <div class="faq-body">
               <p>No, las marcas no abonan anualidades. Sin embargo, a los 5 años de obtener el registro deberás presentar una declaración jurada (DDJJ) informando que la marca se encuentra en uso.</p>
+            </div>
+          </details>
+        </li>
+        <li>
+          <details class="faq-item">
+            <summary>¿También hacen los términos y condiciones de una app o una web?</summary>
+            <div class="faq-body">
+              <p>Sí. Redactamos los términos y condiciones y la política de privacidad de tu app, web o tienda online, a medida y según la ley argentina, a precio fijo. Mirá <a href="/terminos-y-condiciones-app/">el ejemplo y el precio de los términos y condiciones para apps</a>.</p>
             </div>
           </details>
         </li>

@@ -34,7 +34,7 @@ import {
   WA_CANALES, WA_CANAL_EMITIR, WA_SALUDO_BASE, varianteCanal, type WaCanal,
 } from './waCanal';
 
-export const CATALOG_VERSION = '1.12.0';
+export const CATALOG_VERSION = '1.13.0';
 
 /** Agente IA. Recibe todos los CTAs de conversión. */
 export const WA_AGENTE = '5491148999564';
@@ -407,6 +407,21 @@ export const WA_MESSAGES = {
       'del trámite, así que ya sabe que el arancel va aparte de los honorarios.',
   },
 
+  // Términos y privacidad para apps (/terminos-y-condiciones-app)
+  terminos_app: {
+    number: WA_LINEA,
+    section: 'Web',
+    risk: 'nulo',
+    match: 'exact',
+    text:
+      'Hola! Vi la página de términos y condiciones para apps y quiero que me ' +
+      'armen los de la mía.',
+    note:
+      'Servicio de términos y condiciones + política de privacidad a medida. Lo ' +
+      'usan los CTAs y el botón flotante de la página. Va a la línea y no al ' +
+      'agente: Sofía todavía no cotiza este servicio. Desde 1.13.0.',
+  },
+
   // Fallback
   float_generic: {
     number: WA_AGENTE,
@@ -431,6 +446,7 @@ export type WaFloatContext =
   | 'aranceles_float'
   | 'float_en'
   | 'guia_float'
+  | 'terminos_app'
   | 'float_generic';
 
 // ── Mensajes retirados ──────────────────────────────────────────────────────

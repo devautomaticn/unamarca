@@ -51,6 +51,11 @@ export const PRICING = {
    *  el mismo trámite explicado, sin importar cuántas marcas registre después.
    *  Se vende SOLO por WhatsApp, a leads que rebotaron por precio. */
   guia: 25_000,
+  /** Términos y condiciones + política de privacidad de una app o web, a
+   *  medida (`/terminos-y-condiciones-app`). Precio único por los dos
+   *  documentos: es lo que pagó el primer cliente (CLIPI, 2026-11-04). Se
+   *  vende por WhatsApp; el relevamiento es `/formulario-terminos`. */
+  terminos: 80_000,
 } as const;
 
 /** Máximo de clases POR MARCA; más que esto se deriva a WhatsApp */
