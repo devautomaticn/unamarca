@@ -95,6 +95,11 @@ const structuredData = [
         name: '¿También hacen los términos y condiciones de una app o una web?',
         acceptedAnswer: { '@type': 'Answer', text: `Sí. Redactamos los términos y condiciones y la política de privacidad de tu app, web o tienda online, a medida y según la ley argentina, a precio fijo. Ver precio y ejemplo en ${SITE_URL}/terminos-y-condiciones-app/` },
       },
+      {
+        '@type': 'Question',
+        name: '¿Hacen otros contratos, como un acuerdo de confidencialidad?',
+        acceptedAnswer: { '@type': 'Answer', text: `Sí. Redactamos a medida y a precio fijo el contrato de locación de servicios (${SITE_URL}/contrato-de-locacion-de-servicios/) y el acuerdo de confidencialidad o NDA (${SITE_URL}/acuerdo-de-confidencialidad/), cada uno con su modelo de ejemplo.` },
+      },
     ],
   },
 ];
@@ -645,6 +650,14 @@ const structuredData = [
             <summary>¿También hacen los términos y condiciones de una app o una web?</summary>
             <div class="faq-body">
               <p>Sí. Redactamos los términos y condiciones y la política de privacidad de tu app, web o tienda online, a medida y según la ley argentina, a precio fijo. Mirá <a href="/terminos-y-condiciones-app/">el ejemplo y el precio de los términos y condiciones para apps</a>.</p>
+            </div>
+          </details>
+        </li>
+        <li>
+          <details class="faq-item">
+            <summary>¿Hacen otros contratos, como un acuerdo de confidencialidad?</summary>
+            <div class="faq-body">
+              <p>Sí. Redactamos a medida y a precio fijo el <a href="/contrato-de-locacion-de-servicios/">contrato de locación de servicios</a> y el <a href="/acuerdo-de-confidencialidad/">acuerdo de confidencialidad (NDA)</a>, cada uno con su modelo de ejemplo.</p>
             </div>
           </details>
         </li>

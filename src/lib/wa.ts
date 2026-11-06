@@ -34,7 +34,7 @@ import {
   WA_CANALES, WA_CANAL_EMITIR, WA_SALUDO_BASE, varianteCanal, type WaCanal,
 } from './waCanal';
 
-export const CATALOG_VERSION = '1.13.0';
+export const CATALOG_VERSION = '1.14.0';
 
 /** Agente IA. Recibe todos los CTAs de conversión. */
 export const WA_AGENTE = '5491148999564';
@@ -422,6 +422,34 @@ export const WA_MESSAGES = {
       'agente: Sofía todavía no cotiza este servicio. Desde 1.13.0.',
   },
 
+  // Contrato de locación de servicios (/contrato-de-locacion-de-servicios)
+  locacion_servicios: {
+    number: WA_LINEA,
+    section: 'Web',
+    risk: 'nulo',
+    match: 'exact',
+    text:
+      'Hola! Vi la página del contrato de locación de servicios y quiero que me ' +
+      'armen el mío.',
+    note:
+      'Contrato de locación de servicios a medida. Lo usan los CTAs y el botón ' +
+      'flotante de la página. Va a la línea, como terminos_app. Desde 1.14.0.',
+  },
+
+  // Acuerdo de confidencialidad (/acuerdo-de-confidencialidad)
+  confidencialidad: {
+    number: WA_LINEA,
+    section: 'Web',
+    risk: 'nulo',
+    match: 'exact',
+    text:
+      'Hola! Vi la página del acuerdo de confidencialidad y quiero que me armen ' +
+      'uno.',
+    note:
+      'Acuerdo de confidencialidad (NDA) a medida. Lo usan los CTAs y el botón ' +
+      'flotante de la página. Va a la línea, como terminos_app. Desde 1.14.0.',
+  },
+
   // Fallback
   float_generic: {
     number: WA_AGENTE,
@@ -447,6 +475,8 @@ export type WaFloatContext =
   | 'float_en'
   | 'guia_float'
   | 'terminos_app'
+  | 'locacion_servicios'
+  | 'confidencialidad'
   | 'float_generic';
 
 // ── Mensajes retirados ──────────────────────────────────────────────────────
