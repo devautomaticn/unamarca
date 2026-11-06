@@ -56,6 +56,13 @@ export const PRICING = {
    *  documentos: es lo que pagó el primer cliente (CLIPI, 2026-11-04). Se
    *  vende por WhatsApp; el relevamiento es `/formulario-terminos`. */
   terminos: 80_000,
+  /** Contrato de locación de servicios a medida
+   *  (`/contrato-de-locacion-de-servicios`). Mismo precio y misma venta por
+   *  WhatsApp que los términos (Mike, 2026-11-06). */
+  locacionServicios: 80_000,
+  /** Acuerdo de confidencialidad (NDA) a medida (`/acuerdo-de-confidencialidad`).
+   *  Mismo precio y misma venta por WhatsApp que los términos (Mike, 2026-11-06). */
+  confidencialidad: 80_000,
 } as const;
 
 /** Máximo de clases POR MARCA; más que esto se deriva a WhatsApp */
