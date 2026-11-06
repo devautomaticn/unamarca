@@ -1,0 +1,132 @@
+---
+// Todas las reseñas, una debajo de la otra, la más nueva primero. Cada una
+// lleva las actas de las marcas que le registramos a ese cliente, con link a
+// la ficha del INPI: es lo que la hace verificable.
+//
+// Los datos salen de `src/data/resenas.json` (ver `scripts/actualizar-resenas.mjs`).
+// /reseñas redirige acá (public/_redirects).
+//
+// Sin `aggregateRating` en el structured data a propósito: Google no muestra
+// estrellas de reseñas que un negocio publica sobre sí mismo en su propio sitio
+// («self-serving reviews», política de 2019), y marcarlas igual arriesga una
+// acción manual sobre el dominio.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ResenaCard from '../components/ResenaCard.astro';
+import { RESENAS, promedio } from '../lib/resenas';
+import { waHref } from '../lib/wa';
+
+const SITE_URL = 'https://unamarca.com.ar';
+const canonicalURL = `${SITE_URL}/resenas/`;
+const n = RESENAS.length;
+const promedioTxt = promedio.toLocaleString('es-AR', { maximumFractionDigits: 1 });
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Inicio', item: `${SITE_URL}/` },
+    { '@type': 'ListItem', position: 2, name: 'Reseñas', item: canonicalURL },
+  ],
+};
+---
+
+<BaseLayout
+  title="Reseñas de clientes | UnaMarca"
+  description={n
+    ? `${n} reseñas de clientes que registraron su marca con UnaMarca, ${promedioTxt} de 5 estrellas. Cada una con el acta de su marca en el INPI.`
+    : 'Reseñas de clientes que registraron su marca con UnaMarca.'}
+  canonicalURL={canonicalURL}
+  structuredData={structuredData}
+>
+  <section class="rs-hero">
+    <div class="container">
+      <span class="section-label">Reseñas</span>
+      <h1>Lo que dicen nuestros clientes</h1>
+      {n > 0 && (
+        <p class="rs-resumen">
+          <strong>{promedioTxt}</strong> de 5 estrellas · {n} {n === 1 ? 'reseña' : 'reseñas'}
+        </p>
+      )}
+      <p class="rs-lead">
+        Todas las reseñas son de clientes que registraron su marca con nosotros.
+        Al lado de cada una está el acta de su marca: tocala y vas a ver el
+        expediente en el INPI.
+      </p>
+    </div>
+  </section>
+
+  <section class="rs-lista">
+    <div class="container">
+      {n > 0 ? (
+        <ol role="list">
+          {RESENAS.map((r) => (
+            <li id={`resena-${r.id}`}>
+              <ResenaCard resena={r} />
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <p class="rs-vacio">Todavía no hay reseñas publicadas.</p>
+      )}
+
+      <div class="rs-cta">
+        <p>¿Querés registrar tu marca?</p>
+        <a href={waHref('float_generic')} class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+          Consultar por WhatsApp
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .rs-hero {
+    background: var(--grad-hero);
+    color: #fff;
+    padding-block: 4.5rem 3.5rem;
+  }
+  .rs-hero .section-label { color: #93B4FD; }
+  .rs-hero h1 {
+    font-size: clamp(2rem, 4.4vw, 3rem);
+    letter-spacing: -0.03em;
+    margin-bottom: 1rem;
+    color: #fff;
+  }
+  .rs-resumen {
+    font-size: 1.125rem;
+    color: #FCD34D;
+    margin-bottom: 0.75rem;
+  }
+  .rs-resumen strong { font-size: 1.5rem; font-weight: 800; }
+  .rs-lead {
+    max-width: 58ch;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    margin: 0;
+  }
+
+  .rs-lista { padding-block: var(--sp-lg); background: var(--c-bg-alt); }
+  .rs-lista ol {
+    list-style: none;
+    max-width: var(--prose-width);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  .rs-lista li { scroll-margin-top: 6rem; }
+  .rs-vacio { text-align: center; color: var(--c-text-muted); }
+
+  .rs-cta {
+    max-width: var(--prose-width);
+    margin: var(--sp-md) auto 0;
+    text-align: center;
+  }
+  .rs-cta p { font-weight: 600; color: var(--c-navy); margin-bottom: 1rem; }
+
+  @media (max-width: 540px) {
+    .rs-hero { padding-block: 3rem 2.5rem; }
+    .container { padding-inline: 1rem; }
+  }
+</style>

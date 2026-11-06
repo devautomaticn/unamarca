@@ -3,6 +3,8 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { waHref } from '../lib/wa';
 import { PRICING, formatARS } from '../lib/checkout/constants';
+import ResenaCard from '../components/ResenaCard.astro';
+import { RESENAS, promedio } from '../lib/resenas';
 
 const SITE_URL = 'https://unamarca.com.ar';
 
@@ -12,6 +14,10 @@ const SITE_URL = 'https://unamarca.com.ar';
 const precioClase = PRICING.honorarios + PRICING.arancelInpi;
 // Sin el "$": el markup de la tarjeta lo pone aparte, en su propio <span>.
 const precioClaseNum = precioClase.toLocaleString('es-AR');
+
+// Las tres más nuevas; el resto vive en /resenas/.
+const resenasHome = RESENAS.slice(0, 3);
+const promedioTxt = promedio.toLocaleString('es-AR', { maximumFractionDigits: 1 });
 
 const allPosts = await getCollection('blog');
 const recentPosts = allPosts
@@ -531,6 +537,35 @@ const structuredData = [
       </div>
     </div>
   </section>
+
+  <!-- =====================================================
+       RESEÑAS
+  ====================================================== -->
+  {resenasHome.length > 0 && (
+    <section class="resenas-home" aria-labelledby="resenas-heading">
+      <div class="container">
+        <header class="section-header">
+          <div>
+            <span class="section-label">Reseñas</span>
+            <h2 id="resenas-heading">Lo que dicen nuestros clientes</h2>
+            <p class="section-subtitle">
+              {promedioTxt} de 5 estrellas en {RESENAS.length} {RESENAS.length === 1 ? 'reseña' : 'reseñas'}.
+              Cada una lleva el acta de su marca: podés verla en el INPI.
+            </p>
+          </div>
+          <a href="/resenas/" class="btn btn-primary">Ver todas las reseñas</a>
+        </header>
+
+        <ul class="resenas-grid" role="list">
+          {resenasHome.map((r, i) => (
+            <li data-anim data-delay={String(i + 1)}>
+              <ResenaCard resena={r} compacta />
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
 
   <!-- =====================================================
        BLOG PREVIEW
