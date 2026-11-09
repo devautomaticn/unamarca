@@ -314,6 +314,43 @@ mirarlo en GA4 → Administrar → Eventos → Crear eventos.
 
 ---
 
+## Visitas al link del agente de WhatsApp (`visitas_link`)
+
+El pedido recién existe en D1 cuando el cliente aprieta pagar (paso 4). Lo de
+antes —si abrió el link que le mandó Sofía, hasta qué paso llegó— no quedaba
+en ningún lado que se pudiera cruzar con la charla del CRM. Desde octubre de
+2026 dos de cada tres que reciben el link no arman pedido; esto es para saber
+dónde se van.
+
+```
+link de Sofía (?tel=…) ──► empezarVisita()  ──► POST /api/checkout/visita {sid, paso, tel}
+cada goTo(paso)        ──► visita(paso)     ──► POST /api/checkout/visita {sid, paso}
+createOrder() ok       ──► visita('4', ref) ──► POST /api/checkout/visita {sid, paso, ref}
+```
+
+- Lógica pura en `src/lib/visitas.ts`, tabla en `src/lib/server/visitas.ts`,
+  ruta en `src/pages/api/checkout/visita.ts`.
+- **Sólo las visitas que entran con `?tel=`**, que es el deep link del agente.
+  El resto de `/registrar` se mide en el funnel de GA4.
+- Una fila por **pestaña** (`sid` en `sessionStorage`, sobrevive la ida a
+  Mercado Pago, así que también cuenta los pasos del post-pago). Abrir el link
+  dos veces en pestañas distintas son dos filas: por cliente, `MAX(paso_max)`
+  agrupando por `tel`.
+- `tel` son los **últimos 10 dígitos**, como cruza el CRM. `paso_max` nunca baja
+  (`done` = 8). `ref` aparece cuando el paso de pago creó el pedido.
+- Sin el aviso de llegada (con `tel`) un paso suelto no crea fila.
+- La ruta es abierta como `/api/origen`: valida la forma, no lee ni devuelve
+  nada, y un error de D1 nunca llega al wizard.
+
+Desde el CRM se lee con `clearance_agent/checkout_d1.py` (sólo SELECT):
+
+```sql
+SELECT tel, MIN(llegada_at) AS abrio, MAX(paso_max) AS llego, MAX(ref) AS pedido
+FROM visitas_link GROUP BY tel ORDER BY abrio DESC;
+```
+
+---
+
 ## Los aranceles del INPI se actualizan solos
 
 El INPI cobra en **UMAPI** (Res. 75/2026) y el valor en pesos de la UMAPI se

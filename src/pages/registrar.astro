@@ -1648,6 +1648,37 @@ const faqSchema = {
     } catch { /* analytics nunca bloquea el checkout */ }
   }
 
+  // ── Visitas al link del agente de WhatsApp (src/lib/visitas.ts) ─────────
+  // Sólo cuando se entró con ?tel= (el link que arma Sofía): una fila en D1
+  // por pestaña, con hasta qué paso llegó. El sid vive en sessionStorage, así
+  // que sobrevive el ida-y-vuelta a Mercado Pago y sigue contando el post-pago.
+  const VISITA_KEY = 'um-visita-sid';
+  let visitaSid: string | null = null;
+  try { visitaSid = sessionStorage.getItem(VISITA_KEY); } catch { /* ignorar */ }
+
+  function visita(paso: string, extra: { tel?: string; ref?: string } = {}) {
+    if (!visitaSid) return;
+    try {
+      void fetch('/api/checkout/visita', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sid: visitaSid, paso, ...extra }),
+        keepalive: true,
+      }).catch(() => { /* medición: nunca bloquea el checkout */ });
+    } catch { /* idem */ }
+  }
+
+  /** Al llegar por el link con teléfono: abre (o retoma) la visita de esta pestaña. */
+  function empezarVisita(tel: string) {
+    try {
+      if (!visitaSid) {
+        visitaSid = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => (b % 36).toString(36)).join('');
+        sessionStorage.setItem(VISITA_KEY, visitaSid);
+      }
+    } catch { /* sin sessionStorage la visita igual se cuenta, sin el post-pago */ }
+    visita(document.body.dataset.ckStep || '1', { tel });
+  }
+
   // Paso alcanzado → evento. Los nombres son un contrato con el funnel de GA4:
   // no se renombran aunque el paso cambie de número o de contenido, o se rompe
   // la comparabilidad con el histórico. `ck_paso_titular` sigue significando
@@ -1735,6 +1766,7 @@ const faqSchema = {
     if (STEP_EVENTS[step]) {
       track(STEP_EVENTS[step], { checkout_step: parseInt(step, 10), currency: 'ARS', value: total() });
     }
+    visita(step);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -3717,6 +3749,7 @@ const faqSchema = {
     // rechazado esto es un pedido nuevo, y el servidor ya lo cotizó a hoy.
     pricingPedido = computeOrderPricing(lineas() || 1, garantia);
     bloquearPedido();
+    visita('4', { ref: data.ref });
     return data;
   }
 
@@ -4566,6 +4599,7 @@ const faqSchema = {
     if (urlTel) input('ck-whatsapp').value = urlTel;
     if (urlEmail) input('ck-email').value = urlEmail;
     if (nDeep > 0 || urlTel || urlEmail) saveDraft();
+    if (urlTel) empezarVisita(urlTel);
   }
 </script>
 
