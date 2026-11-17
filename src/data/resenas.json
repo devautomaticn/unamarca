@@ -1,6 +1,52 @@
 {
-  "actualizado": "2026-11-12T20:16:57.526Z",
+  "actualizado": "2026-11-17T21:14:16.718Z",
   "items": [
+    {
+      "id": 17,
+      "estrellas": 5,
+      "texto": "Correctos y eficientes",
+      "fecha": "2026-11-17",
+      "firma": "Eugenio Ernesto P.",
+      "marcas": [
+        {
+          "denominacion": "CJ CERVEZA JUNIN LA VERDE C.A.S. Cerveza Artesanal Superior",
+          "actas": [
+            "4781223"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "estrellas": 5,
+      "texto": "Los contacte por un aviso de IG, no tenia idea de como era el tema de registrar una marca ni lo importante de hacerlo... me asesoraron en la eleccion del nombre y explicaron todas las etapas a sortear y sus tiempos... hoy luego de todo esto feliz y agradecido por su aporte profesional ... gracias !!!",
+      "fecha": "2026-11-17",
+      "firma": "Ricardo Manuel F.",
+      "marcas": [
+        {
+          "denominacion": "CLIPI",
+          "actas": [
+            "4783799",
+            "4822451"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "estrellas": 5,
+      "texto": "La verdad quise registrar mi marca por mi cuenta y me salió mal...le pedí que me lo hagan a UnaMarca y ellos me lo resolvieron profesionalmente, recomendable servicio, gracias !",
+      "fecha": "2026-11-17",
+      "firma": "Cristian Ariel D.",
+      "marcas": [
+        {
+          "denominacion": "AUTOACCESORIOSFLORESTA",
+          "actas": [
+            "4783797"
+          ]
+        }
+      ]
+    },
     {
       "id": 9,
       "estrellas": 5,
