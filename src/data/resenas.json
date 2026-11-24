@@ -1,6 +1,58 @@
 {
-  "actualizado": "2026-11-17T21:14:16.718Z",
+  "actualizado": "2026-11-24T22:40:55.695Z",
   "items": [
+    {
+      "id": 25,
+      "estrellas": 5,
+      "texto": "Mi experiencia con Una marca y su equipo ha sido espectacular, las consultas y trámites lo hacen al toque, eso significa profesionalismo en lo que hacen",
+      "fecha": "2026-11-24",
+      "firma": "Jairo david M.",
+      "marcas": [
+        {
+          "denominacion": "BARRA RPM AUMENTA TU RENDIMIENTO",
+          "actas": [
+            "4791037"
+          ]
+        },
+        {
+          "denominacion": "023458 RPM AUMENTA TU RENDIMIENTO",
+          "actas": [
+            "4823471"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "estrellas": 5,
+      "texto": "Excelente realmente, los recomiendo mil veces. Un diez en tiempos en formas, me asesoraron super bien y con alta profesionalidad. Muchas graciaaas!!!",
+      "fecha": "2026-11-24",
+      "firma": "Maria noelia F.",
+      "marcas": [
+        {
+          "denominacion": "ESPACIO KAION",
+          "actas": [
+            "4791036"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "estrellas": 5,
+      "texto": "Hoy se logró el objetivo de registrar nuestra marca. Gracias a la empresa UnaMarca por los servicios prestados. Excelente asesoramiento y por la agilidad de los tramites",
+      "fecha": "2026-11-24",
+      "firma": "Carlos Alberto F.",
+      "marcas": [
+        {
+          "denominacion": "AUKERIA",
+          "actas": [
+            "4795755",
+            "4795756"
+          ]
+        }
+      ]
+    },
     {
       "id": 17,
       "estrellas": 5,
