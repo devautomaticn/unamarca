@@ -4190,15 +4190,18 @@ const faqSchema = {
 
   /** Sube los logos que todavía no están en el servidor, de a uno: el endpoint
    *  hace read-modify-write del payload y en paralelo se pisarían.
-   *  Devuelve true si alguno quedó sin subir — el pedido se envía igual (el
-   *  cliente ya pagó) y la confirmación le avisa que se lo vamos a pedir. */
-  async function subirLogos(ref: string): Promise<boolean> {
-    let pendiente = false;
+   *  Devuelve los índices que quedaron sin logo: `perdidos` (no hay imagen en
+   *  memoria, p. ej. se recargó la página) y `fallidos` (la subida falló). Con
+   *  cualquiera de los dos el pedido NO se envía: una mixta o figurativa sin
+   *  logo no se puede presentar, y el servidor la rechaza igual. */
+  async function subirLogos(ref: string): Promise<{ perdidos: number[]; fallidos: number[] }> {
+    const perdidos: number[] = [];
+    const fallidos: number[] = [];
     for (let i = 0; i < marcas.length; i++) {
       const m = marcas[i];
       if (!requiereLogo(m.tipo)) continue;
       if (m.logoKey && !m.logoBlob) continue; // ya está guardado
-      if (!m.logoBlob) { pendiente = true; continue; }
+      if (!m.logoBlob) { perdidos.push(i); continue; }
       try {
         const res = await fetch(`/api/checkout/order/${encodeURIComponent(ref)}/logo?i=${i}`, {
           method: 'POST',
@@ -4212,10 +4215,33 @@ const faqSchema = {
       } catch (e) {
         console.error(`[um-checkout] no se pudo subir el logo de la marca ${i + 1}:`, e);
         track('ck_logo_upload_error', { motivo: String(e).slice(0, 100) }, false);
-        pendiente = true;
+        fallidos.push(i);
       }
     }
-    return pendiente;
+    return { perdidos, fallidos };
+  }
+
+  function restaurarSubmit() {
+    submitBtn.disabled = false;
+    $('ck-submit-label').textContent = 'Confirmar y enviar solicitud';
+    $('ck-submit-spin').style.display = 'none';
+  }
+
+  /** Lleva al cliente al paso 5 con el error de la imagen a la vista. Las
+   *  marcas cuya key no llegó al servidor se marcan como sin logo, así el
+   *  validador del paso las frena hasta que se vuelva a elegir la imagen. */
+  function volverACargarLogo(indices: number[]) {
+    for (const i of indices) {
+      const m = marcas[i];
+      if (m && !m.logoBlob) m.logoKey = null;
+    }
+    saveDraft();
+    restaurarSubmit();
+    goTo('5');               // repinta las tarjetas del paso 5 (renderDescCards)
+    validateMarcaDetalle();  // marca el error de la imagen y lleva la vista ahí
+    alert(indices.length > 1
+      ? 'Falta la imagen de algunas de tus marcas. Volvé a cargarlas y enviá la solicitud de nuevo.'
+      : 'Falta la imagen de tu marca. Volvé a cargarla y enviá la solicitud de nuevo.');
   }
 
   /** Un titular tal como lo guarda el servidor (`completion.titulares[]`). */
@@ -4290,7 +4316,17 @@ const faqSchema = {
 
     // Los logos van primero y de a uno: el endpoint hace read-modify-write del
     // payload del pedido, y en paralelo se pisarían entre sí.
-    const logosPendientes = orderRef ? await subirLogos(orderRef) : requiereAlgunLogo();
+    // Sin logo no se envía: el pedido entraría al portal incompleto.
+    if (orderRef) {
+      const { perdidos, fallidos } = await subirLogos(orderRef);
+      if (perdidos.length) { volverACargarLogo(perdidos); return; }
+      if (fallidos.length) {
+        restaurarSubmit();
+        alert('No pudimos subir la imagen de tu marca. Revisá tu conexión y tocá de nuevo «Confirmar y enviar solicitud».');
+        return;
+      }
+    }
+    const logosPendientes = !orderRef && requiereAlgunLogo();
 
     const payload = {
       marcas: marcas.map(m => ({
@@ -4369,6 +4405,13 @@ const faqSchema = {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ...payload, cartaPdfBase64 }),
         });
+        if (res.status === 422) {
+          const err = await res.json().catch(() => null);
+          if (err?.codigo === 'falta_logo') {
+            volverACargarLogo(Array.isArray(err.marcas) ? err.marcas : []);
+            return;
+          }
+        }
         if (!res.ok) throw new Error(String(res.status));
         // A quién le salió el link para firmar: lo dice el servidor, que es el
         // que abrió los renglones y mandó los emails.
@@ -4379,9 +4422,7 @@ const faqSchema = {
       } catch (e) {
         console.error('[um-checkout] error guardando la solicitud:', e);
         alert('No pudimos guardar tu solicitud. Probá de nuevo.');
-        submitBtn.disabled = false;
-        $('ck-submit-label').textContent = 'Confirmar y enviar solicitud';
-        $('ck-submit-spin').style.display = 'none';
+        restaurarSubmit();
         return;
       }
       ref = orderRef;

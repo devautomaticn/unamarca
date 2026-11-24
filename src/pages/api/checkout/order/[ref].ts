@@ -20,7 +20,8 @@ import { abrirFirma, asegurarTablaFirmas, urlFirma } from '@/lib/server/firmas';
 import { darDeAltaEnVigilante } from '@/lib/server/altaPedido';
 import type { VigilanteEnv } from '@/lib/server/vigilante';
 import {
-  apellidoArchivo, esDelExterior, formatPorcentaje, nombreTitular, type TitularPedido,
+  apellidoArchivo, esDelExterior, formatPorcentaje, nombreTitular, requiereLogo,
+  type TitularPedido,
 } from '@/lib/checkout/constants';
 
 interface OrderRow {
@@ -95,6 +96,25 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
   // Cap de tamaño (la firma viaja como data URL)
   const raw = JSON.stringify(completion);
   if (raw.length > 500_000) return json({ error: 'Payload demasiado grande' }, 413);
+
+  // Una mixta o figurativa sin logo no se acepta: el trámite no se puede
+  // presentar sin la imagen, y aceptarlo así lo da de alta incompleto en el
+  // portal (UM-20261123-G4P274: el cliente eligió la imagen, la subida falló y
+  // el pedido entró igual). La key la escribe sólo el endpoint del logo después
+  // de guardar el archivo en R2, así que es la prueba de que está. El tipo es el
+  // ya corregido post-pago: una figurativa que pasó a mixta sigue pidiendo logo.
+  // No se guarda `completion`: el cliente vuelve al paso 5, carga la imagen y
+  // reenvía.
+  {
+    const previo = consolidarMarcas(JSON.parse(row.payload), completion);
+    const sinLogo = previo.marcas
+      .map((m, i) => (requiereLogo(m.tipo ?? 'denominativa') && !previo.storedMarcas[i]?.logoKey ? i : -1))
+      .filter(i => i >= 0);
+    if (sinLogo.length) {
+      console.warn(`[${ref}] envío rechazado: marca(s) ${sinLogo.map(i => i + 1).join(', ')} sin logo`);
+      return json({ error: 'Falta la imagen de la marca', codigo: 'falta_logo', marcas: sinLogo }, 422);
+    }
+  }
 
   await env.DB.prepare(
     'UPDATE orders SET completion = ?, completed_at = ?, updated_at = ? WHERE ref = ?'
