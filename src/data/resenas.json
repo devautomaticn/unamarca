@@ -1,6 +1,37 @@
 {
-  "actualizado": "2026-11-24T22:40:55.695Z",
+  "actualizado": "2026-11-25T21:55:30.111Z",
   "items": [
+    {
+      "id": 28,
+      "estrellas": 5,
+      "texto": "Somos RAÍZ BIEN NUESTRO y fue excelente la atención y muy buena predisposición desde el primer contacto. Todo el proceso fue claro, ágil y bien explicado. Muy conforme con el acompañamiento recibido y el resultado final.",
+      "fecha": "2026-11-25",
+      "firma": "Cesar Sebastián M.",
+      "marcas": [
+        {
+          "denominacion": "RAÍZ Bien Nuestro",
+          "actas": [
+            "4792121"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "estrellas": 5,
+      "texto": "Desde AUCHAR (autosdechinaenargentina) agradecidos por la rápida y efectiva gestión!",
+      "fecha": "2026-11-24",
+      "firma": "Guillermo José T.",
+      "marcas": [
+        {
+          "denominacion": "AUCHAR",
+          "actas": [
+            "4795753",
+            "4795754"
+          ]
+        }
+      ]
+    },
     {
       "id": 25,
       "estrellas": 5,
