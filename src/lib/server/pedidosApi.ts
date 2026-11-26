@@ -61,6 +61,7 @@ export function vista(f: FilaPedido) {
     metodo?: string;
     pricing?: { honorarios?: number; garantia?: number; arancelInpi?: number; total?: number };
     origen?: unknown;
+    promo?: { id?: string } | null;
   } = {};
   try { p = JSON.parse(f.payload); } catch { /* ilegible: sólo lo de la fila */ }
   // Pedidos v1 (una sola marca) guardaban `marca` + `clases` sueltos.
@@ -83,5 +84,6 @@ export function vista(f: FilaPedido) {
     },
     contacto: { email: p.contacto?.email || '', whatsapp: p.contacto?.whatsapp || '' },
     origen: p.origen ?? null,
+    promo: p.promo?.id ?? null,
   };
 }
