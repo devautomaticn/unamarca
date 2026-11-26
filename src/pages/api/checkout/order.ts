@@ -18,7 +18,7 @@ import {
   normalizeTipoMarca, tipoMarcaLabel, type MarcaPedido, type TipoMarca,
 } from '@/lib/checkout/constants';
 import { leerCookie } from '@/lib/origen';
-import { aplicaConMedio, honorariosPromo, promoVigente } from '@/lib/checkout/promos';
+import { promoDelPedido } from '@/lib/server/promos';
 
 type MetodoPago = 'mercadopago' | 'transferencia';
 
@@ -45,7 +45,7 @@ interface OrderBody {
   garantia?: boolean;
   /** Ausente en clientes con la página vieja cacheada → Mercado Pago */
   metodo?: MetodoPago;
-  /** Código de promo que trajo el link (vigilant #313). */
+  /** Token firmado de la promo que trajo el link (vigilant #313). */
   promo?: string;
 }
 
@@ -70,11 +70,13 @@ export const POST: APIRoute = async (context) => {
   const garantia = body.garantia === true;
   const marcas = marcasDesdePayload(body);
   const nLineas = Math.max(1, contarLineas(marcas));
-  // Promo (vigilant #313): el servidor revalida código, fecha y medio de pago.
-  // Un código vencido o con otro medio no falla: cotiza el precio de siempre.
-  const promoPedida = promoVigente(body.promo);
-  const promo = aplicaConMedio(promoPedida, metodo) ? promoPedida : null;
-  const pricing = computePricing(marcas, garantia, promo ? honorariosPromo(promo) : undefined);
+  // Promo (vigilant #313): token firmado, verificado acá con el medio de pago
+  // elegido. Falla cerrado: un token inválido, vencido o con otro medio no
+  // frena el pedido, lo cotiza al precio de siempre.
+  const promo = await promoDelPedido(
+    body.promo, metodo, (env as { PEDIDOS_API_KEY?: string }).PEDIDOS_API_KEY,
+    PRICING_UNIT.arancelInpi, PRICING_UNIT.honorarios);
+  const pricing = computePricing(marcas, garantia, promo ? promo.honorarios : undefined);
   const ref = newOrderRef();
   const origin = new URL(request.url).origin;
 
@@ -97,8 +99,9 @@ export const POST: APIRoute = async (context) => {
     garantia,
     pricing,
     metodo,
-    // El código de la promo aplicada (null = precio de siempre).
-    promo: promo?.codigo ?? null,
+    // La promo aplicada (null = precio de siempre). El nonce identifica el
+    // link de Sofía que la trajo; el token entero no se guarda.
+    promo: promo ? { id: promo.promo.id, nonce: promo.nonce } : null,
     // Por dónde llegó (Google Ads, orgánico…). Sale de la cookie y no del
     // cuerpo: la escribe el servidor y el wizard ni la ve. `null` es "no se
     // sabe" —visita directa, otro dispositivo, cookies bloqueadas—, que no es
@@ -117,6 +120,8 @@ export const POST: APIRoute = async (context) => {
       ref,
       metodo,
       importe: pricing.total,
+      // Lo que cotizó el servidor: la página muestra ESTO, no su propia cuenta.
+      pricing,
       transferencia: TRANSFERENCIA,
     });
   }
@@ -197,5 +202,5 @@ export const POST: APIRoute = async (context) => {
      VALUES (?, ?, 'pending_payment', ?, ?)`
   ).bind(ref, new Date().toISOString(), pref.id, JSON.stringify(payload)).run();
 
-  return json({ ref, metodo, init_point: pref.init_point });
+  return json({ ref, metodo, init_point: pref.init_point, pricing });
 };

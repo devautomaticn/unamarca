@@ -1240,7 +1240,6 @@ const faqSchema = {
     PRIORIDAD_MAX_BYTES, prioridadVencida, vencimientoPrioridad, fechaCorta,
   } from '../lib/checkout/constants';
   import { formatCuitInput, isValidCuit, cuitMatchesDni, esCuitDeJuridica } from '../lib/checkout/cuit';
-  import { promoVigente, aplicaConMedio, honorariosPromo, type PromoCheckout } from '../lib/checkout/promos';
   import { cartaPoderHTML, type CartaPoderData } from '../lib/checkout/cartaPoder';
 
   const DRAFT_KEY = 'um-checkout-draft';
@@ -1352,27 +1351,55 @@ const faqSchema = {
   type MetodoPago = 'mercadopago' | 'transferencia';
   let metodoPago: MetodoPago = 'mercadopago';
 
-  /** Promo que trajo el link (`?promo=CODIGO`, vigilant #313), recordada en
-   *  este navegador para que un recargo sin el parámetro no la pierda. El
-   *  servidor la vuelve a validar: acá sólo decide qué se muestra. */
+  /** Promo que trajo el link (`?promo=<token>`, vigilant #313). La página no
+   *  conoce ninguna promo: le pregunta al servidor si el token vale
+   *  (/api/checkout/promo) y sólo con un sí la muestra. El token se saca de la
+   *  barra de direcciones (no viaja a la analítica) y se recuerda en este
+   *  navegador para un recargo. El precio lo fija el servidor al crear el
+   *  pedido, que vuelve a verificar el token: acá sólo se decide qué se ve. */
+  interface PromoVista {
+    nombre: string;
+    porClase: number;
+    hastaTexto: string;
+    medios: MetodoPago[];
+    honorarios: number;
+  }
   const PROMO_KEY = 'um_promo';
-  let promoActiva: PromoCheckout | null = (() => {
-    try {
-      const deUrl = new URLSearchParams(window.location.search).get('promo');
-      const p = promoVigente(deUrl ?? localStorage.getItem(PROMO_KEY));
-      if (p) localStorage.setItem(PROMO_KEY, p.codigo);
-      else if (deUrl === null) localStorage.removeItem(PROMO_KEY);
-      return p;
-    } catch {
-      return null;
-    }
-  })();
-  /** Honorarios por clase de la promo, si aplica con este medio de pago. Antes
-   *  de elegir el medio se muestra el de la promo: es la razón por la que vino. */
+  let promoToken: string | null = null;
+  let promoActiva: PromoVista | null = null;
   function honPromo(medio: MetodoPago | 'mostrar' = 'mostrar'): number | undefined {
     if (!promoActiva) return undefined;
-    if (medio !== 'mostrar' && !aplicaConMedio(promoActiva, medio)) return undefined;
-    return honorariosPromo(promoActiva);
+    if (medio !== 'mostrar' && !promoActiva.medios.includes(medio)) return undefined;
+    return promoActiva.honorarios;
+  }
+  async function cargarPromo() {
+    try {
+      const url = new URL(window.location.href);
+      const deUrl = url.searchParams.get('promo');
+      if (deUrl !== null) {
+        url.searchParams.delete('promo');
+        history.replaceState(history.state, '', url.pathname + url.search + url.hash);
+      }
+      const token = (deUrl ?? localStorage.getItem(PROMO_KEY) ?? '').trim();
+      if (!token || token.length > 200) return;
+      const res = await fetch(`/api/checkout/promo?t=${encodeURIComponent(token)}`);
+      const d = res.ok ? await res.json() : null;
+      const ok = d && d.valida === true && typeof d.honorarios === 'number' && d.honorarios > 0
+        && d.honorarios < PRICING.honorarios && Array.isArray(d.medios);
+      if (!ok) {
+        localStorage.removeItem(PROMO_KEY);
+        return;
+      }
+      promoToken = token;
+      promoActiva = {
+        nombre: String(d.nombre || 'Promo'), porClase: Number(d.porClase),
+        hastaTexto: String(d.hastaTexto || ''), medios: d.medios, honorarios: d.honorarios,
+      };
+      localStorage.setItem(PROMO_KEY, token);
+      if (!pricingPedido) updateSummary();
+    } catch {
+      promoActiva = null;   // sin promo = precio de siempre; el flujo sigue
+    }
   }
 
   /** Marcas y clases quedan congeladas una vez que existe el pedido: lo que se
@@ -3781,6 +3808,7 @@ const faqSchema = {
     metodo?: MetodoPago;
     init_point?: string;
     importe?: number;
+    pricing?: unknown;
   }
 
   function orderBody() {
@@ -3792,7 +3820,7 @@ const faqSchema = {
       },
       garantia,
       metodo: metodoPago,
-      promo: promoActiva && aplicaConMedio(promoActiva, metodoPago) ? promoActiva.codigo : undefined,
+      promo: promoToken && honPromo(metodoPago) !== undefined ? promoToken : undefined,
     });
   }
 
@@ -3808,7 +3836,10 @@ const faqSchema = {
     // Se calcula con la lista vigente y NO con pricing(), que podría estar
     // devolviendo el congelado de un pedido anterior: al reintentar un pago
     // rechazado esto es un pedido nuevo, y el servidor ya lo cotizó a hoy.
-    pricingPedido = computeOrderPricing(lineas() || 1, garantia, honPromo(metodoPago));
+    // Lo que cotizó el servidor y nada más: si la promo no se aplicó allá (token
+    // vencido, otro medio, lo que sea), acá tampoco se muestra.
+    pricingPedido = pricingDesdeSnapshot(data.pricing)
+      ?? computeOrderPricing(lineas() || 1, garantia);
     bloquearPedido();
     visita('4', { ref: data.ref });
     return data;
@@ -4631,6 +4662,7 @@ const faqSchema = {
   // ── Bootstrap: volver de Mercado Pago (?order=REF) o draft local ─────
   const urlParams = new URLSearchParams(window.location.search);
   const urlOrderRef = urlParams.get('order');
+  cargarPromo();
 
   /** Un pedido de este navegador que ya se pagó (o espera acreditación) y al
    *  que le faltan los datos. Sin esto, el único camino de vuelta era el
