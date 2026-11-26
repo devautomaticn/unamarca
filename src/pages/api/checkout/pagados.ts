@@ -30,91 +30,12 @@
 // ────────────────────────────────────────────────────────────────────────────
 import type { APIRoute } from 'astro';
 import { runtime } from '@/lib/server/runtime';
-import { type CheckoutEnv, ensureSchema } from '@/lib/server/checkout';
+import { ensureSchema } from '@/lib/server/checkout';
+import {
+  type FilaPedido, type PedidosEnv, DESDE_RE, LIMITE, MAX_DIAS, autorizado, json, noEncontrado, vista,
+} from '@/lib/server/pedidosApi';
 
 export const prerender = false;
-
-interface PedidosEnv extends CheckoutEnv {
-  PEDIDOS_API_KEY?: string;
-}
-
-interface FilaPedido {
-  ref: string;
-  created_at: string;
-  completed_at: string | null;
-  status: string;
-  payload: string;
-}
-
-const LIMITE = 200;
-// No más atrás que esto en una sola consulta: el histórico ya está cargado.
-const MAX_DIAS = 400;
-const DESDE_RE = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z)?$/;
-
-function noEncontrado(): Response {
-  return new Response('Not Found', {
-    status: 404,
-    headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' },
-  });
-}
-
-function json(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
-  });
-}
-
-function igualSeguro(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let dif = 0;
-  for (let i = 0; i < a.length; i++) dif |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return dif === 0;
-}
-
-function autorizado(request: Request, env: PedidosEnv): boolean {
-  const clave = env.PEDIDOS_API_KEY || '';
-  // Una clave corta es una clave mal cargada: mejor no abrir el endpoint.
-  if (clave.length < 32) return false;
-  const auth = request.headers.get('Authorization') || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
-  return token.length > 0 && igualSeguro(token, clave);
-}
-
-function vista(f: FilaPedido) {
-  let p: {
-    marcas?: { nombre?: string; tipo?: string; clases?: number[] }[];
-    marca?: { nombre?: string; tipo?: string };
-    clases?: number[];
-    contacto?: { email?: string; whatsapp?: string };
-    garantia?: boolean;
-    metodo?: string;
-    pricing?: { honorarios?: number; garantia?: number; arancelInpi?: number; total?: number };
-    origen?: unknown;
-  } = {};
-  try { p = JSON.parse(f.payload); } catch { /* ilegible: sólo lo de la fila */ }
-  // Pedidos v1 (una sola marca) guardaban `marca` + `clases` sueltos.
-  const marcas = p.marcas?.length
-    ? p.marcas
-    : p.marca ? [{ nombre: p.marca.nombre, tipo: p.marca.tipo, clases: p.clases }] : [];
-  return {
-    ref: f.ref,
-    creado: f.created_at,
-    completado: f.completed_at,
-    estado: f.status,
-    metodo: p.metodo || 'mercadopago',
-    marcas: marcas.map(m => ({ nombre: m.nombre || '', tipo: m.tipo || '', clases: m.clases || [] })),
-    garantia: !!p.garantia,
-    precio: {
-      honorarios: p.pricing?.honorarios ?? null,
-      garantia: p.pricing?.garantia ?? null,
-      arancel_inpi: p.pricing?.arancelInpi ?? null,
-      total: p.pricing?.total ?? null,
-    },
-    contacto: { email: p.contacto?.email || '', whatsapp: p.contacto?.whatsapp || '' },
-    origen: p.origen ?? null,
-  };
-}
 
 export const GET: APIRoute = async (context) => {
   const { request } = context;
