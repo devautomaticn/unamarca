@@ -511,8 +511,8 @@ export function consolidarMarcas(stored: any, completion: any): {
 
 /** Precios calculados SIEMPRE en el servidor — nunca se confía en el cliente.
  *  Una línea = una marca en una clase. */
-export function computePricing(marcas: MarcaPedido[], garantia: boolean) {
-  return computeOrderPricing(contarLineas(marcas), garantia);
+export function computePricing(marcas: MarcaPedido[], garantia: boolean, honorariosUnit?: number) {
+  return computeOrderPricing(contarLineas(marcas), garantia, honorariosUnit);
 }
 
 export function json(data: unknown, status = 200): Response {

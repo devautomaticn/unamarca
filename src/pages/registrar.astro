@@ -929,6 +929,8 @@ const faqSchema = {
           <span id="ck-sum-ara-label">Arancel INPI (1 clase) <small>se paga al INPI · valor {PRICING.arancelVigencia}</small></span>
           <span id="ck-sum-ara">{formatARS(PRICING.arancelInpi)}</span>
         </div>
+        <!-- Promo del link (?promo=, vigilant #313): la pinta updateSummary() -->
+        <p class="ck-promo" id="ck-promo" hidden></p>
         <div class="ck-sum-row ck-sum-total">
           <span>Total</span>
           <span id="ck-sum-total">{formatARS(PRICING.honorarios + PRICING.arancelInpi)}</span>
@@ -988,6 +990,7 @@ const faqSchema = {
               Desde tu home banking, con alias.
               Te mostramos los datos de la cuenta.
             </span>
+            <span class="ck-pm-promo" id="ck-tr-promo" hidden></span>
             <span class="ck-pm-go" id="ck-tr-label">Pagar por transferencia</span>
           </button>
         </div>
@@ -995,7 +998,7 @@ const faqSchema = {
         <p class="ck-err" data-err="pago" style="text-align:center; margin-top:0.6rem"></p>
 
         <p class="ck-help ck-pay-note" id="ck-pay-note">
-          El precio es el mismo con las dos formas de pago.
+          <span id="ck-pay-igual">El precio es el mismo con las dos formas de pago.</span>
           <!-- Para el que ya pagó por fuera del wizard (el agente de WhatsApp le
                pasó el alias): crea el pedido y va directo al post-pago. -->
           <br />
@@ -1237,6 +1240,7 @@ const faqSchema = {
     PRIORIDAD_MAX_BYTES, prioridadVencida, vencimientoPrioridad, fechaCorta,
   } from '../lib/checkout/constants';
   import { formatCuitInput, isValidCuit, cuitMatchesDni, esCuitDeJuridica } from '../lib/checkout/cuit';
+  import { promoVigente, aplicaConMedio, honorariosPromo, type PromoCheckout } from '../lib/checkout/promos';
   import { cartaPoderHTML, type CartaPoderData } from '../lib/checkout/cartaPoder';
 
   const DRAFT_KEY = 'um-checkout-draft';
@@ -1347,6 +1351,29 @@ const faqSchema = {
   let orderRef: string | null = null; // pedido creado al iniciar el pago
   type MetodoPago = 'mercadopago' | 'transferencia';
   let metodoPago: MetodoPago = 'mercadopago';
+
+  /** Promo que trajo el link (`?promo=CODIGO`, vigilant #313), recordada en
+   *  este navegador para que un recargo sin el parámetro no la pierda. El
+   *  servidor la vuelve a validar: acá sólo decide qué se muestra. */
+  const PROMO_KEY = 'um_promo';
+  let promoActiva: PromoCheckout | null = (() => {
+    try {
+      const deUrl = new URLSearchParams(window.location.search).get('promo');
+      const p = promoVigente(deUrl ?? localStorage.getItem(PROMO_KEY));
+      if (p) localStorage.setItem(PROMO_KEY, p.codigo);
+      else if (deUrl === null) localStorage.removeItem(PROMO_KEY);
+      return p;
+    } catch {
+      return null;
+    }
+  })();
+  /** Honorarios por clase de la promo, si aplica con este medio de pago. Antes
+   *  de elegir el medio se muestra el de la promo: es la razón por la que vino. */
+  function honPromo(medio: MetodoPago | 'mostrar' = 'mostrar'): number | undefined {
+    if (!promoActiva) return undefined;
+    if (medio !== 'mostrar' && !aplicaConMedio(promoActiva, medio)) return undefined;
+    return honorariosPromo(promoActiva);
+  }
 
   /** Marcas y clases quedan congeladas una vez que existe el pedido: lo que se
    *  presenta ante el INPI tiene que ser exactamente lo que se pagó. */
@@ -2876,12 +2903,14 @@ const faqSchema = {
    *  pagó y que el cliente vuelve a completar sus datos puede haber pasado un
    *  aumento, y lo que tiene que ver es lo que pagó. */
   function pricing(): OrderPricing {
-    return pricingPedido ?? computeOrderPricing(lineas() || 1, garantia);
+    return pricingPedido ?? computeOrderPricing(lineas() || 1, garantia, honPromo());
   }
   /** Unitarios que rigen la pantalla: los congelados si el pedido ya existe,
-   *  los de la lista vigente mientras se arma. */
+   *  los de la lista vigente (o los de la promo) mientras se arma. */
   function unitPricing() {
-    return pricingPedido?.unit ?? PRICING;
+    if (pricingPedido) return pricingPedido.unit;
+    const h = honPromo();
+    return h === undefined ? PRICING : { ...PRICING, honorarios: h };
   }
   function total(): number {
     return pricing().total;
@@ -2949,7 +2978,38 @@ const faqSchema = {
       `Arancel INPI (${nLabel}) <small>se paga al INPI · valor ${PRICING.arancelVigencia}</small>`;
     $('ck-sum-ara').textContent = formatARS(p.arancelInpi);
     $('ck-sum-total').textContent = formatARS(p.total);
+    pintarPromo(p);
     updateRail();
+  }
+
+  /** El cartel de la promo en el resumen y en los medios de pago. Con el
+   *  pedido ya creado manda lo que se cotizó: si no se aplicó (Mercado Pago),
+   *  no se muestra. */
+  function pintarPromo(p: OrderPricing) {
+    const cartel = $('ck-promo');
+    const trPromo = $('ck-tr-promo');
+    const igual = $('ck-pay-igual');
+    // Con el pedido creado manda lo cotizado: si se pagó por Mercado Pago, la
+    // promo no se aplicó y no se muestra.
+    const aplicada = !!promoActiva
+      && (!pricingPedido || pricingPedido.unit.honorarios < PRICING.honorarios);
+    cartel.hidden = !aplicada;
+    trPromo.hidden = !aplicada || !!pricingPedido;
+    if (!promoActiva || !aplicada) {
+      igual.textContent = 'El precio es el mismo con las dos formas de pago.';
+      return;
+    }
+    const soloTransferencia = !promoActiva.medios.includes('mercadopago');
+    cartel.innerHTML =
+      `<b>${promoActiva.nombre.toUpperCase()}</b> ` +
+      `${formatARS(promoActiva.porClase)} por clase con el arancel incluido` +
+      `${soloTransferencia ? ', pagando por transferencia' : ''}. ` +
+      `Vale hasta ${promoActiva.hastaTexto}.`;
+    trPromo.textContent = `Con tu promo ${promoActiva.nombre}: ${formatARS(p.total)}`;
+    igual.textContent = soloTransferencia
+      ? `La promo ${promoActiva.nombre} es sólo por transferencia. Con Mercado Pago el total es ` +
+        `${formatARS(computeOrderPricing(p.lineas, garantia).total)}.`
+      : 'El precio es el mismo con las dos formas de pago.';
   }
 
   function garantiaCongelada() {
@@ -3732,6 +3792,7 @@ const faqSchema = {
       },
       garantia,
       metodo: metodoPago,
+      promo: promoActiva && aplicaConMedio(promoActiva, metodoPago) ? promoActiva.codigo : undefined,
     });
   }
 
@@ -3747,7 +3808,7 @@ const faqSchema = {
     // Se calcula con la lista vigente y NO con pricing(), que podría estar
     // devolviendo el congelado de un pedido anterior: al reintentar un pago
     // rechazado esto es un pedido nuevo, y el servidor ya lo cotizó a hoy.
-    pricingPedido = computeOrderPricing(lineas() || 1, garantia);
+    pricingPedido = computeOrderPricing(lineas() || 1, garantia, honPromo(metodoPago));
     bloquearPedido();
     visita('4', { ref: data.ref });
     return data;
@@ -5311,6 +5372,11 @@ const faqSchema = {
   font-size: 1rem; font-weight: 700; color: #0b1d3a; letter-spacing: -0.01em;
 }
 .ck-pm-desc { font-size: 0.8125rem; color: #64748b; line-height: 1.55; flex: 1; }
+/* ─── Promo del link (vigilant #313) ─── */
+.ck-promo { margin: 0.75rem 0 0.25rem; padding: 0.6rem 0.75rem; border-radius: 10px; background: #0E0E0E; color: #F2EEE6; font-size: 0.8125rem; line-height: 1.5; }
+.ck-promo b { color: #C8F25C; letter-spacing: 0.08em; margin-right: 0.25rem; }
+.ck-promo[hidden], .ck-pm-promo[hidden] { display: none; }
+.ck-pm-promo { display: inline-block; margin: 0.35rem 0 0.15rem; padding: 0.2rem 0.55rem; border-radius: 999px; background: #C8F25C; color: #0E0E0E; font-size: 0.75rem; font-weight: 700; }
 /* El CTA era un texto azul suelto y no se leía como algo clickeable. Ahora
    parece lo que es. La tarjeta entera sigue siendo el botón. */
 .ck-pm-go {

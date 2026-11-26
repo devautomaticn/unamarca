@@ -411,16 +411,20 @@ export interface UnitPricing {
 
 /** Totales del pedido para N líneas (marca × clase). Todos los conceptos
  *  escalan por línea, sin descuento por volumen. Con 0 líneas se muestra el
- *  precio de 1 (base del resumen antes de elegir clases). */
-export function computeOrderPricing(lineas: number, garantia: boolean) {
+ *  precio de 1 (base del resumen antes de elegir clases).
+ *  `honorariosUnit` pisa los honorarios por clase: lo usa una promo
+ *  (`promos.ts`, `honorariosPromo`); sin él, los de `PRICING`. */
+export function computeOrderPricing(lineas: number, garantia: boolean, honorariosUnit?: number) {
   const n = Math.min(MAX_LINEAS, Math.max(1, Math.floor(lineas) || 1));
-  const honorarios = PRICING.honorarios * n;
+  const honUnit = typeof honorariosUnit === 'number' && Number.isFinite(honorariosUnit)
+    ? honorariosUnit : PRICING.honorarios;
+  const honorarios = honUnit * n;
   const garantiaMonto = garantia ? PRICING.garantia * n : 0;
   const arancelInpi = PRICING.arancelInpi * n;
   // Tipado explícito: `PRICING` es `as const`, y sin esto los unitarios quedan
   // como los literales de hoy y ningún precio viejo entra en `OrderPricing`.
   const unit: UnitPricing = {
-    honorarios: PRICING.honorarios,
+    honorarios: honUnit,
     garantia: PRICING.garantia,
     arancelInpi: PRICING.arancelInpi,
   };
