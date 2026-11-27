@@ -1,6 +1,36 @@
 {
-  "actualizado": "2026-11-25T21:55:30.111Z",
+  "actualizado": "2026-11-27T21:33:07.125Z",
   "items": [
+    {
+      "id": 30,
+      "estrellas": 5,
+      "texto": "La experiencia muy buena. La atención genial, para recomendar más para quienes comienzan en el tema de registrar una marca. Cada inquietud fue resuelta con seriedad y eso genera tranquilidad. Gracias",
+      "fecha": "2026-11-27",
+      "firma": "Miriam M.",
+      "marcas": [
+        {
+          "denominacion": "SoloRock El Bolsón",
+          "actas": [
+            "4796812"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "estrellas": 5,
+      "texto": "Respondieron siempre mis dudas y son claros. Ahora tengo mi marca YANYS STUDIO registrada!!!",
+      "fecha": "2026-11-27",
+      "firma": "Yanina Noelia S.",
+      "marcas": [
+        {
+          "denominacion": "Yanys Studio",
+          "actas": [
+            "4796811"
+          ]
+        }
+      ]
+    },
     {
       "id": 28,
       "estrellas": 5,
